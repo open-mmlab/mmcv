@@ -2,12 +2,13 @@
 import copy
 import math
 import warnings
-from typing import Sequence
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+import mmcv
 from mmcv.cnn import (Linear, build_activation_layer, build_conv_layer,
                       build_norm_layer)
 from mmcv.runner.base_module import BaseModule, ModuleList, Sequential
@@ -35,27 +36,35 @@ except ImportError:
                   'You should install ``mmcv-full`` if you need this module. ')
 
 
-def build_positional_encoding(cfg, default_args=None):
+def build_positional_encoding(cfg: Dict,
+                              default_args: Optional[Dict] = None
+                              ) -> nn.Module:
     """Builder for Position Encoding."""
     return build_from_cfg(cfg, POSITIONAL_ENCODING, default_args)
 
 
-def build_attention(cfg, default_args=None):
+def build_attention(cfg: Dict,
+                    default_args: Optional[Dict] = None) -> nn.Module:
     """Builder for attention."""
     return build_from_cfg(cfg, ATTENTION, default_args)
 
 
-def build_feedforward_network(cfg, default_args=None):
+def build_feedforward_network(cfg: Dict,
+                              default_args: Optional[Dict] = None
+                              ) -> nn.Module:
     """Builder for feed-forward network (FFN)."""
     return build_from_cfg(cfg, FEEDFORWARD_NETWORK, default_args)
 
 
-def build_transformer_layer(cfg, default_args=None):
+def build_transformer_layer(cfg: Dict,
+                            default_args: Optional[Dict] = None) -> nn.Module:
     """Builder for transformer layer."""
     return build_from_cfg(cfg, TRANSFORMER_LAYER, default_args)
 
 
-def build_transformer_layer_sequence(cfg, default_args=None):
+def build_transformer_layer_sequence(cfg: Dict,
+                                     default_args: Optional[Dict] = None
+                                     ) -> nn.Module:
     """Builder for transformer encoder and transformer decoder."""
     return build_from_cfg(cfg, TRANSFORMER_LAYER_SEQUENCE, default_args)
 
@@ -95,20 +104,20 @@ class AdaptivePadding(nn.Module):
         >>> assert (out.shape[2], out.shape[3]) == (16, 32)
     """
 
-    def __init__(self, kernel_size=1, stride=1, dilation=1, padding='corner'):
+    def __init__(self,
+                 kernel_size: int,
+                 stride: int = 1,
+                 dilation: int = 1,
+                 padding: str = 'corner'):
         super().__init__()
         assert padding in ('same', 'corner')
 
-        kernel_size = to_2tuple(kernel_size)
-        stride = to_2tuple(stride)
-        dilation = to_2tuple(dilation)
-
+        self.kernel_size = to_2tuple(kernel_size)
+        self.stride = to_2tuple(stride)
+        self.dilation = to_2tuple(dilation)
         self.padding = padding
-        self.kernel_size = kernel_size
-        self.stride = stride
-        self.dilation = dilation
 
-    def get_pad_shape(self, input_shape):
+    def get_pad_shape(self, input_shape: Tuple[int, int]) -> Tuple[int, int]:
         """Calculate the padding size of input.
 
         Args:
@@ -129,7 +138,7 @@ class AdaptivePadding(nn.Module):
                     (kernel_w - 1) * self.dilation[1] + 1 - input_w, 0)
         return pad_h, pad_w
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Add padding to `x`
 
         Args:
@@ -179,17 +188,17 @@ class PatchEmbed(BaseModule):
     """
 
     def __init__(self,
-                 in_channels=3,
-                 embed_dims=768,
-                 conv_type='Conv2d',
-                 kernel_size=16,
-                 stride=16,
-                 padding='corner',
-                 dilation=1,
-                 bias=True,
-                 norm_cfg=None,
-                 input_size=None,
-                 init_cfg=None):
+                 in_channels: int = 3,
+                 embed_dims: int = 768,
+                 conv_type: str = 'Conv2d',
+                 kernel_size: int = 16,
+                 stride: int = 16,
+                 padding: str = 'corner',
+                 dilation: int = 1,
+                 bias: bool = True,
+                 norm_cfg: Optional[Dict] = None,
+                 input_size: Optional[int] = None,
+                 init_cfg: Optional[Dict] = None):
         super().__init__(init_cfg=init_cfg)
 
         self.embed_dims = embed_dims
@@ -207,7 +216,7 @@ class PatchEmbed(BaseModule):
                 dilation=dilation,
                 padding=padding)
             # disable the padding of conv
-            padding = 0
+            padding = 0  # type: ignore
         else:
             self.adaptive_padding = None
         padding = to_2tuple(padding)
@@ -234,23 +243,26 @@ class PatchEmbed(BaseModule):
             # e.g. when `use_abs_pos_embed` outside
             self.init_input_size = input_size
             if self.adaptive_padding:
-                pad_h, pad_w = self.adaptive_padding.get_pad_shape(input_size)
-                input_h, input_w = input_size
+                pad_h, pad_w = self.adaptive_padding.get_pad_shape(
+                    input_size)  # type: ignore
+                input_h, input_w = input_size  # type: ignore
                 input_h = input_h + pad_h
                 input_w = input_w + pad_w
-                input_size = (input_h, input_w)
+                input_size = (input_h, input_w)  # type: ignore
 
             # https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html
-            h_out = (input_size[0] + 2 * padding[0] - dilation[0] *
-                     (kernel_size[0] - 1) - 1) // stride[0] + 1
-            w_out = (input_size[1] + 2 * padding[1] - dilation[1] *
-                     (kernel_size[1] - 1) - 1) // stride[1] + 1
+            h_out = (
+                input_size[0] + 2 * padding[0] - dilation[0] *  # type: ignore
+                (kernel_size[0] - 1) - 1) // stride[0] + 1  # type: ignore
+            w_out = (
+                input_size[1] + 2 * padding[1] - dilation[1] *  # type: ignore
+                (kernel_size[1] - 1) - 1) // stride[1] + 1  # type: ignore
             self.init_out_size = (h_out, w_out)
         else:
-            self.init_input_size = None
-            self.init_out_size = None
+            self.init_input_size = None  # type: ignore
+            self.init_out_size = None  # type: ignore
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, Tuple[int, int]]:
         """
         Args:
             x (Tensor): Has shape (B, C, H, W). In most case, C is 3.
@@ -307,15 +319,15 @@ class PatchMerging(BaseModule):
     """
 
     def __init__(self,
-                 in_channels,
-                 out_channels,
-                 kernel_size=2,
-                 stride=None,
-                 padding='corner',
-                 dilation=1,
-                 bias=False,
-                 norm_cfg=dict(type='LN'),
-                 init_cfg=None):
+                 in_channels: int,
+                 out_channels: int,
+                 kernel_size: Union[int, Tuple[int, int]] = 2,
+                 stride: Optional[Union[int, Tuple[int, int]]] = None,
+                 padding: str = 'corner',
+                 dilation: Union[int, Tuple[int, int]] = 1,
+                 bias: bool = False,
+                 norm_cfg: Dict = dict(type='LN'),
+                 init_cfg: Optional[Dict] = None):
         super().__init__(init_cfg=init_cfg)
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -324,29 +336,29 @@ class PatchMerging(BaseModule):
         else:
             stride = kernel_size
 
-        kernel_size = to_2tuple(kernel_size)
-        stride = to_2tuple(stride)
-        dilation = to_2tuple(dilation)
+        self.kernel_size = to_2tuple(kernel_size)
+        self.stride = to_2tuple(stride)
+        self.dilation = to_2tuple(dilation)
 
         if isinstance(padding, str):
             self.adaptive_padding = AdaptivePadding(
-                kernel_size=kernel_size,
-                stride=stride,
-                dilation=dilation,
+                kernel_size=self.kernel_size,
+                stride=self.stride,
+                dilation=self.dilation,
                 padding=padding)
             # disable the padding of unfold
-            padding = 0
+            padding = 0  # type: ignore
         else:
             self.adaptive_padding = None
 
-        padding = to_2tuple(padding)
+        self.padding = to_2tuple(padding)
         self.sampler = nn.Unfold(
-            kernel_size=kernel_size,
-            dilation=dilation,
-            padding=padding,
-            stride=stride)
+            kernel_size=self.kernel_size,
+            dilation=self.dilation,
+            padding=self.padding,
+            stride=self.stride)
 
-        sample_dim = kernel_size[0] * kernel_size[1] * in_channels
+        sample_dim = self.kernel_size[0] * self.kernel_size[1] * in_channels
 
         if norm_cfg is not None:
             self.norm = build_norm_layer(norm_cfg, sample_dim)[1]
@@ -355,7 +367,8 @@ class PatchMerging(BaseModule):
 
         self.reduction = nn.Linear(sample_dim, out_channels, bias=bias)
 
-    def forward(self, x, input_size):
+    def forward(self, x: torch.Tensor,
+                input_size: tuple) -> Tuple[torch.Tensor, Tuple[int, int]]:
         """
         Args:
             x (Tensor): Has shape (B, H*W, C_in).
@@ -427,13 +440,13 @@ class MultiheadAttention(BaseModule):
     """
 
     def __init__(self,
-                 embed_dims,
-                 num_heads,
-                 attn_drop=0.,
-                 proj_drop=0.,
-                 dropout_layer=dict(type='Dropout', drop_prob=0.),
-                 init_cfg=None,
-                 batch_first=False,
+                 embed_dims: int,
+                 num_heads: int,
+                 attn_drop: float = 0.,
+                 proj_drop: float = 0.,
+                 dropout_layer: Dict = dict(type='Dropout', drop_prob=0.),
+                 init_cfg: Optional[Dict] = None,
+                 batch_first: bool = False,
                  **kwargs):
         super().__init__(init_cfg)
         if 'dropout' in kwargs:
@@ -459,15 +472,15 @@ class MultiheadAttention(BaseModule):
     @deprecated_api_warning({'residual': 'identity'},
                             cls_name='MultiheadAttention')
     def forward(self,
-                query,
-                key=None,
-                value=None,
-                identity=None,
-                query_pos=None,
-                key_pos=None,
-                attn_mask=None,
-                key_padding_mask=None,
-                **kwargs):
+                query: torch.Tensor,
+                key: Optional[torch.Tensor] = None,
+                value: Optional[torch.Tensor] = None,
+                identity: Optional[torch.Tensor] = None,
+                query_pos: Optional[torch.Tensor] = None,
+                key_pos: Optional[torch.Tensor] = None,
+                attn_mask: Optional[torch.Tensor] = None,
+                key_padding_mask: Optional[torch.Tensor] = None,
+                **kwargs) -> torch.Tensor:
         """Forward function for `MultiheadAttention`.
 
         **kwargs allow passing a more general data flow when combining
@@ -581,14 +594,14 @@ class FFN(BaseModule):
         },
         cls_name='FFN')
     def __init__(self,
-                 embed_dims=256,
-                 feedforward_channels=1024,
-                 num_fcs=2,
-                 act_cfg=dict(type='ReLU', inplace=True),
-                 ffn_drop=0.,
-                 dropout_layer=None,
-                 add_identity=True,
-                 init_cfg=None,
+                 embed_dims: int = 256,
+                 feedforward_channels: int = 1024,
+                 num_fcs: int = 2,
+                 act_cfg: Dict = dict(type='ReLU', inplace=True),
+                 ffn_drop: float = 0.,
+                 dropout_layer: Optional[Dict] = None,
+                 add_identity: bool = True,
+                 init_cfg: Optional[Dict] = None,
                  **kwargs):
         super().__init__(init_cfg)
         assert num_fcs >= 2, 'num_fcs should be no less ' \
@@ -615,7 +628,9 @@ class FFN(BaseModule):
         self.add_identity = add_identity
 
     @deprecated_api_warning({'residual': 'identity'}, cls_name='FFN')
-    def forward(self, x, identity=None):
+    def forward(self,
+                x: torch.Tensor,
+                identity: Optional[torch.Tensor] = None) -> torch.Tensor:
         """Forward function for `FFN`.
 
         The function would add x to the output tensor if residue is None.
@@ -666,8 +681,8 @@ class BaseTransformerLayer(BaseModule):
     """
 
     def __init__(self,
-                 attn_cfgs=None,
-                 ffn_cfgs=dict(
+                 attn_cfgs: Optional[Union[List, mmcv.ConfigDict]] = None,
+                 ffn_cfgs: Union[List, mmcv.ConfigDict, Dict] = dict(
                      type='FFN',
                      embed_dims=256,
                      feedforward_channels=1024,
@@ -675,10 +690,10 @@ class BaseTransformerLayer(BaseModule):
                      ffn_drop=0.,
                      act_cfg=dict(type='ReLU', inplace=True),
                  ),
-                 operation_order=None,
-                 norm_cfg=dict(type='LN'),
-                 init_cfg=None,
-                 batch_first=False,
+                 operation_order: Optional[tuple] = None,
+                 norm_cfg: Dict = dict(type='LN'),
+                 init_cfg: Optional[mmcv.ConfigDict] = None,
+                 batch_first: bool = False,
                  **kwargs):
 
         deprecated_args = dict(
@@ -692,7 +707,7 @@ class BaseTransformerLayer(BaseModule):
                     f'has been deprecated, now you should set `{new_name}` '
                     f'and other FFN related arguments '
                     f'to a dict named `ffn_cfgs`. ', DeprecationWarning)
-                ffn_cfgs[new_name] = kwargs[ori_name]
+                ffn_cfgs[new_name] = kwargs[ori_name]  # type: ignore
 
         super().__init__(init_cfg)
 
@@ -759,15 +774,15 @@ class BaseTransformerLayer(BaseModule):
             self.norms.append(build_norm_layer(norm_cfg, self.embed_dims)[1])
 
     def forward(self,
-                query,
-                key=None,
-                value=None,
-                query_pos=None,
-                key_pos=None,
-                attn_masks=None,
-                query_key_padding_mask=None,
-                key_padding_mask=None,
-                **kwargs):
+                query: torch.Tensor,
+                key: Optional[torch.Tensor] = None,
+                value: Optional[torch.Tensor] = None,
+                query_pos: Optional[torch.Tensor] = None,
+                key_pos: Optional[torch.Tensor] = None,
+                attn_masks: Optional[torch.Tensor] = None,
+                query_key_padding_mask: Optional[torch.Tensor] = None,
+                key_padding_mask: Optional[torch.Tensor] = None,
+                **kwargs) -> torch.Tensor:
         """Forward function for `TransformerDecoderLayer`.
 
         **kwargs contains some specific arguments of attentions.
@@ -879,7 +894,10 @@ class TransformerLayerSequence(BaseModule):
             Default: None.
     """
 
-    def __init__(self, transformerlayers=None, num_layers=None, init_cfg=None):
+    def __init__(self,
+                 transformerlayers: Optional[Dict] = None,
+                 num_layers: Optional[int] = None,
+                 init_cfg: Optional[mmcv.ConfigDict] = None):
         super().__init__(init_cfg)
         if isinstance(transformerlayers, dict):
             transformerlayers = [
@@ -896,15 +914,15 @@ class TransformerLayerSequence(BaseModule):
         self.pre_norm = self.layers[0].pre_norm
 
     def forward(self,
-                query,
-                key,
-                value,
-                query_pos=None,
-                key_pos=None,
-                attn_masks=None,
-                query_key_padding_mask=None,
-                key_padding_mask=None,
-                **kwargs):
+                query: torch.Tensor,
+                key: torch.Tensor,
+                value: torch.Tensor,
+                query_pos: Optional[torch.Tensor] = None,
+                key_pos: Optional[torch.Tensor] = None,
+                attn_masks: Optional[torch.Tensor] = None,
+                query_key_padding_mask: Optional[torch.Tensor] = None,
+                key_padding_mask: Optional[torch.Tensor] = None,
+                **kwargs) -> torch.Tensor:
         """Forward function for `TransformerCoder`.
 
         Args:
