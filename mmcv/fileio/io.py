@@ -7,6 +7,8 @@ from ..utils import is_list_of
 from .file_client import FileClient
 from .handlers import BaseFileHandler, JsonHandler, PickleHandler, YamlHandler
 
+FileLikeObject = Union[StringIO, BytesIO]
+
 file_handlers = {
     'json': JsonHandler(),
     'yaml': YamlHandler(),
