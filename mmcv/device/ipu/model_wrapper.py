@@ -6,10 +6,10 @@ import logging
 from typing import Dict, List, Optional, Union
 
 import poptorch
-import torch
-import torch.nn as nn
 from poptorch import identity_loss, PoplarExecutor, __version__
 from poptorch._args_parser import ArgsParser
+import torch
+import torch.nn as nn
 
 from mmcv import Config
 from mmcv.runner import auto_fp16

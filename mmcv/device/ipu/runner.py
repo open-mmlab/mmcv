@@ -5,9 +5,8 @@ from typing import Callable, Optional, Union
 import torch.nn as nn
 
 from mmcv import Config
-from mmcv.runner import (
-    BaseRunner, EpochBasedRunner, HOOKS, IterBasedRunner, RUNNERS
-)
+from mmcv.runner import (BaseRunner, EpochBasedRunner, HOOKS,
+                         IterBasedRunner, RUNNERS)
 from mmcv.utils import IS_IPU_AVAILABLE
 
 if IS_IPU_AVAILABLE:
