@@ -50,7 +50,7 @@ class IPUBaseRunner(BaseRunner):
                  options_cfg: Optional[dict] = None,
                  modules_to_record: Optional[Union[Config, list]] = None,
                  ipu_model_cfg: Optional[dict] = None,
-                 fp16_cfg: Optional[Config] = None,
+                 fp16_cfg: Optional[dict] = None,
                  batch_processor: Optional[Callable] = None,
                  **kwargs):
         assert hasattr(model, 'train_step') and batch_processor is None, \

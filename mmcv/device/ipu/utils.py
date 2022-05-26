@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
-from typing import Dict, Union, List, Optional
+from typing import Callable, Dict, Union, List, Optional
 
 import numpy as np
 import popart
@@ -193,7 +193,7 @@ def compare_ndarray(featA, featB, rtol=1e-3, atol=1e-5):
 def build_from_cfg_with_wrapper(
         cfg: dict,
         registry: Registry,
-        wrapper_func: Optional[function] = None,
+        wrapper_func: Optional[Callable] = None,
         default_args: Optional[Dict] = None
 ):
     """Build a module from config dict and wrap module with "wrapper_func".

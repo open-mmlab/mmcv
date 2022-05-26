@@ -231,9 +231,9 @@ class MMPoplarExecutor(PoplarExecutor):
         self.outputs_manager = HierarchicalDataManager(logger=logger)
         self.logger = logger
         # the features calculated by CPU
-        self.inter_outputs_in_cpu = {}
+        self.inter_outputs_in_cpu: dict = {}
         # the features calculated by IPU
-        self.inter_outputs_in_ipu = {}
+        self.inter_outputs_in_ipu: dict = {}
         if modules_to_record is None:
             # It is possible that the IPU implementation of some operators
             # is inconsistent with the expected (CPU), here you can use
