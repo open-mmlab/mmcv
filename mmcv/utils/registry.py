@@ -10,8 +10,8 @@ from .misc import deprecated_api_warning, is_seq_of
 
 
 def build_from_cfg(cfg: Dict,
-                   registry: Any,
-                   default_args: Optional[Dict] = None) -> nn.Module:
+                   registry: 'Registry',
+                   default_args: Optional[Dict] = None) -> Any:
     """Build a module from config dict when it is a class configuration, or
     call a function from config dict when it is a function configuration.
 
