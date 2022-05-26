@@ -74,7 +74,7 @@ def load(file: Union[str, Path, FileLikeObject],
 
 
 def dump(obj: Any,
-         file: Optional[Union[str, Path]] = None,
+         file: Optional[Union[str, Path, FileLikeObject]] = None,
          file_format: Optional[str] = None,
          file_client_args: Optional[Dict] = None,
          **kwargs):
