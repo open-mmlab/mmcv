@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Union
+
 from mmcv.runner import HOOKS, LrUpdaterHook, OptimizerHook
 from mmcv.utils import TORCH_VERSION, digit_version
 
@@ -76,7 +78,7 @@ if (TORCH_VERSION != 'parrots'
                      grad_clip=None,
                      coalesce=True,
                      bucket_size_mb=-1,
-                     loss_scale=512.,
+                     loss_scale:Union[float, str, dict]=512.,
                      distributed=True):
             assert grad_clip is None,\
                 'IPU mode does not support `grad_clip` currently'

@@ -1,7 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from mmcv.runner import (HOOKS, RUNNERS, BaseRunner, EpochBasedRunner,
-                         IterBasedRunner)
+from typing import Optional, Union
+
+import torch.nn as nn
+
+from mmcv.runner import (
+    HOOKS, RUNNERS, BaseRunner, EpochBasedRunner, IterBasedRunner, Config
+)
 from mmcv.utils import IS_IPU_AVAILABLE
 
 if IS_IPU_AVAILABLE:
@@ -40,14 +45,14 @@ class IPUBaseRunner(BaseRunner):
     """
 
     def __init__(self,
-                 model,
-                 options_cfg=None,
-                 modules_to_record=None,
-                 ipu_model_cfg=None,
-                 fp16_cfg=None,
-                 batch_processor=None,
+                 model: nn.Module,
+                 options_cfg: Optional[Config, dict] = None,
+                 modules_to_record: Optional[Config, list] = None,
+                 ipu_model_cfg: Optional[Config, dict] = None,
+                 fp16_cfg: Optional[Config] = None,
+                 batch_processor: Optional[callable] = None,
                  **kwargs):
-        assert hasattr(model, 'train_step') and batch_processor is None,\
+        assert hasattr(model, 'train_step') and batch_processor is None, \
             'only support model with train_step'
 
         if options_cfg is None:
@@ -106,7 +111,7 @@ class IPUBaseRunner(BaseRunner):
         for i, flow in enumerate(workflow):
             mode, _ = flow
             # initialize IPU dataloader if not initialized
-            assert isinstance(data_loaders[i], IPUDataLoader),\
+            assert isinstance(data_loaders[i], IPUDataLoader), \
                 'IPU runner can only work with `IPUDataLoader`'
             data_loaders[i].init(options=self.get_options(mode))
 

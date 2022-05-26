@@ -2,7 +2,8 @@
 import copy
 import inspect
 from collections import OrderedDict
-from typing import Optional, Union
+import logging
+from typing import Optional, Union, List, Dict
 
 import poptorch
 import torch
@@ -10,7 +11,7 @@ import torch.nn as nn
 from poptorch import PoplarExecutor, __version__, identity_loss
 from poptorch._args_parser import ArgsParser
 
-from mmcv.runner import auto_fp16
+from mmcv.runner import auto_fp16, Config
 from .hierarchical_data_manager import HierarchicalDataManager
 from .utils import compare_ndarray, model_sharding, recomputation_checkpoint
 
@@ -22,7 +23,7 @@ class DictArgsParser(ArgsParser):
         inputs (list): Inputs of model.
     """
 
-    def __init__(self, inputs):
+    def __init__(self, inputs: list):
         # Combine args and kwargs:
         self._has_variadic_arguments = True
         self._varnames = list(inputs.keys())
@@ -50,11 +51,11 @@ class WrappedNet(nn.Module):
     """
 
     def __init__(self,
-                 model,
-                 inputs_manager,
-                 outputs_manager,
-                 inter_outputs_in_cpu,
-                 modules_to_record=None):
+                 model: nn.Module,
+                 inputs_manager: HierarchicalDataManager,
+                 outputs_manager: HierarchicalDataManager,
+                 inter_outputs_in_cpu: dict,
+                 modules_to_record: Optional[Union[Config, List]] = None):
         super().__init__()
         self.model = model
         self.inputs_manager = inputs_manager
@@ -125,7 +126,7 @@ class WrappedNet(nn.Module):
         outputs = self.train_step(kwargs, optimizer)
         return outputs
 
-    def train_step(self, data, optimizer=None, **kwargs):
+    def train_step(self, data: dict, optimizer=None, **kwargs) -> dict:
         """The iteration step during training.
 
         This method defines an iteration step during training, except for the
@@ -213,10 +214,10 @@ class MMPoplarExecutor(PoplarExecutor):
     """
 
     def __init__(self,
-                 model,
-                 logger=None,
-                 training=True,
-                 modules_to_record=None,
+                 model: nn.Module,
+                 logger: logging.Logger = None,
+                 training: bool = True,
+                 modules_to_record: Optional[Union[Config, List]] = None,
                  *args,
                  **kwargs):
         # self.model == self._user_model: input pytorch model
@@ -270,7 +271,7 @@ class MMPoplarExecutor(PoplarExecutor):
         # temporarily use this function to fix the problem
         return self._training  # comes from self.model._training
 
-    @auto_fp16(supported_types=(PoplarExecutor, ))
+    @auto_fp16(supported_types=(PoplarExecutor,))
     def run_model(self, data_dict):
         # this function is used to parse input_dict
         # and convert to output_dict
@@ -389,12 +390,12 @@ class TrainEvalModel:
     """
 
     def __init__(self,
-                 train_model,
-                 eval_model,
-                 options,
-                 optimizer,
-                 modules_to_record=None,
-                 logger=None):
+                 train_model: nn.Module,
+                 eval_model: nn.Module,
+                 options: Union[Config, dict],
+                 optimizer: Optional[torch.optim.Optimizer],
+                 modules_to_record: Union[Config, list] = None,
+                 logger: Optional[logging.Logger] = None):
         if train_model is None:
             self._train_executor = None
             self.training = False
@@ -542,8 +543,8 @@ class TrainEvalModel:
 def get_training_model(model: nn.Module,
                        options: Optional[poptorch.Options] = None,
                        optimizer: Optional[torch.optim.Optimizer] = None,
-                       logger=None,
-                       modules_to_record=None) -> poptorch.PoplarExecutor:
+                       logger: logging.Logger = None,
+                       modules_to_record: Optional[Union[Config, list]] = None) -> poptorch.PoplarExecutor:
     """Create a PopTorch training model from a PyTorch model, running on IPU
     hardware in training mode.
 
@@ -588,7 +589,7 @@ def get_training_model(model: nn.Module,
 
 def get_inference_model(model: Union[nn.Module, poptorch.PoplarExecutor],
                         options: Optional[poptorch.Options] = None,
-                        logger=None) -> poptorch.PoplarExecutor:
+                        logger: logging.Logger = None) -> poptorch.PoplarExecutor:
     """Create a PopTorch inference model from a PyTorch model, running on IPU
     hardware in inference mode.
 
@@ -621,13 +622,13 @@ def get_inference_model(model: Union[nn.Module, poptorch.PoplarExecutor],
         poptorch_version=__version__)
 
 
-def ipu_model_wrapper(model,
-                      options,
-                      optimizer=None,
-                      logger=None,
-                      modules_to_record=None,
-                      ipu_model_cfg=None,
-                      fp16_cfg=None):
+def ipu_model_wrapper(model: nn.Module,
+                      options: Dict[str, poptorch.Options],
+                      optimizer: Optional[torch.optim.Optimizer] = None,
+                      logger: Optional[logging.Logger] = None,
+                      modules_to_record: Optional[Union[Config, list]] = None,
+                      ipu_model_cfg: Optional[dict] = None,
+                      fp16_cfg: Optional[dict] = None) -> TrainEvalModel:
     """Convert torch model to IPU model.
 
     Args:
@@ -705,7 +706,7 @@ def ipu_model_wrapper(model,
                 'Feature alignment for multi-replica mode not implemented'
 
     # TODO supports different model partitions between train and eval mode
-    assert len(ipu_model_cfg.get('eval_split_edges', [])) == 0,\
+    assert len(ipu_model_cfg.get('eval_split_edges', [])) == 0, \
         'Currently, BeginBlock can only be used once on the same model'
     eval_model = copy.copy(model).eval()
 

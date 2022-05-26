@@ -1,7 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Optional, Dict, Any
 from collections.abc import Mapping, Sequence
 from functools import partial
 
+import torch
 import poptorch
 from torch.utils.data.dataloader import default_collate
 
@@ -97,17 +99,17 @@ class IPUDataLoader(poptorch.DataLoader):
     """
 
     def __init__(self,
-                 dataset,
-                 options,
-                 batch_size=1,
-                 shuffle=False,
-                 num_workers=0,
-                 drop_last=True,
-                 persistent_workers=True,
-                 auto_distributed_partitioning=True,
-                 mode='sync',
-                 async_options=None,
-                 rebatched_worker_size=None,
+                 dataset: torch.utils.data.Dataset,
+                 options: poptorch.Options,
+                 batch_size: Optional[int] = 1,
+                 shuffle: Optional[bool] = False,
+                 num_workers: Optional[int] = 0,
+                 drop_last: Optional[bool] = True,
+                 persistent_workers: Optional[bool] = True,
+                 auto_distributed_partitioning: Optional[bool] = True,
+                 mode: Optional[poptorch.DataLoaderMode] = 'sync',
+                 async_options: Optional[Dict[str, Any]] = None,
+                 rebatched_worker_size: Optional[int] = None,
                  **kwargs):
         """Lazy init:
 
@@ -137,7 +139,7 @@ class IPUDataLoader(poptorch.DataLoader):
         if options:
             self.init(options=options)
 
-    def init(self, options, **kwargs):
+    def init(self, options: poptorch.Options, **kwargs):
         if not self.initialized:
             kwargs = {**self.kwargs, **kwargs, 'options': options}
             if kwargs['mode'] == 'sync':

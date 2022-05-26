@@ -32,7 +32,7 @@ class MLUDataParallel(MMDataParallel):
         dim (int): Dimension used to scatter the data. Defaults to 0.
     """
 
-    def __init__(self, *args, dim=0, **kwargs):
+    def __init__(self, *args, dim: int = 0, **kwargs):
         super().__init__(*args, dim=dim, **kwargs)
         self.device_ids = [0]
         self.src_device_obj = torch.device('mlu:0')

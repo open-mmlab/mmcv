@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
+from typing import Dict, Union, List, Optional
 
 import numpy as np
 import popart
@@ -28,7 +29,7 @@ def _options_assigner(cfg, options_node):
         raise NotImplementedError(error_msg)
 
 
-def cfg2options(cfg):
+def cfg2options(cfg: dict) -> Dict[str, poptorch.Options]:
     """Parse dictionary to ipu options.
 
     Args:
@@ -98,7 +99,7 @@ def _cast_to_options(cfg):
     return options
 
 
-def model_sharding(model, split_edges):
+def model_sharding(model: nn.Module, split_edges: Union[List, Dict]) -> nn.Module:
     """split models in-place into multi-IPUs.
 
     Args:
@@ -174,7 +175,7 @@ def recomputation_checkpoint(model: nn.Module, module_names: list):
             module_names.remove(name)
 
     # check all module_names are used
-    assert len(module_names) == 0,\
+    assert len(module_names) == 0, \
         f'recomputed nodes: {module_names} are not contained in the model'
 
 
@@ -186,10 +187,12 @@ def compare_ndarray(featA, featB, rtol=1e-3, atol=1e-5):
         print(e)
 
 
-def build_from_cfg_with_wrapper(cfg,
-                                registry,
-                                wrapper_func=None,
-                                default_args=None):
+def build_from_cfg_with_wrapper(
+        cfg: dict,
+        registry: Registry,
+        wrapper_func: Optional[function] = None,
+        default_args: Optional[Dict] = None
+) -> object:
     """Build a module from config dict and wrap module with "wrapper_func".
 
     Args:
