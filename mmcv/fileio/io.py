@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union, List
 
 from ..utils import is_list_of
 from .file_client import FileClient
