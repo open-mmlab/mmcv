@@ -1,6 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Tuple, Union
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -38,15 +36,15 @@ class SAConv2d(ConvAWS2d):
     """
 
     def __init__(self,
-                 in_channels: int,
-                 out_channels: int,
-                 kernel_size: Union[int, Tuple[int, int]],
-                 stride: Union[int, Tuple[int, int]] = 1,
-                 padding: Union[int, Tuple[int, int]] = 0,
-                 dilation: Union[int, Tuple[int, int]] = 1,
-                 groups: int = 1,
-                 bias: bool = True,
-                 use_deform: bool = False):
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 stride=1,
+                 padding=0,
+                 dilation=1,
+                 groups=1,
+                 bias=True,
+                 use_deform=False):
         super().__init__(
             in_channels,
             out_channels,
@@ -90,7 +88,7 @@ class SAConv2d(ConvAWS2d):
             constant_init(self.offset_s, 0)
             constant_init(self.offset_l, 0)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x):
         # pre-context
         avg_x = F.adaptive_avg_pool2d(x, output_size=1)
         avg_x = self.pre_context(avg_x)
@@ -108,8 +106,7 @@ class SAConv2d(ConvAWS2d):
         if self.use_deform:
             offset = self.offset_s(avg_x)
             out_s = deform_conv2d(x, offset, weight, self.stride, self.padding,
-                                  self.dilation, self.groups,
-                                  1)  # type: ignore
+                                  self.dilation, self.groups, 1)
         else:
             if (TORCH_VERSION == 'parrots'
                     or digit_version(TORCH_VERSION) < digit_version('1.5.0')):

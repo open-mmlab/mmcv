@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import math
-from typing import Any, Optional
 
 import numpy as np
 import torch
@@ -26,7 +25,7 @@ from .sparse_modules import SparseModule
 from .sparse_structure import SparseConvTensor
 
 
-def _calculate_fan_in_and_fan_out_hwio(tensor: torch.Tensor) -> tuple:
+def _calculate_fan_in_and_fan_out_hwio(tensor):
     dimensions = tensor.ndimension()
     if dimensions < 2:
         raise ValueError('fan in and fan out can not be computed for tensor'
@@ -50,35 +49,35 @@ def _calculate_fan_in_and_fan_out_hwio(tensor: torch.Tensor) -> tuple:
 class SparseConvolution(SparseModule):
 
     def __init__(self,
-                 ndim: int,
-                 in_channels: int,
-                 out_channels: int,
-                 kernel_size: int = 3,
-                 stride: int = 1,
-                 padding: int = 0,
-                 dilation: int = 1,
-                 groups: int = 1,
-                 bias: bool = True,
-                 subm: bool = False,
-                 output_padding: int = 0,
-                 transposed: bool = False,
-                 inverse: bool = False,
-                 indice_key: Optional[Any] = None,
-                 fused_bn: bool = False):
+                 ndim,
+                 in_channels,
+                 out_channels,
+                 kernel_size=3,
+                 stride=1,
+                 padding=0,
+                 dilation=1,
+                 groups=1,
+                 bias=True,
+                 subm=False,
+                 output_padding=0,
+                 transposed=False,
+                 inverse=False,
+                 indice_key=None,
+                 fused_bn=False):
         super().__init__()
         assert groups == 1
         if not isinstance(kernel_size, (list, tuple)):
-            kernel_size = [kernel_size] * ndim  # type: ignore
+            kernel_size = [kernel_size] * ndim
         if not isinstance(stride, (list, tuple)):
-            stride = [stride] * ndim  # type: ignore
+            stride = [stride] * ndim
         if not isinstance(padding, (list, tuple)):
-            padding = [padding] * ndim  # type: ignore
+            padding = [padding] * ndim
         if not isinstance(dilation, (list, tuple)):
-            dilation = [dilation] * ndim  # type: ignore
+            dilation = [dilation] * ndim
         if not isinstance(output_padding, (list, tuple)):
-            output_padding = [output_padding] * ndim  # type: ignore
+            output_padding = [output_padding] * ndim
 
-        for d, s in zip(dilation, stride):  # type: ignore
+        for d, s in zip(dilation, stride):
             assert any([s == 1, d == 1]), "don't support this."
 
         self.ndim = ndim
@@ -112,7 +111,7 @@ class SparseConvolution(SparseModule):
             bound = 1 / math.sqrt(fan_in)
             init.uniform_(self.bias, -bound, bound)
 
-    def forward(self, input: SparseConvTensor) -> SparseConvTensor:
+    def forward(self, input):
         assert isinstance(input, SparseConvTensor)
         features = input.features
         device = features.device
@@ -209,15 +208,15 @@ class SparseConvolution(SparseModule):
 class SparseConv2d(SparseConvolution):
 
     def __init__(self,
-                 in_channels: int,
-                 out_channels: int,
-                 kernel_size: int,
-                 stride: int = 1,
-                 padding: int = 0,
-                 dilation: int = 1,
-                 groups: int = 1,
-                 bias: bool = True,
-                 indice_key: Optional[Any] = None):
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 stride=1,
+                 padding=0,
+                 dilation=1,
+                 groups=1,
+                 bias=True,
+                 indice_key=None):
         super().__init__(
             2,
             in_channels,
@@ -235,15 +234,15 @@ class SparseConv2d(SparseConvolution):
 class SparseConv3d(SparseConvolution):
 
     def __init__(self,
-                 in_channels: int,
-                 out_channels: int,
-                 kernel_size: int,
-                 stride: int = 1,
-                 padding: int = 0,
-                 dilation: int = 1,
-                 groups: int = 1,
-                 bias: bool = True,
-                 indice_key: Optional[Any] = None):
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 stride=1,
+                 padding=0,
+                 dilation=1,
+                 groups=1,
+                 bias=True,
+                 indice_key=None):
         super().__init__(
             3,
             in_channels,
@@ -261,15 +260,15 @@ class SparseConv3d(SparseConvolution):
 class SparseConv4d(SparseConvolution):
 
     def __init__(self,
-                 in_channels: int,
-                 out_channels: int,
-                 kernel_size: int,
-                 stride: int = 1,
-                 padding: int = 0,
-                 dilation: int = 1,
-                 groups: int = 1,
-                 bias: bool = True,
-                 indice_key: Optional[Any] = None):
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 stride=1,
+                 padding=0,
+                 dilation=1,
+                 groups=1,
+                 bias=True,
+                 indice_key=None):
         super().__init__(
             4,
             in_channels,
@@ -287,15 +286,15 @@ class SparseConv4d(SparseConvolution):
 class SparseConvTranspose2d(SparseConvolution):
 
     def __init__(self,
-                 in_channels: int,
-                 out_channels: int,
-                 kernel_size: int,
-                 stride: int = 1,
-                 padding: int = 0,
-                 dilation: int = 1,
-                 groups: int = 1,
-                 bias: bool = True,
-                 indice_key: Optional[Any] = None):
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 stride=1,
+                 padding=0,
+                 dilation=1,
+                 groups=1,
+                 bias=True,
+                 indice_key=None):
         super().__init__(
             2,
             in_channels,
@@ -314,15 +313,15 @@ class SparseConvTranspose2d(SparseConvolution):
 class SparseConvTranspose3d(SparseConvolution):
 
     def __init__(self,
-                 in_channels: int,
-                 out_channels: int,
-                 kernel_size: int,
-                 stride: int = 1,
-                 padding: int = 0,
-                 dilation: int = 1,
-                 groups: int = 1,
-                 bias: bool = True,
-                 indice_key: Optional[Any] = None):
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 stride=1,
+                 padding=0,
+                 dilation=1,
+                 groups=1,
+                 bias=True,
+                 indice_key=None):
         super().__init__(
             3,
             in_channels,
@@ -341,11 +340,11 @@ class SparseConvTranspose3d(SparseConvolution):
 class SparseInverseConv2d(SparseConvolution):
 
     def __init__(self,
-                 in_channels: int,
-                 out_channels: int,
-                 kernel_size: int,
-                 indice_key: Optional[Any] = None,
-                 bias: bool = True):
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 indice_key=None,
+                 bias=True):
         super().__init__(
             2,
             in_channels,
@@ -360,11 +359,11 @@ class SparseInverseConv2d(SparseConvolution):
 class SparseInverseConv3d(SparseConvolution):
 
     def __init__(self,
-                 in_channels: int,
-                 out_channels: int,
-                 kernel_size: int,
-                 indice_key: Optional[Any] = None,
-                 bias: bool = True):
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 indice_key=None,
+                 bias=True):
         super().__init__(
             3,
             in_channels,
@@ -379,15 +378,15 @@ class SparseInverseConv3d(SparseConvolution):
 class SubMConv2d(SparseConvolution):
 
     def __init__(self,
-                 in_channels: int,
-                 out_channels: int,
-                 kernel_size: int,
-                 stride: int = 1,
-                 padding: int = 0,
-                 dilation: int = 1,
-                 groups: int = 1,
-                 bias: bool = True,
-                 indice_key: Optional[Any] = None):
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 stride=1,
+                 padding=0,
+                 dilation=1,
+                 groups=1,
+                 bias=True,
+                 indice_key=None):
         super().__init__(
             2,
             in_channels,
@@ -406,15 +405,15 @@ class SubMConv2d(SparseConvolution):
 class SubMConv3d(SparseConvolution):
 
     def __init__(self,
-                 in_channels: int,
-                 out_channels: int,
-                 kernel_size: int,
-                 stride: int = 1,
-                 padding: int = 0,
-                 dilation: int = 1,
-                 groups: int = 1,
-                 bias: bool = True,
-                 indice_key: Optional[Any] = None):
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 stride=1,
+                 padding=0,
+                 dilation=1,
+                 groups=1,
+                 bias=True,
+                 indice_key=None):
         super().__init__(
             3,
             in_channels,
@@ -433,15 +432,15 @@ class SubMConv3d(SparseConvolution):
 class SubMConv4d(SparseConvolution):
 
     def __init__(self,
-                 in_channels: int,
-                 out_channels: int,
-                 kernel_size: int,
-                 stride: int = 1,
-                 padding: int = 0,
-                 dilation: int = 1,
-                 groups: int = 1,
-                 bias: bool = True,
-                 indice_key: Optional[Any] = None):
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 stride=1,
+                 padding=0,
+                 dilation=1,
+                 groups=1,
+                 bias=True,
+                 indice_key=None):
         super().__init__(
             4,
             in_channels,
