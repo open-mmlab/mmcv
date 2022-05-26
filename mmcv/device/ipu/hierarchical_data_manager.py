@@ -8,9 +8,8 @@ import torch
 
 from mmcv.parallel import DataContainer
 
-
 # A customized None type for HierarchicalDataManager
-# HierarchicalDataNone = object()
+HierarchicalDataNone = object()
 
 
 class HierarchicalDataManager:
@@ -70,15 +69,12 @@ class HierarchicalDataManager:
     def hierarchical_data(self):
         return self._hierarchical_data
 
-    def update_hierarchical_data(
-            self,
-            dataA: Union[List, Dict, Tuple, Any],
-            dataB: Optional[Union[List, Dict, Tuple, Any]] = None,
-            strict: Optional[bool] = True,
-            address: str = 'data'
-    ):
+    def update_hierarchical_data(self,
+                                 dataA: Any,
+                                 dataB: Any = HierarchicalDataNone,
+                                 strict: bool = True,
+                                 address: str = 'data'):
         """Update dataB with dataA in-place.
-
         Args:
             dataA (list or dict or tuple): New hierarchical data.
             dataB (list or dict or tuple): hierarchical data to update.
@@ -90,13 +86,12 @@ class HierarchicalDataManager:
             address (str): Record the address of current data to be updated.
                 Default: 'data'.
         """
-        if dataB is None:
+        if dataB is HierarchicalDataNone:
             dataB = self.hierarchical_data
 
         # Update with a da ta with the same structure
         # but different values(tensors and basic python data types)
-        data_type = (tuple, list)
-        if isinstance(dataA, data_type) and isinstance(dataB, data_type):
+        if isinstance(dataA, (tuple, list)):
             for idx, node in enumerate(dataA):
                 new_address = ''
                 if not self.quick_mode:
@@ -108,7 +103,7 @@ class HierarchicalDataManager:
                 else:
                     self.update_hierarchical_data(
                         node, dataB[idx], strict, address=new_address)
-        elif isinstance(dataA, dict) and isinstance(dataB, dict):
+        elif isinstance(dataA, dict):
             for k, v in dataA.items():
                 new_address = ''
                 if not self.quick_mode:
