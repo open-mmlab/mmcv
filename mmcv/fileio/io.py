@@ -57,6 +57,7 @@ def load(file: Union[str, Path, FileLikeObject],
         raise TypeError(f'Unsupported format: {file_format}')
 
     handler = file_handlers[file_format]
+    f: FileLikeObject
     if isinstance(file, str):
         file_client = FileClient.infer_client(file_client_args, file)
         if handler.str_like:
