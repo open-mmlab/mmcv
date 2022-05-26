@@ -4,7 +4,7 @@ from math import cos, pi
 from typing import Callable, List, Optional, Union
 
 import mmcv
-from ..base_runner import BaseRunner
+from mmcv import runner
 from .hook import HOOKS, Hook
 
 
@@ -67,10 +67,10 @@ class LrUpdaterHook(Hook):
                                        lr_groups):
                 param_group['lr'] = lr
 
-    def get_lr(self, runner: BaseRunner, base_lr: float):
+    def get_lr(self, runner: 'runner.BaseRunner', base_lr: float):
         raise NotImplementedError
 
-    def get_regular_lr(self, runner: BaseRunner):
+    def get_regular_lr(self, runner: 'runner.BaseRunner'):
         if isinstance(runner.optimizer, dict):
             lr_groups = {}
             for k in runner.optimizer.keys():
@@ -106,7 +106,7 @@ class LrUpdaterHook(Hook):
         else:
             return _get_warmup_lr(cur_iters, self.regular_lr)
 
-    def before_run(self, runner: BaseRunner):
+    def before_run(self, runner: 'runner.BaseRunner'):
         # NOTE: when resuming from a checkpoint, if 'initial_lr' is not saved,
         # it will be set according to the optimizer params
         if isinstance(runner.optimizer, dict):
@@ -125,7 +125,7 @@ class LrUpdaterHook(Hook):
                 group['initial_lr'] for group in runner.optimizer.param_groups
             ]
 
-    def before_train_epoch(self, runner: BaseRunner):
+    def before_train_epoch(self, runner: 'runner.BaseRunner'):
         if self.warmup_iters is None:
             epoch_len = len(runner.data_loader)  # type: ignore
             self.warmup_iters = self.warmup_epochs * epoch_len  # type: ignore
@@ -136,7 +136,7 @@ class LrUpdaterHook(Hook):
         self.regular_lr = self.get_regular_lr(runner)
         self._set_lr(runner, self.regular_lr)
 
-    def before_train_iter(self, runner: BaseRunner):
+    def before_train_iter(self, runner: 'runner.BaseRunner'):
         cur_iter = runner.iter
         if not self.by_epoch:
             self.regular_lr = self.get_regular_lr(runner)
@@ -196,7 +196,7 @@ class StepLrUpdaterHook(LrUpdaterHook):
         self.min_lr = min_lr
         super().__init__(**kwargs)
 
-    def get_lr(self, runner: BaseRunner, base_lr: float):
+    def get_lr(self, runner: 'runner.BaseRunner', base_lr: float):
         progress = runner.epoch if self.by_epoch else runner.iter
 
         # calculate exponential term
@@ -223,7 +223,7 @@ class ExpLrUpdaterHook(LrUpdaterHook):
         self.gamma = gamma
         super().__init__(**kwargs)
 
-    def get_lr(self, runner: BaseRunner, base_lr: float):
+    def get_lr(self, runner: 'runner.BaseRunner', base_lr: float):
         progress = runner.epoch if self.by_epoch else runner.iter
         return base_lr * self.gamma**progress
 
@@ -239,7 +239,7 @@ class PolyLrUpdaterHook(LrUpdaterHook):
         self.min_lr = min_lr
         super().__init__(**kwargs)
 
-    def get_lr(self, runner: BaseRunner, base_lr: float):
+    def get_lr(self, runner: 'runner.BaseRunner', base_lr: float):
         if self.by_epoch:
             progress = runner.epoch
             max_progress = runner.max_epochs
@@ -258,7 +258,7 @@ class InvLrUpdaterHook(LrUpdaterHook):
         self.power = power
         super().__init__(**kwargs)
 
-    def get_lr(self, runner: BaseRunner, base_lr: float):
+    def get_lr(self, runner: 'runner.BaseRunner', base_lr: float):
         progress = runner.epoch if self.by_epoch else runner.iter
         return base_lr * (1 + self.gamma * progress)**(-self.power)
 
@@ -283,7 +283,7 @@ class CosineAnnealingLrUpdaterHook(LrUpdaterHook):
         self.min_lr_ratio = min_lr_ratio
         super().__init__(**kwargs)
 
-    def get_lr(self, runner: BaseRunner, base_lr: float):
+    def get_lr(self, runner: 'runner.BaseRunner', base_lr: float):
         if self.by_epoch:
             progress = runner.epoch
             max_progress = runner.max_epochs
@@ -331,7 +331,7 @@ class FlatCosineAnnealingLrUpdaterHook(LrUpdaterHook):
         self.min_lr_ratio = min_lr_ratio
         super().__init__(**kwargs)
 
-    def get_lr(self, runner: BaseRunner, base_lr: float):
+    def get_lr(self, runner: 'runner.BaseRunner', base_lr: float):
         if self.by_epoch:
             start = round(runner.max_epochs * self.start_percent)
             progress = runner.epoch - start
@@ -385,7 +385,7 @@ class CosineRestartLrUpdaterHook(LrUpdaterHook):
             sum(self.periods[0:i + 1]) for i in range(0, len(self.periods))
         ]
 
-    def get_lr(self, runner: BaseRunner, base_lr: float):
+    def get_lr(self, runner: 'runner.BaseRunner', base_lr: float):
         if self.by_epoch:
             progress = runner.epoch
         else:
@@ -499,7 +499,7 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
             'currently only support "by_epoch" = False'
         super().__init__(by_epoch, **kwargs)
 
-    def before_run(self, runner: BaseRunner):
+    def before_run(self, runner: 'runner.BaseRunner'):
         super().before_run(runner)
         # initiate lr_phases
         # total lr_phases are separated as up and down
@@ -512,7 +512,7 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
             self.target_ratio[1]
         ])
 
-    def get_lr(self, runner: BaseRunner, base_lr: float):
+    def get_lr(self, runner: 'runner.BaseRunner', base_lr: float):
         curr_iter = runner.iter % self.max_iter_per_phase
         curr_cycle = runner.iter // self.max_iter_per_phase
         # Update weight decay
@@ -615,7 +615,7 @@ class OneCycleLrUpdaterHook(LrUpdaterHook):
         self.lr_phases: list = []  # init lr_phases
         super().__init__(**kwargs)
 
-    def before_run(self, runner: BaseRunner):
+    def before_run(self, runner: 'runner.BaseRunner'):
         if hasattr(self, 'total_steps'):
             total_steps = self.total_steps
         else:
@@ -654,7 +654,7 @@ class OneCycleLrUpdaterHook(LrUpdaterHook):
             self.lr_phases.append(
                 [total_steps - 1, self.div_factor, 1 / self.final_div_factor])
 
-    def get_lr(self, runner: BaseRunner, base_lr: float):
+    def get_lr(self, runner: 'runner.BaseRunner', base_lr: float):
         curr_iter = runner.iter
         start_iter = 0
         for i, (end_iter, start_lr, end_lr) in enumerate(self.lr_phases):
@@ -688,7 +688,7 @@ class LinearAnnealingLrUpdaterHook(LrUpdaterHook):
         self.min_lr_ratio = min_lr_ratio
         super().__init__(**kwargs)
 
-    def get_lr(self, runner: BaseRunner, base_lr: float):
+    def get_lr(self, runner: 'runner.BaseRunner', base_lr: float):
         if self.by_epoch:
             progress = runner.epoch
             max_progress = runner.max_epochs
