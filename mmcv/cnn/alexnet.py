@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
 from typing import Optional
-import torch.nn as nn
 
+import torch.nn as nn
 
 
 class AlexNet(nn.Module):
