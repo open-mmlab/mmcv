@@ -95,7 +95,7 @@ class HierarchicalDataManager:
 
         # Update with a da ta with the same structure
         # but different values(tensors and basic python data types)
-        if isinstance(dataA, (tuple, list)):
+        if isinstance(dataA, (tuple, list)) and isinstance(dataB, (tuple, list)):
             for idx, node in enumerate(dataA):
                 new_address = ''
                 if not self.quick_mode:
@@ -107,7 +107,7 @@ class HierarchicalDataManager:
                 else:
                     self.update_hierarchical_data(
                         node, dataB[idx], strict, address=new_address)
-        elif isinstance(dataA, dict):
+        elif isinstance(dataA, dict) and isinstance(dataB, dict):
             for k, v in dataA.items():
                 new_address = ''
                 if not self.quick_mode:
