@@ -1,11 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from typing import Optional, Union
+from typing import Optional, Union, Callable
 
 import torch.nn as nn
 
+from mmcv import Config
 from mmcv.runner import (
-    HOOKS, RUNNERS, BaseRunner, EpochBasedRunner, IterBasedRunner, Config
+    HOOKS, RUNNERS, BaseRunner, EpochBasedRunner, IterBasedRunner
 )
 from mmcv.utils import IS_IPU_AVAILABLE
 
@@ -46,11 +47,11 @@ class IPUBaseRunner(BaseRunner):
 
     def __init__(self,
                  model: nn.Module,
-                 options_cfg: Optional[Config, dict] = None,
-                 modules_to_record: Optional[Config, list] = None,
-                 ipu_model_cfg: Optional[Config, dict] = None,
+                 options_cfg: Union[Config, dict] = None,
+                 modules_to_record: Union[Config, list] = None,
+                 ipu_model_cfg: Union[Config, dict] = None,
                  fp16_cfg: Optional[Config] = None,
-                 batch_processor: Optional[callable] = None,
+                 batch_processor: Optional[Callable] = None,
                  **kwargs):
         assert hasattr(model, 'train_step') and batch_processor is None, \
             'only support model with train_step'

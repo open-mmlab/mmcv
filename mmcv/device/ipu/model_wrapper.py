@@ -11,7 +11,8 @@ import torch.nn as nn
 from poptorch import PoplarExecutor, __version__, identity_loss
 from poptorch._args_parser import ArgsParser
 
-from mmcv.runner import auto_fp16, Config
+from mmcv import Config
+from mmcv.runner import auto_fp16
 from .hierarchical_data_manager import HierarchicalDataManager
 from .utils import compare_ndarray, model_sharding, recomputation_checkpoint
 
@@ -20,10 +21,10 @@ class DictArgsParser(ArgsParser):
     """A helper class for handling model input.
 
     Args:
-        inputs (list): Inputs of model.
+        inputs (dict): Inputs of model.
     """
 
-    def __init__(self, inputs: list):
+    def __init__(self, inputs: dict):
         # Combine args and kwargs:
         self._has_variadic_arguments = True
         self._varnames = list(inputs.keys())
@@ -480,8 +481,8 @@ class TrainEvalModel:
         """
         return self.train(False)
 
-    def compare_data_between_ipu_and_cpu(self, inter_outputs_in_cpu,
-                                         inter_outputs_in_ipu):
+    def compare_data_between_ipu_and_cpu(self, inter_outputs_in_cpu: dict,
+                                         inter_outputs_in_ipu: dict):
         for key, val in inter_outputs_in_cpu.items():
             is_tensor = isinstance(val['fea_in'], torch.Tensor)
             fea_in_cpu = val['fea_in']

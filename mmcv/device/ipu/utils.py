@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
-from typing import Dict, Union, List, Optional
+from typing import Dict, Union, List, Optional, Callable
 
 import numpy as np
 import popart
@@ -192,7 +192,7 @@ def build_from_cfg_with_wrapper(
         registry: Registry,
         wrapper_func: Optional[function] = None,
         default_args: Optional[Dict] = None
-) -> object:
+):
     """Build a module from config dict and wrap module with "wrapper_func".
 
     Args:

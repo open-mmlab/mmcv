@@ -8,8 +8,9 @@ import torch
 
 from mmcv.parallel import DataContainer
 
+
 # A customized None type for HierarchicalDataManager
-HierarchicalDataNone = object()
+# HierarchicalDataNone = object()
 
 
 class HierarchicalDataManager:
@@ -69,11 +70,13 @@ class HierarchicalDataManager:
     def hierarchical_data(self):
         return self._hierarchical_data
 
-    def update_hierarchical_data(self,
-                                 dataA: Union[List, Dict, Tuple],
-                                 dataB: Union[List, Dict, Tuple] = HierarchicalDataNone,
-                                 strict: Optional[bool] = True,
-                                 address: str = 'data'):
+    def update_hierarchical_data(
+            self,
+            dataA: Union[List, Dict, Tuple],
+            dataB: Optional[Union[List, Dict, Tuple]] = None,
+            strict: Optional[bool] = True,
+            address: str = 'data'
+    ):
         """Update dataB with dataA in-place.
 
         Args:
@@ -87,7 +90,7 @@ class HierarchicalDataManager:
             address (str): Record the address of current data to be updated.
                 Default: 'data'.
         """
-        if dataB is HierarchicalDataNone:
+        if dataB is None:
             dataB = self.hierarchical_data
 
         # Update with a da ta with the same structure
