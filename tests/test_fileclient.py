@@ -655,7 +655,8 @@ class TestFileClient:
         FileClient.register_backend('dummy_backend', DummyBackend2, force=True)
         client3 = FileClient(backend='dummy_backend')
         client4 = FileClient(backend='dummy_backend')
-        assert client3 is not client4
+        assert client2 is not client3
+        assert client3 is client4
 
     def test_parse_uri_prefix(self):
         # input path is None

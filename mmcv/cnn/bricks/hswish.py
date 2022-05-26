@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import torch
 import torch.nn as nn
 
 from mmcv.utils import TORCH_VERSION, digit_version
@@ -21,11 +22,11 @@ class HSwish(nn.Module):
         Tensor: The output tensor.
     """
 
-    def __init__(self, inplace=False):
+    def __init__(self, inplace: bool = False):
         super().__init__()
         self.act = nn.ReLU6(inplace)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return x * self.act(x + 3) / 6
 
 

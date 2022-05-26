@@ -1,6 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
 import platform
+from typing import Dict, Optional, Tuple, Union
+
+import torch.nn as nn
 
 from .registry import PLUGIN_LAYERS
 
@@ -10,7 +13,7 @@ else:
     import re  # type: ignore
 
 
-def infer_abbr(class_type):
+def infer_abbr(class_type: type) -> str:
     """Infer abbreviation from the class name.
 
     This method will infer the abbreviation to map class types to
@@ -48,12 +51,14 @@ def infer_abbr(class_type):
         raise TypeError(
             f'class_type must be a type, but got {type(class_type)}')
     if hasattr(class_type, '_abbr_'):
-        return class_type._abbr_
+        return class_type._abbr_  # type: ignore
     else:
         return camel2snack(class_type.__name__)
 
 
-def build_plugin_layer(cfg, postfix='', **kwargs):
+def build_plugin_layer(cfg: Optional[Dict],
+                       postfix: Union[int, str] = '',
+                       **kwargs) -> Tuple[str, nn.Module]:
     """Build plugin layer.
 
     Args:
