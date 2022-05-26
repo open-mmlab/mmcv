@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
 import warnings
-from typing import Union, List, Dict, Tuple, Optional
+from typing import Any, Union, List, Dict, Tuple, Optional
 
 import numpy as np
 import torch
@@ -72,8 +72,8 @@ class HierarchicalDataManager:
 
     def update_hierarchical_data(
             self,
-            dataA: Union[List, Dict, Tuple],
-            dataB: Optional[Union[List, Dict, Tuple]] = None,
+            dataA: Union[List, Dict, Tuple, Any],
+            dataB: Optional[Union[List, Dict, Tuple, Any]] = None,
             strict: Optional[bool] = True,
             address: str = 'data'
     ):
@@ -95,7 +95,8 @@ class HierarchicalDataManager:
 
         # Update with a da ta with the same structure
         # but different values(tensors and basic python data types)
-        if isinstance(dataA, (tuple, list)) and isinstance(dataB, (tuple, list)):
+        data_type = (tuple, list)
+        if isinstance(dataA, data_type) and isinstance(dataB, data_type):
             for idx, node in enumerate(dataA):
                 new_address = ''
                 if not self.quick_mode:
