@@ -82,7 +82,7 @@ def test_is_module_wrapper():
         'mmpose module wrapper', parent=MODULE_WRAPPERS, scope='mmpose')
 
     @MMRAZOR_MODULE_WRAPPERS.register_module()
-    class ModuleWrapperInRazor(object):
+    class ModuleWrapperInRazor:
 
         def __init__(self, module):
             self.module = module
@@ -91,7 +91,7 @@ def test_is_module_wrapper():
             return self.module(*args, **kwargs)
 
     @MMPOSE_MODULE_WRAPPERS.register_module()
-    class ModuleWrapperInPose(object):
+    class ModuleWrapperInPose:
 
         def __init__(self, module):
             self.module = module
