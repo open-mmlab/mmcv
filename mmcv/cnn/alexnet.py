@@ -41,7 +41,7 @@ class AlexNet(nn.Module):
                 nn.Linear(4096, num_classes),
             )
 
-    def init_weights(self, pretrained: Optional[str] = None):
+    def init_weights(self, pretrained: Optional[str] = None) -> None:
         if isinstance(pretrained, str):
             logger = logging.getLogger()
             from ..runner import load_checkpoint
