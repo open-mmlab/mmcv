@@ -109,6 +109,7 @@ class LrUpdaterHook(Hook):
         # it will be set according to the optimizer params
         if isinstance(runner.optimizer, dict):
             self.base_lr = {}
+            self.group_lr = {}
             for k, optim in runner.optimizer.items():
                 for group in optim.param_groups:
                     group.setdefault('initial_lr', group['lr'])
@@ -116,22 +117,29 @@ class LrUpdaterHook(Hook):
                     group['initial_lr'] for group in optim.param_groups
                 ]
                 self.base_lr.update({k: _base_lr})
+                self.group_lr.update({k: _base_lr})
         else:
             for group in runner.optimizer.param_groups:
                 group.setdefault('initial_lr', group['lr'])
             self.base_lr = [
                 group['initial_lr'] for group in runner.optimizer.param_groups
             ]
+            self.regular_lr = [
+                group['initial_lr'] for group in runner.optimizer.param_groups
+            ]
 
     def before_train_epoch(self, runner):
+        cur_iter = runner.iter
         if self.warmup_iters is None:
             epoch_len = len(runner.data_loader)
             self.warmup_iters = self.warmup_epochs * epoch_len
 
         if not self.by_epoch:
             return
-
-        self.regular_lr = self.get_regular_lr(runner)
+        if self.warmup and cur_iter <= self.warmup_iters:
+            self.regular_lr = self.get_warmup_lr(cur_iter)
+        else:
+            self.regular_lr = self.get_regular_lr(runner)
         self._set_lr(runner, self.regular_lr)
 
     def before_train_iter(self, runner):
