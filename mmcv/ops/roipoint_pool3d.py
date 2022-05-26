@@ -1,3 +1,6 @@
+from typing import Any
+
+import torch
 from torch import nn as nn
 from torch.autograd import Function
 
@@ -17,11 +20,12 @@ class RoIPointPool3d(nn.Module):
             Default: 512.
     """
 
-    def __init__(self, num_sampled_points=512):
+    def __init__(self, num_sampled_points: int = 512):
         super().__init__()
         self.num_sampled_points = num_sampled_points
 
-    def forward(self, points, point_features, boxes3d):
+    def forward(self, points: torch.Tensor, point_features: torch.Tensor,
+                boxes3d: torch.Tensor) -> tuple:
         """
         Args:
             points (torch.Tensor): Input points whose shape is (B, N, C).
@@ -41,7 +45,11 @@ class RoIPointPool3d(nn.Module):
 class RoIPointPool3dFunction(Function):
 
     @staticmethod
-    def forward(ctx, points, point_features, boxes3d, num_sampled_points=512):
+    def forward(ctx: Any,
+                points: torch.Tensor,
+                point_features: torch.Tensor,
+                boxes3d: torch.Tensor,
+                num_sampled_points: int = 512) -> tuple:
         """
         Args:
             points (torch.Tensor): Input points whose shape is (B, N, C).
@@ -73,5 +81,5 @@ class RoIPointPool3dFunction(Function):
         return pooled_features, pooled_empty_flag
 
     @staticmethod
-    def backward(ctx, grad_out):
+    def backward(ctx: Any, grad_out: torch.Tensor) -> None:
         raise NotImplementedError

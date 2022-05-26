@@ -1,4 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Any, Union
+
+import torch
 import torch.nn as nn
 from torch.autograd import Function
 from torch.nn.modules.utils import _pair
@@ -12,8 +15,9 @@ ext_module = ext_loader.load_ext(
 class RoIAlignRotatedFunction(Function):
 
     @staticmethod
-    def symbolic(g, input, rois, output_size, spatial_scale, sampling_ratio,
-                 aligned, clockwise):
+    def symbolic(g, input: torch.Tensor, rois: torch.Tensor,
+                 output_size: Union[int, tuple], spatial_scale: float,
+                 sampling_ratio: int, aligned: bool, clockwise: bool):
         if isinstance(output_size, int):
             out_h = output_size
             out_w = output_size
@@ -37,14 +41,14 @@ class RoIAlignRotatedFunction(Function):
             clockwise_i=clockwise)
 
     @staticmethod
-    def forward(ctx,
-                input,
-                rois,
-                output_size,
-                spatial_scale,
-                sampling_ratio=0,
-                aligned=True,
-                clockwise=False):
+    def forward(ctx: Any,
+                input: torch.Tensor,
+                rois: torch.Tensor,
+                output_size: Union[int, tuple],
+                spatial_scale: float,
+                sampling_ratio: int = 0,
+                aligned: bool = True,
+                clockwise: bool = False) -> torch.Tensor:
         ctx.output_size = _pair(output_size)
         ctx.spatial_scale = spatial_scale
         ctx.sampling_ratio = sampling_ratio
@@ -71,7 +75,7 @@ class RoIAlignRotatedFunction(Function):
         return output
 
     @staticmethod
-    def backward(ctx, grad_output):
+    def backward(ctx: Any, grad_output: torch.Tensor):
         feature_size = ctx.feature_size
         rois = ctx.saved_tensors[0]
         assert feature_size is not None
@@ -151,11 +155,11 @@ class RoIAlignRotated(nn.Module):
         },
         cls_name='RoIAlignRotated')
     def __init__(self,
-                 output_size,
-                 spatial_scale,
-                 sampling_ratio=0,
-                 aligned=True,
-                 clockwise=False):
+                 output_size: Union[int, tuple],
+                 spatial_scale: float,
+                 sampling_ratio: int = 0,
+                 aligned: bool = True,
+                 clockwise: bool = False):
         super().__init__()
 
         self.output_size = _pair(output_size)
@@ -164,7 +168,7 @@ class RoIAlignRotated(nn.Module):
         self.aligned = aligned
         self.clockwise = clockwise
 
-    def forward(self, input, rois):
+    def forward(self, input: torch.Tensor, rois: torch.Tensor) -> torch.Tensor:
         return RoIAlignRotatedFunction.apply(input, rois, self.output_size,
                                              self.spatial_scale,
                                              self.sampling_ratio, self.aligned,

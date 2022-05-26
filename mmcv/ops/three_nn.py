@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Any, Tuple
 
 import torch
 from torch.autograd import Function
@@ -16,7 +16,7 @@ class ThreeNN(Function):
     """
 
     @staticmethod
-    def forward(ctx, target: torch.Tensor,
+    def forward(ctx: Any, target: torch.Tensor,
                 source: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Args:

@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Any, Union
+
 import torch
 from torch import nn as nn
 from torch.autograd import Function
@@ -25,7 +27,10 @@ class RoIAwarePool3d(nn.Module):
             Default: 'max'.
     """
 
-    def __init__(self, out_size, max_pts_per_voxel=128, mode='max'):
+    def __init__(self,
+                 out_size: Union[int, tuple],
+                 max_pts_per_voxel: int = 128,
+                 mode: str = 'max'):
         super().__init__()
 
         self.out_size = out_size
@@ -34,7 +39,8 @@ class RoIAwarePool3d(nn.Module):
         pool_mapping = {'max': 0, 'avg': 1}
         self.mode = pool_mapping[mode]
 
-    def forward(self, rois, pts, pts_feature):
+    def forward(self, rois: torch.Tensor, pts: torch.Tensor,
+                pts_feature: torch.Tensor) -> torch.Tensor:
         """
         Args:
             rois (torch.Tensor): [N, 7], in LiDAR coordinate,
@@ -55,8 +61,9 @@ class RoIAwarePool3d(nn.Module):
 class RoIAwarePool3dFunction(Function):
 
     @staticmethod
-    def forward(ctx, rois, pts, pts_feature, out_size, max_pts_per_voxel,
-                mode):
+    def forward(ctx: Any, rois: torch.Tensor, pts: torch.Tensor,
+                pts_feature: torch.Tensor, out_size: Union[int, tuple],
+                max_pts_per_voxel: int, mode: int) -> torch.Tensor:
         """
         Args:
             rois (torch.Tensor): [N, 7], in LiDAR coordinate,
@@ -108,7 +115,7 @@ class RoIAwarePool3dFunction(Function):
         return pooled_features
 
     @staticmethod
-    def backward(ctx, grad_out):
+    def backward(ctx: Any, grad_out: torch.Tensor):
         ret = ctx.roiaware_pool3d_for_backward
         pts_idx_of_voxels, argmax, mode, num_pts, num_channels = ret
 
