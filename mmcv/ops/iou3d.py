@@ -1,9 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
-import torch
-
-from torch import Tensor
 from typing import Optional
+
+import torch
+from torch import Tensor
+
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', [
@@ -55,7 +56,8 @@ def nms3d(boxes: Tensor, scores: Tensor, iou_threshold: float) -> Tensor:
     return keep
 
 
-def nms3d_normal(boxes: Tensor, scores: Tensor, iou_threshold: float) -> Tensor:
+def nms3d_normal(boxes: Tensor, scores: Tensor,
+                 iou_threshold: float) -> Tensor:
     """Normal 3D NMS function GPU implementation. The overlap of two boxes for
     IoU calculation is defined as the exact overlapping area of the two boxes
     WITH their yaw angle set to 0.
@@ -120,8 +122,11 @@ def boxes_iou_bev(boxes_a, boxes_b):
     return box_iou_rotated(_xyxyr2xywhr(boxes_a), _xyxyr2xywhr(boxes_b))
 
 
-def nms_bev(boxes: Tensor, scores: Tensor, thresh: float,
-            pre_max_size: Optional[int] = None, post_max_size: Optional[int] = None) -> Tensor:
+def nms_bev(boxes: Tensor,
+            scores: Tensor,
+            thresh: float,
+            pre_max_size: Optional[int] = None,
+            post_max_size: Optional[int] = None) -> Tensor:
     """NMS function GPU implementation (for BEV boxes).
 
     The overlap of two
