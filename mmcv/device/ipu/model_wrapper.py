@@ -8,7 +8,7 @@ from typing import Dict, List, Optional, Union
 import poptorch
 import torch
 import torch.nn as nn
-from poptorch import PoplarExecutor, __version__, identity_loss
+from poptorch import identity_loss, PoplarExecutor, __version__
 from poptorch._args_parser import ArgsParser
 
 from mmcv import Config

@@ -4,8 +4,8 @@ from collections.abc import Mapping, Sequence
 from functools import partial
 from typing import Any, Dict, Optional
 
-import torch
 import poptorch
+import torch
 from torch.utils.data.dataloader import default_collate
 
 from mmcv.parallel import DataContainer

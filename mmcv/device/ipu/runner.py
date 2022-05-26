@@ -6,7 +6,7 @@ import torch.nn as nn
 
 from mmcv import Config
 from mmcv.runner import (
-    HOOKS, RUNNERS, BaseRunner, EpochBasedRunner, IterBasedRunner
+    BaseRunner, EpochBasedRunner, HOOKS, IterBasedRunner, RUNNERS
 )
 from mmcv.utils import IS_IPU_AVAILABLE
 
