@@ -6,7 +6,6 @@ are mainly used in mask heads like fcn_mask_head and maskiou_heads since mask
 heads are trained on only positive RoIs.
 """
 import math
-from typing import Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -22,8 +21,7 @@ else:
     TORCH_VERSION = tuple(int(x) for x in torch.__version__.split('.')[:2])
 
 
-def obsolete_torch_version(torch_version,
-                           version_threshold) -> bool:
+def obsolete_torch_version(torch_version, version_threshold) -> bool:
     return torch_version == 'parrots' or torch_version <= version_threshold
 
 
