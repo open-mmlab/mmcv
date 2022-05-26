@@ -54,7 +54,7 @@ def list_from_file(filename: Union[str, Path],
     return item_list
 
 
-def dict_from_file(filename: str,
+def dict_from_file(filename: Union[str, Path],
                    key_type: type = str,
                    encoding: str = 'utf-8',
                    file_client_args: Optional[Dict] = None) -> Dict:
