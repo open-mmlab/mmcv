@@ -160,10 +160,10 @@ class EvalHook(Hook):
            specified as 'greater'.
         2. Or if the key indicator is in ``self.less_keys``, the rule will be
            specified as 'less'.
-        3. Or if the key indicator is equal to the substring in any one item
-           in ``self.greater_keys``, the rule will be specified as 'greater'.
-        4. Or if the key indicator is equal to the substring in any one item
-           in ``self.less_keys``, the rule will be specified as 'less'.
+        3. Or if any one item in ``self.greater_keys`` is a substring of
+            key_indicator , the rule will be specified as 'greater'.
+        4. Or if any one item in ``self.less_keys`` is a substring of
+            key_indicator , the rule will be specified as 'less'.
 
         Args:
             rule (str | None): Comparison rule for best score.
