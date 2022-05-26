@@ -104,7 +104,6 @@ def dump(obj: Any,
     Returns:
         bool: True for success, False otherwise.
     """
-    f: Union[StringIO, BytesIO]
     if isinstance(file, Path):
         file = str(file)
     if file_format is None:
