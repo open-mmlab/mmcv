@@ -541,11 +541,13 @@ class TrainEvalModel:
         return getattr(self.executor, attr)
 
 
-def get_training_model(model: nn.Module,
-                       options: Optional[poptorch.Options] = None,
-                       optimizer: Optional[torch.optim.Optimizer] = None,
-                       logger: logging.Logger = None,
-                       modules_to_record: Optional[Union[Config, list]] = None) -> poptorch.PoplarExecutor:
+def get_training_model(
+        model: nn.Module,
+        options: Optional[poptorch.Options] = None,
+        optimizer: Optional[torch.optim.Optimizer] = None,
+        logger: logging.Logger = None,
+        modules_to_record: Optional[Union[Config, list]] = None
+) -> poptorch.PoplarExecutor:
     """Create a PopTorch training model from a PyTorch model, running on IPU
     hardware in training mode.
 
@@ -588,9 +590,11 @@ def get_training_model(model: nn.Module,
         poptorch_version=__version__)
 
 
-def get_inference_model(model: Union[nn.Module, poptorch.PoplarExecutor],
-                        options: Optional[poptorch.Options] = None,
-                        logger: logging.Logger = None) -> poptorch.PoplarExecutor:
+def get_inference_model(
+        model: Union[nn.Module, poptorch.PoplarExecutor],
+        options: Optional[poptorch.Options] = None,
+        logger: logging.Logger = None
+) -> poptorch.PoplarExecutor:
     """Create a PopTorch inference model from a PyTorch model, running on IPU
     hardware in inference mode.
 

@@ -47,9 +47,9 @@ class IPUBaseRunner(BaseRunner):
 
     def __init__(self,
                  model: nn.Module,
-                 options_cfg: Union[Config, dict] = None,
-                 modules_to_record: Union[Config, list] = None,
-                 ipu_model_cfg: Union[Config, dict] = None,
+                 options_cfg: Optional[dict] = None,
+                 modules_to_record: Optional[Union[Config, list]] = None,
+                 ipu_model_cfg: Optional[dict] = None,
                  fp16_cfg: Optional[Config] = None,
                  batch_processor: Optional[Callable] = None,
                  **kwargs):

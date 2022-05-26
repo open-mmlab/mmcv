@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
-from typing import Dict, Union, List, Optional, Callable
+from typing import Dict, Union, List, Optional
 
 import numpy as np
 import popart
@@ -99,7 +99,10 @@ def _cast_to_options(cfg):
     return options
 
 
-def model_sharding(model: nn.Module, split_edges: Union[List, Dict]) -> nn.Module:
+def model_sharding(
+        model: nn.Module,
+        split_edges: Union[List, Dict]
+) -> nn.Module:
     """split models in-place into multi-IPUs.
 
     Args:
