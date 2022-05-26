@@ -47,7 +47,6 @@ def load(file: Union[str, Path],
     Returns:
         The content from the file.
     """
-    f: Union[StringIO, BytesIO]
     if isinstance(file, Path):
         file = str(file)
     if file_format is None and isinstance(file, str):
