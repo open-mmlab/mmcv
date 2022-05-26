@@ -136,7 +136,7 @@ def dump(obj: Any,
 
 
 def _register_handler(handler: BaseFileHandler,
-                      file_formats: Union[str, list]) -> None:
+                      file_formats: Union[str, List[str]) -> None:
     """Register a handler for some file extensions.
 
     Args:
