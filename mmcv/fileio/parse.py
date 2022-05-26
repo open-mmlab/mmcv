@@ -7,7 +7,7 @@ from typing import Dict, List, Optional, Union
 from .file_client import FileClient
 
 
-def list_from_file(filename: str,
+def list_from_file(filename: Union[str, Path],
                    prefix: str = '',
                    offset: int = 0,
                    max_num: int = 0,
