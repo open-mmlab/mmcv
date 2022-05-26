@@ -4,8 +4,6 @@ import warnings
 from functools import partial
 from typing import Any, Dict, Optional
 
-import torch.nn as nn
-
 from .misc import deprecated_api_warning, is_seq_of
 
 
