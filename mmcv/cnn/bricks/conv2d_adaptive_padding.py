@@ -1,12 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
+from typing import Tuple, Union
 
 import torch
 from torch import nn
 from torch.nn import functional as F
 
 from .registry import CONV_LAYERS
-from typing import Union,Tuple
 
 
 @CONV_LAYERS.register_module()

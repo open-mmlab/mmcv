@@ -145,18 +145,19 @@ class ConvModule(nn.Module):
                 norm_channels = out_channels
             else:
                 norm_channels = in_channels
-            self.norm_name, norm = build_norm_layer(norm_cfg, norm_channels) # type: ignore
+            self.norm_name, norm = build_norm_layer(
+                norm_cfg, norm_channels)  # type: ignore
             self.add_module(self.norm_name, norm)
             if self.with_bias:
                 if isinstance(norm, (_BatchNorm, _InstanceNorm)):
                     warnings.warn(
                         'Unnecessary conv bias before batch/instance norm')
         else:
-            self.norm_name = None # type: ignore
+            self.norm_name = None  # type: ignore
 
         # build activation layer
         if self.with_activation:
-            act_cfg_ = act_cfg.copy() # type: ignore
+            act_cfg_ = act_cfg.copy()  # type: ignore
             # nn.Tanh has no 'inplace' argument
             if act_cfg_['type'] not in [
                     'Tanh', 'PReLU', 'Sigmoid', 'HSigmoid', 'Swish', 'GELU'

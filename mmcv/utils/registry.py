@@ -1,14 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
 import warnings
-import torch.nn as nn
 from functools import partial
+from typing import Any, Dict, Optional
+
+import torch.nn as nn
 
 from .misc import deprecated_api_warning, is_seq_of
-from typing import Dict,Any,Optional
 
 
-def build_from_cfg(cfg:Dict, registry:Any, default_args:Optional[Dict]=None) -> nn.Module:
+def build_from_cfg(cfg: Dict,
+                   registry: Any,
+                   default_args: Optional[Dict] = None) -> nn.Module:
     """Build a module from config dict when it is a class configuration, or
     call a function from config dict when it is a function configuration.
 
