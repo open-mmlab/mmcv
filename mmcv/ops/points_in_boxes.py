@@ -1,7 +1,7 @@
 import torch
+from torch import Tensor
 
 from ..utils import ext_loader
-from torch import Tensor
 
 ext_module = ext_loader.load_ext('_ext', [
     'points_in_boxes_part_forward', 'points_in_boxes_cpu_forward',
