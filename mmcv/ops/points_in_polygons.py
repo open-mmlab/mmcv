@@ -1,11 +1,12 @@
 import torch
 
 from ..utils import ext_loader
+from torch import Tensor
 
 ext_module = ext_loader.load_ext('_ext', ['points_in_polygons_forward'])
 
 
-def points_in_polygons(points, polygons):
+def points_in_polygons(points: Tensor, polygons: Tensor) -> Tensor:
     """Judging whether points are inside polygons, which is used in the ATSS
     assignment for the rotated boxes.
 
