@@ -100,7 +100,7 @@ def _xyxyr2xywhr(boxes: Tensor) -> Tensor:
         dim=-1)
 
 
-def boxes_iou_bev(boxes_a, boxes_b):
+def boxes_iou_bev(boxes_a: Tensor, boxes_b: Tensor) -> Tensor:
     """Calculate boxes IoU in the Bird's Eye View.
 
     Args:
