@@ -15,16 +15,16 @@
 
 ### MMCV已支持的算子
 
-|                                        算子                                        | CPU | GPU | MMCV版本 |
-| :------------------------------------------------------------------------------: | :-: | :-: | :----: |
-|                   [SoftNMS](onnxruntime_custom_ops.md#softnms)                   |  Y  |  N  | 1.2.3  |
-|                  [RoIAlign](onnxruntime_custom_ops.md#roialign)                  |  Y  |  N  | 1.2.5  |
-|                       [NMS](onnxruntime_custom_ops.md#nms)                       |  Y  |  N  | 1.2.7  |
-|              [grid_sampler](onnxruntime_custom_ops.md#grid_sampler)              |  Y  |  N  | 1.3.1  |
-|                [CornerPool](onnxruntime_custom_ops.md#cornerpool)                |  Y  |  N  | 1.3.4  |
-|                    [cummax](onnxruntime_custom_ops.md#cummax)                    |  Y  |  N  | 1.3.4  |
-|                    [cummin](onnxruntime_custom_ops.md#cummin)                    |  Y  |  N  | 1.3.4  |
-| [MMCVModulatedDeformConv2d](onnxruntime_custom_ops.md#mmcvmodulateddeformconv2d) |  Y  |  N  | 1.3.12 |
+|                                       算子                                       | CPU | GPU | MMCV版本 |
+| :------------------------------------------------------------------------------: | :-: | :-: | :------: |
+|                   [SoftNMS](onnxruntime_custom_ops.md#softnms)                   |  Y  |  N  |  1.2.3   |
+|                  [RoIAlign](onnxruntime_custom_ops.md#roialign)                  |  Y  |  N  |  1.2.5   |
+|                       [NMS](onnxruntime_custom_ops.md#nms)                       |  Y  |  N  |  1.2.7   |
+|              [grid_sampler](onnxruntime_custom_ops.md#grid_sampler)              |  Y  |  N  |  1.3.1   |
+|                [CornerPool](onnxruntime_custom_ops.md#cornerpool)                |  Y  |  N  |  1.3.4   |
+|                    [cummax](onnxruntime_custom_ops.md#cummax)                    |  Y  |  N  |  1.3.4   |
+|                    [cummin](onnxruntime_custom_ops.md#cummin)                    |  Y  |  N  |  1.3.4   |
+| [MMCVModulatedDeformConv2d](onnxruntime_custom_ops.md#mmcvmodulateddeformconv2d) |  Y  |  N  |  1.3.12  |
 
 ### 如何编译ONNX Runtime自定义算子？
 
