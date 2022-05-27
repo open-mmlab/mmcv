@@ -1,14 +1,23 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import List, Union
+
 import numpy as np
 import torch
+from torch import Tensor
 
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', ['pixel_group'])
 
 
-def pixel_group(score, mask, embedding, kernel_label, kernel_contour,
-                kernel_region_num, distance_threshold):
+def pixel_group(score: Union[np.ndarray, Tensor], mask: Union[np.ndarray,
+                                                              Tensor],
+                embedding: Union[np.ndarray,
+                                 Tensor], kernel_label: Union[np.ndarray,
+                                                              Tensor],
+                kernel_contour: Union[np.ndarray,
+                                      Tensor], kernel_region_num: int,
+                distance_threshold: float) -> List[List[float]]:
     """Group pixels into text instances, which is widely used text detection
     methods.
 
