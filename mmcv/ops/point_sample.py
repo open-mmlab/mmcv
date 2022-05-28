@@ -13,7 +13,7 @@ from torch.onnx.operators import shape_as_tensor
 
 def bilinear_grid_sample(im: Tensor,
                          grid: Tensor,
-                         align_corners: Optional[bool] = False) -> Tensor:
+                         align_corners: bool = False) -> Tensor:
     """Given an input and a flow-field grid, computes the output using input
     values and pixel locations from grid. Supported only bilinear interpolation
     method to sample the input pixels.
