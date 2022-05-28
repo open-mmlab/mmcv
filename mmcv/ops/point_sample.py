@@ -259,7 +259,7 @@ def rel_roi_point_to_rel_img_point(
 
 def point_sample(input: Tensor,
                  points: Tensor,
-                 align_corners: Optional[bool] = False,
+                 align_corners: bool = False,
                  **kwargs: str) -> Tensor:
     """A wrapper around :func:`grid_sample` to support 3D point_coords tensors
     Unlike :func:`torch.nn.functional.grid_sample` it assumes point_coords to
