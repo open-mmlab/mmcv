@@ -198,7 +198,7 @@ def get_shape_from_feature_map(x: Tensor) -> Tensor:
 def abs_img_point_to_rel_img_point(
         abs_img_points: Tensor,
         img: Union[tuple, Tensor],
-        spatial_scale: Optional[float] = 1.) -> Tensor:
+        spatial_scale: float = 1.) -> Tensor:
     """Convert image based absolute point coordinates to image based relative
     coordinates for sampling.
 
