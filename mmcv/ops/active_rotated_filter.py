@@ -19,7 +19,8 @@ class ActiveRotatedFilterFunction(Function):
     """
 
     @staticmethod
-    def forward(ctx, input, indices):
+    def forward(ctx, input: torch.Tensor,
+                indices: torch.Tensor) -> torch.Tensor:
         """
         Args:
             input (torch.Tensor): Input features with shape
@@ -41,7 +42,7 @@ class ActiveRotatedFilterFunction(Function):
 
     @staticmethod
     @once_differentiable
-    def backward(ctx, grad_out):
+    def backward(ctx, grad_out: torch.Tensor) -> torch.Tensor:
         """
         Args:
             grad_output (torch.Tensor): The gradiant of output features
