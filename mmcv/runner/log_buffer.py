@@ -21,7 +21,7 @@ class LogBuffer:
         self.output.clear()
         self.ready = False
 
-    def update(self, vars, count=1):
+    def update(self, vars: dict, count: int = 1):
         assert isinstance(vars, dict)
         for key, var in vars.items():
             if key not in self.val_history:
@@ -30,7 +30,7 @@ class LogBuffer:
             self.val_history[key].append(var)
             self.n_history[key].append(count)
 
-    def average(self, n=0):
+    def average(self, n: int = 0):
         """Average latest n values or all values."""
         assert n >= 0
         for key in self.val_history:

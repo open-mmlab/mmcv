@@ -4,6 +4,7 @@ import warnings
 from abc import ABCMeta
 from collections import defaultdict
 from logging import FileHandler
+from typing import Iterable, Optional
 
 import torch.nn as nn
 
@@ -29,7 +30,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         init_cfg (dict, optional): Initialization config dict.
     """
 
-    def __init__(self, init_cfg=None):
+    def __init__(self, init_cfg: Optional[dict] = None) -> None:
         """Initialize BaseModule, inherited from `torch.nn.Module`"""
 
         # NOTE init_cfg can be defined in different levels, but init_cfg
@@ -133,7 +134,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
                 del sub_module._params_init_info
 
     @master_only
-    def _dump_init_info(self, logger_name):
+    def _dump_init_info(self, logger_name: str):
         """Dump the initialization information to a file named
         `initialization.log.json` in workdir.
 
@@ -176,7 +177,7 @@ class Sequential(BaseModule, nn.Sequential):
         init_cfg (dict, optional): Initialization config dict.
     """
 
-    def __init__(self, *args, init_cfg=None):
+    def __init__(self, *args, init_cfg: Optional[dict] = None) -> None:
         BaseModule.__init__(self, init_cfg)
         nn.Sequential.__init__(self, *args)
 
@@ -189,7 +190,9 @@ class ModuleList(BaseModule, nn.ModuleList):
         init_cfg (dict, optional): Initialization config dict.
     """
 
-    def __init__(self, modules=None, init_cfg=None):
+    def __init__(self,
+                 modules: Optional[Iterable] = None,
+                 init_cfg: Optional[dict] = None) -> None:
         BaseModule.__init__(self, init_cfg)
         nn.ModuleList.__init__(self, modules)
 
@@ -203,6 +206,8 @@ class ModuleDict(BaseModule, nn.ModuleDict):
         init_cfg (dict, optional): Initialization config dict.
     """
 
-    def __init__(self, modules=None, init_cfg=None):
+    def __init__(self,
+                 modules: Optional[dict] = None,
+                 init_cfg: Optional[dict] = None) -> None:
         BaseModule.__init__(self, init_cfg)
         nn.ModuleDict.__init__(self, modules)

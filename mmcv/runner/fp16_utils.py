@@ -3,10 +3,12 @@ import functools
 import warnings
 from collections import abc
 from inspect import getfullargspec
+from typing import Callable, Iterable, List, Optional
 
 import numpy as np
 import torch
 import torch.nn as nn
+from torch.nn.parameter import Parameter
 
 from mmcv.utils import TORCH_VERSION, digit_version
 from .dist_utils import allreduce_grads as _allreduce_grads
@@ -21,7 +23,7 @@ except ImportError:
     pass
 
 
-def cast_tensor_type(inputs, src_type, dst_type):
+def cast_tensor_type(inputs, src_type: torch.dtype, dst_type: torch.dtype):
     """Recursively convert Tensor in inputs from src_type to dst_type.
 
     Note:
@@ -52,18 +54,20 @@ def cast_tensor_type(inputs, src_type, dst_type):
     elif isinstance(inputs, np.ndarray):
         return inputs
     elif isinstance(inputs, abc.Mapping):
-        return type(inputs)({
+        return type(inputs)({  # type: ignore
             k: cast_tensor_type(v, src_type, dst_type)
             for k, v in inputs.items()
         })
     elif isinstance(inputs, abc.Iterable):
-        return type(inputs)(
+        return type(inputs)(  # type: ignore
             cast_tensor_type(item, src_type, dst_type) for item in inputs)
     else:
         return inputs
 
 
-def auto_fp16(apply_to=None, out_fp32=False, supported_types=(nn.Module, )):
+def auto_fp16(apply_to: Optional[Iterable] = None,
+              out_fp32: bool = False,
+              supported_types: tuple = (nn.Module, )):
     """Decorator to enable fp16 training automatically.
 
     This decorator is useful when you write custom modules and want to support
@@ -150,7 +154,7 @@ def auto_fp16(apply_to=None, out_fp32=False, supported_types=(nn.Module, )):
     return auto_fp16_wrapper
 
 
-def force_fp32(apply_to=None, out_fp16=False):
+def force_fp32(apply_to: Optional[Iterable] = None, out_fp16: bool = False):
     """Decorator to convert input arguments to fp32 in force.
 
     This decorator is useful when you write custom modules and want to support
@@ -236,15 +240,17 @@ def force_fp32(apply_to=None, out_fp16=False):
     return force_fp32_wrapper
 
 
-def allreduce_grads(params, coalesce=True, bucket_size_mb=-1):
-    warnings.warning(
+def allreduce_grads(params: List[Parameter],
+                    coalesce: bool = True,
+                    bucket_size_mb: int = -1):
+    warnings.warn(
         '"mmcv.runner.fp16_utils.allreduce_grads" is deprecated, and will be '
         'removed in v2.8. Please switch to "mmcv.runner.allreduce_grads',
         DeprecationWarning)
     _allreduce_grads(params, coalesce=coalesce, bucket_size_mb=bucket_size_mb)
 
 
-def wrap_fp16_model(model):
+def wrap_fp16_model(model: nn.Module) -> None:
     """Wrap the FP32 model to FP16.
 
     If you are using PyTorch >= 1.6, torch.cuda.amp is used as the
@@ -273,7 +279,7 @@ def wrap_fp16_model(model):
             m.fp16_enabled = True
 
 
-def patch_norm_fp32(module):
+def patch_norm_fp32(module: nn.Module) -> nn.Module:
     """Recursively convert normalization layers from FP16 to FP32.
 
     Args:
@@ -293,7 +299,10 @@ def patch_norm_fp32(module):
     return module
 
 
-def patch_forward_method(func, src_type, dst_type, convert_output=True):
+def patch_forward_method(func: Callable,
+                         src_type: torch.dtype,
+                         dst_type: torch.dtype,
+                         convert_output: bool = True) -> Callable:
     """Patch the forward method of a module.
 
     Args:
@@ -346,10 +355,10 @@ class LossScaler:
     """
 
     def __init__(self,
-                 init_scale=2**32,
-                 mode='dynamic',
-                 scale_factor=2.,
-                 scale_window=1000):
+                 init_scale: float = 2**32,
+                 mode: str = 'dynamic',
+                 scale_factor: float = 2.,
+                 scale_window: int = 1000):
         self.cur_scale = init_scale
         self.cur_iter = 0
         assert mode in ('dynamic',
@@ -359,7 +368,7 @@ class LossScaler:
         self.scale_factor = scale_factor
         self.scale_window = scale_window
 
-    def has_overflow(self, params):
+    def has_overflow(self, params: List[Parameter]):
         """Check if params contain overflow."""
         if self.mode != 'dynamic':
             return False
@@ -382,7 +391,7 @@ class LossScaler:
                 return True
             return False
 
-    def update_scale(self, overflow):
+    def update_scale(self, overflow: bool):
         """update the current loss scale value when overflow happens."""
         if self.mode != 'dynamic':
             return
@@ -405,7 +414,7 @@ class LossScaler:
             scale_factor=self.scale_factor,
             scale_window=self.scale_window)
 
-    def load_state_dict(self, state_dict):
+    def load_state_dict(self, state_dict: dict):
         """Loads the loss_scaler state dict.
 
         Args:
