@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Tuple
+
 import torch
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
@@ -42,7 +44,7 @@ class ActiveRotatedFilterFunction(Function):
 
     @staticmethod
     @once_differentiable
-    def backward(ctx, grad_out: torch.Tensor) -> torch.Tensor:
+    def backward(ctx, grad_out: torch.Tensor) -> Tuple[torch.Tensor, None]:
         """
         Args:
             grad_output (torch.Tensor): The gradiant of output features
