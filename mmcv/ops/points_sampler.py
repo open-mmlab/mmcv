@@ -11,7 +11,7 @@ from .furthest_point_sample import (furthest_point_sample,
 
 def calc_square_dist(point_feat_a: Tensor,
                      point_feat_b: Tensor,
-                     norm: Optional[bool] = True) -> Tensor:
+                     norm: bool = True) -> Tensor:
     """Calculating square distance between a and b.
 
     Args:
