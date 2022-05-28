@@ -419,6 +419,11 @@ setup(
         'build': parse_requirements('requirements/build.txt'),
         'optional': parse_requirements('requirements/optional.txt'),
     },
+    entry_points={
+        'console_scripts': [
+            'mmcv = mmcv.cli:main',
+        ],
+    },
     ext_modules=get_extensions(),
     cmdclass=cmd_class,
     zip_safe=False)
