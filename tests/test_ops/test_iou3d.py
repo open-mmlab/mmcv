@@ -17,7 +17,7 @@ def test_boxes_overlap_bev():
                             [1.0, 1.0, 1.0, 2.0, 2.0, 2.0, np.pi / 2],
                             [1.0, 1.0, 1.0, 2.0, 2.0, 2.0, np.pi / 4]],
                            dtype=np.float32)
-    np_expect_ious = np.asarray(
+    np_expect_overlaps = np.asarray(
         [[4.0, 4.0, (8 + 8 * 2**0.5) /
           (3 + 2 * 2**0.5)], [1.0, 1.0, 1.0], [0.0, 0.0, 0.0]],
         dtype=np.float32)
@@ -25,8 +25,8 @@ def test_boxes_overlap_bev():
     boxes1 = torch.from_numpy(np_boxes1).cuda()
     boxes2 = torch.from_numpy(np_boxes2).cuda()
 
-    ious = boxes_overlap_bev(boxes1, boxes2)
-    assert np.allclose(ious.cpu().numpy(), np_expect_ious, atol=1e-4)
+    overlaps = boxes_overlap_bev(boxes1, boxes2)
+    assert np.allclose(overlaps.cpu().numpy(), np_expect_overlaps, atol=1e-4)
 
 
 @pytest.mark.skipif(
