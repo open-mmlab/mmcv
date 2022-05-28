@@ -21,7 +21,7 @@ def bilinear_grid_sample(im: Tensor,
     Args:
         im (torch.Tensor): Input feature map, shape (N, C, H, W)
         grid (torch.Tensor): Point coordinates, shape (N, Hg, Wg, 2)
-        align_corners {bool}: If set to True, the extrema (-1 and 1) are
+        align_corners (bool): If set to True, the extrema (-1 and 1) are
             considered as referring to the center points of the input’s
             corner pixels. If set to False, they are instead considered as
             referring to the corner points of the input’s corner pixels,
@@ -258,7 +258,7 @@ def rel_roi_point_to_rel_img_point(rois: Tensor,
 def point_sample(input: Tensor,
                  points: Tensor,
                  align_corners: bool = False,
-                 **kwargs: str) -> Tensor:
+                 **kwargs) -> Tensor:
     """A wrapper around :func:`grid_sample` to support 3D point_coords tensors
     Unlike :func:`torch.nn.functional.grid_sample` it assumes point_coords to
     lie inside ``[0, 1] x [0, 1]`` square.
