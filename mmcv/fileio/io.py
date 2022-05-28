@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Union, List
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from ..utils import is_list_of
 from .file_client import FileClient
@@ -114,7 +114,7 @@ def dump(obj: Any,
                 'file_format must be specified since file is None')
     if file_format not in file_handlers:
         raise TypeError(f'Unsupported format: {file_format}')
-
+    f: FileLikeObject
     handler = file_handlers[file_format]
     if file is None:
         return handler.dump_to_str(obj, **kwargs)
@@ -135,7 +135,7 @@ def dump(obj: Any,
 
 
 def _register_handler(handler: BaseFileHandler,
-                      file_formats: Union[str, List[str]) -> None:
+                      file_formats: Union[str, List[str]]) -> None:
     """Register a handler for some file extensions.
 
     Args:
