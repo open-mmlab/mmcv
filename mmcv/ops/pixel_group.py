@@ -10,6 +10,7 @@ from ..utils import ext_loader
 ext_module = ext_loader.load_ext('_ext', ['pixel_group'])
 
 
+# yapf: disable
 def pixel_group(score: Union[np.ndarray, Tensor],
                 mask: Union[np.ndarray, Tensor],
                 embedding: Union[np.ndarray, Tensor],
