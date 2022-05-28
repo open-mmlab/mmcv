@@ -152,8 +152,9 @@ class Voxelization(nn.Module):
         point_cloud_range = torch.tensor(
             point_cloud_range, dtype=torch.float32)
         voxel_size = torch.tensor(voxel_size, dtype=torch.float32)
-        grid_size = (point_cloud_range[3:] -
-                     point_cloud_range[:3]) / voxel_size  # type: ignore
+        grid_size = (
+            point_cloud_range[3:] -  # type: ignore
+            point_cloud_range[:3]) / voxel_size  # type: ignore
         grid_size = torch.round(grid_size).long()
         input_feat_shape = grid_size[:2]
         self.grid_size = grid_size
