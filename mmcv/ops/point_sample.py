@@ -233,7 +233,7 @@ def rel_roi_point_to_rel_img_point(
         rois: Tensor,
         rel_roi_points: Tensor,
         img: Union[tuple, Tensor],
-        spatial_scale: Optional[float] = 1.) -> Tensor:
+        spatial_scale: float = 1.) -> Tensor:
     """Convert roi based relative point coordinates to image based absolute
     point coordinates.
 
