@@ -298,7 +298,7 @@ def print_model_with_flops(model: nn.Module,
             m.extra_repr = flops_extra_repr
             assert m.extra_repr != m.original_extra_repr
 
-    def del_extra_repr(m: Any) -> None:
+    def del_extra_repr(m: nn.Module) -> None:
         if hasattr(m, 'original_extra_repr'):
             m.extra_repr = m.original_extra_repr
             del m.original_extra_repr
@@ -408,7 +408,8 @@ def empty_flops_counter_hook(module: nn.Module, input: Any,
     module.__flops__ += 0
 
 
-def upsample_flops_counter_hook(module: Any, input: Any, output: List) -> None:
+def upsample_flops_counter_hook(module: nn.Module, input: Any,
+                                output: List) -> None:
     output_size = output[0]
     batch_size = output_size.shape[0]
     output_elements_count = batch_size
@@ -417,7 +418,7 @@ def upsample_flops_counter_hook(module: Any, input: Any, output: List) -> None:
     module.__flops__ += int(output_elements_count)
 
 
-def relu_flops_counter_hook(module: Any, input: Any,
+def relu_flops_counter_hook(module: nn.Module, input: Any,
                             output: torch.Tensor) -> None:
     active_elements_count = output.numel()
     module.__flops__ += int(active_elements_count)
@@ -431,13 +432,13 @@ def linear_flops_counter_hook(module: nn.Module, input: torch.Tensor,
     module.__flops__ += int(np.prod(input.shape) * output_last_dim)
 
 
-def pool_flops_counter_hook(module: Any, input: torch.Tensor,
+def pool_flops_counter_hook(module: nn.Module, input: torch.Tensor,
                             output: torch.Tensor) -> None:
     input = input[0]
     module.__flops__ += int(np.prod(input.shape))
 
 
-def norm_flops_counter_hook(module: Any, input: torch.Tensor,
+def norm_flops_counter_hook(module: nn.Module, input: torch.Tensor,
                             output: torch.Tensor) -> None:
     input = input[0]
 
@@ -448,7 +449,7 @@ def norm_flops_counter_hook(module: Any, input: torch.Tensor,
     module.__flops__ += int(batch_flops)
 
 
-def deconv_flops_counter_hook(conv_module: Any, input: torch.Tensor,
+def deconv_flops_counter_hook(conv_module: nn.Module, input: torch.Tensor,
                               output: torch.Tensor) -> None:
     # Can have multiple inputs, getting the first one
     input = input[0]
@@ -476,7 +477,7 @@ def deconv_flops_counter_hook(conv_module: Any, input: torch.Tensor,
     conv_module.__flops__ += int(overall_flops)
 
 
-def conv_flops_counter_hook(conv_module: Any, input: torch.Tensor,
+def conv_flops_counter_hook(conv_module: nn.Module, input: torch.Tensor,
                             output: torch.Tensor) -> None:
     # Can have multiple inputs, getting the first one
     input = input[0]
@@ -508,7 +509,7 @@ def conv_flops_counter_hook(conv_module: Any, input: torch.Tensor,
     conv_module.__flops__ += int(overall_flops)
 
 
-def batch_counter_hook(module: Any, input: List, output: Any) -> None:
+def batch_counter_hook(module: nn.Module, input: List, output: Any) -> None:
     batch_size = 1
     if len(input) > 0:
         # Can have multiple inputs, getting the first one
@@ -520,12 +521,12 @@ def batch_counter_hook(module: Any, input: List, output: Any) -> None:
     module.__batch_counter__ += batch_size
 
 
-def add_batch_counter_variables_or_reset(module: Any) -> None:
+def add_batch_counter_variables_or_reset(module: nn.Module) -> None:
 
     module.__batch_counter__ = 0
 
 
-def add_batch_counter_hook_function(module: Any) -> None:
+def add_batch_counter_hook_function(module: nn.Module) -> None:
     if hasattr(module, '__batch_counter_handle__'):
         return
 
@@ -533,13 +534,13 @@ def add_batch_counter_hook_function(module: Any) -> None:
     module.__batch_counter_handle__ = handle
 
 
-def remove_batch_counter_hook_function(module: Any) -> None:
+def remove_batch_counter_hook_function(module: nn.Module) -> None:
     if hasattr(module, '__batch_counter_handle__'):
         module.__batch_counter_handle__.remove()
         del module.__batch_counter_handle__
 
 
-def add_flops_counter_variable_or_reset(module: Any) -> None:
+def add_flops_counter_variable_or_reset(module: nn.Module) -> None:
     if is_supported_instance(module):
         if hasattr(module, '__flops__') or hasattr(module, '__params__'):
             warnings.warn('variables __flops__ or __params__ are already '
@@ -549,13 +550,13 @@ def add_flops_counter_variable_or_reset(module: Any) -> None:
         module.__params__ = get_model_parameters_number(module)
 
 
-def is_supported_instance(module: Any) -> bool:
+def is_supported_instance(module: nn.Module) -> bool:
     if type(module) in get_modules_mapping():
         return True
     return False
 
 
-def remove_flops_counter_hook_function(module: Any) -> None:
+def remove_flops_counter_hook_function(module: nn.Module) -> None:
     if is_supported_instance(module):
         if hasattr(module, '__flops_handle__'):
             module.__flops_handle__.remove()
