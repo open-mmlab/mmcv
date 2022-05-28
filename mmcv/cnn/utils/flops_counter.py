@@ -367,7 +367,7 @@ def start_flops_count(self) -> None:
     """
     add_batch_counter_hook_function(self)
 
-    def add_flops_counter_hook_function(module: Any) -> None:
+    def add_flops_counter_hook_function(module: nn.Module) -> None:
         if is_supported_instance(module):
             if hasattr(module, '__flops_handle__'):
                 return
@@ -403,7 +403,8 @@ def reset_flops_count(self) -> None:
 
 
 # ---- Internal functions
-def empty_flops_counter_hook(module: Any, input: Any, output: Any) -> None:
+def empty_flops_counter_hook(module: nn.Module, input: Any,
+                             output: Any) -> None:
     module.__flops__ += 0
 
 

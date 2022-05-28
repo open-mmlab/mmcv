@@ -46,7 +46,9 @@ def update_init_info(module: nn.Module, init_info: str) -> None:
             module._params_init_info[param]['tmp_mean_value'] = mean_value
 
 
-def constant_init(module: nn.Module, val: float, bias: float = 0) -> None:
+def constant_init(module: nn.Module,
+                  val: float,
+                  bias: Union[int, float] = 0) -> None:
     if hasattr(module, 'weight') and module.weight is not None:
         nn.init.constant_(module.weight, val)
     if hasattr(module, 'bias') and module.bias is not None:
@@ -54,8 +56,8 @@ def constant_init(module: nn.Module, val: float, bias: float = 0) -> None:
 
 
 def xavier_init(module: nn.Module,
-                gain: float = 1,
-                bias: float = 0,
+                gain: Union[int, float] = 1,
+                bias: Union[int, float] = 0,
                 distribution: str = 'normal') -> None:
     assert distribution in ['uniform', 'normal']
     if hasattr(module, 'weight') and module.weight is not None:
@@ -271,7 +273,10 @@ class NormalInit(BaseInit):
 
     """
 
-    def __init__(self, mean: int = 0, std: int = 1, **kwargs):
+    def __init__(self,
+                 mean: Union[int, float] = 0,
+                 std: Union[int, float] = 1,
+                 **kwargs):
         super().__init__(**kwargs)
         self.mean = mean
         self.std = std
