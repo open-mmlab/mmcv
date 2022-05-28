@@ -556,7 +556,7 @@ def _initialize_override(module: nn.Module, override, cfg) -> None:
                                f'but init_cfg is {cp_override}.')
 
 
-def initialize(module: nn.Module, init_cfg) -> None:
+def initialize(module: nn.Module, init_cfg: Union[Dict, List[dict]) -> None:
     r"""Initialize a module.
 
     Args:
