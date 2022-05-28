@@ -16,7 +16,7 @@ class _BatchNormXd(nn.modules.batchnorm._BatchNorm):
     SyncBatchNorm.
     """
 
-    def _check_input_dim(self, input):
+    def _check_input_dim(self, input: torch.Tensor):
         return
 
 
