@@ -231,7 +231,7 @@ class NonLocal1d(_NonLocalNd):
     def __init__(self,
                  in_channels: int,
                  sub_sample: bool = False,
-                 conv_cfg: Optional[Dict] = dict(type='Conv1d'),
+                 conv_cfg: Dict = dict(type='Conv1d'),
                  **kwargs):
         super().__init__(in_channels, conv_cfg=conv_cfg, **kwargs)
 
@@ -264,7 +264,7 @@ class NonLocal2d(_NonLocalNd):
     def __init__(self,
                  in_channels: int,
                  sub_sample: bool = False,
-                 conv_cfg: Optional[Dict] = dict(type='Conv2d'),
+                 conv_cfg: Dict = dict(type='Conv2d'),
                  **kwargs):
         super().__init__(in_channels, conv_cfg=conv_cfg, **kwargs)
 
@@ -294,7 +294,7 @@ class NonLocal3d(_NonLocalNd):
     def __init__(self,
                  in_channels: int,
                  sub_sample: bool = False,
-                 conv_cfg: Optional[Dict] = dict(type='Conv3d'),
+                 conv_cfg: Dict = dict(type='Conv3d'),
                  **kwargs):
         super().__init__(in_channels, conv_cfg=conv_cfg, **kwargs)
         self.sub_sample = sub_sample

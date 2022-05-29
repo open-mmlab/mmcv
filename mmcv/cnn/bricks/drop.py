@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 import torch
 import torch.nn as nn
@@ -40,11 +40,11 @@ class DropPath(nn.Module):
         drop_prob (float): Probability of the path to be zeroed. Default: 0.1
     """
 
-    def __init__(self, drop_prob=0.1):
+    def __init__(self, drop_prob: float = 0.1):
         super().__init__()
         self.drop_prob = drop_prob
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return drop_path(x, self.drop_prob, self.training)
 
 
@@ -64,6 +64,6 @@ class Dropout(nn.Dropout):
         super().__init__(p=drop_prob, inplace=inplace)
 
 
-def build_dropout(cfg: Dict, default_args: Optional[Dict] = None):
+def build_dropout(cfg: Dict, default_args: Optional[Dict] = None) -> Any:
     """Builder for drop out layers."""
     return build_from_cfg(cfg, DROPOUT_LAYERS, default_args)

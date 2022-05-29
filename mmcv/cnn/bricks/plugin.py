@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
 import platform
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Tuple, Union
 
 import torch.nn as nn
 
@@ -56,13 +56,13 @@ def infer_abbr(class_type: type) -> str:
         return camel2snack(class_type.__name__)
 
 
-def build_plugin_layer(cfg: Optional[Dict],
+def build_plugin_layer(cfg: Dict,
                        postfix: Union[int, str] = '',
                        **kwargs) -> Tuple[str, nn.Module]:
     """Build plugin layer.
 
     Args:
-        cfg (None or dict): cfg should contain:
+        cfg (dict): cfg should contain:
 
             - type (str): identify plugin layer type.
             - layer args: args needed to instantiate a plugin layer.
