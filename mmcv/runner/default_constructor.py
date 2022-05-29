@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Any, Dict, Optional
+
 from .builder import RUNNER_BUILDERS, RUNNERS
 
 
@@ -34,12 +36,12 @@ class DefaultRunnerConstructor:
         >>> runner = build_runner(runner_cfg)
     """
 
-    def __init__(self, runner_cfg, default_args=None):
+    def __init__(self, runner_cfg: Dict, default_args: Optional[Dict] = None):
         if not isinstance(runner_cfg, dict):
             raise TypeError('runner_cfg should be a dict',
                             f'but got {type(runner_cfg)}')
         self.runner_cfg = runner_cfg
         self.default_args = default_args
 
-    def __call__(self):
+    def __call__(self) -> Any:
         return RUNNERS.build(self.runner_cfg, default_args=self.default_args)
