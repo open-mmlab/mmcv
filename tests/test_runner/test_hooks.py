@@ -1921,3 +1921,69 @@ def test_gradient_cumulative_fp16_optimizer_hook():
     assert torch.allclose(runner_1.model.fc.bias, runner_2.model.fc.bias)
     shutil.rmtree(runner_1.work_dir)
     shutil.rmtree(runner_2.work_dir)
+
+
+def test_logger_hook_after_iter():
+    from torch.utils.data import Dataset
+    from mmcv.runner import IterBasedRunner
+    import torch.optim as optim
+    import json
+    from mmcv.utils import get_logger, scandir
+    from collections import OrderedDict
+
+    class ExampleDataset(Dataset):
+
+        def __getitem__(self, idx):
+            results = dict(x=torch.tensor([1]))
+            return results
+
+        def __len__(self):
+            return 1
+
+    class Model(nn.Module):
+
+        def __init__(self):
+            super().__init__()
+            self.param = nn.Parameter(torch.tensor([1.0]))
+
+        def forward(self, x, **kwargs):
+            return self.param * x
+
+        def train_step(self, data_batch, optimizer, **kwargs):
+            loss = torch.sum(self(data_batch['x']))
+            log_vars = OrderedDict()
+            log_vars['loss'] = loss.item()
+            num_samples = 1
+            outputs = dict(
+                loss=loss, log_vars=log_vars, num_samples=num_samples)
+            return outputs
+
+        def val_step(self, data_batch, **kwargs):
+            loss = torch.sum(self(data_batch['x']))
+            log_vars = OrderedDict()
+            log_vars['loss'] = loss.item()
+            num_samples = 1
+            outputs = dict(
+                loss=loss, log_vars=log_vars, num_samples=num_samples)
+            return outputs
+
+    loader = DataLoader(ExampleDataset())
+    model = Model()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        logger = get_logger('test_logger')
+        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+        runner = IterBasedRunner(
+            model=model, optimizer=optimizer, work_dir=tmpdir, logger=logger)
+        runner.register_logger_hooks(
+            dict(
+                interval=1,
+                hooks=[dict(type='TextLoggerHook', by_epoch=False)]))
+        runner.register_timer_hook(dict(type='IterTimerHook'))
+        runner.run([loader, loader], [('train', 1), ('val', 1)], 1)
+
+        path = osp.join(tmpdir, next(scandir(tmpdir, '.json')))
+        with open(path) as fr:
+            train_log = json.loads(fr.readline())
+            assert train_log['mode'] == 'train' and 'loss' in train_log
+            val_log = json.loads(fr.readline())
+            assert val_log['mode'] == 'val' and 'loss' in val_log
