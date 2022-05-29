@@ -153,7 +153,7 @@ class EvalHook(Hook):
         self.out_dir = out_dir
         self.file_client_args = file_client_args
 
-    def _init_rule(self, rule: Optional[str], key_indicator: Optional[str]):
+    def _init_rule(self, rule: Optional[str], key_indicator: str):
         """Initialize rule, key_indicator, comparison_func, and best score.
 
         Here is the rule to determine which rule is used for key indicator
