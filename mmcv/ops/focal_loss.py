@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Union
+from typing import Optional
 
 import torch
 import torch.nn as nn
@@ -17,8 +17,9 @@ ext_module = ext_loader.load_ext('_ext', [
 class SigmoidFocalLossFunction(Function):
 
     @staticmethod
-    def symbolic(g, input: torch.Tensor, target: torch.Tensor, gamma: float,
-                 alpha: float, weight: torch.Tensor, reduction: str):
+    def symbolic(g, input: torch.Tensor, target: torch.LongTensor,
+                 gamma: float, alpha: float, weight: torch.Tensor,
+                 reduction: str):
         return g.op(
             'mmcv::MMCVSigmoidFocalLoss',
             input,
@@ -31,8 +32,7 @@ class SigmoidFocalLossFunction(Function):
     @staticmethod
     def forward(ctx,
                 input: torch.Tensor,
-                target: Union[torch.Tensor, torch.LongTensor,
-                              torch.cuda.LongTensor],
+                target: torch.LongTensor,
                 gamma: float = 2.0,
                 alpha: float = 0.25,
                 weight: Optional[torch.Tensor] = None,
@@ -103,7 +103,7 @@ class SigmoidFocalLoss(nn.Module):
         self.register_buffer('weight', weight)
         self.reduction = reduction
 
-    def forward(self, input: torch.Tensor, target: torch.Tensor):
+    def forward(self, input: torch.Tensor, target: torch.LongTensor):
         return sigmoid_focal_loss(input, target, self.gamma, self.alpha,
                                   self.weight, self.reduction)
 
@@ -118,8 +118,9 @@ class SigmoidFocalLoss(nn.Module):
 class SoftmaxFocalLossFunction(Function):
 
     @staticmethod
-    def symbolic(g, input: torch.Tensor, target: torch.Tensor, gamma: float,
-                 alpha: float, weight: torch.Tensor, reduction: str):
+    def symbolic(g, input: torch.Tensor, target: torch.LongTensor,
+                 gamma: float, alpha: float, weight: torch.Tensor,
+                 reduction: str):
         return g.op(
             'mmcv::MMCVSoftmaxFocalLoss',
             input,
@@ -132,8 +133,7 @@ class SoftmaxFocalLossFunction(Function):
     @staticmethod
     def forward(ctx,
                 input: torch.Tensor,
-                target: Union[torch.Tensor, torch.LongTensor,
-                              torch.cuda.LongTensor],
+                target: torch.LongTensor,
                 gamma=2.0,
                 alpha=0.25,
                 weight=None,
@@ -215,7 +215,7 @@ class SoftmaxFocalLoss(nn.Module):
         self.register_buffer('weight', weight)
         self.reduction = reduction
 
-    def forward(self, input: torch.Tensor, target: torch.Tensor):
+    def forward(self, input: torch.Tensor, target: torch.LongTensor):
         return softmax_focal_loss(input, target, self.gamma, self.alpha,
                                   self.weight, self.reduction)
 
