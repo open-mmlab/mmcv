@@ -10,7 +10,7 @@ import warnings
 from collections import OrderedDict
 from importlib import import_module
 from tempfile import TemporaryDirectory
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Callable, List, Optional, Sequence, Union
 
 import torch
 import torch.nn
@@ -228,7 +228,7 @@ class CheckpointLoader:
 
     @classmethod
     def register_scheme(cls,
-                        prefixes: Union[str, List[str], Tuple[str, ...]],
+                        prefixes: Union[str, Sequence[str]],
                         loader: Optional[Callable] = None,
                         force: Optional[bool] = False):
         """Register a loader to CheckpointLoader.
@@ -236,7 +236,7 @@ class CheckpointLoader:
         This method can be used as a normal class method or a decorator.
 
         Args:
-            prefixes (str or list[str] or tuple[str]):
+            prefixes (str or Sequence[str]):
             The prefix of the registered loader.
             loader (function, optional): The loader function to be registered.
                 When this method is used as a decorator, loader is None.
@@ -385,10 +385,9 @@ def load_from_pavi(
 
 
 @CheckpointLoader.register_scheme(prefixes=r'(\S+\:)?s3://')
-def load_from_ceph(
-        filename: str,
-        map_location: Optional[str] = None,
-        backend: Optional[str] = 'petrel') -> Union[dict, OrderedDict]:
+def load_from_ceph(filename: str,
+                   map_location: Optional[str] = None,
+                   backend: str = 'petrel') -> Union[dict, OrderedDict]:
     """load checkpoint through the file path prefixed with s3.  In distributed
     setting, this function download ckpt at all ranks to different temporary
     directories.
@@ -401,7 +400,7 @@ def load_from_ceph(
     Args:
         filename (str): checkpoint file path with s3 prefix
         map_location (str, optional): Same as :func:`torch.load`.
-        backend (str, optional): The storage backend type. Options are 'ceph',
+        backend (str): The storage backend type. Options are 'ceph',
             'petrel'. Default: 'petrel'.
 
     .. warning::

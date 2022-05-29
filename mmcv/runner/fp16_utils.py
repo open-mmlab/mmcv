@@ -65,9 +65,11 @@ def cast_tensor_type(inputs, src_type: torch.dtype, dst_type: torch.dtype):
         return inputs
 
 
-def auto_fp16(apply_to: Optional[Iterable] = None,
-              out_fp32: bool = False,
-              supported_types: tuple = (nn.Module, )):
+def auto_fp16(
+        apply_to: Optional[Iterable] = None,
+        out_fp32: bool = False,
+        supported_types: tuple = (nn.Module, ),
+) -> Callable:
     """Decorator to enable fp16 training automatically.
 
     This decorator is useful when you write custom modules and want to support
@@ -154,7 +156,8 @@ def auto_fp16(apply_to: Optional[Iterable] = None,
     return auto_fp16_wrapper
 
 
-def force_fp32(apply_to: Optional[Iterable] = None, out_fp16: bool = False):
+def force_fp32(apply_to: Optional[Iterable] = None,
+               out_fp16: bool = False) -> Callable:
     """Decorator to convert input arguments to fp32 in force.
 
     This decorator is useful when you write custom modules and want to support

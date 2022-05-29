@@ -9,10 +9,10 @@ from typing import Callable, List, Optional
 
 import torch
 import torch.multiprocessing as mp
+import torch.nn.parameter
 from torch import distributed as dist
 from torch._utils import (_flatten_dense_tensors, _take_tensors,
                           _unflatten_dense_tensors)
-from torch.nn.parameter import Parameter
 
 from mmcv.utils import IS_MLU_AVAILABLE
 
@@ -138,7 +138,7 @@ def master_only(func: Callable):
     return wrapper
 
 
-def allreduce_params(params: List[Parameter],
+def allreduce_params(params: List[torch.nn.parameter.Parameter],
                      coalesce: bool = True,
                      bucket_size_mb: int = -1):
     """Allreduce parameters.
@@ -162,13 +162,14 @@ def allreduce_params(params: List[Parameter],
             dist.all_reduce(tensor.div_(world_size))
 
 
-def allreduce_grads(params: List[Parameter],
+def allreduce_grads(params: List[torch.nn.parameter.Parameter],
                     coalesce: bool = True,
                     bucket_size_mb: int = -1):
     """Allreduce gradients.
 
     Args:
-        params (list[torch.Parameters]): List of parameters of a model
+        params (list[torch.nn.parameter.Parameters]): List of parameters of
+            a model.
         coalesce (bool, optional): Whether allreduce parameters as a whole.
             Defaults to True.
         bucket_size_mb (int, optional): Size of bucket, the unit is MB.
