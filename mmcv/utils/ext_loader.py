@@ -67,6 +67,6 @@ else:
         return ExtModule(*ext_list)
 
 
-def check_ops_exist():
+def check_ops_exist() -> bool:
     ext_loader = pkgutil.find_loader('mmcv._ext')
     return ext_loader is not None
