@@ -235,7 +235,7 @@ class ResNet(nn.Module):
         self.bn_frozen = bn_frozen
         self.with_cp = with_cp
 
-        self.inplanes = 64
+        self.inplanes: int = 64
         self.conv1 = nn.Conv2d(
             3, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
@@ -261,8 +261,8 @@ class ResNet(nn.Module):
             self.add_module(layer_name, res_layer)
             self.res_layers.append(layer_name)
 
-        self.feat_dim = 2**(len(stage_blocks) -
-                            1) * 64 * block.expansion  # type: ignore
+        self.feat_dim: int = 2**(len(stage_blocks) -
+                                 1) * 64 * block.expansion  # type: ignore
 
     def init_weights(self, pretrained=None):
         if isinstance(pretrained, str):
