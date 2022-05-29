@@ -2,7 +2,8 @@
 import datetime
 import os
 import os.path as osp
-from typing import Dict, List, Optional, OrderedDict, Union
+from collections import OrderedDict
+from typing import Dict, Optional, Union
 
 import torch
 import torch.distributed as dist
@@ -192,7 +193,7 @@ class TextLoggerHook(LoggerHook):
                 mmcv.dump(json_log, f, file_format='json')
                 f.write('\n')
 
-    def _round_float(self, items: Union[List, float]):
+    def _round_float(self, items):
         if isinstance(items, list):
             return [self._round_float(item) for item in items]
         elif isinstance(items, float):
