@@ -279,7 +279,7 @@ def convert_color_factory(src: str, dst: str) -> Callable:
 
     code = getattr(cv2, f'COLOR_{src.upper()}2{dst.upper()}')
 
-    def convert_color(img:np.ndarray) -> np.ndarray:
+    def convert_color(img: np.ndarray) -> np.ndarray:
         out_img = cv2.cvtColor(img, code)
         return out_img
 
