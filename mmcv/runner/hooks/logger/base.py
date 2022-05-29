@@ -59,10 +59,7 @@ class LoggerHook(Hook):
 
     def get_mode(self, runner):
         if runner.mode == 'train':
-            if 'time' in runner.log_buffer.output:
-                mode = 'train'
-            else:
-                mode = 'val'
+            mode = runner.log_buffer.mode
         elif runner.mode == 'val':
             mode = 'val'
         else:
@@ -139,6 +136,12 @@ class LoggerHook(Hook):
 
     def before_epoch(self, runner):
         runner.log_buffer.clear()  # clear logs of last epoch
+
+    def before_train_iter(self, runner):
+        runner.log_buffer.mode = 'train'
+
+    def before_val_iter(self, runner):
+        runner.log_buffer.mode = 'val'
 
     def after_train_iter(self, runner):
         if self.by_epoch and self.every_n_inner_iters(runner, self.interval):

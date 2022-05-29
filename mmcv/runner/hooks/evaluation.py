@@ -365,6 +365,7 @@ class EvalHook(Hook):
 
         for name, val in eval_res.items():
             runner.log_buffer.output[name] = val
+        runner.log_buffer.mode = 'val'
         runner.log_buffer.ready = True
 
         if self.save_best is not None:
