@@ -14,7 +14,7 @@ import mmcv
 from mmcv.runner import get_dist_info
 
 
-def single_gpu_test(model: nn.Module, data_loader: nn.Dataloader) -> list:
+def single_gpu_test(model: nn.Module, data_loader: DataLoader) -> list:
     """Test model with a single gpu.
 
     This method tests model with a single gpu and displays test progress bar.
