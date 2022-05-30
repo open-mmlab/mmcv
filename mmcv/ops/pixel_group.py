@@ -10,14 +10,15 @@ from ..utils import ext_loader
 ext_module = ext_loader.load_ext('_ext', ['pixel_group'])
 
 
-# yapf: disable
-def pixel_group(score: Union[np.ndarray, Tensor],
-                mask: Union[np.ndarray, Tensor],
-                embedding: Union[np.ndarray, Tensor],
-                kernel_label: Union[np.ndarray, Tensor],
-                kernel_contour: Union[np.ndarray, Tensor],
-                kernel_region_num: int,
-                distance_threshold: float) -> List[List[float]]:
+def pixel_group(
+    score: Union[np.ndarray, Tensor],
+    mask: Union[np.ndarray, Tensor],
+    embedding: Union[np.ndarray, Tensor],
+    kernel_label: Union[np.ndarray, Tensor],
+    kernel_contour: Union[np.ndarray, Tensor],
+    kernel_region_num: int,
+    distance_threshold: float,
+) -> List[List[float]]:
     """Group pixels into text instances, which is widely used text detection
     methods.
 
