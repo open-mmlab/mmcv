@@ -111,9 +111,7 @@ def cut_video(in_file: str,
         log_level (str): Logging level of ffmpeg.
         print_cmd (bool): Whether to print the final ffmpeg command.
     """
-    options: Dict[str, Union[str, float]] = {
-        'log_level': log_level
-    }  # type: ignore
+    options = {'log_level': log_level}
     if vcodec is None:
         options['vcodec'] = 'copy'
     if acodec is None:
