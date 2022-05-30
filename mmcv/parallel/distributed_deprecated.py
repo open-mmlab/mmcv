@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Sequence
+
 import torch
 import torch.distributed as dist
 import torch.nn as nn
@@ -14,10 +16,10 @@ from .scatter_gather import scatter_kwargs
 class MMDistributedDataParallel(nn.Module):
 
     def __init__(self,
-                 module,
-                 dim=0,
-                 broadcast_buffers=True,
-                 bucket_cap_mb=25):
+                 module: nn.Module,
+                 dim: int = 0,
+                 broadcast_buffers: bool = True,
+                 bucket_cap_mb: int = 25):
         super().__init__()
         self.module = module
         self.dim = dim
@@ -26,7 +28,8 @@ class MMDistributedDataParallel(nn.Module):
         self.broadcast_bucket_size = bucket_cap_mb * 1024 * 1024
         self._sync_params()
 
-    def _dist_broadcast_coalesced(self, tensors, buffer_size):
+    def _dist_broadcast_coalesced(self, tensors: Sequence,
+                                  buffer_size: int) -> None:
         for tensors in _take_tensors(tensors, buffer_size):
             flat_tensors = _flatten_dense_tensors(tensors)
             dist.broadcast(flat_tensors, 0)
@@ -34,7 +37,7 @@ class MMDistributedDataParallel(nn.Module):
                     tensors, _unflatten_dense_tensors(flat_tensors, tensors)):
                 tensor.copy_(synced)
 
-    def _sync_params(self):
+    def _sync_params(self) -> None:
         module_states = list(self.module.state_dict().values())
         if len(module_states) > 0:
             self._dist_broadcast_coalesced(module_states,

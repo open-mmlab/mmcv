@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from itertools import chain
 
+import torch
 from torch.nn.parallel import DataParallel
 
 from .scatter_gather import scatter_kwargs
@@ -31,7 +32,7 @@ class MMDataParallel(DataParallel):
         dim (int): Dimension used to scatter the data. Defaults to 0.
     """
 
-    def __init__(self, *args, dim=0, **kwargs):
+    def __init__(self, *args, dim: int = 0, **kwargs):
         super().__init__(*args, dim=dim, **kwargs)
         self.dim = dim
 

@@ -1,9 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import List, Optional, Union
+
 import torch
 from torch.nn.parallel._functions import _get_stream
 
 
-def scatter(input, devices, streams=None):
+def scatter(input: Union[List, torch.Tensor],
+            devices: List,
+            streams: Optional[List] = None) -> Union[List, torch.Tensor]:
     """Scatters tensor across multiple GPUs."""
     if streams is None:
         streams = [None] * len(devices)
@@ -28,7 +32,8 @@ def scatter(input, devices, streams=None):
         raise Exception(f'Unknown type {type(input)}.')
 
 
-def synchronize_stream(output, devices, streams):
+def synchronize_stream(output: Union[List, torch.Tensor], devices: List,
+                       streams: List) -> None:
     if isinstance(output, list):
         chunk_size = len(output) // len(devices)
         for i in range(len(devices)):
@@ -45,7 +50,7 @@ def synchronize_stream(output, devices, streams):
         raise Exception(f'Unknown type {type(output)}.')
 
 
-def get_input_device(input):
+def get_input_device(input: Union[List, torch.Tensor]) -> int:
     if isinstance(input, list):
         for item in input:
             input_device = get_input_device(item)
@@ -61,7 +66,7 @@ def get_input_device(input):
 class Scatter:
 
     @staticmethod
-    def forward(target_gpus, input):
+    def forward(target_gpus: List, input: List) -> tuple:
         input_device = get_input_device(input)
         streams = None
         if input_device == -1 and target_gpus != [-1]:

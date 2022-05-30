@@ -18,7 +18,7 @@ class MMDistributedDataParallel(DistributedDataParallel):
     - It implement two APIs ``train_step()`` and ``val_step()``.
     """
 
-    def to_kwargs(self, inputs, kwargs, device_id):
+    def to_kwargs(self, inputs, kwargs, device_id: int):
         # Use `self.to_kwargs` instead of `self.scatter` in pytorch1.8
         # to move all tensors to device_id
         return scatter_kwargs(inputs, kwargs, [device_id], dim=self.dim)
