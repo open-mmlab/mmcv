@@ -43,7 +43,7 @@ def scatter(inputs, target_gpus, dim: int = 0):
     try:
         return scatter_map(inputs)
     finally:
-        scatter_map = None  # type : ignore
+        scatter_map = None  # type: ignore
 
 
 def scatter_kwargs(inputs, kwargs, target_gpus, dim: int = 0):
