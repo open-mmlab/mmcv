@@ -1,13 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, TextIO, Union
 
 from ..utils import is_list_of
 from .file_client import FileClient
 from .handlers import BaseFileHandler, JsonHandler, PickleHandler, YamlHandler
 
-FileLikeObject = Union[StringIO, BytesIO]
+FileLikeObject = Union[TextIO, StringIO, BytesIO]
 
 file_handlers = {
     'json': JsonHandler(),
