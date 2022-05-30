@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Dict, Optional
+
 from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
@@ -42,19 +44,19 @@ class NeptuneLoggerHook(LoggerHook):
     """
 
     def __init__(self,
-                 init_kwargs=None,
-                 interval=10,
-                 ignore_last=True,
-                 reset_flag=True,
-                 with_step=True,
-                 by_epoch=True):
+                 init_kwargs: Optional[Dict] = None,
+                 interval: int = 10,
+                 ignore_last: bool = True,
+                 reset_flag: bool = True,
+                 with_step: bool = True,
+                 by_epoch: bool = True):
 
         super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.import_neptune()
         self.init_kwargs = init_kwargs
         self.with_step = with_step
 
-    def import_neptune(self):
+    def import_neptune(self) -> None:
         try:
             import neptune.new as neptune
         except ImportError:
@@ -64,24 +66,24 @@ class NeptuneLoggerHook(LoggerHook):
         self.run = None
 
     @master_only
-    def before_run(self, runner):
+    def before_run(self, runner) -> None:
         if self.init_kwargs:
             self.run = self.neptune.init(**self.init_kwargs)
         else:
             self.run = self.neptune.init()
 
     @master_only
-    def log(self, runner):
+    def log(self, runner) -> None:
         tags = self.get_loggable_tags(runner)
         if tags:
             for tag_name, tag_value in tags.items():
                 if self.with_step:
-                    self.run[tag_name].log(
+                    self.run[tag_name].log(  # type: ignore
                         tag_value, step=self.get_iter(runner))
                 else:
                     tags['global_step'] = self.get_iter(runner)
-                    self.run[tag_name].log(tags)
+                    self.run[tag_name].log(tags)  # type: ignore
 
     @master_only
-    def after_run(self, runner):
-        self.run.stop()
+    def after_run(self, runner) -> None:
+        self.run.stop()  # type: ignore
