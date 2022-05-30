@@ -455,9 +455,8 @@ __mlu_func__ void psamaskBase(const T *input_dram, T *output_dram,
         position_seg.w_end = position_seg.w_start +
                              std::min(position_full.w_end - widx, limit.w);
 
-        // recode the segement of output, except the size of channel, the
-        // segements both of output
-        // and input are the same.
+        // record the segment of output except the size of channel
+        // channel segments of output and input are the same
         Shape shape_seg;
         shape_seg.n = position_seg.n_end - position_seg.n_start;
         shape_seg.h = position_seg.h_end - position_seg.h_start;

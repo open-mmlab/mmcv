@@ -18,7 +18,7 @@ class Loss(nn.Module):
         return torch.mean(input - target)
 
 
-class TestPSAMask(object):
+class TestPSAMask:
 
     @pytest.mark.parametrize('device', [
         pytest.param(

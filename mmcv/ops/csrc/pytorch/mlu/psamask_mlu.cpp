@@ -140,10 +140,11 @@ bool findLimit(const int shape_core_n, const int shape_core_h,
   return true;
 }
 
-void PSAMaskForwardMLUKernelLauncher(const int psa_type, const Tensor x, Tensor y,
-                                     const int num_, const int h_feature,
-                                     const int w_feature, const int h_mask,
-                                     const int w_mask, const int half_h_mask,
+void PSAMaskForwardMLUKernelLauncher(const int psa_type, const Tensor x,
+                                     Tensor y, const int num_,
+                                     const int h_feature, const int w_feature,
+                                     const int h_mask, const int w_mask,
+                                     const int half_h_mask,
                                      const int half_w_mask) {
   // params check
   TORCH_CHECK(x.scalar_type() == at::kFloat,
@@ -187,9 +188,9 @@ void PSAMaskForwardMLUKernelLauncher(const int psa_type, const Tensor x, Tensor 
   PartitionSeg partition_info;
   policyFunc(&k_dim, &k_type, &partition_info, num_, h_feature);
   int n_limit_seg, h_limit_seg, w_limit_seg;
-  bool ret = findLimit(partition_info.n_per_core, partition_info.h_per_core,
-                  w_feature, x_c, y_c, &n_limit_seg, &h_limit_seg, &w_limit_seg,
-                  psa_type);
+  bool ret =
+      findLimit(partition_info.n_per_core, partition_info.h_per_core, w_feature,
+                x_c, y_c, &n_limit_seg, &h_limit_seg, &w_limit_seg, psa_type);
   if (ret != true) {
     return;
   }
@@ -220,10 +221,11 @@ void PSAMaskForwardMLUKernelLauncher(const int psa_type, const Tensor x, Tensor 
   y.copy_(y_tmp);
 }
 
-void PSAMaskBackwardMLUKernelLauncher(const int psa_type, const Tensor dy, Tensor dx,
-                                      const int num_, const int h_feature,
-                                      const int w_feature, const int h_mask,
-                                      const int w_mask, const int half_h_mask,
+void PSAMaskBackwardMLUKernelLauncher(const int psa_type, const Tensor dy,
+                                      Tensor dx, const int num_,
+                                      const int h_feature, const int w_feature,
+                                      const int h_mask, const int w_mask,
+                                      const int half_h_mask,
                                       const int half_w_mask) {
   // params check
   TORCH_CHECK(dx.scalar_type() == at::kFloat,
@@ -268,9 +270,9 @@ void PSAMaskBackwardMLUKernelLauncher(const int psa_type, const Tensor dy, Tenso
   PartitionSeg partition_info;
   policyFunc(&k_dim, &k_type, &partition_info, num_, h_feature);
   int n_limit_seg, h_limit_seg, w_limit_seg;
-  bool ret = findLimit(partition_info.n_per_core, partition_info.h_per_core,
-                  w_feature, dx_c, dy_c, &n_limit_seg, &h_limit_seg, &w_limit_seg,
-                  psa_type);
+  bool ret =
+      findLimit(partition_info.n_per_core, partition_info.h_per_core, w_feature,
+                dx_c, dy_c, &n_limit_seg, &h_limit_seg, &w_limit_seg, psa_type);
   if (ret != true) {
     return;
   }
@@ -301,22 +303,24 @@ void PSAMaskBackwardMLUKernelLauncher(const int psa_type, const Tensor dy, Tenso
   dx.copy_(dx_tmp);
 }
 
-void psamask_forward_mlu(const int psa_type, const Tensor input,
-                         Tensor output, const int num_,
-                         const int h_feature, const int w_feature,
-                         const int h_mask, const int w_mask,
-                         const int half_h_mask, const int half_w_mask) {
-  PSAMaskForwardMLUKernelLauncher(psa_type, input, output, num_, h_feature, w_feature,
-                                  h_mask, w_mask, half_h_mask, half_w_mask);                                     
+void psamask_forward_mlu(const int psa_type, const Tensor input, Tensor output,
+                         const int num_, const int h_feature,
+                         const int w_feature, const int h_mask,
+                         const int w_mask, const int half_h_mask,
+                         const int half_w_mask) {
+  PSAMaskForwardMLUKernelLauncher(psa_type, input, output, num_, h_feature,
+                                  w_feature, h_mask, w_mask, half_h_mask,
+                                  half_w_mask);
 }
 
 void psamask_backward_mlu(const int psa_type, const Tensor grad_output,
-                         Tensor grad_input, const int num_,
-                         const int h_feature, const int w_feature,
-                         const int h_mask, const int w_mask,
-                        const int half_h_mask, const int half_w_mask) {
-  PSAMaskBackwardMLUKernelLauncher(psa_type, grad_output, grad_input, num_, h_feature, w_feature,
-                                  h_mask, w_mask, half_h_mask, half_w_mask);                                     
+                          Tensor grad_input, const int num_,
+                          const int h_feature, const int w_feature,
+                          const int h_mask, const int w_mask,
+                          const int half_h_mask, const int half_w_mask) {
+  PSAMaskBackwardMLUKernelLauncher(psa_type, grad_output, grad_input, num_,
+                                   h_feature, w_feature, h_mask, w_mask,
+                                   half_h_mask, half_w_mask);
 }
 
 void psamask_forward_impl(const int psa_type, const Tensor input, Tensor output,
