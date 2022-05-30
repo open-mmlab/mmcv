@@ -117,11 +117,11 @@ def cut_video(in_file: str,
     if acodec is None:
         options['acodec'] = 'copy'
     if start:
-        options['ss'] = start
+        options['ss'] = start  # type: ignore
     else:
         start = 0
     if end:
-        options['t'] = end - start
+        options['t'] = end - start  # type: ignore
     convert_video(in_file, out_file, print_cmd, **options)
 
 
