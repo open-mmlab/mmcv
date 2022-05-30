@@ -46,7 +46,7 @@ def single_gpu_test(model: nn.Module, data_loader: nn.Dataloader) -> list:
 def multi_gpu_test(model: nn.Module,
                    data_loader: nn.Dataloader,
                    tmpdir: Optional[str] = None,
-                   gpu_collect: Optional[bool] = False) -> list:
+                   gpu_collect: bool = False) -> list:
     """Test model with multiple gpus.
 
     This method tests model with multiple gpus and collects the results
