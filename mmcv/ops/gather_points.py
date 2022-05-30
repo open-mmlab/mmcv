@@ -37,7 +37,7 @@ class GatherPoints(Function):
         return output
 
     @staticmethod
-    def backward(ctx, grad_out):
+    def backward(ctx, grad_out: torch.Tensor) -> tuple:
         idx, C, N = ctx.for_backwards
         B, npoint = idx.size()
 
