@@ -103,7 +103,8 @@ class SigmoidFocalLoss(nn.Module):
         self.register_buffer('weight', weight)
         self.reduction = reduction
 
-    def forward(self, input: torch.Tensor, target: torch.LongTensor):
+    def forward(self, input: torch.Tensor,
+                target: torch.LongTensor) -> torch.Tensor:
         return sigmoid_focal_loss(input, target, self.gamma, self.alpha,
                                   self.weight, self.reduction)
 
@@ -215,7 +216,8 @@ class SoftmaxFocalLoss(nn.Module):
         self.register_buffer('weight', weight)
         self.reduction = reduction
 
-    def forward(self, input: torch.Tensor, target: torch.LongTensor):
+    def forward(self, input: torch.Tensor,
+                target: torch.LongTensor) -> torch.Tensor:
         return softmax_focal_loss(input, target, self.gamma, self.alpha,
                                   self.weight, self.reduction)
 
