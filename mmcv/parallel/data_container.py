@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import functools
-from typing import Any, Callable, List, Type, Union
+from typing import Any, Callable, Type, Union
 
 import numpy as np
 import torch

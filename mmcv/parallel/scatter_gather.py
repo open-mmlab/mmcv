@@ -1,6 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, Callable, Dict, List, Optional, Union
-
 import torch
 from torch.nn.parallel._functions import Scatter as OrigScatter
 
