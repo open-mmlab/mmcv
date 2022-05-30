@@ -12,7 +12,7 @@ import mmcv
 from mmcv.runner import get_dist_info
 
 
-def single_gpu_test(model, data_loader):
+def single_gpu_test(model, data_loader) -> list:
     """Test model with a single gpu.
 
     This method tests model with a single gpu and displays test progress bar.
@@ -41,7 +41,7 @@ def single_gpu_test(model, data_loader):
     return results
 
 
-def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
+def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False) -> list:
     """Test model with multiple gpus.
 
     This method tests model with multiple gpus and collects the results
@@ -88,7 +88,7 @@ def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
     return results
 
 
-def collect_results_cpu(result_part, size, tmpdir=None):
+def collect_results_cpu(result_part, size, tmpdir=None) -> list:
     """Collect results under cpu mode.
 
     On cpu mode, this function will save the results on different gpus to
@@ -152,7 +152,7 @@ def collect_results_cpu(result_part, size, tmpdir=None):
         return ordered_results
 
 
-def collect_results_gpu(result_part, size):
+def collect_results_gpu(result_part, size) -> list:
     """Collect results under gpu mode.
 
     On gpu mode, this function will encode results to gpu tensors and use gpu
