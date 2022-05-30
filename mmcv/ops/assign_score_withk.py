@@ -1,3 +1,6 @@
+from typing import Tuple
+
+import torch
 from torch.autograd import Function
 
 from ..utils import ext_loader
@@ -27,11 +30,11 @@ class AssignScoreWithK(Function):
 
     @staticmethod
     def forward(ctx,
-                scores,
-                point_features,
-                center_features,
-                knn_idx,
-                aggregate='sum'):
+                scores: torch.Tensor,
+                point_features: torch.Tensor,
+                center_features: torch.Tensor,
+                knn_idx: torch.Tensor,
+                aggregate: str = 'sum') -> torch.Tensor:
         """
         Args:
             scores (torch.Tensor): (B, npoint, K, M), predicted scores to
@@ -78,7 +81,9 @@ class AssignScoreWithK(Function):
         return output
 
     @staticmethod
-    def backward(ctx, grad_out):
+    def backward(
+        ctx, grad_out: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, None, None]:
         """
         Args:
             grad_out (torch.Tensor): (B, out_dim, npoint, K)
