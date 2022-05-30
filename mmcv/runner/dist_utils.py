@@ -5,7 +5,7 @@ import os
 import socket
 import subprocess
 from collections import OrderedDict
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Tuple
 
 import torch
 import torch.multiprocessing as mp
@@ -35,7 +35,7 @@ def _is_free_port(port):
         return all(s.connect_ex((ip, port)) != 0 for ip in ips)
 
 
-def init_dist(launcher: str, backend: str = 'nccl', **kwargs):
+def init_dist(launcher: str, backend: str = 'nccl', **kwargs) -> None:
     if mp.get_start_method(allow_none=True) is None:
         mp.set_start_method('spawn')
     if launcher == 'pytorch':
@@ -117,7 +117,7 @@ def _init_dist_slurm(backend: str, port: Optional[int] = None):
     dist.init_process_group(backend=backend)
 
 
-def get_dist_info():
+def get_dist_info() -> Tuple[int, int]:
     if dist.is_available() and dist.is_initialized():
         rank = dist.get_rank()
         world_size = dist.get_world_size()
@@ -127,7 +127,7 @@ def get_dist_info():
     return rank, world_size
 
 
-def master_only(func: Callable):
+def master_only(func: Callable) -> Callable:
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -140,7 +140,7 @@ def master_only(func: Callable):
 
 def allreduce_params(params: List[torch.nn.Parameter],
                      coalesce: bool = True,
-                     bucket_size_mb: int = -1):
+                     bucket_size_mb: int = -1) -> None:
     """Allreduce parameters.
 
     Args:
@@ -164,7 +164,7 @@ def allreduce_params(params: List[torch.nn.Parameter],
 
 def allreduce_grads(params: List[torch.nn.Parameter],
                     coalesce: bool = True,
-                    bucket_size_mb: int = -1):
+                    bucket_size_mb: int = -1) -> None:
     """Allreduce gradients.
 
     Args:

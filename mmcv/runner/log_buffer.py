@@ -12,12 +12,12 @@ class LogBuffer:
         self.output = OrderedDict()
         self.ready = False
 
-    def clear(self):
+    def clear(self) -> None:
         self.val_history.clear()
         self.n_history.clear()
         self.clear_output()
 
-    def clear_output(self):
+    def clear_output(self) -> None:
         self.output.clear()
         self.ready = False
 
