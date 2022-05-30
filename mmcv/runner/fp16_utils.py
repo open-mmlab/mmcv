@@ -245,7 +245,7 @@ def force_fp32(apply_to: Optional[Iterable] = None,
 
 def allreduce_grads(params: List[Parameter],
                     coalesce: bool = True,
-                    bucket_size_mb: int = -1):
+                    bucket_size_mb: int = -1) -> None:
     warnings.warn(
         '"mmcv.runner.fp16_utils.allreduce_grads" is deprecated, and will be '
         'removed in v2.8. Please switch to "mmcv.runner.allreduce_grads',
@@ -371,7 +371,7 @@ class LossScaler:
         self.scale_factor = scale_factor
         self.scale_window = scale_window
 
-    def has_overflow(self, params: List[Parameter]):
+    def has_overflow(self, params: List[Parameter]) -> bool:
         """Check if params contain overflow."""
         if self.mode != 'dynamic':
             return False
@@ -394,7 +394,7 @@ class LossScaler:
                 return True
             return False
 
-    def update_scale(self, overflow: bool):
+    def update_scale(self, overflow: bool) -> None:
         """update the current loss scale value when overflow happens."""
         if self.mode != 'dynamic':
             return
@@ -417,7 +417,7 @@ class LossScaler:
             scale_factor=self.scale_factor,
             scale_window=self.scale_window)
 
-    def load_state_dict(self, state_dict: dict):
+    def load_state_dict(self, state_dict: dict) -> None:
         """Loads the loss_scaler state dict.
 
         Args:
