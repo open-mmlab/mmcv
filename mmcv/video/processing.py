@@ -3,7 +3,7 @@ import os
 import os.path as osp
 import subprocess
 import tempfile
-from typing import Dict, List, Optional, Union
+from typing import List, Optional, Union
 
 from mmcv.utils import requires_executable
 
