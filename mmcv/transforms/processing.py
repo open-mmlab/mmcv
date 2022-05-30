@@ -692,6 +692,7 @@ class RandomGrayscale(BaseTransform):
                 normalized_weights = (
                     np.array(self.channel_weights) / sum(self.channel_weights))
                 img = (normalized_weights * img).sum(axis=2)
+                img = img.astype('uint8')
                 if self.keep_channels:
                     img = img[:, :, None]
                     results['img'] = np.dstack(
@@ -699,6 +700,7 @@ class RandomGrayscale(BaseTransform):
                 else:
                     results['img'] = img
                 return results
+        img = img.astype('uint8')
         results['img'] = img
         return results
 
