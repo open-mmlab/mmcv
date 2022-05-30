@@ -4,15 +4,17 @@ import pickle
 import shutil
 import tempfile
 import time
+from typing import Optional, Union
 
 import torch
 import torch.distributed as dist
+import torch.nn as nn
 
 import mmcv
 from mmcv.runner import get_dist_info
 
 
-def single_gpu_test(model, data_loader) -> list:
+def single_gpu_test(model: nn.Module, data_loader: nn.Dataloader) -> list:
     """Test model with a single gpu.
 
     This method tests model with a single gpu and displays test progress bar.
@@ -41,7 +43,10 @@ def single_gpu_test(model, data_loader) -> list:
     return results
 
 
-def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False) -> list:
+def multi_gpu_test(model: nn.Module,
+                   data_loader: nn.Dataloader,
+                   tmpdir: Optional[str] = None,
+                   gpu_collect: Optional[bool] = False) -> list:
     """Test model with multiple gpus.
 
     This method tests model with multiple gpus and collects the results
@@ -88,7 +93,9 @@ def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False) -> list:
     return results
 
 
-def collect_results_cpu(result_part, size, tmpdir=None) -> list:
+def collect_results_cpu(result_part: list,
+                        size: int,
+                        tmpdir: Optional[str] = None) -> list:
     """Collect results under cpu mode.
 
     On cpu mode, this function will save the results on different gpus to
@@ -152,7 +159,7 @@ def collect_results_cpu(result_part, size, tmpdir=None) -> list:
         return ordered_results
 
 
-def collect_results_gpu(result_part, size) -> list:
+def collect_results_gpu(result_part: list, size: int) -> list:
     """Collect results under gpu mode.
 
     On gpu mode, this function will encode results to gpu tensors and use gpu
