@@ -240,7 +240,7 @@ class DefaultOptimizerConstructor:
                 prefix=child_prefix,
                 is_dcn_module=is_dcn_module)
 
-    def __call__(self, model: torch.nn.Module):
+    def __call__(self, model: nn.Module):
         if hasattr(model, 'module'):
             model = model.module
 

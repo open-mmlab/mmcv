@@ -73,7 +73,7 @@ def obj_from_dict(info: dict,
 
 def set_random_seed(seed: int,
                     deterministic: bool = False,
-                    use_rank_shift: bool = False):
+                    use_rank_shift: bool = False) -> None:
     """Set random seed.
 
     Args:
