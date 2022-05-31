@@ -228,7 +228,10 @@ class XavierInit(BaseInit):
             Defaults to None.
     """
 
-    def __init__(self, gain: float = 1, distribution: str = 'normal', **kwargs):
+    def __init__(self,
+                 gain: float = 1,
+                 distribution: str = 'normal',
+                 **kwargs):
         super().__init__(**kwargs)
         self.gain = gain
         self.distribution = distribution
