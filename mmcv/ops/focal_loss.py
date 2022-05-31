@@ -96,7 +96,7 @@ class SigmoidFocalLoss(nn.Module):
                  gamma: float,
                  alpha: float,
                  weight: Optional[torch.Tensor] = None,
-                 reduction: str = 'mean') -> None:
+                 reduction: str = 'mean'):
         super().__init__()
         self.gamma = gamma
         self.alpha = alpha
@@ -209,7 +209,7 @@ class SoftmaxFocalLoss(nn.Module):
                  gamma: float,
                  alpha: float,
                  weight: Optional[torch.Tensor] = None,
-                 reduction: str = 'mean') -> None:
+                 reduction: str = 'mean'):
         super().__init__()
         self.gamma = gamma
         self.alpha = alpha
