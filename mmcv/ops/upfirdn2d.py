@@ -112,9 +112,8 @@ class UpFirDn2dBackward(Function):
     @staticmethod
     def forward(ctx: Any, grad_output: torch.Tensor, kernel: torch.Tensor,
                 grad_kernel: torch.Tensor, up: tuple, down: tuple, pad: tuple,
-                g_pad: tuple, in_size: Union[List,
-                                             Tuple], out_size: Union[List,
-                                                                     Tuple]):
+                g_pad: tuple, in_size: Union[List, Tuple],
+                out_size: Union[List, Tuple]) -> torch.Tensor:
 
         up_x, up_y = up
         down_x, down_y = down

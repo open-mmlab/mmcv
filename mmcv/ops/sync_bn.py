@@ -21,10 +21,10 @@ ext_module = ext_loader.load_ext('_ext', [
 class SyncBatchNormFunction(Function):
 
     @staticmethod
-    def symbolic(g, input: torch.Tensor, running_mean: torch.Tensor,
-                 running_var: torch.Tensor, weight: torch.Tensor,
-                 bias: torch.Tensor, momentum: float, eps: float, group: int,
-                 group_size: int, stats_mode: str):
+    def symbolic(g: torch._C.Graph, input: torch.Tensor,
+                 running_mean: torch.Tensor, running_var: torch.Tensor,
+                 weight: torch.Tensor, bias: torch.Tensor, momentum: float,
+                 eps: float, group: int, group_size: int, stats_mode: str):
         return g.op(
             'mmcv::MMCVSyncBatchNorm',
             input,

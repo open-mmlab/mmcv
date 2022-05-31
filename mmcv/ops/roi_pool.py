@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, Union
+from typing import Any, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -16,7 +16,7 @@ ext_module = ext_loader.load_ext('_ext',
 class RoIPoolFunction(Function):
 
     @staticmethod
-    def symbolic(g, input: torch.Tensor, rois: torch.Tensor,
+    def symbolic(g: torch._C.Graph, input: torch.Tensor, rois: torch.Tensor,
                  output_size: Union[int, tuple], spatial_scale: float):
         return g.op(
             'MaxRoiPool',
@@ -56,7 +56,9 @@ class RoIPoolFunction(Function):
 
     @staticmethod
     @once_differentiable
-    def backward(ctx: Any, grad_output: torch.Tensor):
+    def backward(
+            ctx: Any, grad_output: torch.Tensor
+    ) -> Tuple[torch.Tensor, None, None, None]:
         rois, argmax = ctx.saved_tensors
         grad_input = grad_output.new_zeros(ctx.input_shape)
 

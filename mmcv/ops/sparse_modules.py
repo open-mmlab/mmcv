@@ -21,12 +21,12 @@ from torch import nn
 from .sparse_structure import SparseConvTensor
 
 
-def is_spconv_module(module: tuple) -> bool:
+def is_spconv_module(module: nn.Module) -> bool:
     spconv_modules = (SparseModule, )
     return isinstance(module, spconv_modules)
 
 
-def is_sparse_conv(module: Any) -> bool:
+def is_sparse_conv(module: nn.Module) -> bool:
     from .sparse_conv import SparseConvolution
     return isinstance(module, SparseConvolution)
 
@@ -103,7 +103,7 @@ class SparseSequential(SparseModule):
             self.add_module(name, module)
         self._sparity_dict = {}
 
-    def __getitem__(self, idx: int):
+    def __getitem__(self, idx: int) -> torch.Tensor:
         if not (-len(self) <= idx < len(self)):
             raise IndexError(f'index {idx} is out of range')
         if idx < 0:

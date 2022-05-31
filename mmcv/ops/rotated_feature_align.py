@@ -23,8 +23,9 @@ class RotatedFeatureAlignFunction(Function):
     """
 
     @staticmethod
-    def symbolic(g, features: torch.Tensor, best_rbboxes: torch.Tensor,
-                 spatial_scale: float, points: int):
+    def symbolic(g: torch._C.Graph, features: torch.Tensor,
+                 best_rbboxes: torch.Tensor, spatial_scale: float,
+                 points: int):
         assert points in [1, 5]
         return g.op(
             'mmcv::MMCVRotatedFeatureAlign',

@@ -81,5 +81,5 @@ class RoIPointPool3dFunction(Function):
         return pooled_features, pooled_empty_flag
 
     @staticmethod
-    def backward(ctx: Any, grad_out: torch.Tensor) -> None:
+    def backward(ctx: Any, grad_out: torch.Tensor) -> torch.Tensor:
         raise NotImplementedError

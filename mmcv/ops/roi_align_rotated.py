@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, Union
+from typing import Any, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -15,7 +15,7 @@ ext_module = ext_loader.load_ext(
 class RoIAlignRotatedFunction(Function):
 
     @staticmethod
-    def symbolic(g, input: torch.Tensor, rois: torch.Tensor,
+    def symbolic(g: torch._C.Graph, input: torch.Tensor, rois: torch.Tensor,
                  output_size: Union[int, tuple], spatial_scale: float,
                  sampling_ratio: int, aligned: bool, clockwise: bool):
         if isinstance(output_size, int):
@@ -75,7 +75,10 @@ class RoIAlignRotatedFunction(Function):
         return output
 
     @staticmethod
-    def backward(ctx: Any, grad_output: torch.Tensor):
+    def backward(
+        ctx: Any, grad_output: torch.Tensor
+    ) -> Tuple[Optional[torch.Tensor], Optional[torch.Tensor], None, None,
+               None, None, None]:
         feature_size = ctx.feature_size
         rois = ctx.saved_tensors[0]
         assert feature_size is not None

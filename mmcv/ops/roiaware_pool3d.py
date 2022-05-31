@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, Union
+from typing import Any, Tuple, Union
 
 import torch
 from torch import nn as nn
@@ -115,7 +115,9 @@ class RoIAwarePool3dFunction(Function):
         return pooled_features
 
     @staticmethod
-    def backward(ctx: Any, grad_out: torch.Tensor):
+    def backward(
+        ctx: Any, grad_out: torch.Tensor
+    ) -> Tuple[None, None, torch.Tensor, None, None, None]:
         ret = ctx.roiaware_pool3d_for_backward
         pts_idx_of_voxels, argmax, mode, num_pts, num_channels = ret
 
