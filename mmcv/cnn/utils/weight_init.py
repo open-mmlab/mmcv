@@ -46,9 +46,7 @@ def update_init_info(module: nn.Module, init_info: str) -> None:
             module._params_init_info[param]['tmp_mean_value'] = mean_value
 
 
-def constant_init(module: nn.Module,
-                  val: float,
-                  bias: float = 0) -> None:
+def constant_init(module: nn.Module, val: float, bias: float = 0) -> None:
     if hasattr(module, 'weight') and module.weight is not None:
         nn.init.constant_(module.weight, val)
     if hasattr(module, 'bias') and module.bias is not None:
