@@ -48,7 +48,7 @@ def update_init_info(module: nn.Module, init_info: str) -> None:
 
 def constant_init(module: nn.Module,
                   val: float,
-                  bias: Union[int, float] = 0) -> None:
+                  bias: float = 0) -> None:
     if hasattr(module, 'weight') and module.weight is not None:
         nn.init.constant_(module.weight, val)
     if hasattr(module, 'bias') and module.bias is not None:
