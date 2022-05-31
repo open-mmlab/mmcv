@@ -118,7 +118,7 @@ def get_model_complexity_info(model: nn.Module,
 
 
 def flops_to_string(flops: float,
-                    units: str = 'GFLOPs',
+                    units: Optional[str] = 'GFLOPs',
                     precision: int = 2) -> str:
     """Convert FLOPs number into a string.
 
