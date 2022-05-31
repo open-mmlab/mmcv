@@ -56,8 +56,8 @@ def constant_init(module: nn.Module,
 
 
 def xavier_init(module: nn.Module,
-                gain: Union[int, float] = 1,
-                bias: Union[int, float] = 0,
+                gain: float = 1,
+                bias: float = 0,
                 distribution: str = 'normal') -> None:
     assert distribution in ['uniform', 'normal']
     if hasattr(module, 'weight') and module.weight is not None:
