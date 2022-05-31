@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
+from typing import Optional
 
 from mmcv.utils import TORCH_VERSION, digit_version
 from ...dist_utils import master_only
@@ -23,16 +24,16 @@ class TensorboardLoggerHook(LoggerHook):
     """
 
     def __init__(self,
-                 log_dir=None,
-                 interval=10,
-                 ignore_last=True,
-                 reset_flag=False,
-                 by_epoch=True):
+                 log_dir: Optional[str] = None,
+                 interval: int = 10,
+                 ignore_last: bool = True,
+                 reset_flag: bool = False,
+                 by_epoch: bool = True):
         super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.log_dir = log_dir
 
     @master_only
-    def before_run(self, runner):
+    def before_run(self, runner) -> None:
         super().before_run(runner)
         if (TORCH_VERSION == 'parrots'
                 or digit_version(TORCH_VERSION) < digit_version('1.1')):
@@ -55,7 +56,7 @@ class TensorboardLoggerHook(LoggerHook):
         self.writer = SummaryWriter(self.log_dir)
 
     @master_only
-    def log(self, runner):
+    def log(self, runner) -> None:
         tags = self.get_loggable_tags(runner, allow_text=True)
         for tag, val in tags.items():
             if isinstance(val, str):
@@ -64,5 +65,5 @@ class TensorboardLoggerHook(LoggerHook):
                 self.writer.add_scalar(tag, val, self.get_iter(runner))
 
     @master_only
-    def after_run(self, runner):
+    def after_run(self, runner) -> None:
         self.writer.close()
