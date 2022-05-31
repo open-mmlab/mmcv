@@ -143,7 +143,7 @@ class BaseInit:
 
     def __init__(self,
                  *,
-                 bias: int = 0,
+                 bias: float = 0,
                  bias_prob: Optional[float] = None,
                  layer: Optional[Union[str, List]] = None):
         self.wholemodule = False
@@ -228,7 +228,7 @@ class XavierInit(BaseInit):
             Defaults to None.
     """
 
-    def __init__(self, gain: int = 1, distribution: str = 'normal', **kwargs):
+    def __init__(self, gain: float = 1, distribution: str = 'normal', **kwargs):
         super().__init__(**kwargs)
         self.gain = gain
         self.distribution = distribution
@@ -272,8 +272,8 @@ class NormalInit(BaseInit):
     """
 
     def __init__(self,
-                 mean: Union[int, float] = 0,
-                 std: Union[int, float] = 1,
+                 mean: float = 0,
+                 std: float = 1,
                  **kwargs):
         super().__init__(**kwargs)
         self.mean = mean
@@ -426,7 +426,7 @@ class KaimingInit(BaseInit):
     """
 
     def __init__(self,
-                 a: Union[int, float] = 0,
+                 a: float = 0,
                  mode: str = 'fan_out',
                  nonlinearity: str = 'relu',
                  distribution: str = 'normal',
