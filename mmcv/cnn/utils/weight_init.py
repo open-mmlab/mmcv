@@ -374,7 +374,7 @@ class UniformInit(BaseInit):
             Defaults to None.
     """
 
-    def __init__(self, a: int = 0, b: int = 1, **kwargs):
+    def __init__(self, a: float = 0, b: float = 1, **kwargs):
         super().__init__(**kwargs)
         self.a = a
         self.b = b
