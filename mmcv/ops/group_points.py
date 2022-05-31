@@ -39,7 +39,7 @@ class QueryAndGroup(nn.Module):
     def __init__(self,
                  max_radius: float,
                  sample_num: int,
-                 min_radius: float = 0,
+                 min_radius: float = 0.,
                  use_xyz: bool = True,
                  return_grouped_xyz: bool = False,
                  normalize_xyz: bool = False,
