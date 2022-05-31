@@ -194,7 +194,7 @@ class CARAFE(Module):
         upsampled feature map
     """
 
-    def __init__(self, kernel_size, group_size, scale_factor):
+    def __init__(self, kernel_size: int, group_size: int, scale_factor: int):
         super().__init__()
 
         assert isinstance(kernel_size, int) and isinstance(
@@ -231,13 +231,13 @@ class CARAFEPack(nn.Module):
     """
 
     def __init__(self,
-                 channels,
-                 scale_factor,
-                 up_kernel=5,
-                 up_group=1,
-                 encoder_kernel=3,
-                 encoder_dilation=1,
-                 compressed_channels=64):
+                 channels: int,
+                 scale_factor: int,
+                 up_kernel: int = 5,
+                 up_group: int = 1,
+                 encoder_kernel: int = 3,
+                 encoder_dilation: int = 1,
+                 compressed_channels: int = 64):
         super().__init__()
         self.channels = channels
         self.scale_factor = scale_factor
