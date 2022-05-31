@@ -52,7 +52,7 @@ else:
                                   is_rocm_pytorch)
     # yapf: enable
     from .registry import Registry, build_from_cfg
-    from .seed import worker_init_fn, init_random_seed, set_random_seed
+    from .seed import init_random_seed, set_random_seed, worker_init_fn
     from .trace import is_jit_tracing
     __all__ = [
         'Config', 'ConfigDict', 'DictAction', 'collect_env', 'get_logger',
