@@ -9,12 +9,13 @@ from typing import Optional, Union
 import torch
 import torch.distributed as dist
 import torch.nn as nn
+from torch.utils.data import DataLoader
 
 import mmcv
 from mmcv.runner import get_dist_info
 
 
-def single_gpu_test(model: nn.Module, data_loader: nn.Dataloader) -> list:
+def single_gpu_test(model: nn.Module, data_loader: Dataloader) -> list:
     """Test model with a single gpu.
 
     This method tests model with a single gpu and displays test progress bar.
@@ -44,9 +45,9 @@ def single_gpu_test(model: nn.Module, data_loader: nn.Dataloader) -> list:
 
 
 def multi_gpu_test(model: nn.Module,
-                   data_loader: nn.Dataloader,
+                   data_loader: Dataloader,
                    tmpdir: Optional[str] = None,
-                   gpu_collect: Optional[bool] = False) -> list:
+                   gpu_collect: bool = False) -> list:
     """Test model with multiple gpus.
 
     This method tests model with multiple gpus and collects the results
