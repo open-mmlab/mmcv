@@ -117,7 +117,7 @@ def kaiming_init(module: nn.Module,
         nn.init.constant_(module.bias, bias)
 
 
-def caffe2_xavier_init(module: nn.Module, bias: float = 0) -> None:
+def caffe2_xavier_init(module: nn.Module, bias: float = 0.) -> None:
     # `XavierFill` in Caffe2 corresponds to `kaiming_uniform_` in PyTorch
     # Acknowledgment to FAIR's internal code
     kaiming_init(
