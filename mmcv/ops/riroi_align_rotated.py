@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, Union
+from typing import Any, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -57,7 +57,9 @@ class RiRoIAlignRotatedFunction(Function):
         return output
 
     @staticmethod
-    def backward(ctx: Any, grad_output: torch.Tensor):
+    def backward(
+        ctx: Any, grad_output: torch.Tensor
+    ) -> Optional[Tuple[torch.Tensor, None, None, None, None, None, None]]:
         feature_size = ctx.feature_size
         spatial_scale = ctx.spatial_scale
         num_orientations = ctx.num_orientations
@@ -70,7 +72,7 @@ class RiRoIAlignRotatedFunction(Function):
         out_w = grad_output.size(3)
         out_h = grad_output.size(2)
 
-        grad_input = grad_rois = None
+        grad_input = None
 
         if ctx.needs_input_grad[0]:
             grad_input = rois.new_zeros(batch_size, num_channels, feature_h,
@@ -86,7 +88,8 @@ class RiRoIAlignRotatedFunction(Function):
                 num_orientations=num_orientations,
                 clockwise=clockwise)
 
-            return grad_input, grad_rois, None, None, None, None, None
+            return grad_input, None, None, None, None, None, None
+        return None
 
 
 riroi_align_rotated = RiRoIAlignRotatedFunction.apply

@@ -1,5 +1,5 @@
 # Modified from https://github.com/hszhao/semseg/blob/master/lib/psa
-from typing import Optional
+from typing import Optional, Tuple
 
 import torch
 from torch import nn
@@ -49,7 +49,9 @@ class PSAMaskFunction(Function):
         return output
 
     @staticmethod
-    def backward(ctx, grad_output: torch.Tensor) -> torch.Tensor:
+    def backward(
+            ctx, grad_output: torch.Tensor
+    ) -> Tuple[torch.Tensor, None, None, None]:
         input = ctx.saved_tensors[0]
         psa_type = ctx.psa_type
         h_mask, w_mask = ctx.mask_size
