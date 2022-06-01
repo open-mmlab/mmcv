@@ -43,8 +43,8 @@ class BaseMergeCell(nn.Module):
     """
 
     def __init__(self,
-                 fused_channels: int = 256,
-                 out_channels: int = 256,
+                 fused_channels: Optional[int] = 256,
+                 out_channels: Optional[int] = 256,
                  with_out_conv: bool = True,
                  out_conv_cfg: dict = dict(
                      groups=1, kernel_size=3, padding=1, bias=True),
@@ -154,7 +154,10 @@ class ConcatCell(BaseMergeCell):
 
 class GlobalPoolingCell(BaseMergeCell):
 
-    def __init__(self, in_channels: int, out_channels: int, **kwargs):
+    def __init__(self,
+                 in_channels: Optional[int] = None,
+                 out_channels: Optional[int] = None,
+                 **kwargs):
         super().__init__(in_channels, out_channels, **kwargs)
         self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
 
