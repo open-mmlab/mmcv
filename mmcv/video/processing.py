@@ -56,7 +56,7 @@ def convert_video(in_file: str,
 def resize_video(in_file: str,
                  out_file: str,
                  size: Optional[tuple] = None,
-                 ratio: Optional[Union[tuple, float]] = None,
+                 ratio: Union[tuple, float, None] = None,
                  keep_ar: bool = False,
                  log_level: str = 'info',
                  print_cmd: bool = False) -> None:
