@@ -100,10 +100,10 @@ def uniform_init(module: nn.Module,
 
 
 def kaiming_init(module: nn.Module,
-                 a: float = 0,
+                 a: float = 0.,
                  mode: str = 'fan_out',
                  nonlinearity: str = 'relu',
-                 bias: float = 0,
+                 bias: float = 0.,
                  distribution: str = 'normal') -> None:
     assert distribution in ['uniform', 'normal']
     if hasattr(module, 'weight') and module.weight is not None:
