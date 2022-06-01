@@ -1,14 +1,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
-from typing import Sequence
+from typing import Optional, Sequence, Tuple, Union
 
 import torch.nn as nn
 import torch.utils.checkpoint as cp
+from torch import Tensor
 
 from .utils import constant_init, kaiming_init
 
 
-def conv3x3(in_planes, out_planes, stride=1, dilation=1):
+def conv3x3(in_planes: int,
+            out_planes: int,
+            stride: int = 1,
+            dilation: int = 1):
     """3x3 convolution with padding."""
     return nn.Conv2d(
         in_planes,
@@ -24,13 +28,13 @@ class BasicBlock(nn.Module):
     expansion = 1
 
     def __init__(self,
-                 inplanes,
-                 planes,
-                 stride=1,
-                 dilation=1,
-                 downsample=None,
-                 style='pytorch',
-                 with_cp=False):
+                 inplanes: int,
+                 planes: int,
+                 stride: int = 1,
+                 dilation: int = 1,
+                 downsample: Optional[nn.Module] = None,
+                 style: str = 'pytorch',
+                 with_cp: bool = False):
         super().__init__()
         assert style in ['pytorch', 'caffe']
         self.conv1 = conv3x3(inplanes, planes, stride, dilation)
@@ -43,7 +47,7 @@ class BasicBlock(nn.Module):
         self.dilation = dilation
         assert not with_cp
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         residual = x
 
         out = self.conv1(x)
@@ -66,13 +70,13 @@ class Bottleneck(nn.Module):
     expansion = 4
 
     def __init__(self,
-                 inplanes,
-                 planes,
-                 stride=1,
-                 dilation=1,
-                 downsample=None,
-                 style='pytorch',
-                 with_cp=False):
+                 inplanes: int,
+                 planes: int,
+                 stride: int = 1,
+                 dilation: int = 1,
+                 downsample: Optional[nn.Module] = None,
+                 style: str = 'pytorch',
+                 with_cp: bool = False):
         """Bottleneck block.
 
         If style is "pytorch", the stride-two layer is the 3x3 conv layer, if
@@ -108,7 +112,7 @@ class Bottleneck(nn.Module):
         self.dilation = dilation
         self.with_cp = with_cp
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
 
         def _inner_forward(x):
             residual = x
@@ -141,14 +145,14 @@ class Bottleneck(nn.Module):
         return out
 
 
-def make_res_layer(block,
-                   inplanes,
-                   planes,
-                   blocks,
-                   stride=1,
-                   dilation=1,
-                   style='pytorch',
-                   with_cp=False):
+def make_res_layer(block: nn.Module,
+                   inplanes: int,
+                   planes: int,
+                   blocks: int,
+                   stride: int = 1,
+                   dilation: int = 1,
+                   style: str = 'pytorch',
+                   with_cp: bool = False) -> nn.Module:
     downsample = None
     if stride != 1 or inplanes != planes * block.expansion:
         downsample = nn.Sequential(
@@ -264,7 +268,7 @@ class ResNet(nn.Module):
         self.feat_dim: int = 2**(len(stage_blocks) -
                                  1) * 64 * block.expansion  # type: ignore
 
-    def init_weights(self, pretrained=None):
+    def init_weights(self, pretrained: Optional[str] = None):
         if isinstance(pretrained, str):
             logger = logging.getLogger()
             from ..runner import load_checkpoint
@@ -278,7 +282,7 @@ class ResNet(nn.Module):
         else:
             raise TypeError('pretrained must be a str or None')
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Union[Tensor, Tuple[Tensor]]:
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -294,7 +298,7 @@ class ResNet(nn.Module):
         else:
             return tuple(outs)
 
-    def train(self, mode=True):
+    def train(self, mode: bool = True):
         super().train(mode)
         if self.bn_eval:
             for m in self.modules():
