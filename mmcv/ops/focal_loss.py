@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional
+from typing import Optional, Union
 
 import torch
 import torch.nn as nn
@@ -32,7 +32,7 @@ class SigmoidFocalLossFunction(Function):
     @staticmethod
     def forward(ctx,
                 input: torch.Tensor,
-                target: torch.LongTensor,
+                target: Union[torch.LongTensor, torch.cuda.LongTensor],
                 gamma: float = 2.0,
                 alpha: float = 0.25,
                 weight: Optional[torch.Tensor] = None,
@@ -103,8 +103,10 @@ class SigmoidFocalLoss(nn.Module):
         self.register_buffer('weight', weight)
         self.reduction = reduction
 
-    def forward(self, input: torch.Tensor,
-                target: torch.LongTensor) -> torch.Tensor:
+    def forward(
+        self, input: torch.Tensor,
+        target: Union[torch.LongTensor,
+                      torch.cuda.LongTensor]) -> torch.Tensor:
         return sigmoid_focal_loss(input, target, self.gamma, self.alpha,
                                   self.weight, self.reduction)
 
@@ -134,10 +136,10 @@ class SoftmaxFocalLossFunction(Function):
     @staticmethod
     def forward(ctx,
                 input: torch.Tensor,
-                target: torch.LongTensor,
-                gamma=2.0,
-                alpha=0.25,
-                weight=None,
+                target: Union[torch.LongTensor, torch.cuda.LongTensor],
+                gamma: float = 2.0,
+                alpha: float = 0.25,
+                weight: Optional[torch.Tensor] = None,
                 reduction='mean') -> torch.Tensor:
 
         assert isinstance(target, (torch.LongTensor, torch.cuda.LongTensor))
@@ -216,8 +218,10 @@ class SoftmaxFocalLoss(nn.Module):
         self.register_buffer('weight', weight)
         self.reduction = reduction
 
-    def forward(self, input: torch.Tensor,
-                target: torch.LongTensor) -> torch.Tensor:
+    def forward(
+        self, input: torch.Tensor,
+        target: Union[torch.LongTensor,
+                      torch.cuda.LongTensor]) -> torch.Tensor:
         return softmax_focal_loss(input, target, self.gamma, self.alpha,
                                   self.weight, self.reduction)
 
