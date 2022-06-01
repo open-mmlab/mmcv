@@ -265,10 +265,10 @@ class ResNet(nn.Module):
             self.add_module(layer_name, res_layer)
             self.res_layers.append(layer_name)
 
-        self.feat_dim: int = 2**(len(stage_blocks) -
-                                 1) * 64 * block.expansion  # type: ignore
+        self.feat_dim = block.expansion * 64 * 2**(  # type: ignore
+            len(stage_blocks) - 1)
 
-    def init_weights(self, pretrained: Optional[str] = None):
+    def init_weights(self, pretrained: Optional[str] = None) -> None:
         if isinstance(pretrained, str):
             logger = logging.getLogger()
             from ..runner import load_checkpoint
@@ -298,7 +298,7 @@ class ResNet(nn.Module):
         else:
             return tuple(outs)
 
-    def train(self, mode: bool = True):
+    def train(self, mode: bool = True) -> None:
         super().train(mode)
         if self.bn_eval:
             for m in self.modules():
