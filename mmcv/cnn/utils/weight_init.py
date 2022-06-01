@@ -426,7 +426,7 @@ class KaimingInit(BaseInit):
     """
 
     def __init__(self,
-                 a: float = 0,
+                 a: float = 0.,
                  mode: str = 'fan_out',
                  nonlinearity: str = 'relu',
                  distribution: str = 'normal',
