@@ -20,7 +20,8 @@ ext_module = ext_loader.load_ext('_ext', [
 class CARAFENaiveFunction(Function):
 
     @staticmethod
-    def symbolic(g, features, masks, kernel_size, group_size, scale_factor):
+    def symbolic(g, features: Tensor, masks: Tensor, kernel_size: int,
+                 group_size: int, scale_factor: int) -> Tensor:
         return g.op(
             'mmcv::MMCVCARAFENaive',
             features,
@@ -107,7 +108,8 @@ class CARAFENaive(Module):
 class CARAFEFunction(Function):
 
     @staticmethod
-    def symbolic(g, features, masks, kernel_size, group_size, scale_factor):
+    def symbolic(g, features: Tensor, masks: Tensor, kernel_size: int,
+                 group_size: int, scale_factor: int) -> Tensor:
         return g.op(
             'mmcv::MMCVCARAFE',
             features,

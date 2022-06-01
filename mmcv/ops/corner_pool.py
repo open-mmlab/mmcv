@@ -38,7 +38,7 @@ def _corner_pool(x: Tensor, dim: int, flip: bool) -> Tensor:
 class TopPoolFunction(Function):
 
     @staticmethod
-    def symbolic(g, input):
+    def symbolic(g, input: Tensor) -> Tensor:
         output = g.op(
             'mmcv::MMCVCornerPool', input, mode_i=int(_mode_dict['top']))
         return output
@@ -51,7 +51,7 @@ class TopPoolFunction(Function):
 class BottomPoolFunction(Function):
 
     @staticmethod
-    def symbolic(g, input):
+    def symbolic(g, input: Tensor) -> Tensor:
         output = g.op(
             'mmcv::MMCVCornerPool', input, mode_i=int(_mode_dict['bottom']))
         return output
@@ -64,7 +64,7 @@ class BottomPoolFunction(Function):
 class LeftPoolFunction(Function):
 
     @staticmethod
-    def symbolic(g, input):
+    def symbolic(g, input: Tensor) -> Tensor:
         output = g.op(
             'mmcv::MMCVCornerPool', input, mode_i=int(_mode_dict['left']))
         return output
@@ -77,7 +77,7 @@ class LeftPoolFunction(Function):
 class RightPoolFunction(Function):
 
     @staticmethod
-    def symbolic(g, input):
+    def symbolic(g, input: Tensor) -> Tensor:
         output = g.op(
             'mmcv::MMCVCornerPool', input, mode_i=int(_mode_dict['right']))
         return output
