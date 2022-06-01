@@ -274,7 +274,7 @@ class NormalInit(BaseInit):
 
     """
 
-    def __init__(self, mean: float = 0, std: float = 1, **kwargs):
+    def __init__(self, mean: float = 0., std: float = 1., **kwargs):
         super().__init__(**kwargs)
         self.mean = mean
         self.std = std
