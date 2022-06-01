@@ -1,12 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
-from torch import nn
+from torch import Tensor, nn
 from torch.autograd import Function
 
 _mode_dict = {'top': 0, 'bottom': 1, 'left': 2, 'right': 3}
 
 
-def _corner_pool(x, dim, flip):
+def _corner_pool(x: Tensor, dim: int, flip: bool) -> Tensor:
     size = x.size(dim)
     output = x.clone()
 
@@ -44,7 +44,7 @@ class TopPoolFunction(Function):
         return output
 
     @staticmethod
-    def forward(ctx, input):
+    def forward(ctx, input: Tensor) -> Tensor:
         return _corner_pool(input, 2, True)
 
 
@@ -57,7 +57,7 @@ class BottomPoolFunction(Function):
         return output
 
     @staticmethod
-    def forward(ctx, input):
+    def forward(ctx, input: Tensor) -> Tensor:
         return _corner_pool(input, 2, False)
 
 
@@ -70,7 +70,7 @@ class LeftPoolFunction(Function):
         return output
 
     @staticmethod
-    def forward(ctx, input):
+    def forward(ctx, input: Tensor) -> Tensor:
         return _corner_pool(input, 3, True)
 
 
@@ -83,7 +83,7 @@ class RightPoolFunction(Function):
         return output
 
     @staticmethod
-    def forward(ctx, input):
+    def forward(ctx, input: Tensor) -> Tensor:
         return _corner_pool(input, 3, False)
 
 
@@ -128,9 +128,9 @@ class CornerPool(nn.Module):
         super().__init__()
         assert mode in self.pool_functions
         self.mode = mode
-        self.corner_pool = self.pool_functions[mode]
+        self.corner_pool: Function = self.pool_functions[mode]
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         if torch.__version__ != 'parrots' and torch.__version__ >= '1.5.0':
             if torch.onnx.is_in_onnx_export():
                 assert torch.__version__ >= '1.7.0', \
