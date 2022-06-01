@@ -42,7 +42,7 @@ class SyncBatchNormFunction(Function):
     def forward(self, input: torch.Tensor, running_mean: torch.Tensor,
                 running_var: torch.Tensor, weight: torch.Tensor,
                 bias: torch.Tensor, momentum: float, eps: float, group: int,
-                group_size: int, stats_mode: str):
+                group_size: int, stats_mode: str) -> torch.Tensor:
         self.momentum = momentum
         self.eps = eps
         self.group = group

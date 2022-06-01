@@ -127,7 +127,8 @@ class RiRoIAlignRotated(nn.Module):
         self.num_orientations = int(num_orientations)
         self.clockwise = clockwise
 
-    def forward(self, features: torch.Tensor, rois: torch.Tensor):
+    def forward(self, features: torch.Tensor,
+                rois: torch.Tensor) -> torch.Tensor:
         return RiRoIAlignRotatedFunction.apply(features, rois, self.out_size,
                                                self.spatial_scale,
                                                self.num_samples,

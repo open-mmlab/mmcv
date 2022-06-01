@@ -23,7 +23,8 @@ class PSAMaskFunction(Function):
             mask_size_i=mask_size)
 
     @staticmethod
-    def forward(ctx, input: torch.Tensor, psa_type: str, mask_size: int):
+    def forward(ctx, input: torch.Tensor, psa_type: str,
+                mask_size: int) -> torch.Tensor:
         ctx.psa_type = psa_type
         ctx.mask_size = _pair(mask_size)
         ctx.save_for_backward(input)
@@ -48,7 +49,7 @@ class PSAMaskFunction(Function):
         return output
 
     @staticmethod
-    def backward(ctx, grad_output: torch.Tensor):
+    def backward(ctx, grad_output: torch.Tensor) -> torch.Tensor:
         input = ctx.saved_tensors[0]
         psa_type = ctx.psa_type
         h_mask, w_mask = ctx.mask_size
@@ -85,7 +86,7 @@ class PSAMask(nn.Module):
         self.mask_size = mask_size
         self.psa_type = psa_type
 
-    def forward(self, input: torch.Tensor):
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         return psa_mask(input, self.psa_type_enum, self.mask_size)
 
     def __repr__(self):
