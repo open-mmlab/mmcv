@@ -143,7 +143,7 @@ class BaseInit:
 
     def __init__(self,
                  *,
-                 bias: float = 0,
+                 bias: float = 0.,
                  bias_prob: Optional[float] = None,
                  layer: Union[str, List, None] = None):
         self.wholemodule = False
