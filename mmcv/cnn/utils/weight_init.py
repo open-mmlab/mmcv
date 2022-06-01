@@ -90,8 +90,8 @@ def trunc_normal_init(module: nn.Module,
 
 
 def uniform_init(module: nn.Module,
-                 a: float = 0,
-                 b: float = 1,
+                 a: float = 0.,
+                 b: float = 1.,
                  bias: float = 0) -> None:
     if hasattr(module, 'weight') and module.weight is not None:
         nn.init.uniform_(module.weight, a, b)
