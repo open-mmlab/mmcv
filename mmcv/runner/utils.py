@@ -6,6 +6,7 @@ import time
 import warnings
 from getpass import getuser
 from socket import gethostname
+from types import ModuleType
 from typing import Any, Dict, Optional
 
 import numpy as np
@@ -33,9 +34,9 @@ def get_time_str() -> str:
     return time.strftime('%Y%m%d_%H%M%S', time.localtime())
 
 
-def obj_from_dict(info: Dict,
-                  parent: Optional[Any] = None,
-                  default_args: Optional[Dict] = None) -> Any:
+def obj_from_dict(info: dict,
+                  parent: Optional[ModuleType] = None,
+                  default_args: Optional[dict] = None):
     """Initialize an object from dict.
 
     The dict must contain the key "type", which indicates the object type, it
