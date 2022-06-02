@@ -229,7 +229,7 @@ class CheckpointLoader:
     def register_scheme(cls,
                         prefixes: Union[str, Sequence[str]],
                         loader: Optional[Callable] = None,
-                        force: Optional[bool] = False):
+                        force: bool = False):
         """Register a loader to CheckpointLoader.
 
         This method can be used as a normal class method or a decorator.
