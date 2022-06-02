@@ -24,7 +24,8 @@ class MultiScaleDeformableAttnFunction(Function):
 
     @staticmethod
     def forward(ctx, value: torch.Tensor, value_spatial_shapes: torch.Tensor,
-                value_level_start_index, sampling_locations: torch.Tensor,
+                value_level_start_index: torch.Tensor,
+                sampling_locations: torch.Tensor,
                 attention_weights: torch.Tensor,
                 im2col_step: torch.Tensor) -> torch.Tensor:
         """GPU version of multi-scale deformable attention.

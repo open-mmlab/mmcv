@@ -18,8 +18,8 @@ class MaskedConv2dFunction(Function):
 
     @staticmethod
     def symbolic(g, features: torch.Tensor, mask: torch.Tensor,
-                 weight: torch.Tensor, bias: torch.Tensor, padding: int,
-                 stride: int):
+                 weight: torch.nn.Parameter, bias: torch.nn.Parameter,
+                 padding: int, stride: int):
         return g.op(
             'mmcv::MMCVMaskedConv2d',
             features,
@@ -33,8 +33,8 @@ class MaskedConv2dFunction(Function):
     def forward(ctx,
                 features: torch.Tensor,
                 mask: torch.Tensor,
-                weight: torch.Tensor,
-                bias: torch.Tensor,
+                weight: torch.nn.Parameter,
+                bias: torch.nn.Parameter,
                 padding: int = 0,
                 stride: int = 1) -> torch.Tensor:
         assert mask.dim() == 3 and mask.size(0) == 1
