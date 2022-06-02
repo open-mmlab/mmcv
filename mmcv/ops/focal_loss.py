@@ -105,8 +105,8 @@ class SigmoidFocalLoss(nn.Module):
 
     def forward(
         self, input: torch.Tensor,
-        target: Union[torch.LongTensor,
-                      torch.cuda.LongTensor]) -> torch.Tensor:
+        target: Union[torch.LongTensor, torch.cuda.LongTensor],
+    ) -> torch.Tensor:
         return sigmoid_focal_loss(input, target, self.gamma, self.alpha,
                                   self.weight, self.reduction)
 
