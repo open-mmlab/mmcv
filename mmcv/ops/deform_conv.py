@@ -22,17 +22,8 @@ ext_module = ext_loader.load_ext('_ext', [
 class DeformConv2dFunction(Function):
 
     @staticmethod
-    def symbolic(g,
-                 input: Tensor,
-                 offset: Tensor,
-                 weight: Tensor,
-                 stride: Union[int, Tuple[int, ...]],
-                 padding: Union[int, Tuple[int, ...]],
-                 dilation: Union[int, Tuple[int, ...]],
-                 groups: int,
-                 deform_groups: int,
-                 bias: bool = False,
-                 im2col_step: int = 32) -> Tensor:
+    def symbolic(g, input, offset, weight, stride, padding, dilation, groups,
+                 deform_groups, bias, im2col_step):
         return g.op(
             'mmcv::MMCVDeformConv2d',
             input,
