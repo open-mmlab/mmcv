@@ -28,7 +28,7 @@ class MMDistributedDataParallel(nn.Module):
         self.broadcast_bucket_size = bucket_cap_mb * 1024 * 1024
         self._sync_params()
 
-    def _dist_broadcast_coalesced(self, tensors: Sequence[Tensor],
+    def _dist_broadcast_coalesced(self, tensors: Sequence[torch.Tensor],
                                   buffer_size: int) -> None:
         for tensors in _take_tensors(tensors, buffer_size):
             flat_tensors = _flatten_dense_tensors(tensors)

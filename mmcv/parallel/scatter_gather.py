@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Any, Tuple
+
 import torch
 from torch.nn.parallel._functions import Scatter as OrigScatter
 
@@ -6,7 +8,7 @@ from ._functions import Scatter
 from .data_container import DataContainer
 
 
-def scatter(inputs, target_gpus, dim: int = 0):
+def scatter(inputs, target_gpus, dim: int = 0) -> Any:
     """Scatter inputs to target gpus.
 
     The only difference from original :func:`scatter` is to add support for
@@ -46,7 +48,10 @@ def scatter(inputs, target_gpus, dim: int = 0):
         scatter_map = None  # type: ignore
 
 
-def scatter_kwargs(inputs, kwargs, target_gpus, dim: int = 0):
+def scatter_kwargs(inputs,
+                   kwargs,
+                   target_gpus,
+                   dim: int = 0) -> Tuple[tuple, tuple]:
     """Scatter with support for kwargs dictionary."""
     inputs = scatter(inputs, target_gpus, dim) if inputs else []
     kwargs = scatter(kwargs, target_gpus, dim) if kwargs else []

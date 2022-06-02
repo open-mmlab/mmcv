@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from collections.abc import Mapping, Sequence
-from typing import List, Union
 
 import torch
 import torch.nn.functional as F
@@ -9,7 +8,7 @@ from torch.utils.data.dataloader import default_collate
 from .data_container import DataContainer
 
 
-def collate(batch: Union[Sequence, List], samples_per_gpu: int = 1):
+def collate(batch: Sequence, samples_per_gpu: int = 1):
     """Puts each data field into a tensor/DataContainer with outer dimension
     batch size.
 

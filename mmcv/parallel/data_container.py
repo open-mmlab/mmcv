@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import functools
-from typing import Any, Callable, Type, Union
+from typing import Callable, Type, Union
 
 import numpy as np
 import torch
@@ -9,7 +9,7 @@ import torch
 def assert_tensor_type(func: Callable) -> Callable:
 
     @functools.wraps(func)
-    def wrapper(*args, **kwargs) -> Any:
+    def wrapper(*args, **kwargs):
         if not isinstance(args[0].data, torch.Tensor):
             raise AttributeError(
                 f'{args[0].__class__.__name__} has no attribute '
