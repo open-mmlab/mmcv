@@ -2,6 +2,8 @@
 # modified from
 # https://github.com/Megvii-BaseDetection/cvpods/blob/master/cvpods/layers/border_align.py
 
+from typing import Tuple
+
 import torch
 import torch.nn as nn
 from torch.autograd import Function
@@ -16,12 +18,14 @@ ext_module = ext_loader.load_ext(
 class BorderAlignFunction(Function):
 
     @staticmethod
-    def symbolic(g, input, boxes, pool_size):
+    def symbolic(g, input: torch.Tensor, boxes: torch.Tensor,
+                 pool_size: int) -> torch.Tensor:
         return g.op(
             'mmcv::MMCVBorderAlign', input, boxes, pool_size_i=pool_size)
 
     @staticmethod
-    def forward(ctx, input, boxes, pool_size):
+    def forward(ctx, input: torch.Tensor, boxes: torch.Tensor,
+                pool_size: int) -> torch.Tensor:
         ctx.pool_size = pool_size
         ctx.input_shape = input.size()
 
@@ -45,7 +49,8 @@ class BorderAlignFunction(Function):
 
     @staticmethod
     @once_differentiable
-    def backward(ctx, grad_output):
+    def backward(ctx,
+                 grad_output: torch.Tensor) -> Tuple[torch.Tensor, None, None]:
         boxes, argmax_idx = ctx.saved_tensors
         grad_input = grad_output.new_zeros(ctx.input_shape)
         # complex head architecture may cause grad_output uncontiguous

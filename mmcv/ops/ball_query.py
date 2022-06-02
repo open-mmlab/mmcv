@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Tuple
+
 import torch
 from torch.autograd import Function
 
@@ -49,7 +51,7 @@ class BallQuery(Function):
         return idx
 
     @staticmethod
-    def backward(ctx, a=None):
+    def backward(ctx, a=None) -> Tuple[None, None, None, None]:
         return None, None, None, None
 
 
