@@ -13,7 +13,6 @@ from tempfile import TemporaryDirectory
 from typing import Callable, List, Optional, Sequence, Union
 
 import torch
-import torch.nn
 import torchvision
 from torch.optim import Optimizer
 
