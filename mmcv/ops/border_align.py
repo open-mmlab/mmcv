@@ -18,8 +18,7 @@ ext_module = ext_loader.load_ext(
 class BorderAlignFunction(Function):
 
     @staticmethod
-    def symbolic(g, input: torch.Tensor, boxes: torch.Tensor,
-                 pool_size: int) -> torch.Tensor:
+    def symbolic(g, input, boxes, pool_size):
         return g.op(
             'mmcv::MMCVBorderAlign', input, boxes, pool_size_i=pool_size)
 
