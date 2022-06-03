@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from pathlib import Path
+from typing import Optional
 
 from ...dist_utils import master_only
 from ..hook import HOOKS
@@ -31,17 +32,17 @@ class DvcliveLoggerHook(LoggerHook):
     """
 
     def __init__(self,
-                 model_file=None,
-                 interval=10,
-                 ignore_last=True,
-                 reset_flag=False,
-                 by_epoch=True,
+                 model_file: Optional[str] = None,
+                 interval: int = 10,
+                 ignore_last: bool = True,
+                 reset_flag: bool = False,
+                 by_epoch: bool = True,
                  **kwargs):
         super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.model_file = model_file
         self.import_dvclive(**kwargs)
 
-    def import_dvclive(self, **kwargs):
+    def import_dvclive(self, **kwargs) -> None:
         try:
             from dvclive import Live
         except ImportError:
@@ -50,7 +51,7 @@ class DvcliveLoggerHook(LoggerHook):
         self.dvclive = Live(**kwargs)
 
     @master_only
-    def log(self, runner):
+    def log(self, runner) -> None:
         tags = self.get_loggable_tags(runner)
         if tags:
             self.dvclive.set_step(self.get_iter(runner))
@@ -58,7 +59,7 @@ class DvcliveLoggerHook(LoggerHook):
                 self.dvclive.log(k, v)
 
     @master_only
-    def after_train_epoch(self, runner):
+    def after_train_epoch(self, runner) -> None:
         super().after_train_epoch(runner)
         if self.model_file is not None:
             runner.save_checkpoint(
