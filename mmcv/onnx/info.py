@@ -5,7 +5,7 @@ import warnings
 import torch
 
 
-def is_custom_op_loaded():
+def is_custom_op_loaded() -> bool:
 
     # Following strings of text style are from colorama package
     bright_style, reset_style = '\x1b[1m', '\x1b[0m'
