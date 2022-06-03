@@ -30,10 +30,10 @@ class MomentumUpdaterHook(Hook):
         self.warmup_iters = warmup_iters
         self.warmup_ratio = warmup_ratio
 
-        self.base_momentum: Union[list, dict] = [
-        ]  # initial momentum for all param groups
-        self.regular_momentum: Union[list, dict] = [
-        ]  # expected momentum if no warming up is performed
+        # initial momentum for all param groups
+        self.base_momentum: Union[list, dict] = []
+        # expected momentum if no warming up is performed
+        self.regular_momentum: Union[list, dict] = []
 
     def _set_momentum(self, runner, momentum_groups):
         if isinstance(runner.optimizer, dict):
@@ -96,8 +96,8 @@ class MomentumUpdaterHook(Hook):
                 ]
             else:
                 raise ValueError(
-                    f"Invalid 'self.warmup' value of {self.warmup}, "
-                    'report this as a bug')
+                    'Expected values of `self.warmup` to be "constant", '
+                    f'"linear", or "exp", got {self.warmup}')
             return warmup_momentum
 
         if isinstance(self.regular_momentum, dict):
