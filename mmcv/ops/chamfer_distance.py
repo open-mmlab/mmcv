@@ -67,9 +67,9 @@ class ChamferDistanceFunction(Function):
             grad_dist2 (Tensor): Gradient of chamfer ditacne
                 (xyz2 to xyz1) with shape (B, N).
             grad_idx1 (Tensor): Index of chamfer ditacne (xyz1 to xyz2)
-                    with shape (B, N), which be used in compute gradient.
+                with shape (B, N), which be used in compute gradient.
             grad_idx2 (Tensor): Index of chamfer ditacne (xyz2 to xyz2)
-                    with shape (B, N), which be used in compute gradient.
+                with shape (B, N), which be used in compute gradient.
 
         Returns:
             Tuple[Tensor, Tensor]:
