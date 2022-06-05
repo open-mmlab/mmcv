@@ -29,25 +29,25 @@ class ChamferDistanceFunction(Function):
         Returns:
             Sequence[Tensor]:
 
-                - dist1 (Tensor): Chamfer ditacne (xyz1 to xyz2) with
+                - dist1 (Tensor): Chamfer distance (xyz1 to xyz2) with
                     shape (B, N).
-                - dist2 (Tensor): Chamfer ditacne (xyz2 to xyz1) with
+                - dist2 (Tensor): Chamfer distance (xyz2 to xyz1) with
                     shape (B, N).
-                - idx1 (Tensor): Index of chamfer ditacne (xyz1 to xyz2)
+                - idx1 (Tensor): Index of chamfer distance (xyz1 to xyz2)
                     with shape (B, N), which be used in compute gradient.
-                - idx2 (Tensor): Index of chamfer ditacne (xyz2 to xyz2)
+                - idx2 (Tensor): Index of chamfer distance (xyz2 to xyz2)
                     with shape (B, N), which be used in compute gradient.
         """
-        batchsize, n, _ = xyz1.size()
+        batch_size, n, _ = xyz1.size()
         _, m, _ = xyz2.size()
         device = xyz1.device
         xyz1 = xyz1.contiguous()
         xyz2 = xyz2.contiguous()
 
-        dist1 = torch.zeros(batchsize, n).to(device)
-        dist2 = torch.zeros(batchsize, m).to(device)
-        idx1 = torch.zeros(batchsize, n).type(torch.IntTensor).to(device)
-        idx2 = torch.zeros(batchsize, m).type(torch.IntTensor).to(device)
+        dist1 = torch.zeros(batch_size, n).to(device)
+        dist2 = torch.zeros(batch_size, m).to(device)
+        idx1 = torch.zeros(batch_size, n).type(torch.IntTensor).to(device)
+        idx2 = torch.zeros(batch_size, m).type(torch.IntTensor).to(device)
 
         ext_module.chamfer_distance_forward(xyz1, xyz2, dist1, dist2, idx1,
                                             idx2)
@@ -62,13 +62,13 @@ class ChamferDistanceFunction(Function):
         """
 
         Args:
-            grad_dist1 (Tensor): Gradient of chamfer ditacne
+            grad_dist1 (Tensor): Gradient of chamfer distance
                 (xyz1 to xyz2) with shape (B, N).
-            grad_dist2 (Tensor): Gradient of chamfer ditacne
+            grad_dist2 (Tensor): Gradient of chamfer distance
                 (xyz2 to xyz1) with shape (B, N).
-            grad_idx1 (Tensor): Index of chamfer ditacne (xyz1 to xyz2)
+            grad_idx1 (Tensor): Index of chamfer distance (xyz1 to xyz2)
                 with shape (B, N), which be used in compute gradient.
-            grad_idx2 (Tensor): Index of chamfer ditacne (xyz2 to xyz2)
+            grad_idx2 (Tensor): Index of chamfer distance (xyz2 to xyz2)
                 with shape (B, N), which be used in compute gradient.
 
         Returns:
