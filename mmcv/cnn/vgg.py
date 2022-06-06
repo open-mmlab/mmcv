@@ -70,7 +70,7 @@ class VGG(nn.Module):
                  bn_frozen=False,
                  ceil_mode=False,
                  with_last_pool=True):
-        super(VGG, self).__init__()
+        super().__init__()
         if depth not in self.arch_settings:
             raise KeyError(f'invalid depth {depth} for vgg')
         assert num_stages >= 1 and num_stages <= 5
@@ -157,7 +157,7 @@ class VGG(nn.Module):
             return tuple(outs)
 
     def train(self, mode=True):
-        super(VGG, self).train(mode)
+        super().train(mode)
         if self.bn_eval:
             for m in self.modules():
                 if isinstance(m, nn.BatchNorm2d):

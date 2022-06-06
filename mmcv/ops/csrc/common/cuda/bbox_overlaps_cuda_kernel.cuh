@@ -88,6 +88,7 @@ __global__ void bbox_overlaps_cuda_kernel(const T* bbox1, const T* bbox2,
   }
 }
 
+#if __CUDA_ARCH__ >= 530
 __device__ __forceinline__ __half __half_area(const __half x1, const __half y1,
                                               const __half x2, const __half y2,
                                               const __half offset) {
@@ -141,5 +142,6 @@ __device__ void bbox_overlaps_cuda_kernel_half(
     ious[index] = __hdiv(interS, baseS);
   }
 }
+#endif  // __CUDA_ARCH__ >= 530
 
 #endif  // BBOX_OVERLAPS_CUDA_KERNEL_CUH

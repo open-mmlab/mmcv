@@ -35,7 +35,7 @@ gt_offset_bias_grad = [1.44, -0.72, 0., 0., -0.10, -0.08, -0.54, -0.54],
 gt_deform_weight_grad = [[[[3.62, 0.], [0.40, 0.18]]]]
 
 
-class TestDeformconv(object):
+class TestDeformconv:
 
     def _test_deformconv(self,
                          dtype=torch.float,

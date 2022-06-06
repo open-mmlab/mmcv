@@ -21,7 +21,7 @@ Welcome to use the unified model deployment toolbox MMDeploy: https://github.com
 ### List of operators for ONNX Runtime supported in MMCV
 
 | Operator                                               | CPU | GPU | MMCV Releases |
-|:-------------------------------------------------------|:---:|:---:|:-------------:|
+| :----------------------------------------------------- | :-: | :-: | :-----------: |
 | [SoftNMS](onnxruntime_custom_ops.md#softnms)           |  Y  |  N  |     1.2.3     |
 | [RoIAlign](onnxruntime_custom_ops.md#roialign)         |  Y  |  N  |     1.2.5     |
 | [NMS](onnxruntime_custom_ops.md#nms)                   |  Y  |  N  |     1.2.7     |
@@ -96,6 +96,7 @@ onnx_results = sess.run(None, {'input' : input_data})
 - *Please note that this feature is experimental and may change in the future. Strongly suggest users always try with the latest master branch.*
 
 - The custom operator is not included in [supported operator list](https://github.com/microsoft/onnxruntime/blob/master/docs/OperatorKernels.md) in ONNX Runtime.
+
 - The custom operator should be able to be exported to ONNX.
 
 #### Main procedures
@@ -103,18 +104,20 @@ onnx_results = sess.run(None, {'input' : input_data})
 Take custom operator `soft_nms` for example.
 
 1. Add header `soft_nms.h` to ONNX Runtime include directory `mmcv/ops/csrc/onnxruntime/`
+
 2. Add source `soft_nms.cpp` to ONNX Runtime source directory `mmcv/ops/csrc/onnxruntime/cpu/`
+
 3. Register `soft_nms` operator in [onnxruntime_register.cpp](../../mmcv/ops/csrc/onnxruntime/cpu/onnxruntime_register.cpp)
 
-    ```c++
-    #include "soft_nms.h"
+   ```c++
+   #include "soft_nms.h"
 
-    SoftNmsOp c_SoftNmsOp;
+   SoftNmsOp c_SoftNmsOp;
 
-    if (auto status = ortApi->CustomOpDomain_Add(domain, &c_SoftNmsOp)) {
-    return status;
-    }
-    ```
+   if (auto status = ortApi->CustomOpDomain_Add(domain, &c_SoftNmsOp)) {
+   return status;
+   }
+   ```
 
 4. Add unit test into `tests/test_ops/test_onnx.py`
    Check [here](../../tests/test_ops/test_onnx.py) for examples.
@@ -124,8 +127,8 @@ Take custom operator `soft_nms` for example.
 ### Known Issues
 
 - "RuntimeError: tuple appears in op that does not forward tuples, unsupported kind: `prim::PythonOp`."
-   1. Note generally `cummax` or `cummin` is exportable to ONNX as long as the torch version >= 1.5.0, since `torch.cummax` is only supported with torch >= 1.5.0. But when `cummax` or `cummin` serves as an intermediate component whose outputs is used as inputs for another modules, it's expected that torch version must be >= 1.7.0. Otherwise the above error might arise, when running exported ONNX model with onnxruntime.
-   2. Solution: update the torch version to 1.7.0 or higher.
+  1. Note generally `cummax` or `cummin` is exportable to ONNX as long as the torch version >= 1.5.0, since `torch.cummax` is only supported with torch >= 1.5.0. But when `cummax` or `cummin` serves as an intermediate component whose outputs is used as inputs for another modules, it's expected that torch version must be >= 1.7.0. Otherwise the above error might arise, when running exported ONNX model with onnxruntime.
+  2. Solution: update the torch version to 1.7.0 or higher.
 
 ### References
 

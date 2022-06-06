@@ -156,7 +156,7 @@ class RoIAlignRotated(nn.Module):
                  sampling_ratio=0,
                  aligned=True,
                  clockwise=False):
-        super(RoIAlignRotated, self).__init__()
+        super().__init__()
 
         self.output_size = _pair(output_size)
         self.spatial_scale = float(spatial_scale)

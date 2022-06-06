@@ -6,7 +6,7 @@ import torch
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
 
-class TestBBox(object):
+class TestBBox:
 
     def _test_bbox_overlaps(self, device='cpu', dtype=torch.float):
         from mmcv.ops import bbox_overlaps

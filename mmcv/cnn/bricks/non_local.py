@@ -40,7 +40,7 @@ class _NonLocalNd(nn.Module, metaclass=ABCMeta):
                  norm_cfg=None,
                  mode='embedded_gaussian',
                  **kwargs):
-        super(_NonLocalNd, self).__init__()
+        super().__init__()
         self.in_channels = in_channels
         self.reduction = reduction
         self.use_scale = use_scale
@@ -228,8 +228,7 @@ class NonLocal1d(_NonLocalNd):
                  sub_sample=False,
                  conv_cfg=dict(type='Conv1d'),
                  **kwargs):
-        super(NonLocal1d, self).__init__(
-            in_channels, conv_cfg=conv_cfg, **kwargs)
+        super().__init__(in_channels, conv_cfg=conv_cfg, **kwargs)
 
         self.sub_sample = sub_sample
 
@@ -262,8 +261,7 @@ class NonLocal2d(_NonLocalNd):
                  sub_sample=False,
                  conv_cfg=dict(type='Conv2d'),
                  **kwargs):
-        super(NonLocal2d, self).__init__(
-            in_channels, conv_cfg=conv_cfg, **kwargs)
+        super().__init__(in_channels, conv_cfg=conv_cfg, **kwargs)
 
         self.sub_sample = sub_sample
 
@@ -293,8 +291,7 @@ class NonLocal3d(_NonLocalNd):
                  sub_sample=False,
                  conv_cfg=dict(type='Conv3d'),
                  **kwargs):
-        super(NonLocal3d, self).__init__(
-            in_channels, conv_cfg=conv_cfg, **kwargs)
+        super().__init__(in_channels, conv_cfg=conv_cfg, **kwargs)
         self.sub_sample = sub_sample
 
         if sub_sample:

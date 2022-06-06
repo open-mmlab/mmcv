@@ -11,12 +11,15 @@ from mmcv.parallel import (MODULE_WRAPPERS, MMDataParallel,
 from mmcv.parallel._functions import Scatter, get_input_device, scatter
 from mmcv.parallel.distributed_deprecated import \
     MMDistributedDataParallel as DeprecatedMMDDP
+from mmcv.utils import Registry
 
 
 def mock(*args, **kwargs):
     pass
 
 
+@pytest.mark.skipif(
+    torch.__version__ == 'parrots', reason='not supported in parrots now')
 @patch('torch.distributed._broadcast_coalesced', mock)
 @patch('torch.distributed.broadcast', mock)
 @patch('torch.nn.parallel.DistributedDataParallel._ddp_init_helper', mock)
@@ -61,7 +64,7 @@ def test_is_module_wrapper():
 
     # test module wrapper registry
     @MODULE_WRAPPERS.register_module()
-    class ModuleWrapper(object):
+    class ModuleWrapper:
 
         def __init__(self, module):
             self.module = module
@@ -71,6 +74,36 @@ def test_is_module_wrapper():
 
     module_wraper = ModuleWrapper(model)
     assert is_module_wrapper(module_wraper)
+
+    # test module wrapper registry in downstream repo
+    MMRAZOR_MODULE_WRAPPERS = Registry(
+        'mmrazor module wrapper', parent=MODULE_WRAPPERS, scope='mmrazor')
+    MMPOSE_MODULE_WRAPPERS = Registry(
+        'mmpose module wrapper', parent=MODULE_WRAPPERS, scope='mmpose')
+
+    @MMRAZOR_MODULE_WRAPPERS.register_module()
+    class ModuleWrapperInRazor:
+
+        def __init__(self, module):
+            self.module = module
+
+        def forward(self, *args, **kwargs):
+            return self.module(*args, **kwargs)
+
+    @MMPOSE_MODULE_WRAPPERS.register_module()
+    class ModuleWrapperInPose:
+
+        def __init__(self, module):
+            self.module = module
+
+        def forward(self, *args, **kwargs):
+            return self.module(*args, **kwargs)
+
+    wrapped_module = ModuleWrapperInRazor(model)
+    assert is_module_wrapper(wrapped_module)
+
+    wrapped_module = ModuleWrapperInPose(model)
+    assert is_module_wrapper(wrapped_module)
 
 
 def test_get_input_device():
@@ -122,6 +155,8 @@ def test_scatter():
         scatter(5, [-1])
 
 
+@pytest.mark.skipif(
+    torch.__version__ == 'parrots', reason='not supported in parrots now')
 def test_Scatter():
     # if the device is CPU, just return the input
     target_gpus = [-1]

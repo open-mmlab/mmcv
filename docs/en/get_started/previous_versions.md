@@ -4,7 +4,7 @@ We no longer provide `mmcv-full` packages compiled under lower versions of `PyTo
 
 ### PyTorch 1.4
 
-| 1.0.0 <= mmcv_version <= 1.2.1
+| 1.0.0 \<= mmcv_version \<= 1.2.1
 
 #### CUDA 10.1
 
@@ -26,7 +26,7 @@ pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dis
 
 ### PyTorch v1.3
 
-| 1.0.0 <= mmcv_version <= 1.3.16
+| 1.0.0 \<= mmcv_version \<= 1.3.16
 
 #### CUDA 10.1
 

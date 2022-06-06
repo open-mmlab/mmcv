@@ -277,10 +277,10 @@ def print_model_with_flops(model,
         return ', '.join([
             params_to_string(
                 accumulated_num_params, units='M', precision=precision),
-            '{:.3%} Params'.format(accumulated_num_params / total_params),
+            f'{accumulated_num_params / total_params:.3%} Params',
             flops_to_string(
                 accumulated_flops_cost, units=units, precision=precision),
-            '{:.3%} FLOPs'.format(accumulated_flops_cost / total_flops),
+            f'{accumulated_flops_cost / total_flops:.3%} FLOPs',
             self.original_extra_repr()
         ])
 

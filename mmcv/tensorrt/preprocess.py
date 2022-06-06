@@ -5,7 +5,7 @@ import numpy as np
 import onnx
 
 
-def preprocess_onnx(onnx_model):
+def preprocess_onnx(onnx_model: onnx.ModelProto) -> onnx.ModelProto:
     """Modify onnx model to match with TensorRT plugins in mmcv.
 
     There are some conflict between onnx node definition and TensorRT limit.

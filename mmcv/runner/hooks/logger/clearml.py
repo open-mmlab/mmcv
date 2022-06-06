@@ -1,5 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+from typing import Dict, Optional
+
 from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
@@ -29,13 +31,12 @@ class ClearMLLoggerHook(LoggerHook):
     """
 
     def __init__(self,
-                 init_kwargs=None,
-                 interval=10,
-                 ignore_last=True,
-                 reset_flag=False,
-                 by_epoch=True):
-        super(ClearMLLoggerHook, self).__init__(interval, ignore_last,
-                                                reset_flag, by_epoch)
+                 init_kwargs: Optional[Dict] = None,
+                 interval: int = 10,
+                 ignore_last: bool = True,
+                 reset_flag: bool = False,
+                 by_epoch: bool = True):
+        super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.import_clearml()
         self.init_kwargs = init_kwargs
 
@@ -48,14 +49,14 @@ class ClearMLLoggerHook(LoggerHook):
         self.clearml = clearml
 
     @master_only
-    def before_run(self, runner):
-        super(ClearMLLoggerHook, self).before_run(runner)
+    def before_run(self, runner) -> None:
+        super().before_run(runner)
         task_kwargs = self.init_kwargs if self.init_kwargs else {}
         self.task = self.clearml.Task.init(**task_kwargs)
         self.task_logger = self.task.get_logger()
 
     @master_only
-    def log(self, runner):
+    def log(self, runner) -> None:
         tags = self.get_loggable_tags(runner)
         for tag, val in tags.items():
             self.task_logger.report_scalar(tag, tag, val,

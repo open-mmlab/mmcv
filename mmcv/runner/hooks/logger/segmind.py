@@ -23,15 +23,14 @@ class SegmindLoggerHook(LoggerHook):
     """
 
     def __init__(self,
-                 interval=10,
-                 ignore_last=True,
-                 reset_flag=False,
+                 interval: int = 10,
+                 ignore_last: bool = True,
+                 reset_flag: bool = False,
                  by_epoch=True):
-        super(SegmindLoggerHook, self).__init__(interval, ignore_last,
-                                                reset_flag, by_epoch)
+        super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.import_segmind()
 
-    def import_segmind(self):
+    def import_segmind(self) -> None:
         try:
             import segmind
         except ImportError:
@@ -41,7 +40,7 @@ class SegmindLoggerHook(LoggerHook):
         self.mlflow_log = segmind.utils.logging_utils.try_mlflow_log
 
     @master_only
-    def log(self, runner):
+    def log(self, runner) -> None:
         tags = self.get_loggable_tags(runner)
         if tags:
             # logging metrics to segmind

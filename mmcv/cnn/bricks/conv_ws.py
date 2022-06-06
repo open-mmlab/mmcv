@@ -35,7 +35,7 @@ class ConvWS2d(nn.Conv2d):
                  groups=1,
                  bias=True,
                  eps=1e-5):
-        super(ConvWS2d, self).__init__(
+        super().__init__(
             in_channels,
             out_channels,
             kernel_size,

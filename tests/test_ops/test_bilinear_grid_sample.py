@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 
 
-class TestBilinearGridSample(object):
+class TestBilinearGridSample:
 
     def _test_bilinear_grid_sample(self,
                                    dtype=torch.float,

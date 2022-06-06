@@ -41,7 +41,7 @@ def test_parse_version_info():
 
 
 def _mock_cmd_success(cmd):
-    return '3b46d33e90c397869ad5103075838fdfc9812aa0'.encode('ascii')
+    return b'3b46d33e90c397869ad5103075838fdfc9812aa0'
 
 
 def _mock_cmd_fail(cmd):

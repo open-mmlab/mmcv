@@ -37,7 +37,7 @@ sigmoid_outputs = [(0.13562961, [[-0.00657264, 0.11185755],
                                  [-0.02462499, 0.08277918, 0.18050370]])]
 
 
-class Testfocalloss(object):
+class Testfocalloss:
 
     def _test_softmax(self, dtype=torch.float):
         if not torch.cuda.is_available():

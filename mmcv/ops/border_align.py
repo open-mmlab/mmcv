@@ -2,6 +2,8 @@
 # modified from
 # https://github.com/Megvii-BaseDetection/cvpods/blob/master/cvpods/layers/border_align.py
 
+from typing import Tuple
+
 import torch
 import torch.nn as nn
 from torch.autograd import Function
@@ -21,7 +23,8 @@ class BorderAlignFunction(Function):
             'mmcv::MMCVBorderAlign', input, boxes, pool_size_i=pool_size)
 
     @staticmethod
-    def forward(ctx, input, boxes, pool_size):
+    def forward(ctx, input: torch.Tensor, boxes: torch.Tensor,
+                pool_size: int) -> torch.Tensor:
         ctx.pool_size = pool_size
         ctx.input_shape = input.size()
 
@@ -45,7 +48,8 @@ class BorderAlignFunction(Function):
 
     @staticmethod
     @once_differentiable
-    def backward(ctx, grad_output):
+    def backward(ctx,
+                 grad_output: torch.Tensor) -> Tuple[torch.Tensor, None, None]:
         boxes, argmax_idx = ctx.saved_tensors
         grad_input = grad_output.new_zeros(ctx.input_shape)
         # complex head architecture may cause grad_output uncontiguous
@@ -85,11 +89,12 @@ class BorderAlign(nn.Module):
             (e.g. top, bottom, left, right).
     """
 
-    def __init__(self, pool_size):
-        super(BorderAlign, self).__init__()
+    def __init__(self, pool_size: int):
+        super().__init__()
         self.pool_size = pool_size
 
-    def forward(self, input, boxes):
+    def forward(self, input: torch.Tensor,
+                boxes: torch.Tensor) -> torch.Tensor:
         """
         Args:
             input: Features with shape [N,4C,H,W]. Channels ranged in [0,C),
