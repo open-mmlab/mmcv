@@ -58,8 +58,8 @@ def collect_env():
             if CUDA_HOME == '/opt/rocm':
                 try:
                     nvcc = osp.join(CUDA_HOME, 'hip/bin/hipcc')
-                    nvcc = subprocess.check_output(f'"{nvcc}" --version', 
-                            shell=True)
+                    nvcc = subprocess.check_output(
+                        f'"{nvcc}" --version', shell=True)
                     nvcc = nvcc.decode('utf-8').strip()
                     release = nvcc.rfind('HIP version:')
                     build = nvcc.rfind('')
