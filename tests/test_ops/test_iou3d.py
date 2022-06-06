@@ -25,8 +25,16 @@ def test_boxes_overlap_bev():
     boxes1 = torch.from_numpy(np_boxes1).cuda()
     boxes2 = torch.from_numpy(np_boxes2).cuda()
 
+    # test for 3 boxes
     overlaps = boxes_overlap_bev(boxes1, boxes2)
     assert np.allclose(overlaps.cpu().numpy(), np_expect_overlaps, atol=1e-4)
+
+    # test for many boxes
+    boxes2 = boxes2.repeat_interleave(555, 0)
+
+    overlaps = boxes_overlap_bev(boxes1, boxes2)
+    assert np.allclose(
+        overlaps.cpu().numpy(), np_expect_overlaps.repeat(555, 1), atol=1e-4)
 
 
 @pytest.mark.skipif(

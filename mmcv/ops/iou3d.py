@@ -14,7 +14,7 @@ ext_module = ext_loader.load_ext('_ext', [
 
 
 def boxes_overlap_bev(boxes_a: Tensor, boxes_b: Tensor) -> Tensor:
-    """Calculate boxes 3D IoU.
+    """Calculate boxes BEV overlap.
 
     Args:
         boxes_a (torch.Tensor): Input boxes a with shape (M, 7).

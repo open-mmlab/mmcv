@@ -221,16 +221,16 @@ __global__ void iou3d_boxes_overlap_bev_forward_cuda_kernel(
     const float *boxes_b, float *ans_overlap) {
   // params boxes_a: (N, 7) [x, y, z, dx, dy, dz, heading]
   // params boxes_b: (M, 7) [x, y, z, dx, dy, dz, heading]
-  const int a_idx = blockIdx.y * THREADS_PER_BLOCK + threadIdx.y;
-  const int b_idx = blockIdx.x * THREADS_PER_BLOCK + threadIdx.x;
+  CUDA_2D_KERNEL_LOOP(b_idx, num_b, a_idx, num_a) {
+    if (a_idx >= num_a || b_idx >= num_b) {
+      return;
+    }
 
-  if (a_idx >= num_a || b_idx >= num_b) {
-    return;
+    const float *cur_box_a = boxes_a + a_idx * 7;
+    const float *cur_box_b = boxes_b + b_idx * 7;
+    float cur_overlap = box_overlap(cur_box_a, cur_box_b);
+    ans_overlap[a_idx * num_b + b_idx] = cur_overlap;
   }
-  const float *cur_box_a = boxes_a + a_idx * 7;
-  const float *cur_box_b = boxes_b + b_idx * 7;
-  float s_overlap = box_overlap(cur_box_a, cur_box_b);
-  ans_overlap[a_idx * num_b + b_idx] = s_overlap;
 }
 
 __global__ void iou3d_nms3d_forward_cuda_kernel(const int boxes_num,
