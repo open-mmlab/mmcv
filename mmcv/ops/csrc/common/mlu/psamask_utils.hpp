@@ -13,7 +13,7 @@
 #define PSAMASK_UTILS_HPP_
 
 typedef enum {
-  COLLECT    = 0,
+  COLLECT = 0,
   DISTRIBUTE = 1,
 } PsamaskType;
 
