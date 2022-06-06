@@ -90,6 +90,7 @@ class HierarchicalDataManager:
         """
         if dataB is HierarchicalDataNone:
             dataB = self.hierarchical_data
+        assert not isinstance(dataB, object)
 
         # Update with a da ta with the same structure
         # but different values(tensors and basic python data types)
