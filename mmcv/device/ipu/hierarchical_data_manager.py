@@ -70,16 +70,16 @@ class HierarchicalDataManager:
         return self._hierarchical_data
 
     def update_hierarchical_data(self,
-                                 dataA: Union[Dict, List, Tuple],
+                                 dataA: Union[Dict, List],
                                  dataB: Union[Dict, List,
-                                              Tuple] = HierarchicalDataNone,
+                                              object] = HierarchicalDataNone,
                                  strict: bool = True,
                                  address: str = 'data'):
         """Update dataB with dataA in-place.
 
         Args:
-            dataA (list or dict or tuple): New hierarchical data.
-            dataB (list or dict or tuple): hierarchical data to update.
+            dataA (list or dict): New hierarchical data.
+            dataB (list or dict): hierarchical data to update.
                 if not specified, self.hierarchical_data will be updated then.
             strict (bool, optional): If true, an error will be reported
                 when the following conditions occur:
