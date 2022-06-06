@@ -147,39 +147,24 @@ void PSAMaskForwardMLUKernelLauncher(const int psa_type, const Tensor x,
                                      const int half_h_mask,
                                      const int half_w_mask) {
   // params check
-  TORCH_CHECK(x.scalar_type() == at::kFloat,
-              "Data type of input should be Float. But now input type is ",
-              x.scalar_type(), ".");
-
-  TORCH_CHECK(x.scalar_type() == y.scalar_type(),
-              "Data types of input and output should be the same. But now "
-              "input type is ",
-              x.scalar_type(), ", output type is ", y.scalar_type(), ".");
-
-  TORCH_CHECK(x.dim() == 4, "input should be a 4d tensor, got ", x.dim(), "D.");
-
-  TORCH_CHECK(y.dim() == 4, "output should be a 4d tensor, got ", y.dim(),
-              "D.");
+  TORCH_CHECK(x.scalar_type() == at::kFloat, "x type should be Float, got ",
+              x.scalar_type());
+  TORCH_CHECK(y.scalar_type() == x.scalar_type(),
+              "y should have the same type as x");
+  TORCH_CHECK(x.dim() == 4, "x should be a 4d tensor, got ", x.dim(), "D");
+  TORCH_CHECK(y.dim() == 4, "y should be a 4d tensor, got ", y.dim(), "D");
 
   int x_c = x.size(1);
   int y_c = y.size(1);
   TORCH_CHECK(h_mask * w_mask == x_c,
-              "The size of input channel is wrong, it needs to be the same as "
-              "the h_mask * w_mask. But now the input channel size is ",
-              x_c, ", and h_mask * w_mask is ", h_mask * w_mask, ".");
-
+              "channel of x should be the same as h_mask * w_mask");
   TORCH_CHECK(h_feature * w_feature == y_c,
-              "The size of output channel is wrong, it needs to be the same as "
-              "the h_feature * w_feature. But now the output channel size is ",
-              y_c, ", and h_feature * w_feature is ", h_feature * w_feature,
-              ".");
-
+              "channel of y should be the same as h_feature * w_feature");
   TORCH_CHECK(psa_type == 0 || psa_type == 1,
               "psa_type only suppurts 'COLLECT' and 'DISTRIBUTE' currently");
 
-  // return if zero-elements
   if (x.numel() == 0) {
-    CNLOG(INFO) << "Skip the zero-elements case.";
+    CNLOG(INFO) << "skip zero-element tensor";
     return;
   }
 
@@ -228,40 +213,24 @@ void PSAMaskBackwardMLUKernelLauncher(const int psa_type, const Tensor dy,
                                       const int half_h_mask,
                                       const int half_w_mask) {
   // params check
-  TORCH_CHECK(dx.scalar_type() == at::kFloat,
-              "Data type of input should be Float. But now input type is ",
-              dx.scalar_type(), ".");
-
+  TORCH_CHECK(dy.scalar_type() == at::kFloat, "dy type should be Float, got ",
+              dy.scalar_type());
   TORCH_CHECK(dx.scalar_type() == dy.scalar_type(),
-              "Data types of input and output should be the same. But now "
-              "input type is ",
-              dx.scalar_type(), ", dy type is ", dy.scalar_type(), ".");
+              "dx should have the same type as dy");
+  TORCH_CHECK(dy.dim() == 4, "dy should be a 4d tensor, got ", dy.dim(), "D");
+  TORCH_CHECK(dx.dim() == 4, "dx should be a 4d tensor, got ", dx.dim(), "D");
 
-  TORCH_CHECK(dx.dim() == 4, "input should be a 4d tensor, got ", dx.dim(),
-              "D.");
-
-  TORCH_CHECK(dy.dim() == 4, "output should be a 4d tensor, got ", dy.dim(),
-              "D.");
-
-  int dx_c = dx.size(1);
   int dy_c = dy.size(1);
-  TORCH_CHECK(h_mask * w_mask == dx_c,
-              "The size of input channel is wrong, it needs to be the same as "
-              "the h_mask * w_mask. But now the input channel size is ",
-              dx_c, ", and h_mask * w_mask is ", h_mask * w_mask, ".");
-
+  int dx_c = dx.size(1);
   TORCH_CHECK(h_feature * w_feature == dy_c,
-              "The size of output channel is wrong, it needs to be the same as "
-              "the h_feature * w_feature. But now the output channel size is ",
-              dy_c, ", and h_feature * w_feature is ", h_feature * w_feature,
-              ".");
-
+              "channel of dy should be the same as h_feature * w_feature");
+  TORCH_CHECK(h_mask * w_mask == dx_c,
+              "channel of dx should be the same as h_mask * w_mask");
   TORCH_CHECK(psa_type == 0 || psa_type == 1,
               "psa_type only suppurts 'COLLECT' and 'DISTRIBUTE' currently");
 
-  // return if zero-elements
   if (dx.numel() == 0) {
-    CNLOG(INFO) << "Skip the zero-elements case.";
+    CNLOG(INFO) << "skip zero-element tensor";
     return;
   }
 

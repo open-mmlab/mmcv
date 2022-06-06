@@ -9,9 +9,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *************************************************************************/
-#include <algorithm>
-#include <utility>
-
 #include "common_mlu_helper.hpp"
 #include "psamask_utils.hpp"
 
@@ -114,10 +111,14 @@ __mlu_func__ void psamaskCollectForward(
         y_offset += hidx * y_h_offset + widx * y_w_offset;
         x_offset += hidx * x_h_offset + widx * x_w_offset;
 
-        const int hstart = std::max(0, half_h_mask - h_abs);
-        const int hend = std::min(h_mask, x_full.h + half_h_mask - h_abs);
-        const int wstart = std::max(0, half_w_mask - w_abs);
-        const int wend = std::min(w_mask, x_full.w + half_w_mask - w_abs);
+        const int hstart = half_h_mask - h_abs > 0 ? half_h_mask - h_abs : 0;
+        const int hend = x_full.h + half_h_mask - h_abs < h_mask
+                             ? x_full.h + half_h_mask - h_abs
+                             : h_mask;
+        const int wstart = half_w_mask - w_abs > 0 ? half_w_mask - w_abs : 0;
+        const int wend = x_full.w + half_w_mask - w_abs < w_mask
+                             ? x_full.w + half_w_mask - w_abs
+                             : w_mask;
         // (h,                      w                  ) with mask-indexed
         // (h + hidx - half_h_mask, w + widx - half_w_mask) with feature-indexed
         y_offset += ((hstart + h_abs - half_h_mask) * x_full.w + wstart +
@@ -178,11 +179,15 @@ __mlu_func__ void psamaskDistributeForward(
         int x_offset = x_start;
         y_offset += hidx * y_h_offset + widx * y_w_offset;
         x_offset += hidx * x_h_offset + widx * x_w_offset;
-        const int hstart = std::max(0, half_h_mask - h_abs);
-        const int hend = std::min(h_mask, h_feature + half_h_mask - h_abs);
-        const int wstart = std::max(0, half_w_mask - w_abs);
-        const int wend = std::min(w_mask, w_feature + half_w_mask - w_abs);
-        // (h,                      w                   ) with mask-indexed
+        const int hstart = half_h_mask - h_abs > 0 ? half_h_mask - h_abs : 0;
+        const int hend = h_feature + half_h_mask - h_abs < h_mask
+                             ? h_feature + half_h_mask - h_abs
+                             : h_mask;
+        const int wstart = half_w_mask - w_abs > 0 ? half_w_mask - w_abs : 0;
+        const int wend = w_feature + half_w_mask - w_abs < w_mask
+                             ? w_feature + half_w_mask - w_abs
+                             : w_mask;
+        // (h,                      w                     ) with mask-indexed
         // (h + hidx - half_h_mask, w + widx - half_w_mask) with feature-indexed
         y_offset += ((hstart + h_abs - half_h_mask) * x_full.w + wstart +
                      w_abs - half_w_mask) *
@@ -262,10 +267,14 @@ __mlu_func__ void psamaskCollectBackward(
         dy_offset += hidx * dy_h_offset + widx * dy_w_offset;
         dx_offset += hidx * dx_h_offset + widx * dx_w_offset;
 
-        const int hstart = std::max(0, half_h_mask - h_abs);
-        const int hend = std::min(h_mask, h_feature + half_h_mask - h_abs);
-        const int wstart = std::max(0, half_w_mask - w_abs);
-        const int wend = std::min(w_mask, w_feature + half_w_mask - w_abs);
+        const int hstart = half_h_mask - h_abs > 0 ? half_h_mask - h_abs : 0;
+        const int hend = h_feature + half_h_mask - h_abs < h_mask
+                             ? h_feature + half_h_mask - h_abs
+                             : h_mask;
+        const int wstart = half_w_mask - w_abs > 0 ? half_w_mask - w_abs : 0;
+        const int wend = w_feature + half_w_mask - w_abs < w_mask
+                             ? w_feature + half_w_mask - w_abs
+                             : w_mask;
         // (h,                       w                      ) with mask-indexed
         // (h + h_abs - half_h_mask, w + w_abs - half_w_mask) with
         // feature-indexed
@@ -344,10 +353,14 @@ __mlu_func__ void psamaskDistributeBackward(
         int dx_offset = dx_start;
         dy_offset += hidx * dy_h_offset_seg + widx * dy_w_offset_seg;
         dx_offset += hidx * dx_h_offset_seg + widx * dx_w_offset_seg;
-        const int hstart = std::max(0, half_h_mask - h_abs);
-        const int hend = std::min(h_mask, h_feature + half_h_mask - h_abs);
-        const int wstart = std::max(0, half_w_mask - w_abs);
-        const int wend = std::min(w_mask, w_feature + half_w_mask - w_abs);
+        const int hstart = half_h_mask - h_abs > 0 ? half_h_mask - h_abs : 0;
+        const int hend = h_feature + half_h_mask - h_abs < h_mask
+                             ? h_feature + half_h_mask - h_abs
+                             : h_mask;
+        const int wstart = half_w_mask - w_abs > 0 ? half_w_mask - w_abs : 0;
+        const int wend = w_feature + half_w_mask - w_abs < w_mask
+                             ? w_feature + half_w_mask - w_abs
+                             : w_mask;
         // (h,                       w                      ) with mask-indexed
         // (h + h_abs - half_h_mask, w + w_abs - half_w_mask) with
         // feature-indexed
@@ -434,26 +447,32 @@ __mlu_func__ void psamaskBase(const T *input_dram, T *output_dram,
   int shape_core_h = position_full.h_end - position_full.h_start;
   int shape_core_w = input_full.w;
 
-  limit.n = std::min(limit.n, shape_core_n);
-  limit.h = std::min(limit.h, shape_core_h);
-  limit.w = std::min(limit.w, shape_core_w);
+  limit.n = limit.n < shape_core_n ? limit.n : shape_core_n;
+  limit.h = limit.h < shape_core_h ? limit.h : shape_core_h;
+  limit.w = limit.w < shape_core_w ? limit.w : shape_core_w;
 
   // load the data to nram according to the limit
   for (int nidx = position_full.n_start; nidx < position_full.n_end;
        nidx += limit.n) {
     position_seg.n_start = nidx;
     position_seg.n_end =
-        position_seg.n_start + std::min(position_full.n_end - nidx, limit.n);
+        position_seg.n_start + (position_full.n_end - nidx < limit.n
+                                    ? position_full.n_end - nidx
+                                    : limit.n);
     for (int hidx = position_full.h_start; hidx < position_full.h_end;
          hidx += limit.h) {
       position_seg.h_start = hidx;
       position_seg.h_end =
-          position_seg.h_start + std::min(position_full.h_end - hidx, limit.h);
+          position_seg.h_start + (position_full.h_end - hidx < limit.h
+                                      ? position_full.h_end - hidx
+                                      : limit.h);
       for (int widx = position_full.w_start; widx < position_full.w_end;
            widx += limit.w) {
         position_seg.w_start = widx;
-        position_seg.w_end = position_seg.w_start +
-                             std::min(position_full.w_end - widx, limit.w);
+        position_seg.w_end =
+            position_seg.w_start + (position_full.w_end - widx < limit.w
+                                        ? position_full.w_end - widx
+                                        : limit.w);
 
         // record the segment of output except the size of channel
         // channel segments of output and input are the same
