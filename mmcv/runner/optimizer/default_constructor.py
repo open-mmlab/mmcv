@@ -143,7 +143,7 @@ class DefaultOptimizerConstructor:
                    params: List[Dict],
                    module: nn.Module,
                    prefix: str = '',
-                   is_dcn_module: Optional[Union[int, float]] = None) -> None:
+                   is_dcn_module: Union[int, float, None] = None) -> None:
         """Add all parameters of module to the params list.
 
         The parameters of the given module will be added to the list of param
