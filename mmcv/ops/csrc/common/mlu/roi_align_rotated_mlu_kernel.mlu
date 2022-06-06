@@ -11,8 +11,6 @@
 #include "common_mlu_helper.hpp"
 #include "roi_align_rotated_utils.hpp"
 
-#include <algorithm>
-
 #define ROI_OFFSET 6
 #define SAMPLING_NUM 4
 
