@@ -1,8 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import List, Union
+
 import torch
 
 
-def scatter(input, devices):
+def scatter(input: Union[List, torch.Tensor], devices: List) -> List:
     """scatter copies tensor to MLU directly."""
     if isinstance(input, list):
         outputs = [scatter(_input, devices) for _input in input]
