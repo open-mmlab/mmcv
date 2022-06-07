@@ -2,6 +2,7 @@
 import json
 import os
 import os.path as osp
+from typing import Dict, Optional
 
 import torch
 import yaml
@@ -32,14 +33,14 @@ class PaviLoggerHook(LoggerHook):
     """
 
     def __init__(self,
-                 init_kwargs=None,
-                 add_graph=False,
-                 add_last_ckpt=False,
-                 interval=10,
-                 ignore_last=True,
-                 reset_flag=False,
-                 by_epoch=True,
-                 img_key='img_info'):
+                 init_kwargs: Optional[Dict] = None,
+                 add_graph: bool = False,
+                 add_last_ckpt: bool = False,
+                 interval: int = 10,
+                 ignore_last: bool = True,
+                 reset_flag: bool = False,
+                 by_epoch: bool = True,
+                 img_key: str = 'img_info'):
         super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.init_kwargs = init_kwargs
         self.add_graph = add_graph
@@ -47,7 +48,7 @@ class PaviLoggerHook(LoggerHook):
         self.img_key = img_key
 
     @master_only
-    def before_run(self, runner):
+    def before_run(self, runner) -> None:
         super().before_run(runner)
         try:
             from pavi import SummaryWriter
@@ -85,7 +86,7 @@ class PaviLoggerHook(LoggerHook):
                 self.init_kwargs['session_text'] = session_text
         self.writer = SummaryWriter(**self.init_kwargs)
 
-    def get_step(self, runner):
+    def get_step(self, runner) -> int:
         """Get the total training step/epoch."""
         if self.get_mode(runner) == 'val' and self.by_epoch:
             return self.get_epoch(runner)
@@ -93,14 +94,14 @@ class PaviLoggerHook(LoggerHook):
             return self.get_iter(runner)
 
     @master_only
-    def log(self, runner):
+    def log(self, runner) -> None:
         tags = self.get_loggable_tags(runner, add_mode=False)
         if tags:
             self.writer.add_scalars(
                 self.get_mode(runner), tags, self.get_step(runner))
 
     @master_only
-    def after_run(self, runner):
+    def after_run(self, runner) -> None:
         if self.add_last_ckpt:
             ckpt_path = osp.join(runner.work_dir, 'latest.pth')
             if osp.islink(ckpt_path):
@@ -118,7 +119,7 @@ class PaviLoggerHook(LoggerHook):
         self.writer.close()
 
     @master_only
-    def before_epoch(self, runner):
+    def before_epoch(self, runner) -> None:
         if runner.epoch == 0 and self.add_graph:
             if is_module_wrapper(runner.model):
                 _model = runner.model.module
