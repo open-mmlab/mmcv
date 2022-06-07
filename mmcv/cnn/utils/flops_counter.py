@@ -403,13 +403,13 @@ def reset_flops_count(self) -> None:
 
 
 # ---- Internal functions
-def empty_flops_counter_hook(module: nn.Module, input: list,
+def empty_flops_counter_hook(module: nn.Module, input: tuple,
                              output: Any) -> None:
     module.__flops__ += 0
 
 
-def upsample_flops_counter_hook(module: nn.Module, input: list,
-                                output: list) -> None:
+def upsample_flops_counter_hook(module: nn.Module, input: tuple,
+                                output: torch.Tensor) -> None:
     output_size = output[0]
     batch_size = output_size.shape[0]
     output_elements_count = batch_size
@@ -418,25 +418,25 @@ def upsample_flops_counter_hook(module: nn.Module, input: list,
     module.__flops__ += int(output_elements_count)
 
 
-def relu_flops_counter_hook(module: nn.Module, input: list,
+def relu_flops_counter_hook(module: nn.Module, input: tuple,
                             output: torch.Tensor) -> None:
     active_elements_count = output.numel()
     module.__flops__ += int(active_elements_count)
 
 
-def linear_flops_counter_hook(module: nn.Module, input: list,
+def linear_flops_counter_hook(module: nn.Module, input: tuple,
                               output: torch.Tensor) -> None:
     output_last_dim = output.shape[
         -1]  # pytorch checks dimensions, so here we don't care much
     module.__flops__ += int(np.prod(input[0].shape) * output_last_dim)
 
 
-def pool_flops_counter_hook(module: nn.Module, input: list,
+def pool_flops_counter_hook(module: nn.Module, input: tuple,
                             output: torch.Tensor) -> None:
     module.__flops__ += int(np.prod(input[0].shape))
 
 
-def norm_flops_counter_hook(module: nn.Module, input: list,
+def norm_flops_counter_hook(module: nn.Module, input: tuple,
                             output: torch.Tensor) -> None:
     batch_flops = np.prod(input[0].shape)
     if (getattr(module, 'affine', False)
@@ -445,7 +445,7 @@ def norm_flops_counter_hook(module: nn.Module, input: list,
     module.__flops__ += int(batch_flops)
 
 
-def deconv_flops_counter_hook(conv_module: nn.Module, input: list,
+def deconv_flops_counter_hook(conv_module: nn.Module, input: tuple,
                               output: torch.Tensor) -> None:
     # Can have multiple inputs, getting the first one
     batch_size = input[0].shape[0]
@@ -471,7 +471,7 @@ def deconv_flops_counter_hook(conv_module: nn.Module, input: list,
     conv_module.__flops__ += int(overall_flops)
 
 
-def conv_flops_counter_hook(conv_module: nn.Module, input: list,
+def conv_flops_counter_hook(conv_module: nn.Module, input: tuple,
                             output: torch.Tensor) -> None:
     # Can have multiple inputs, getting the first one
     batch_size = input[0].shape[0]
@@ -501,7 +501,7 @@ def conv_flops_counter_hook(conv_module: nn.Module, input: list,
     conv_module.__flops__ += int(overall_flops)
 
 
-def batch_counter_hook(module: nn.Module, input: list, output: Any) -> None:
+def batch_counter_hook(module: nn.Module, input: tuple, output: Any) -> None:
     batch_size = 1
     if len(input) > 0:
         # Can have multiple inputs, getting the first one
