@@ -54,8 +54,10 @@ If you want to build an image with the mmcv development environment, you can use
 
 ```bash
 git clone https://github.com/open-mmlab/mmcv.git && cd mmcv
-docker build -t mmcv -f docker/dev/Dockerfile .
+docker build -t mmcv -f docker/dev/Dockerfile --build-arg CUDA_ARCH=7.5 .
 ```
+
+Note that `CUDA_ARCH` is the cumpute capability of your GPU and you can find it at [Compute Capability](https://developer.nvidia.com/cuda-gpus#compute).
 
 The building process may take 10 minutes or more.
 
