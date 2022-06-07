@@ -5,6 +5,7 @@ import os
 import socket
 import subprocess
 from collections import OrderedDict
+from typing import Callable, List, Optional, Tuple
 
 import torch
 import torch.multiprocessing as mp
@@ -33,7 +34,7 @@ def _is_free_port(port):
         return all(s.connect_ex((ip, port)) != 0 for ip in ips)
 
 
-def init_dist(launcher, backend='nccl', **kwargs):
+def init_dist(launcher: str, backend: str = 'nccl', **kwargs) -> None:
     if mp.get_start_method(allow_none=True) is None:
         mp.set_start_method('spawn')
     if launcher == 'pytorch':
@@ -46,7 +47,7 @@ def init_dist(launcher, backend='nccl', **kwargs):
         raise ValueError(f'Invalid launcher type: {launcher}')
 
 
-def _init_dist_pytorch(backend, **kwargs):
+def _init_dist_pytorch(backend: str, **kwargs):
     # TODO: use local_rank instead of rank % num_gpus
     rank = int(os.environ['RANK'])
     if IS_MLU_AVAILABLE:
@@ -63,7 +64,7 @@ def _init_dist_pytorch(backend, **kwargs):
         dist.init_process_group(backend=backend, **kwargs)
 
 
-def _init_dist_mpi(backend, **kwargs):
+def _init_dist_mpi(backend: str, **kwargs):
     local_rank = int(os.environ['OMPI_COMM_WORLD_LOCAL_RANK'])
     torch.cuda.set_device(local_rank)
     if 'MASTER_PORT' not in os.environ:
@@ -76,7 +77,7 @@ def _init_dist_mpi(backend, **kwargs):
     dist.init_process_group(backend=backend, **kwargs)
 
 
-def _init_dist_slurm(backend, port=None):
+def _init_dist_slurm(backend: str, port: Optional[int] = None):
     """Initialize slurm distributed training environment.
 
     If argument ``port`` is not specified, then the master port will be system
@@ -115,7 +116,7 @@ def _init_dist_slurm(backend, port=None):
     dist.init_process_group(backend=backend)
 
 
-def get_dist_info():
+def get_dist_info() -> Tuple[int, int]:
     if dist.is_available() and dist.is_initialized():
         rank = dist.get_rank()
         world_size = dist.get_world_size()
@@ -125,7 +126,7 @@ def get_dist_info():
     return rank, world_size
 
 
-def master_only(func):
+def master_only(func: Callable) -> Callable:
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -136,12 +137,14 @@ def master_only(func):
     return wrapper
 
 
-def allreduce_params(params, coalesce=True, bucket_size_mb=-1):
+def allreduce_params(params: List[torch.nn.Parameter],
+                     coalesce: bool = True,
+                     bucket_size_mb: int = -1) -> None:
     """Allreduce parameters.
 
     Args:
-        params (list[torch.Parameters]): List of parameters or buffers of a
-            model.
+        params (list[torch.nn.Parameter]): List of parameters or buffers
+            of a model.
         coalesce (bool, optional): Whether allreduce parameters as a whole.
             Defaults to True.
         bucket_size_mb (int, optional): Size of bucket, the unit is MB.
@@ -158,11 +161,13 @@ def allreduce_params(params, coalesce=True, bucket_size_mb=-1):
             dist.all_reduce(tensor.div_(world_size))
 
 
-def allreduce_grads(params, coalesce=True, bucket_size_mb=-1):
+def allreduce_grads(params: List[torch.nn.Parameter],
+                    coalesce: bool = True,
+                    bucket_size_mb: int = -1) -> None:
     """Allreduce gradients.
 
     Args:
-        params (list[torch.Parameters]): List of parameters of a model
+        params (list[torch.nn.Parameter]): List of parameters of a model.
         coalesce (bool, optional): Whether allreduce parameters as a whole.
             Defaults to True.
         bucket_size_mb (int, optional): Size of bucket, the unit is MB.

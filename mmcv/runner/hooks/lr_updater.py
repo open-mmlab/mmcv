@@ -35,7 +35,7 @@ class LrUpdaterHook(Hook):
             if warmup not in ['constant', 'linear', 'exp']:
                 raise ValueError(
                     f'"{warmup}" is not a supported type for warming up, valid'
-                    ' types are "constant" and "linear"')
+                    ' types are "constant", "linear" and "exp"')
         if warmup is not None:
             assert warmup_iters > 0, \
                 '"warmup_iters" must be a positive integer'
