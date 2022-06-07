@@ -85,8 +85,8 @@ __mlu_func__ void getRoiBinInfo(const T *rois_dram, const int bin_i,
     *theta = -(*theta);
   }
   if (!params.aligned) {
-    *roi_width = std::max(*roi_width, (T)1.0);
-    *roi_height = std::max(*roi_height, (T)1.0);
+    *roi_width = *roi_width > (T)1.0 ? *roi_width : (T)1.0;
+    *roi_height = *roi_height > (T)1.0 ? *roi_height : (T)1.0;
   }
 }
 
@@ -100,7 +100,7 @@ __mlu_func__ void roiAlignRotatedForward(const T *input_dram,
   int align_base_128 = NFU_ALIGN_SIZE / sizeof(T);
   int channel_max_cap = MAX_NRAM_SIZE / sizeof(T) / (2 * SAMPLING_NUM + 1);
   channel_max_cap = channel_max_cap / align_base_128 * align_base_128;
-  int channel_align = std::min(channel, channel_max_cap);
+  int channel_align = channel < channel_max_cap ? channel : channel_max_cap;
   channel_align = CEIL_ALIGN(channel_align, align_base_128);
 
   T *nram_out = (T *)nram_buffer;
@@ -129,7 +129,9 @@ __mlu_func__ void roiAlignRotatedForward(const T *input_dram,
             : __float2int_up((float)roi_width / params.pooled_width);
     T roi_start_y = -roi_height / 2;
     T roi_start_x = -roi_width / 2;
-    const int bin_dim = std::max(roi_bin_grid_h * roi_bin_grid_w, 1);
+    const int bin_dim = roi_bin_grid_h * roi_bin_grid_w > 1
+                            ? roi_bin_grid_h * roi_bin_grid_w
+                            : 1;
     T cos_theta = std::cos(theta);
     T sin_theta = std::sin(theta);
     T zero_sign = 1.0f / bin_dim;
@@ -302,7 +304,9 @@ __mlu_func__ void roiAlignRotatedBackward(const T *top_grad_dram,
             : __float2int_up((float)roi_width / params.pooled_width);
     T roi_start_y = -roi_height / 2;
     T roi_start_x = -roi_width / 2;
-    const int bin_dim = std::max(roi_bin_grid_h * roi_bin_grid_w, 1);
+    const int bin_dim = roi_bin_grid_h * roi_bin_grid_w > 1
+                            ? roi_bin_grid_h * roi_bin_grid_w
+                            : 1;
     T cos_theta = std::cos(theta);
     T sin_theta = std::sin(theta);
     T zero_sign = 1.0f / bin_dim;
