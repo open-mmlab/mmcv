@@ -54,8 +54,8 @@ def constant_init(module: nn.Module, val: float, bias: float = 0) -> None:
 
 
 def xavier_init(module: nn.Module,
-                gain: float = 1.,
-                bias: float = 0.,
+                gain: float = 1,
+                bias: float = 0,
                 distribution: str = 'normal') -> None:
     assert distribution in ['uniform', 'normal']
     if hasattr(module, 'weight') and module.weight is not None:
@@ -90,8 +90,8 @@ def trunc_normal_init(module: nn.Module,
 
 
 def uniform_init(module: nn.Module,
-                 a: float = 0.,
-                 b: float = 1.,
+                 a: float = 0,
+                 b: float = 1,
                  bias: float = 0) -> None:
     if hasattr(module, 'weight') and module.weight is not None:
         nn.init.uniform_(module.weight, a, b)
@@ -100,10 +100,10 @@ def uniform_init(module: nn.Module,
 
 
 def kaiming_init(module: nn.Module,
-                 a: float = 0.,
+                 a: float = 0,
                  mode: str = 'fan_out',
                  nonlinearity: str = 'relu',
-                 bias: float = 0.,
+                 bias: float = 0,
                  distribution: str = 'normal') -> None:
     assert distribution in ['uniform', 'normal']
     if hasattr(module, 'weight') and module.weight is not None:
@@ -117,7 +117,7 @@ def kaiming_init(module: nn.Module,
         nn.init.constant_(module.bias, bias)
 
 
-def caffe2_xavier_init(module: nn.Module, bias: float = 0.) -> None:
+def caffe2_xavier_init(module: nn.Module, bias: float = 0) -> None:
     # `XavierFill` in Caffe2 corresponds to `kaiming_uniform_` in PyTorch
     # Acknowledgment to FAIR's internal code
     kaiming_init(
@@ -135,7 +135,7 @@ def bias_init_with_prob(prior_prob: float) -> float:
     return bias_init
 
 
-def _get_bases_name(m: nn.Module) -> List:
+def _get_bases_name(m: nn.Module) -> List[str]:
     return [b.__name__ for b in m.__class__.__bases__]
 
 
@@ -143,7 +143,7 @@ class BaseInit:
 
     def __init__(self,
                  *,
-                 bias: float = 0.,
+                 bias: float = 0,
                  bias_prob: Optional[float] = None,
                  layer: Union[str, List, None] = None):
         self.wholemodule = False
@@ -274,7 +274,7 @@ class NormalInit(BaseInit):
 
     """
 
-    def __init__(self, mean: float = 0., std: float = 1., **kwargs):
+    def __init__(self, mean: float = 0, std: float = 1, **kwargs):
         super().__init__(**kwargs)
         self.mean = mean
         self.std = std
@@ -426,7 +426,7 @@ class KaimingInit(BaseInit):
     """
 
     def __init__(self,
-                 a: float = 0.,
+                 a: float = 0,
                  mode: str = 'fan_out',
                  nonlinearity: str = 'relu',
                  distribution: str = 'normal',
