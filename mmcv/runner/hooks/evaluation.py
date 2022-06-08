@@ -160,10 +160,10 @@ class EvalHook(Hook):
            specified as 'greater'.
         2. Or if the key indicator is in ``self.less_keys``, the rule will be
            specified as 'less'.
-        3. Or if the key indicator is equal to the substring in any one item
-           in ``self.greater_keys``, the rule will be specified as 'greater'.
-        4. Or if the key indicator is equal to the substring in any one item
-           in ``self.less_keys``, the rule will be specified as 'less'.
+        3. Or if any one item in ``self.greater_keys`` is a substring of
+            key_indicator , the rule will be specified as 'greater'.
+        4. Or if any one item in ``self.less_keys`` is a substring of
+            key_indicator , the rule will be specified as 'less'.
 
         Args:
             rule (str | None): Comparison rule for best score.
@@ -214,8 +214,8 @@ class EvalHook(Hook):
             basename = osp.basename(runner.work_dir.rstrip(osp.sep))
             self.out_dir = self.file_client.join_path(self.out_dir, basename)
             runner.logger.info(
-                (f'The best checkpoint will be saved to {self.out_dir} by '
-                 f'{self.file_client.name}'))
+                f'The best checkpoint will be saved to {self.out_dir} by '
+                f'{self.file_client.name}')
 
         if self.save_best is not None:
             if runner.meta is None:
@@ -335,8 +335,8 @@ class EvalHook(Hook):
                     self.best_ckpt_path):
                 self.file_client.remove(self.best_ckpt_path)
                 runner.logger.info(
-                    (f'The previous best checkpoint {self.best_ckpt_path} was '
-                     'removed'))
+                    f'The previous best checkpoint {self.best_ckpt_path} was '
+                    'removed')
 
             best_ckpt_name = f'best_{self.key_indicator}_{current}.pth'
             self.best_ckpt_path = self.file_client.join_path(

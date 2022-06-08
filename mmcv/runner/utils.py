@@ -6,6 +6,8 @@ import time
 import warnings
 from getpass import getuser
 from socket import gethostname
+from types import ModuleType
+from typing import Optional
 
 import numpy as np
 import torch
@@ -32,7 +34,9 @@ def get_time_str():
     return time.strftime('%Y%m%d_%H%M%S', time.localtime())
 
 
-def obj_from_dict(info, parent=None, default_args=None):
+def obj_from_dict(info: dict,
+                  parent: Optional[ModuleType] = None,
+                  default_args: Optional[dict] = None):
     """Initialize an object from dict.
 
     The dict must contain the key "type", which indicates the object type, it
@@ -67,7 +71,9 @@ def obj_from_dict(info, parent=None, default_args=None):
     return obj_type(**args)
 
 
-def set_random_seed(seed, deterministic=False, use_rank_shift=False):
+def set_random_seed(seed: int,
+                    deterministic: bool = False,
+                    use_rank_shift: bool = False) -> None:
     """Set random seed.
 
     Args:

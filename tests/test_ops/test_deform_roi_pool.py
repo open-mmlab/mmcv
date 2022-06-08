@@ -35,7 +35,7 @@ outputs = [([[[[1, 1.25], [1.5, 1.75]]]], [[[[3.0625, 0.4375],
                                 0.00390625]]]])]
 
 
-class TestDeformRoIPool(object):
+class TestDeformRoIPool:
 
     def test_deform_roi_pool_gradcheck(self):
         if not torch.cuda.is_available():

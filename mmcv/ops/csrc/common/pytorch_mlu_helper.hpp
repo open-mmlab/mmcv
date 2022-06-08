@@ -21,6 +21,8 @@
 
 #define PAD_DOWN(x, y) (((x) / (y)) * (y))
 
+#define CEIL_ALIGN(x, y) (((x) + (y)-1) / (y) * (y))
+
 #endif
 
 #endif  // PYTORCH_MLU_HELPER_HPP_

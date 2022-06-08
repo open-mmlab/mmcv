@@ -54,7 +54,7 @@ class GeneralizedAttention(nn.Module):
                  q_stride=1,
                  attention_type='1111'):
 
-        super(GeneralizedAttention, self).__init__()
+        super().__init__()
 
         # hard range means local range for non-local operation
         self.position_embedding_dim = (

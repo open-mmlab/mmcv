@@ -10,7 +10,7 @@ except ImportError:
     _USING_PARROTS = False
 
 
-class TestFusedBiasLeakyReLU(object):
+class TestFusedBiasLeakyReLU:
 
     @classmethod
     def setup_class(cls):

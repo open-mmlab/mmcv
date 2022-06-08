@@ -1,14 +1,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import torch
+
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', ['box_iou_rotated'])
 
 
-def box_iou_rotated(bboxes1,
-                    bboxes2,
-                    mode='iou',
-                    aligned=False,
-                    clockwise=True):
+def box_iou_rotated(bboxes1: torch.Tensor,
+                    bboxes2: torch.Tensor,
+                    mode: str = 'iou',
+                    aligned: bool = False,
+                    clockwise: bool = True) -> torch.Tensor:
     """Return intersection-over-union (Jaccard index) of boxes.
 
     Both sets of boxes are expected to be in
@@ -131,7 +133,7 @@ def box_iou_rotated(bboxes1,
     if aligned:
         ious = bboxes1.new_zeros(rows)
     else:
-        ious = bboxes1.new_zeros((rows * cols))
+        ious = bboxes1.new_zeros(rows * cols)
     if not clockwise:
         flip_mat = bboxes1.new_ones(bboxes1.shape[-1])
         flip_mat[-1] = -1

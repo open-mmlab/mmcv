@@ -3,7 +3,7 @@ import torch
 from torch.autograd import gradcheck
 
 
-class TestCarafe(object):
+class TestCarafe:
 
     def test_carafe_naive_gradcheck(self):
         if not torch.cuda.is_available():

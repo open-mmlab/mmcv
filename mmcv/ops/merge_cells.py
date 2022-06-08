@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import math
 from abc import abstractmethod
 
 import torch
@@ -53,7 +54,7 @@ class BaseMergeCell(nn.Module):
                  input_conv_cfg=None,
                  input_norm_cfg=None,
                  upsample_mode='nearest'):
-        super(BaseMergeCell, self).__init__()
+        super().__init__()
         assert upsample_mode in ['nearest', 'bilinear']
         self.with_out_conv = with_out_conv
         self.with_input1_conv = with_input1_conv
@@ -95,8 +96,18 @@ class BaseMergeCell(nn.Module):
         elif x.shape[-2:] < size:
             return F.interpolate(x, size=size, mode=self.upsample_mode)
         else:
-            assert x.shape[-2] % size[-2] == 0 and x.shape[-1] % size[-1] == 0
-            kernel_size = x.shape[-1] // size[-1]
+            if x.shape[-2] % size[-2] != 0 or x.shape[-1] % size[-1] != 0:
+                h, w = x.shape[-2:]
+                target_h, target_w = size
+                pad_h = math.ceil(h / target_h) * target_h - h
+                pad_w = math.ceil(w / target_w) * target_w - w
+                pad_l = pad_w // 2
+                pad_r = pad_w - pad_l
+                pad_t = pad_h // 2
+                pad_b = pad_h - pad_t
+                pad = (pad_l, pad_r, pad_t, pad_b)
+                x = F.pad(x, pad, mode='constant', value=0.0)
+            kernel_size = (x.shape[-2] // size[-2], x.shape[-1] // size[-1])
             x = F.max_pool2d(x, kernel_size=kernel_size, stride=kernel_size)
             return x
 
@@ -121,7 +132,7 @@ class BaseMergeCell(nn.Module):
 class SumCell(BaseMergeCell):
 
     def __init__(self, in_channels, out_channels, **kwargs):
-        super(SumCell, self).__init__(in_channels, out_channels, **kwargs)
+        super().__init__(in_channels, out_channels, **kwargs)
 
     def _binary_op(self, x1, x2):
         return x1 + x2
@@ -130,8 +141,7 @@ class SumCell(BaseMergeCell):
 class ConcatCell(BaseMergeCell):
 
     def __init__(self, in_channels, out_channels, **kwargs):
-        super(ConcatCell, self).__init__(in_channels * 2, out_channels,
-                                         **kwargs)
+        super().__init__(in_channels * 2, out_channels, **kwargs)
 
     def _binary_op(self, x1, x2):
         ret = torch.cat([x1, x2], dim=1)

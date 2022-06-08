@@ -18,7 +18,7 @@ class MMDistributedDataParallel(nn.Module):
                  dim=0,
                  broadcast_buffers=True,
                  bucket_cap_mb=25):
-        super(MMDistributedDataParallel, self).__init__()
+        super().__init__()
         self.module = module
         self.dim = dim
         self.broadcast_buffers = broadcast_buffers

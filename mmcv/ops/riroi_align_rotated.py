@@ -116,7 +116,7 @@ class RiRoIAlignRotated(nn.Module):
                  num_samples=0,
                  num_orientations=8,
                  clockwise=False):
-        super(RiRoIAlignRotated, self).__init__()
+        super().__init__()
 
         self.out_size = out_size
         self.spatial_scale = float(spatial_scale)

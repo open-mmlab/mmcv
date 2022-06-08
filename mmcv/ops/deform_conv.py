@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Tuple, Union
+from typing import Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -48,16 +48,16 @@ class DeformConv2dFunction(Function):
 
     @staticmethod
     def forward(ctx,
-                input,
-                offset,
-                weight,
-                stride=1,
-                padding=0,
-                dilation=1,
-                groups=1,
-                deform_groups=1,
-                bias=False,
-                im2col_step=32):
+                input: Tensor,
+                offset: Tensor,
+                weight: Tensor,
+                stride: Union[int, Tuple[int, ...]] = 1,
+                padding: Union[int, Tuple[int, ...]] = 0,
+                dilation: Union[int, Tuple[int, ...]] = 1,
+                groups: int = 1,
+                deform_groups: int = 1,
+                bias: bool = False,
+                im2col_step: int = 32) -> Tensor:
         if input is not None and input.dim() != 4:
             raise ValueError(
                 f'Expected 4D tensor as input, got {input.dim()}D tensor \
@@ -111,7 +111,10 @@ class DeformConv2dFunction(Function):
 
     @staticmethod
     @once_differentiable
-    def backward(ctx, grad_output):
+    def backward(
+        ctx, grad_output: Tensor
+    ) -> Tuple[Optional[Tensor], Optional[Tensor], Optional[Tensor], None,
+               None, None, None, None, None, None]:
         input, offset, weight = ctx.saved_tensors
 
         grad_input = grad_offset = grad_weight = None
@@ -236,7 +239,7 @@ class DeformConv2d(nn.Module):
                  deform_groups: int = 1,
                  bias: bool = False,
                  im2col_step: int = 32) -> None:
-        super(DeformConv2d, self).__init__()
+        super().__init__()
 
         assert not bias, \
             f'bias={bias} is not supported in DeformConv2d.'
@@ -356,7 +359,7 @@ class DeformConv2dPack(DeformConv2d):
     _version = 2
 
     def __init__(self, *args, **kwargs):
-        super(DeformConv2dPack, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.conv_offset = nn.Conv2d(
             self.in_channels,
             self.deform_groups * 2 * self.kernel_size[0] * self.kernel_size[1],
@@ -371,7 +374,7 @@ class DeformConv2dPack(DeformConv2d):
         self.conv_offset.weight.data.zero_()
         self.conv_offset.bias.data.zero_()
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:  # type: ignore
         offset = self.conv_offset(x)
         return deform_conv2d(x, offset, self.weight, self.stride, self.padding,
                              self.dilation, self.groups, self.deform_groups,

@@ -181,7 +181,7 @@ class RoIAlign(nn.Module):
                  pool_mode='avg',
                  aligned=True,
                  use_torchvision=False):
-        super(RoIAlign, self).__init__()
+        super().__init__()
 
         self.output_size = _pair(output_size)
         self.spatial_scale = float(spatial_scale)
