@@ -40,7 +40,7 @@ def _get_mmcv_home():
 
 
 def load_state_dict(module: torch.nn.Module,
-                    state_dict: OrderedDict,
+                    state_dict: Union[dict, OrderedDict],
                     strict: bool = False,
                     logger: Optional[logging.Logger] = None) -> None:
     """Load state_dict to a module.

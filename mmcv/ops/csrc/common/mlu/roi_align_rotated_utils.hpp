@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2021 Cambricon.
+ * Copyright (C) 2022 Cambricon.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
@@ -9,20 +9,16 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *************************************************************************/
-#ifndef PYTORCH_MLU_HELPER_HPP_
-#define PYTORCH_MLU_HELPER_HPP_
+#ifndef ROI_ALIGN_ROTATED_UTILS_HPP_
+#define ROI_ALIGN_ROTATED_UTILS_HPP_
 
-#ifdef MMCV_WITH_MLU
-#include "aten.h"
+struct RoiAlignRotatedParams {
+  int pooled_height;
+  int pooled_width;
+  int sample_ratio;
+  float spatial_scale;
+  bool aligned;
+  bool clockwise;
+};
 
-#define NFU_ALIGN_SIZE 128
-
-#define PAD_UP(x, y) (((x) / (y) + (int)((x) % (y) > 0)) * (y))
-
-#define PAD_DOWN(x, y) (((x) / (y)) * (y))
-
-#define CEIL_ALIGN(x, y) (((x) + (y)-1) / (y) * (y))
-
-#endif
-
-#endif  // PYTORCH_MLU_HELPER_HPP_
+#endif  // ROI_ALIGN_ROTATED_UTILS_HPP_
