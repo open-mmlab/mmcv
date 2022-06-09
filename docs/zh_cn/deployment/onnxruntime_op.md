@@ -100,7 +100,7 @@ onnx_results = sess.run(None, {'input' : input_data})
 
 2. 在ONNX Runtime源码目录`mmcv/ops/csrc/onnxruntime/cpu/`下添加算子实现`soft_nms.cpp`
 
-3. 在[onnxruntime_register.cpp](../../mmcv/ops/csrc/onnxruntime/cpu/onnxruntime_register.cpp)中注册实现的算子`soft_nms`
+3. 在[onnxruntime_register.cpp](../../../mmcv/ops/csrc/onnxruntime/cpu/onnxruntime_register.cpp)中注册实现的算子`soft_nms`
 
    ```c++
    #include "soft_nms.h"
@@ -126,4 +126,4 @@ onnx_results = sess.run(None, {'input' : input_data})
 ### 引用
 
 - [How to export Pytorch model with custom op to ONNX and run it in ONNX Runtime](https://github.com/onnx/tutorials/blob/master/PyTorchCustomOperator/README.md)
-- [How to add a custom operator/kernel in ONNX Runtime](https://github.com/microsoft/onnxruntime/blob/master/docs/AddingCustomOp.md)
+- [How to add a custom operator/kernel in ONNX Runtime](https://onnxruntime.ai/docs/reference/operators/add-custom-op.html)
