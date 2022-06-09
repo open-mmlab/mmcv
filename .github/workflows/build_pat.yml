@@ -40,6 +40,7 @@ jobs:
       - name: Build and install
         run: rm -rf .eggs && MMCV_WITH_OPS=1 pip install -e .
       - name: Test
+        run: |
           coverage run --branch --source=mmcv -m pytest tests/
           coverage xml
           coverage report -m
