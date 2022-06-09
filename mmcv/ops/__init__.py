@@ -29,8 +29,8 @@ from .gather_points import gather_points
 from .group_points import GroupAll, QueryAndGroup, grouping_operation
 from .info import (get_compiler_version, get_compiling_cuda_version,
                    get_onnxruntime_op_path)
-from .iou3d import (boxes_iou3d, boxes_iou_bev, nms3d, nms3d_normal, nms_bev,
-                    nms_normal_bev)
+from .iou3d import (boxes_iou3d, boxes_iou_bev, boxes_overlap_bev, nms3d,
+                    nms3d_normal, nms_bev, nms_normal_bev)
 from .knn import knn
 from .masked_conv import MaskedConv2d, masked_conv2d
 from .min_area_polygons import min_area_polygons
@@ -91,12 +91,12 @@ __all__ = [
     'three_interpolate', 'MultiScaleDeformableAttention', 'BorderAlign',
     'border_align', 'gather_points', 'furthest_point_sample',
     'furthest_point_sample_with_dist', 'PointsSampler', 'Correlation',
-    'boxes_iou3d', 'boxes_iou_bev', 'nms_bev', 'nms_normal_bev', 'nms3d',
-    'nms3d_normal', 'Voxelization', 'voxelization', 'dynamic_scatter',
-    'DynamicScatter', 'RoIAwarePool3d', 'SparseConv2d', 'SparseConv3d',
-    'SparseConvTranspose2d', 'SparseConvTranspose3d', 'SparseInverseConv2d',
-    'SparseInverseConv3d', 'SubMConv2d', 'SubMConv3d', 'SparseModule',
-    'SparseSequential', 'SparseMaxPool2d', 'SparseMaxPool3d',
+    'boxes_iou3d', 'boxes_iou_bev', 'boxes_overlap_bev', 'nms_bev',
+    'nms_normal_bev', 'nms3d', 'nms3d_normal', 'Voxelization', 'voxelization',
+    'dynamic_scatter', 'DynamicScatter', 'RoIAwarePool3d', 'SparseConv2d',
+    'SparseConv3d', 'SparseConvTranspose2d', 'SparseConvTranspose3d',
+    'SparseInverseConv2d', 'SparseInverseConv3d', 'SubMConv2d', 'SubMConv3d',
+    'SparseModule', 'SparseSequential', 'SparseMaxPool2d', 'SparseMaxPool3d',
     'SparseConvTensor', 'scatter_nd', 'points_in_boxes_part',
     'points_in_boxes_cpu', 'points_in_boxes_all', 'points_in_polygons',
     'min_area_polygons', 'active_rotated_filter', 'convex_iou', 'convex_giou',
