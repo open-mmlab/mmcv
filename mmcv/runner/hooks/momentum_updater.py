@@ -429,10 +429,8 @@ class OneCycleMomentumUpdaterHook(MomentumUpdaterHook):
     """
 
     def __init__(self,
-                 base_momentum: Union[float, List[float], Dict[str,
-                                                               float]] = 0.85,
-                 max_momentum: Union[float, List[float], Dict[str,
-                                                              float]] = 0.95,
+                 base_momentum: Union[float, list, dict] = 0.85,
+                 max_momentum: Union[float, list, dict] = 0.95,
                  pct_start: float = 0.3,
                  anneal_strategy: str = 'cos',
                  three_phase: bool = False,
