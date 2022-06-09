@@ -26,6 +26,7 @@
 import sys
 import warnings
 from functools import partial
+from typing import Any, Callable, Dict, Optional, TextIO, Tuple
 
 import numpy as np
 import torch
@@ -34,13 +35,13 @@ import torch.nn as nn
 import mmcv
 
 
-def get_model_complexity_info(model,
-                              input_shape,
-                              print_per_layer_stat=True,
-                              as_strings=True,
-                              input_constructor=None,
-                              flush=False,
-                              ost=sys.stdout):
+def get_model_complexity_info(model: nn.Module,
+                              input_shape: tuple,
+                              print_per_layer_stat: bool = True,
+                              as_strings: bool = True,
+                              input_constructor: Optional[Callable] = None,
+                              flush: bool = False,
+                              ost: TextIO = sys.stdout) -> tuple:
     """Get complexity information of a model.
 
     This method can calculate FLOPs and parameter counts of a model with
@@ -116,7 +117,9 @@ def get_model_complexity_info(model,
     return flops_count, params_count
 
 
-def flops_to_string(flops, units='GFLOPs', precision=2):
+def flops_to_string(flops: float,
+                    units: Optional[str] = 'GFLOPs',
+                    precision: int = 2) -> str:
     """Convert FLOPs number into a string.
 
     Note that Here we take a multiply-add counts as one FLOP.
@@ -159,7 +162,9 @@ def flops_to_string(flops, units='GFLOPs', precision=2):
             return str(flops) + ' FLOPs'
 
 
-def params_to_string(num_params, units=None, precision=2):
+def params_to_string(num_params: float,
+                     units: Optional[str] = None,
+                     precision: int = 2) -> str:
     """Convert parameter number into a string.
 
     Args:
@@ -196,13 +201,13 @@ def params_to_string(num_params, units=None, precision=2):
             return str(num_params)
 
 
-def print_model_with_flops(model,
-                           total_flops,
-                           total_params,
-                           units='GFLOPs',
-                           precision=3,
-                           ost=sys.stdout,
-                           flush=False):
+def print_model_with_flops(model: nn.Module,
+                           total_flops: float,
+                           total_params: float,
+                           units: Optional[str] = 'GFLOPs',
+                           precision: int = 3,
+                           ost: TextIO = sys.stdout,
+                           flush: bool = False) -> None:
     """Print a model with FLOPs for each layer.
 
     Args:
@@ -305,7 +310,7 @@ def print_model_with_flops(model,
     model.apply(del_extra_repr)
 
 
-def get_model_parameters_number(model):
+def get_model_parameters_number(model: nn.Module) -> float:
     """Calculate parameter number of a model.
 
     Args:
@@ -318,16 +323,16 @@ def get_model_parameters_number(model):
     return num_params
 
 
-def add_flops_counting_methods(net_main_module):
+def add_flops_counting_methods(net_main_module: nn.Module) -> nn.Module:
     # adding additional methods to the existing module object,
     # this is done this way so that each function has access to self object
-    net_main_module.start_flops_count = start_flops_count.__get__(
+    net_main_module.start_flops_count = start_flops_count.__get__(  # type: ignore # noqa E501
         net_main_module)
-    net_main_module.stop_flops_count = stop_flops_count.__get__(
+    net_main_module.stop_flops_count = stop_flops_count.__get__(  # type: ignore # noqa E501
         net_main_module)
-    net_main_module.reset_flops_count = reset_flops_count.__get__(
+    net_main_module.reset_flops_count = reset_flops_count.__get__(  # type: ignore # noqa E501
         net_main_module)
-    net_main_module.compute_average_flops_cost = compute_average_flops_cost.__get__(  # noqa: E501
+    net_main_module.compute_average_flops_cost = compute_average_flops_cost.__get__(  # type: ignore # noqa E501
         net_main_module)
 
     net_main_module.reset_flops_count()
@@ -335,7 +340,7 @@ def add_flops_counting_methods(net_main_module):
     return net_main_module
 
 
-def compute_average_flops_cost(self):
+def compute_average_flops_cost(self) -> Tuple[float, float]:
     """Compute average FLOPs cost.
 
     A method to compute average FLOPs cost, which will be available after
@@ -353,7 +358,7 @@ def compute_average_flops_cost(self):
     return flops_sum / batches_count, params_sum
 
 
-def start_flops_count(self):
+def start_flops_count(self) -> None:
     """Activate the computation of mean flops consumption per image.
 
     A method to activate the computation of mean flops consumption per image.
@@ -362,7 +367,7 @@ def start_flops_count(self):
     """
     add_batch_counter_hook_function(self)
 
-    def add_flops_counter_hook_function(module):
+    def add_flops_counter_hook_function(module: nn.Module) -> None:
         if is_supported_instance(module):
             if hasattr(module, '__flops_handle__'):
                 return
@@ -376,7 +381,7 @@ def start_flops_count(self):
     self.apply(partial(add_flops_counter_hook_function))
 
 
-def stop_flops_count(self):
+def stop_flops_count(self) -> None:
     """Stop computing the mean flops consumption per image.
 
     A method to stop computing the mean flops consumption per image, which will
@@ -387,7 +392,7 @@ def stop_flops_count(self):
     self.apply(remove_flops_counter_hook_function)
 
 
-def reset_flops_count(self):
+def reset_flops_count(self) -> None:
     """Reset statistics computed so far.
 
     A method to Reset computed statistics, which will be available after
@@ -398,11 +403,13 @@ def reset_flops_count(self):
 
 
 # ---- Internal functions
-def empty_flops_counter_hook(module, input, output):
+def empty_flops_counter_hook(module: nn.Module, input: tuple,
+                             output: Any) -> None:
     module.__flops__ += 0
 
 
-def upsample_flops_counter_hook(module, input, output):
+def upsample_flops_counter_hook(module: nn.Module, input: tuple,
+                                output: torch.Tensor) -> None:
     output_size = output[0]
     batch_size = output_size.shape[0]
     output_elements_count = batch_size
@@ -411,39 +418,38 @@ def upsample_flops_counter_hook(module, input, output):
     module.__flops__ += int(output_elements_count)
 
 
-def relu_flops_counter_hook(module, input, output):
+def relu_flops_counter_hook(module: nn.Module, input: tuple,
+                            output: torch.Tensor) -> None:
     active_elements_count = output.numel()
     module.__flops__ += int(active_elements_count)
 
 
-def linear_flops_counter_hook(module, input, output):
-    input = input[0]
+def linear_flops_counter_hook(module: nn.Module, input: tuple,
+                              output: torch.Tensor) -> None:
     output_last_dim = output.shape[
         -1]  # pytorch checks dimensions, so here we don't care much
-    module.__flops__ += int(np.prod(input.shape) * output_last_dim)
+    module.__flops__ += int(np.prod(input[0].shape) * output_last_dim)
 
 
-def pool_flops_counter_hook(module, input, output):
-    input = input[0]
-    module.__flops__ += int(np.prod(input.shape))
+def pool_flops_counter_hook(module: nn.Module, input: tuple,
+                            output: torch.Tensor) -> None:
+    module.__flops__ += int(np.prod(input[0].shape))
 
 
-def norm_flops_counter_hook(module, input, output):
-    input = input[0]
-
-    batch_flops = np.prod(input.shape)
+def norm_flops_counter_hook(module: nn.Module, input: tuple,
+                            output: torch.Tensor) -> None:
+    batch_flops = np.prod(input[0].shape)
     if (getattr(module, 'affine', False)
             or getattr(module, 'elementwise_affine', False)):
         batch_flops *= 2
     module.__flops__ += int(batch_flops)
 
 
-def deconv_flops_counter_hook(conv_module, input, output):
+def deconv_flops_counter_hook(conv_module: nn.Module, input: tuple,
+                              output: torch.Tensor) -> None:
     # Can have multiple inputs, getting the first one
-    input = input[0]
-
-    batch_size = input.shape[0]
-    input_height, input_width = input.shape[2:]
+    batch_size = input[0].shape[0]
+    input_height, input_width = input[0].shape[2:]
 
     kernel_height, kernel_width = conv_module.kernel_size
     in_channels = conv_module.in_channels
@@ -465,11 +471,10 @@ def deconv_flops_counter_hook(conv_module, input, output):
     conv_module.__flops__ += int(overall_flops)
 
 
-def conv_flops_counter_hook(conv_module, input, output):
+def conv_flops_counter_hook(conv_module: nn.Module, input: tuple,
+                            output: torch.Tensor) -> None:
     # Can have multiple inputs, getting the first one
-    input = input[0]
-
-    batch_size = input.shape[0]
+    batch_size = input[0].shape[0]
     output_dims = list(output.shape[2:])
 
     kernel_dims = list(conv_module.kernel_size)
@@ -496,24 +501,23 @@ def conv_flops_counter_hook(conv_module, input, output):
     conv_module.__flops__ += int(overall_flops)
 
 
-def batch_counter_hook(module, input, output):
+def batch_counter_hook(module: nn.Module, input: tuple, output: Any) -> None:
     batch_size = 1
     if len(input) > 0:
         # Can have multiple inputs, getting the first one
-        input = input[0]
-        batch_size = len(input)
+        batch_size = len(input[0])
     else:
         warnings.warn('No positional inputs found for a module, '
                       'assuming batch size is 1.')
     module.__batch_counter__ += batch_size
 
 
-def add_batch_counter_variables_or_reset(module):
+def add_batch_counter_variables_or_reset(module: nn.Module) -> None:
 
     module.__batch_counter__ = 0
 
 
-def add_batch_counter_hook_function(module):
+def add_batch_counter_hook_function(module: nn.Module) -> None:
     if hasattr(module, '__batch_counter_handle__'):
         return
 
@@ -521,13 +525,13 @@ def add_batch_counter_hook_function(module):
     module.__batch_counter_handle__ = handle
 
 
-def remove_batch_counter_hook_function(module):
+def remove_batch_counter_hook_function(module: nn.Module) -> None:
     if hasattr(module, '__batch_counter_handle__'):
         module.__batch_counter_handle__.remove()
         del module.__batch_counter_handle__
 
 
-def add_flops_counter_variable_or_reset(module):
+def add_flops_counter_variable_or_reset(module: nn.Module) -> None:
     if is_supported_instance(module):
         if hasattr(module, '__flops__') or hasattr(module, '__params__'):
             warnings.warn('variables __flops__ or __params__ are already '
@@ -537,20 +541,20 @@ def add_flops_counter_variable_or_reset(module):
         module.__params__ = get_model_parameters_number(module)
 
 
-def is_supported_instance(module):
+def is_supported_instance(module: nn.Module) -> bool:
     if type(module) in get_modules_mapping():
         return True
     return False
 
 
-def remove_flops_counter_hook_function(module):
+def remove_flops_counter_hook_function(module: nn.Module) -> None:
     if is_supported_instance(module):
         if hasattr(module, '__flops_handle__'):
             module.__flops_handle__.remove()
             del module.__flops_handle__
 
 
-def get_modules_mapping():
+def get_modules_mapping() -> Dict:
     return {
         # convolutions
         nn.Conv1d: conv_flops_counter_hook,

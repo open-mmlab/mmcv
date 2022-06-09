@@ -5,7 +5,7 @@ import os
 import socket
 import subprocess
 from collections import OrderedDict
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Tuple
 
 import torch
 import torch.multiprocessing as mp
@@ -116,7 +116,7 @@ def _init_dist_slurm(backend: str, port: Optional[int] = None) -> None:
     dist.init_process_group(backend=backend)
 
 
-def get_dist_info() -> tuple:
+def get_dist_info() -> Tuple[int, int]:
     if dist.is_available() and dist.is_initialized():
         rank = dist.get_rank()
         world_size = dist.get_world_size()
@@ -143,8 +143,8 @@ def allreduce_params(params: List[torch.Parameters],
     """Allreduce parameters.
 
     Args:
-        params (list[torch.Parameters]): List of parameters or buffers of a
-            model.
+        params (list[torch.nn.Parameter]): List of parameters or buffers
+            of a model.
         coalesce (bool, optional): Whether allreduce parameters as a whole.
             Defaults to True.
         bucket_size_mb (int, optional): Size of bucket, the unit is MB.
@@ -167,7 +167,7 @@ def allreduce_grads(params: List[torch.Parameters],
     """Allreduce gradients.
 
     Args:
-        params (list[torch.Parameters]): List of parameters of a model
+        params (list[torch.nn.Parameter]): List of parameters of a model.
         coalesce (bool, optional): Whether allreduce parameters as a whole.
             Defaults to True.
         bucket_size_mb (int, optional): Size of bucket, the unit is MB.

@@ -3,11 +3,12 @@ import functools
 import warnings
 from collections import abc
 from inspect import getfullargspec
-from typing import Callable, Dict, Iterable, List, Optional, Sequence, Union
+from typing import Callable, Iterable, List, Optional, Union
 
 import numpy as np
 import torch
 import torch.nn as nn
+from torch.nn.parameter import Parameter
 
 from mmcv.utils import TORCH_VERSION, digit_version
 from .dist_utils import allreduce_grads as _allreduce_grads
@@ -56,22 +57,22 @@ def cast_tensor_type(
     elif isinstance(inputs, np.ndarray):
         return inputs
     elif isinstance(inputs, abc.Mapping):
-        return type(inputs)({  # type:ignore
+        return type(inputs)({  # type: ignore
             k: cast_tensor_type(v, src_type, dst_type)
             for k, v in inputs.items()
         })
     elif isinstance(inputs, abc.Iterable):
-        return type(inputs)(cast_tensor_type(item, src_type, dst_type)
-                            for item in inputs)  # type:ignore
+        return type(inputs)(  # type: ignore
+            cast_tensor_type(item, src_type, dst_type) for item in inputs)
     else:
         return inputs
 
 
 def auto_fp16(
-    apply_to: Optional[Sequence] = None,
-    out_fp32: bool = False,
-    supported_types: tuple = (nn.Module, )
-) -> Callable:  # noqa E125
+        apply_to: Optional[Iterable] = None,
+        out_fp32: bool = False,
+        supported_types: tuple = (nn.Module, ),
+) -> Callable:
     """Decorator to enable fp16 training automatically.
 
     This decorator is useful when you write custom modules and want to support
@@ -245,10 +246,10 @@ def force_fp32(apply_to: Optional[Iterable] = None,
     return force_fp32_wrapper
 
 
-def allreduce_grads(params: List,
+def allreduce_grads(params: List[Parameter],
                     coalesce: bool = True,
                     bucket_size_mb: int = -1) -> None:
-    warnings.warning(  # type: ignore
+    warnings.warn(
         '"mmcv.runner.fp16_utils.allreduce_grads" is deprecated, and will be '
         'removed in v2.8. Please switch to "mmcv.runner.allreduce_grads',
         DeprecationWarning)
@@ -373,7 +374,7 @@ class LossScaler:
         self.scale_factor = scale_factor
         self.scale_window = scale_window
 
-    def has_overflow(self, params: List) -> bool:
+    def has_overflow(self, params: List[Parameter]) -> bool:
         """Check if params contain overflow."""
         if self.mode != 'dynamic':
             return False
@@ -409,7 +410,7 @@ class LossScaler:
                 self.cur_scale *= self.scale_factor
         self.cur_iter += 1
 
-    def state_dict(self) -> Dict:
+    def state_dict(self) -> dict:
         """Returns the state of the scaler as a :class:`dict`."""
         return dict(
             cur_scale=self.cur_scale,
@@ -419,7 +420,7 @@ class LossScaler:
             scale_factor=self.scale_factor,
             scale_window=self.scale_window)
 
-    def load_state_dict(self, state_dict: Dict) -> None:
+    def load_state_dict(self, state_dict: dict) -> None:
         """Loads the loss_scaler state dict.
 
         Args:

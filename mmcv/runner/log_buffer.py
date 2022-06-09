@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from collections import OrderedDict
-from typing import Dict
 
 import numpy as np
 
@@ -22,7 +21,7 @@ class LogBuffer:
         self.output.clear()
         self.ready = False
 
-    def update(self, vars: Dict, count: int = 1) -> None:
+    def update(self, vars: dict, count: int = 1) -> None:
         assert isinstance(vars, dict)
         for key, var in vars.items():
             if key not in self.val_history:

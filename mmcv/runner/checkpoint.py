@@ -7,10 +7,10 @@ import pkgutil
 import re
 import time
 import warnings
+from collections import OrderedDict
 from importlib import import_module
 from tempfile import TemporaryDirectory
-from typing import (Any, Callable, Dict, List, Optional, OrderedDict, Tuple,
-                    Union)
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -41,7 +41,7 @@ def _get_mmcv_home() -> str:
 
 
 def load_state_dict(module: nn.Module,
-                    state_dict: OrderedDict,
+                    state_dict: dict,
                     strict: bool = False,
                     logger: Optional[logging.Logger] = None) -> None:
     """Load state_dict to a module.
@@ -52,7 +52,7 @@ def load_state_dict(module: nn.Module,
 
     Args:
         module (Module): Module that receives the state_dict.
-        state_dict (OrderedDict): Weights.
+        state_dict (dict): Weights.
         strict (bool): whether to strictly enforce that the keys
             in :attr:`state_dict` match the keys returned by this module's
             :meth:`~torch.nn.Module.state_dict` function. Default: ``False``.
@@ -84,7 +84,8 @@ def load_state_dict(module: nn.Module,
                 load(child, prefix + name + '.')
 
     load(module)
-    load = None  # type: ignore # break load->load reference cycle
+    # break load->load reference cycle
+    load = None  # type: ignore
 
     # ignore "num_batches_tracked" of BN layers
     missing_keys = [
@@ -236,7 +237,7 @@ class CheckpointLoader:
 
     @classmethod
     def register_scheme(cls,
-                        prefixes: Union[str, List[str], Tuple[str]],
+                        prefixes: Union[str, List[str], Tuple[str, ...]],
                         loader: Optional[Callable] = None,
                         force: bool = False) -> Callable:
         """Register a loader to CheckpointLoader.
@@ -244,7 +245,7 @@ class CheckpointLoader:
         This method can be used as a normal class method or a decorator.
 
         Args:
-            prefixes (str or list[str] or tuple[str]):
+            prefixes (str or Sequence[str]):
             The prefix of the registered loader.
             loader (function, optional): The loader function to be registered.
                 When this method is used as a decorator, loader is None.
@@ -287,7 +288,7 @@ class CheckpointLoader:
             filename: str,
             map_location: Optional[str] = None,
             logger: Optional[logging.Logger] = None
-    ) -> Union[Dict, OrderedDict]:
+    ) -> Union[dict, OrderedDict]:
         """load checkpoint through URL scheme path.
 
         Args:
@@ -308,9 +309,10 @@ class CheckpointLoader:
         return checkpoint_loader(filename, map_location)  # type: ignore
 
 
-@CheckpointLoader.register_scheme(prefixes='')  # type: ignore
-def load_from_local(filename: str,
-                    map_location: str) -> Union[Dict, OrderedDict]:
+@CheckpointLoader.register_scheme(prefixes='')
+def load_from_local(
+        filename: str,
+        map_location: Optional[str] = None) -> Union[dict, OrderedDict]:
     """load checkpoint by local file path.
 
     Args:
@@ -327,13 +329,11 @@ def load_from_local(filename: str,
     return checkpoint
 
 
-@CheckpointLoader.register_scheme(
-    prefixes=('http://', 'https://')  # type: ignore
-)  # type: ignore
+@CheckpointLoader.register_scheme(prefixes=('http://', 'https://'))
 def load_from_http(
         filename: str,
         map_location: Optional[str] = None,
-        model_dir: Optional[str] = None) -> Union[Dict, OrderedDict]:
+        model_dir: Optional[str] = None) -> Union[dict, OrderedDict]:
     """load checkpoint through HTTP or HTTPS scheme path. In distributed
     setting, this function only download checkpoint at local rank 0.
 
@@ -359,10 +359,10 @@ def load_from_http(
     return checkpoint
 
 
-@CheckpointLoader.register_scheme(prefixes='pavi://')  # type: ignore
+@CheckpointLoader.register_scheme(prefixes='pavi://')
 def load_from_pavi(
         filename: str,
-        map_location: Optional[str] = None) -> Union[Dict, OrderedDict]:
+        map_location: Optional[str] = None) -> Union[dict, OrderedDict]:
     """load checkpoint through the file path prefixed with pavi. In distributed
     setting, this function download ckpt at all ranks to different temporary
     directories.
@@ -393,10 +393,10 @@ def load_from_pavi(
     return checkpoint
 
 
-@CheckpointLoader.register_scheme(prefixes=r'(\S+\:)?s3://')  # type: ignore
+@CheckpointLoader.register_scheme(prefixes=r'(\S+\:)?s3://')
 def load_from_ceph(filename: str,
                    map_location: Optional[str] = None,
-                   backend: str = 'petrel') -> Union[Dict, OrderedDict]:
+                   backend: str = 'petrel') -> Union[dict, OrderedDict]:
     """load checkpoint through the file path prefixed with s3.  In distributed
     setting, this function download ckpt at all ranks to different temporary
     directories.
@@ -409,7 +409,7 @@ def load_from_ceph(filename: str,
     Args:
         filename (str): checkpoint file path with s3 prefix
         map_location (str, optional): Same as :func:`torch.load`.
-        backend (str, optional): The storage backend type. Options are 'ceph',
+        backend (str): The storage backend type. Options are 'ceph',
             'petrel'. Default: 'petrel'.
 
     .. warning::
@@ -442,12 +442,10 @@ def load_from_ceph(filename: str,
     return checkpoint
 
 
-@CheckpointLoader.register_scheme(
-    prefixes=('modelzoo://', 'torchvision://')  # type: ignore
-)  # type: ignore
+@CheckpointLoader.register_scheme(prefixes=('modelzoo://', 'torchvision://'))
 def load_from_torchvision(
         filename: str,
-        map_location: Optional[str] = None) -> Union[Dict, OrderedDict]:
+        map_location: Optional[str] = None) -> Union[dict, OrderedDict]:
     """load checkpoint through the file path prefixed with modelzoo or
     torchvision.
 
@@ -475,12 +473,10 @@ def load_from_torchvision(
     return load_from_http(model_urls[model_name], map_location=map_location)
 
 
-@CheckpointLoader.register_scheme(
-    prefixes=('open-mmlab://', 'openmmlab://')  # type: ignore
-)
+@CheckpointLoader.register_scheme(prefixes=('open-mmlab://', 'openmmlab://'))
 def load_from_openmmlab(
         filename: str,
-        map_location: Optional[str] = None) -> Union[Dict, OrderedDict]:
+        map_location: Optional[str] = None) -> Union[dict, OrderedDict]:
     """load checkpoint through the file path prefixed with open-mmlab or
     openmmlab.
 
@@ -521,10 +517,10 @@ def load_from_openmmlab(
     return checkpoint
 
 
-@CheckpointLoader.register_scheme(prefixes='mmcls://')  # type: ignore
+@CheckpointLoader.register_scheme(prefixes='mmcls://')
 def load_from_mmcls(
         filename: str,
-        map_location: Optional[str] = None) -> Union[Dict, OrderedDict]:
+        map_location: Optional[str] = None) -> Union[dict, OrderedDict]:
     """load checkpoint through the file path prefixed with mmcls.
 
     Args:
@@ -546,7 +542,7 @@ def load_from_mmcls(
 def _load_checkpoint(
         filename: str,
         map_location: Optional[str] = None,
-        logger: Optional[logging.Logger] = None) -> Union[Dict, OrderedDict]:
+        logger: Optional[logging.Logger] = None) -> Union[dict, OrderedDict]:
     """Load checkpoint from somewhere (modelzoo, file, url).
 
     Args:
@@ -566,10 +562,9 @@ def _load_checkpoint(
     return CheckpointLoader.load_checkpoint(filename, map_location, logger)
 
 
-def _load_checkpoint_with_prefix(
-        prefix: str,
-        filename: str,
-        map_location: Optional[str] = None) -> Union[Dict, OrderedDict]:
+def _load_checkpoint_with_prefix(prefix: str,
+                                 filename: str,
+                                 map_location: Optional[str] = None) -> dict:
     """Load partial pretrained model with specific prefix.
 
     Args:
@@ -603,12 +598,12 @@ def _load_checkpoint_with_prefix(
 
 
 def load_checkpoint(
-        model: nn.Module,
+        model: torch.nn.Module,
         filename: str,
         map_location: Optional[str] = None,
         strict: bool = False,
         logger: Optional[logging.Logger] = None,
-        revise_keys: List = [(r'^module\.', '')]) -> Union[Dict, OrderedDict]:
+        revise_keys: list = [(r'^module\.', '')]) -> Union[dict, OrderedDict]:
     """Load checkpoint from a file or URI.
 
     Args:
@@ -667,14 +662,12 @@ def weights_to_cpu(state_dict: OrderedDict) -> OrderedDict:
         state_dict_cpu[key] = val.cpu()
     # Keep metadata in state_dict
     state_dict_cpu._metadata = getattr(  # type: ignore
-        state_dict,
-        '_metadata',  # type: ignore
-        OrderedDict())
+        state_dict, '_metadata', OrderedDict())
     return state_dict_cpu
 
 
-def _save_to_state_dict(module: nn.Module, destination: Dict, prefix: str,
-                        keep_vars: bool) -> None:
+def _save_to_state_dict(module: torch.nn.Module, destination: dict,
+                        prefix: str, keep_vars: bool) -> None:
     """Saves module state to `destination` dictionary.
 
     This method is modified from :meth:`torch.nn.Module._save_to_state_dict`.
@@ -694,10 +687,10 @@ def _save_to_state_dict(module: nn.Module, destination: Dict, prefix: str,
             destination[prefix + name] = buf if keep_vars else buf.detach()
 
 
-def get_state_dict(module: nn.Module,
-                   destination: Optional[str] = None,
+def get_state_dict(module: torch.nn.Module,
+                   destination: Optional[OrderedDict] = None,
                    prefix: str = '',
-                   keep_vars: bool = False) -> Dict:
+                   keep_vars: bool = False) -> OrderedDict:
     """Returns a dictionary containing a whole state of the module.
 
     Both parameters and persistent buffers (e.g. running averages) are
@@ -725,7 +718,7 @@ def get_state_dict(module: nn.Module,
 
     # below is the same as torch.nn.Module.state_dict()
     if destination is None:
-        destination = OrderedDict()  # type: ignore
+        destination = OrderedDict()
         destination._metadata = OrderedDict()  # type: ignore
     destination._metadata[prefix[:-1]] = local_metadata = dict(  # type: ignore
         version=module._version)
@@ -741,11 +734,11 @@ def get_state_dict(module: nn.Module,
     return destination  # type: ignore
 
 
-def save_checkpoint(model: nn.Module,
+def save_checkpoint(model: torch.nn.Module,
                     filename: str,
                     optimizer: Optional[Optimizer] = None,
-                    meta: Optional[Dict] = None,
-                    file_client_args: Optional[Dict] = None) -> None:
+                    meta: Optional[dict] = None,
+                    file_client_args: Optional[dict] = None) -> None:
     """Save checkpoint to file.
 
     The checkpoint will have 3 fields: ``meta``, ``state_dict`` and
