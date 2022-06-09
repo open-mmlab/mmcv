@@ -2,8 +2,8 @@
 import logging
 from typing import Optional, Sequence, Tuple, Union
 
-import torch
 import torch.nn as nn
+from torch import Tensor
 
 from .utils import constant_init, kaiming_init, normal_init
 
@@ -140,8 +140,7 @@ class VGG(nn.Module):
         else:
             raise TypeError('pretrained must be a str or None')
 
-    def forward(self,
-                x: torch.Tensor) -> Union[torch.Tensor, Tuple[torch.Tensor]]:
+    def forward(self, x: Tensor) -> Union[Tensor, Tuple[Tensor]]:
         outs = []
         vgg_layers = getattr(self, self.module_name)
         for i in range(len(self.stage_blocks)):
