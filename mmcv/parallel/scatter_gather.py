@@ -7,7 +7,7 @@ from torch.nn.parallel._functions import Scatter as OrigScatter
 from ._functions import Scatter
 from .data_container import DataContainer
 
-ScatterInputs = Union[torch.Tensor, tuple, list, dict]
+ScatterInputs = Union[tuple, list, dict]
 
 
 def scatter(inputs: ScatterInputs, target_gpus: list, dim: int = 0) -> list:
