@@ -35,8 +35,8 @@ class NMSop(torch.autograd.Function):
         return inds
 
     @staticmethod
-    def symbolic(g: Any, bboxes: Tensor, scores: Tensor, iou_threshold: float,
-                 offset: int, score_threshold: float, max_num: int) -> Tensor:
+    def symbolic(g, bboxes, scores, iou_threshold, offset, score_threshold,
+                 max_num):
         from ..onnx import is_custom_op_loaded
         has_custom_op = is_custom_op_loaded()
         # TensorRT nms plugin is aligned with original nms in ONNXRuntime
@@ -101,9 +101,8 @@ class SoftNMSop(torch.autograd.Function):
         return dets, inds
 
     @staticmethod
-    def symbolic(g: Any, boxes: Tensor, scores: Tensor, iou_threshold: float,
-                 sigma: float, min_score: float, method: int,
-                 offset: int) -> Tuple[Tensor, Tensor]:
+    def symbolic(g, boxes, scores, iou_threshold, sigma, min_score, method,
+                 offset):
         from packaging import version
         assert version.parse(torch.__version__) >= version.parse('1.7.0')
         nms_out = g.op(
