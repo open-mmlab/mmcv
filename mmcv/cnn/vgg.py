@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
-from typing import Optional, Sequence, Tuple, Union
+from typing import List, Optional, Sequence, Tuple, Union
 
 import torch.nn as nn
 from torch import Tensor
@@ -8,7 +8,7 @@ from torch import Tensor
 from .utils import constant_init, kaiming_init, normal_init
 
 
-def conv3x3(in_planes: int, out_planes: int, dilation: int = 1):
+def conv3x3(in_planes: int, out_planes: int, dilation: int = 1) -> nn.Module:
     """3x3 convolution with padding."""
     return nn.Conv2d(
         in_planes,
@@ -23,7 +23,7 @@ def make_vgg_layer(inplanes: int,
                    num_blocks: int,
                    dilation: int = 1,
                    with_bn: bool = False,
-                   ceil_mode: bool = False):
+                   ceil_mode: bool = False) -> List[nn.Module]:
     layers = []
     for _ in range(num_blocks):
         layers.append(conv3x3(inplanes, planes, dilation))
@@ -140,7 +140,7 @@ class VGG(nn.Module):
         else:
             raise TypeError('pretrained must be a str or None')
 
-    def forward(self, x: Tensor) -> Union[Tensor, Tuple[Tensor]]:
+    def forward(self, x: Tensor) -> Union[Tensor, Tuple[Tensor, ...]]:
         outs = []
         vgg_layers = getattr(self, self.module_name)
         for i in range(len(self.stage_blocks)):
