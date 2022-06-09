@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, Tuple
+from typing import Tuple, Union
 
 import torch
 from torch.nn.parallel._functions import Scatter as OrigScatter
@@ -7,8 +7,10 @@ from torch.nn.parallel._functions import Scatter as OrigScatter
 from ._functions import Scatter
 from .data_container import DataContainer
 
+ScatterInputs = Union[torch.Tensor, tuple, list, dict]
 
-def scatter(inputs, target_gpus, dim: int = 0) -> Any:
+
+def scatter(inputs: ScatterInputs, target_gpus: list, dim: int = 0) -> list:
     """Scatter inputs to target gpus.
 
     The only difference from original :func:`scatter` is to add support for
@@ -48,17 +50,19 @@ def scatter(inputs, target_gpus, dim: int = 0) -> Any:
         scatter_map = None  # type: ignore
 
 
-def scatter_kwargs(inputs,
-                   kwargs,
-                   target_gpus,
+def scatter_kwargs(inputs: ScatterInputs,
+                   kwargs: ScatterInputs,
+                   target_gpus: list,
                    dim: int = 0) -> Tuple[tuple, tuple]:
     """Scatter with support for kwargs dictionary."""
     inputs = scatter(inputs, target_gpus, dim) if inputs else []
     kwargs = scatter(kwargs, target_gpus, dim) if kwargs else []
     if len(inputs) < len(kwargs):
-        inputs.extend([() for _ in range(len(kwargs) - len(inputs))])
+        inputs.extend([() for _ in range(len(kwargs) - len(inputs))
+                       ])  # type: ignore
     elif len(kwargs) < len(inputs):
-        kwargs.extend([{} for _ in range(len(inputs) - len(kwargs))])
+        kwargs.extend([{} for _ in range(len(inputs) - len(kwargs))
+                       ])  # type: ignore
     inputs = tuple(inputs)
     kwargs = tuple(kwargs)
     return inputs, kwargs

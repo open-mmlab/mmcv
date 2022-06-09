@@ -9,7 +9,7 @@ from torch._utils import (_flatten_dense_tensors, _take_tensors,
 
 from mmcv.utils import TORCH_VERSION, digit_version
 from .registry import MODULE_WRAPPERS
-from .scatter_gather import scatter_kwargs
+from .scatter_gather import ScatterInputs, scatter_kwargs
 
 
 @MODULE_WRAPPERS.register_module()
@@ -52,7 +52,8 @@ class MMDistributedDataParallel(nn.Module):
                 self._dist_broadcast_coalesced(buffers,
                                                self.broadcast_bucket_size)
 
-    def scatter(self, inputs, kwargs, device_ids):
+    def scatter(self, inputs: ScatterInputs, kwargs: ScatterInputs,
+                device_ids: list) -> tuple:
         return scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
 
     def forward(self, *inputs, **kwargs):
