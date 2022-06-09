@@ -564,73 +564,58 @@ REGISTER_DEVICE_IMPL(group_points_forward_impl, CUDA,
 REGISTER_DEVICE_IMPL(group_points_backward_impl, CUDA,
                      group_points_backward_cuda);
 
-void IoU3DBoxesOverlapBevForwardCUDAKernelLauncher(const int num_a,
-                                                   const Tensor boxes_a,
-                                                   const int num_b,
-                                                   const Tensor boxes_b,
-                                                   Tensor ans_overlap);
+void IoU3DBoxesIoU3DForwardCUDAKernelLauncher(const int num_a,
+                                              const Tensor boxes_a,
+                                              const int num_b,
+                                              const Tensor boxes_b,
+                                              Tensor ans_iou);
 
-void IoU3DBoxesIoUBevForwardCUDAKernelLauncher(const int num_a,
-                                               const Tensor boxes_a,
-                                               const int num_b,
-                                               const Tensor boxes_b,
-                                               Tensor ans_iou);
+void IoU3DNMS3DForwardCUDAKernelLauncher(const Tensor boxes,
+                                         unsigned long long* mask,
+                                         int boxes_num,
+                                         float nms_overlap_thresh);
 
-void IoU3DNMSForwardCUDAKernelLauncher(const Tensor boxes,
-                                       unsigned long long* mask, int boxes_num,
-                                       float nms_overlap_thresh);
+void IoU3DNMS3DNormalForwardCUDAKernelLauncher(const Tensor boxes,
+                                               unsigned long long* mask,
+                                               int boxes_num,
+                                               float nms_overlap_thresh);
 
-void IoU3DNMSNormalForwardCUDAKernelLauncher(const Tensor boxes,
-                                             unsigned long long* mask,
-                                             int boxes_num,
-                                             float nms_overlap_thresh);
-
-void iou3d_boxes_overlap_bev_forward_cuda(const int num_a, const Tensor boxes_a,
-                                          const int num_b, const Tensor boxes_b,
-                                          Tensor ans_overlap) {
-  IoU3DBoxesOverlapBevForwardCUDAKernelLauncher(num_a, boxes_a, num_b, boxes_b,
-                                                ans_overlap);
+void iou3d_boxes_iou3d_forward_cuda(const int num_a, const Tensor boxes_a,
+                                    const int num_b, const Tensor boxes_b,
+                                    Tensor ans_iou) {
+  IoU3DBoxesIoU3DForwardCUDAKernelLauncher(num_a, boxes_a, num_b, boxes_b,
+                                           ans_iou);
 };
 
-void iou3d_boxes_iou_bev_forward_cuda(const int num_a, const Tensor boxes_a,
-                                      const int num_b, const Tensor boxes_b,
-                                      Tensor ans_iou) {
-  IoU3DBoxesIoUBevForwardCUDAKernelLauncher(num_a, boxes_a, num_b, boxes_b,
-                                            ans_iou);
+void iou3d_nms3d_forward_cuda(const Tensor boxes, unsigned long long* mask,
+                              int boxes_num, float nms_overlap_thresh) {
+  IoU3DNMS3DForwardCUDAKernelLauncher(boxes, mask, boxes_num,
+                                      nms_overlap_thresh);
 };
 
-void iou3d_nms_forward_cuda(const Tensor boxes, unsigned long long* mask,
-                            int boxes_num, float nms_overlap_thresh) {
-  IoU3DNMSForwardCUDAKernelLauncher(boxes, mask, boxes_num, nms_overlap_thresh);
+void iou3d_nms3d_normal_forward_cuda(const Tensor boxes,
+                                     unsigned long long* mask, int boxes_num,
+                                     float nms_overlap_thresh) {
+  IoU3DNMS3DNormalForwardCUDAKernelLauncher(boxes, mask, boxes_num,
+                                            nms_overlap_thresh);
 };
 
-void iou3d_nms_normal_forward_cuda(const Tensor boxes, unsigned long long* mask,
-                                   int boxes_num, float nms_overlap_thresh) {
-  IoU3DNMSNormalForwardCUDAKernelLauncher(boxes, mask, boxes_num,
-                                          nms_overlap_thresh);
-};
+void iou3d_boxes_iou3d_forward_impl(const int num_a, const Tensor boxes_a,
+                                    const int num_b, const Tensor boxes_b,
+                                    Tensor ans_iou);
 
-void iou3d_boxes_overlap_bev_forward_impl(const int num_a, const Tensor boxes_a,
-                                          const int num_b, const Tensor boxes_b,
-                                          Tensor ans_overlap);
+void iou3d_nms3d_forward_impl(const Tensor boxes, unsigned long long* mask,
+                              int boxes_num, float nms_overlap_thresh);
 
-void iou3d_boxes_iou_bev_forward_impl(const int num_a, const Tensor boxes_a,
-                                      const int num_b, const Tensor boxes_b,
-                                      Tensor ans_iou);
+void iou3d_nms3d_normal_forward_impl(const Tensor boxes,
+                                     unsigned long long* mask, int boxes_num,
+                                     float nms_overlap_thresh);
 
-void iou3d_nms_forward_impl(const Tensor boxes, unsigned long long* mask,
-                            int boxes_num, float nms_overlap_thresh);
-
-void iou3d_nms_normal_forward_impl(const Tensor boxes, unsigned long long* mask,
-                                   int boxes_num, float nms_overlap_thresh);
-
-REGISTER_DEVICE_IMPL(iou3d_boxes_overlap_bev_forward_impl, CUDA,
-                     iou3d_boxes_overlap_bev_forward_cuda);
-REGISTER_DEVICE_IMPL(iou3d_boxes_iou_bev_forward_impl, CUDA,
-                     iou3d_boxes_iou_bev_forward_cuda);
-REGISTER_DEVICE_IMPL(iou3d_nms_forward_impl, CUDA, iou3d_nms_forward_cuda);
-REGISTER_DEVICE_IMPL(iou3d_nms_normal_forward_impl, CUDA,
-                     iou3d_nms_normal_forward_cuda);
+REGISTER_DEVICE_IMPL(iou3d_boxes_iou3d_forward_impl, CUDA,
+                     iou3d_boxes_iou3d_forward_cuda);
+REGISTER_DEVICE_IMPL(iou3d_nms3d_forward_impl, CUDA, iou3d_nms3d_forward_cuda);
+REGISTER_DEVICE_IMPL(iou3d_nms3d_normal_forward_impl, CUDA,
+                     iou3d_nms3d_normal_forward_cuda);
 
 void KNNForwardCUDAKernelLauncher(int b, int n, int m, int nsample,
                                   const Tensor xyz, const Tensor new_xyz,
@@ -924,20 +909,20 @@ REGISTER_DEVICE_IMPL(roi_align_forward_impl, CUDA, roi_align_forward_cuda);
 REGISTER_DEVICE_IMPL(roi_align_backward_impl, CUDA, roi_align_backward_cuda);
 
 void ROIAlignRotatedForwardCUDAKernelLauncher(
-    const at::Tensor features, const at::Tensor rois, const float spatial_scale,
-    const int sample_num, const bool aligned, const bool clockwise,
+    const at::Tensor input, const at::Tensor rois, const float spatial_scale,
+    const int sampling_ratio, const bool aligned, const bool clockwise,
     const int channels, const int height, const int width, const int num_rois,
     const int pooled_height, const int pooled_width, at::Tensor output);
 
 void ROIAlignRotatedBackwardCUDAKernelLauncher(
     const at::Tensor top_grad, const at::Tensor rois, const float spatial_scale,
-    const int sample_num, const bool aligned, const bool clockwise,
+    const int sampling_ratio, const bool aligned, const bool clockwise,
     const int channels, const int height, const int width, const int num_rois,
     const int pooled_height, const int pooled_width, at::Tensor bottom_grad);
 
-void roi_align_rotated_forward_cuda(Tensor features, Tensor rois, Tensor output,
+void roi_align_rotated_forward_cuda(Tensor input, Tensor rois, Tensor output,
                                     int aligned_height, int aligned_width,
-                                    float spatial_scale, int sample_ratio,
+                                    float spatial_scale, int sampling_ratio,
                                     bool aligned, bool clockwise) {
   // Number of ROIs
   int num_rois = rois.size(0);
@@ -947,11 +932,11 @@ void roi_align_rotated_forward_cuda(Tensor features, Tensor rois, Tensor output,
     AT_ERROR("wrong roi size");
   }
 
-  int num_channels = features.size(1);
-  int data_height = features.size(2);
-  int data_width = features.size(3);
+  int num_channels = input.size(1);
+  int data_height = input.size(2);
+  int data_width = input.size(3);
   ROIAlignRotatedForwardCUDAKernelLauncher(
-      features, rois, spatial_scale, sample_ratio, aligned, clockwise,
+      input, rois, spatial_scale, sampling_ratio, aligned, clockwise,
       num_channels, data_height, data_width, num_rois, aligned_height,
       aligned_width, output);
 }
@@ -959,7 +944,7 @@ void roi_align_rotated_forward_cuda(Tensor features, Tensor rois, Tensor output,
 void roi_align_rotated_backward_cuda(Tensor top_grad, Tensor rois,
                                      Tensor bottom_grad, int aligned_height,
                                      int aligned_width, float spatial_scale,
-                                     int sample_ratio, bool aligned,
+                                     int sampling_ratio, bool aligned,
                                      bool clockwise) {
   // Number of ROIs
   int num_rois = rois.size(0);
@@ -972,20 +957,20 @@ void roi_align_rotated_backward_cuda(Tensor top_grad, Tensor rois,
   int data_height = bottom_grad.size(2);
   int data_width = bottom_grad.size(3);
   ROIAlignRotatedBackwardCUDAKernelLauncher(
-      top_grad, rois, spatial_scale, sample_ratio, aligned, clockwise,
+      top_grad, rois, spatial_scale, sampling_ratio, aligned, clockwise,
       num_channels, data_height, data_width, num_rois, aligned_height,
       aligned_width, bottom_grad);
 }
 
-void roi_align_rotated_forward_impl(Tensor features, Tensor rois, Tensor output,
+void roi_align_rotated_forward_impl(Tensor input, Tensor rois, Tensor output,
                                     int aligned_height, int aligned_width,
-                                    float spatial_scale, int sample_ratio,
+                                    float spatial_scale, int sampling_ratio,
                                     bool aligned, bool clockwise);
 
 void roi_align_rotated_backward_impl(Tensor top_grad, Tensor rois,
                                      Tensor bottom_grad, int aligned_height,
                                      int aligned_width, float spatial_scale,
-                                     int sample_ratio, bool aligned,
+                                     int sampling_ratio, bool aligned,
                                      bool clockwise);
 REGISTER_DEVICE_IMPL(roi_align_rotated_forward_impl, CUDA,
                      roi_align_rotated_forward_cuda);
@@ -1396,6 +1381,12 @@ int HardVoxelizeForwardCUDAKernelLauncher(
     const std::vector<float> coors_range, const int max_points,
     const int max_voxels, const int NDim = 3);
 
+int NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
+    const at::Tensor& points, at::Tensor& voxels, at::Tensor& coors,
+    at::Tensor& num_points_per_voxel, const std::vector<float> voxel_size,
+    const std::vector<float> coors_range, const int max_points,
+    const int max_voxels, const int NDim = 3);
+
 void DynamicVoxelizeForwardCUDAKernelLauncher(
     const at::Tensor& points, at::Tensor& coors,
     const std::vector<float> voxel_size, const std::vector<float> coors_range,
@@ -1409,6 +1400,16 @@ int hard_voxelize_forward_cuda(const at::Tensor& points, at::Tensor& voxels,
                                const int max_points, const int max_voxels,
                                const int NDim) {
   return HardVoxelizeForwardCUDAKernelLauncher(
+      points, voxels, coors, num_points_per_voxel, voxel_size, coors_range,
+      max_points, max_voxels, NDim);
+};
+
+int nondeterministic_hard_voxelize_forward_cuda(
+    const at::Tensor& points, at::Tensor& voxels, at::Tensor& coors,
+    at::Tensor& num_points_per_voxel, const std::vector<float> voxel_size,
+    const std::vector<float> coors_range, const int max_points,
+    const int max_voxels, const int NDim) {
+  return NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
       points, voxels, coors, num_points_per_voxel, voxel_size, coors_range,
       max_points, max_voxels, NDim);
 };
@@ -1429,6 +1430,12 @@ int hard_voxelize_forward_impl(const at::Tensor& points, at::Tensor& voxels,
                                const int max_points, const int max_voxels,
                                const int NDim);
 
+int nondeterministic_hard_voxelize_forward_impl(
+    const at::Tensor& points, at::Tensor& voxels, at::Tensor& coors,
+    at::Tensor& num_points_per_voxel, const std::vector<float> voxel_size,
+    const std::vector<float> coors_range, const int max_points,
+    const int max_voxels, const int NDim);
+
 void dynamic_voxelize_forward_impl(const at::Tensor& points, at::Tensor& coors,
                                    const std::vector<float> voxel_size,
                                    const std::vector<float> coors_range,
@@ -1436,6 +1443,8 @@ void dynamic_voxelize_forward_impl(const at::Tensor& points, at::Tensor& coors,
 
 REGISTER_DEVICE_IMPL(hard_voxelize_forward_impl, CUDA,
                      hard_voxelize_forward_cuda);
+REGISTER_DEVICE_IMPL(nondeterministic_hard_voxelize_forward_impl, CUDA,
+                     nondeterministic_hard_voxelize_forward_cuda);
 REGISTER_DEVICE_IMPL(dynamic_voxelize_forward_impl, CUDA,
                      dynamic_voxelize_forward_cuda);
 
@@ -1564,3 +1573,19 @@ void convex_giou_impl(const Tensor pointsets, const Tensor polygons,
 
 REGISTER_DEVICE_IMPL(convex_iou_impl, CUDA, convex_iou_cuda);
 REGISTER_DEVICE_IMPL(convex_giou_impl, CUDA, convex_giou_cuda);
+
+Tensor DiffIoURotatedSortVerticesCUDAKernelLauncher(Tensor vertices,
+                                                    Tensor mask,
+                                                    Tensor num_valid);
+
+Tensor diff_iou_rotated_sort_vertices_forward_cuda(Tensor vertices, Tensor mask,
+                                                   Tensor num_valid) {
+  return DiffIoURotatedSortVerticesCUDAKernelLauncher(vertices, mask,
+                                                      num_valid);
+}
+
+Tensor diff_iou_rotated_sort_vertices_forward_impl(Tensor vertices, Tensor mask,
+                                                   Tensor num_valid);
+
+REGISTER_DEVICE_IMPL(diff_iou_rotated_sort_vertices_forward_impl, CUDA,
+                     diff_iou_rotated_sort_vertices_forward_cuda);

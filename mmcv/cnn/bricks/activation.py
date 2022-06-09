@@ -29,7 +29,7 @@ class Clamp(nn.Module):
     """
 
     def __init__(self, min=-1., max=1.):
-        super(Clamp, self).__init__()
+        super().__init__()
         self.min = min
         self.max = max
 

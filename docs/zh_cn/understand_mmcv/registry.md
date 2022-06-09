@@ -1,11 +1,17 @@
 ## 注册器
+
 MMCV 使用 [注册器](https://github.com/open-mmlab/mmcv/blob/master/mmcv/utils/registry.py) 来管理具有相似功能的不同模块, 例如, 检测器中的主干网络、头部、和模型颈部。
 在 OpenMMLab 家族中的绝大部分开源项目使用注册器去管理数据集和模型的模块，例如 [MMDetection](https://github.com/open-mmlab/mmdetection), [MMDetection3D](https://github.com/open-mmlab/mmdetection3d), [MMClassification](https://github.com/open-mmlab/mmclassification), [MMEditing](https://github.com/open-mmlab/mmediting) 等。
 
+```{note}
+在 v1.5.1 版本开始支持注册函数的功能。
+```
+
 ### 什么是注册器
-在MMCV中，注册器可以看作类到字符串的映射。
-一个注册器中的类通常有相似的接口，但是可以实现不同的算法或支持不同的数据集。
-借助注册器，用户可以通过使用相应的字符串查找并实例化该类，并根据他们的需要实例化对应模块。
+
+在MMCV中，注册器可以看作类或函数到字符串的映射。
+一个注册器中的类或函数通常有相似的接口，但是可以实现不同的算法或支持不同的数据集。
+借助注册器，用户可以通过使用相应的字符串查找类或函数，并根据他们的需要实例化对应模块或调用函数获取结果。
 一个典型的案例是，OpenMMLab　中的大部分开源项目的配置系统，这些系统通过配置文件来使用注册器创建钩子、执行器、模型和数据集。
 可以在[这里](https://mmcv.readthedocs.io/en/latest/api.html?highlight=registry#mmcv.utils.Registry)找到注册器接口使用文档。
 
@@ -15,7 +21,7 @@ MMCV 使用 [注册器](https://github.com/open-mmlab/mmcv/blob/master/mmcv/util
 2. 创建注册器
 3. 使用此注册器来管理模块
 
-`Registry`（注册器）的参数 `build_func`（构建函数） 用来自定以如何实例化类的实例，默认使用 [这里](https://mmcv.readthedocs.io/en/latest/api.html?highlight=registry#mmcv.utils.build_from_cfg)实现的`build_from_cfg`。
+`Registry`（注册器）的参数 `build_func`（构建函数） 用来自定义如何实例化类的实例或如何调用函数获取结果，默认使用 [这里](https://mmcv.readthedocs.io/en/latest/api.html?highlight=registry#mmcv.utils.build_from_cfg) 实现的`build_from_cfg`。
 
 ### 一个简单的例子
 
@@ -29,9 +35,10 @@ from mmcv.utils import Registry
 CONVERTERS = Registry('converter')
 ```
 
-然后我们在包中可以实现不同的转换器（converter）。例如，在 `converters/converter1.py` 中实现 `Converter1`。
+然后我们在包中可以实现不同的转换器（converter），其可以为类或函数。例如，在 `converters/converter1.py` 中实现 `Converter1`，在 `converters/converter2.py` 中实现 `converter2`。
 
 ```python
+# converter1.py
 from .builder import CONVERTERS
 
 # 使用注册器管理模块
@@ -41,21 +48,39 @@ class Converter1(object):
         self.a = a
         self.b = b
 ```
-使用注册器管理模块的关键步骤是，将实现的模块注册到注册表 `CONVERTERS` 中。通过 `@CONVERTERS.register_module()` 装饰所实现的模块，字符串和类之间的映射就可以由 `CONVERTERS` 构建和维护，如下所示：
 
-通过这种方式，就可以通过 `CONVERTERS` 建立字符串与类之间的映射，如下所示：
+```python
+# converter2.py
+from .builder import CONVERTERS
+from .converter1 import Converter1
+
+# 使用注册器管理模块
+@CONVERTERS.register_module()
+def converter2(a, b)
+    return Converter1(a, b)
+```
+
+使用注册器管理模块的关键步骤是，将实现的模块注册到注册表 `CONVERTERS` 中。通过 `@CONVERTERS.register_module()` 装饰所实现的模块，字符串到类或函数之间的映射就可以由 `CONVERTERS` 构建和维护，如下所示：
+
+通过这种方式，就可以通过 `CONVERTERS` 建立字符串与类或函数之间的映射，如下所示：
 
 ```python
 'Converter1' -> <class 'Converter1'>
+'converter2' -> <function 'converter2'>
 ```
+
 ```{note}
 只有模块所在的文件被导入时，注册机制才会被触发，所以您需要在某处导入该文件。更多详情请查看 https://github.com/open-mmlab/mmdetection/issues/5974。
 ```
+
 如果模块被成功注册了，你可以通过配置文件使用这个转换器（converter），如下所示：
 
 ```python
-converter_cfg = dict(type='Converter1', a=a_value, b=b_value)
-converter = CONVERTERS.build(converter_cfg)
+converter1_cfg = dict(type='Converter1', a=a_value, b=b_value)
+converter2_cfg = dict(type='converter2', a=a_value, b=b_value)
+converter1 = CONVERTERS.build(converter1_cfg)
+# returns the calling result
+result = CONVERTERS.build(converter2_cfg)
 ```
 
 ### 自定义构建函数

@@ -29,7 +29,7 @@ outputs = [([[[[1., 2.], [3., 4.]]]], [[[[1., 1.], [1., 1.]]]]),
                                                               1.]]]])]
 
 
-class TestRoiPool(object):
+class TestRoiPool:
 
     def test_roipool_gradcheck(self):
         if not torch.cuda.is_available():

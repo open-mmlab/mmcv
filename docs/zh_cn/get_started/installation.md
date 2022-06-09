@@ -17,13 +17,13 @@ a. 安装完整版
 
 i. 安装最新版本
 
-如下是安装最新版 ``mmcv-full`` 的命令
+如下是安装最新版 `mmcv-full` 的命令
 
 ```shell
 pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/{cu_version}/{torch_version}/index.html
 ```
 
-请将链接中的 ``{cu_version}`` 和 ``{torch_version}`` 根据自身需求替换成实际的版本号，例如想安装和 ``CUDA 11.1``、``PyTorch 1.9.0`` 兼容的最新版 ``mmcv-full``，使用如下替换过的命令
+请将链接中的 `{cu_version}` 和 `{torch_version}` 根据自身需求替换成实际的版本号，例如想安装和 `CUDA 11.1`、`PyTorch 1.9.0` 兼容的最新版 `mmcv-full`，使用如下替换过的命令
 
 ```shell
 pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html
@@ -37,18 +37,18 @@ PyTorch 版本是 1.8.1、CUDA 版本是 11.1，你可以使用以下命令安�
 `pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.8.0/index.html`
 ```
 
-如果想知道更多 CUDA 和 PyTorch 版本的命令，可以参考下面的表格，将链接中的 ``=={mmcv_version}`` 删去即可。
+如果想知道更多 CUDA 和 PyTorch 版本的命令，可以参考下面的表格，将链接中的 `=={mmcv_version}` 删去即可。
 
 ii. 安装特定的版本
 
-如下是安装特定版本 ``mmcv-full`` 的命令
+如下是安装特定版本 `mmcv-full` 的命令
 
 ```shell
 pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/{cu_version}/{torch_version}/index.html
 ```
 
-首先请参考版本发布信息找到想要安装的版本号，将 ``{mmcv_version}`` 替换成该版本号，例如 ``1.3.9``。
-然后将链接中的 ``{cu_version}`` 和 ``{torch_version}`` 根据自身需求替换成实际的版本号，例如想安装和 ``CUDA 11.1``、``PyTorch 1.9.0`` 兼容的 ``mmcv-full`` 1.3.9 版本，使用如下替换过的命令
+首先请参考版本发布信息找到想要安装的版本号，将 `{mmcv_version}` 替换成该版本号，例如 `1.3.9`。
+然后将链接中的 `{cu_version}` 和 `{torch_version}` 根据自身需求替换成实际的版本号，例如想安装和 `CUDA 11.1`、`PyTorch 1.9.0` 兼容的 `mmcv-full` 1.3.9 版本，使用如下替换过的命令
 
 ```shell
 pip install mmcv-full==1.3.9 -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html

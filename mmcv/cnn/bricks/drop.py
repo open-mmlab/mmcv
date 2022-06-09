@@ -37,7 +37,7 @@ class DropPath(nn.Module):
     """
 
     def __init__(self, drop_prob=0.1):
-        super(DropPath, self).__init__()
+        super().__init__()
         self.drop_prob = drop_prob
 
     def forward(self, x):

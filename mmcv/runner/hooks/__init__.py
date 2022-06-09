@@ -5,9 +5,10 @@ from .ema import EMAHook
 from .evaluation import DistEvalHook, EvalHook
 from .hook import HOOKS, Hook
 from .iter_timer import IterTimerHook
-from .logger import (DvcliveLoggerHook, LoggerHook, MlflowLoggerHook,
-                     NeptuneLoggerHook, PaviLoggerHook, SegmindLoggerHook,
-                     TensorboardLoggerHook, TextLoggerHook, WandbLoggerHook)
+from .logger import (ClearMLLoggerHook, DvcliveLoggerHook, LoggerHook,
+                     MlflowLoggerHook, NeptuneLoggerHook, PaviLoggerHook,
+                     SegmindLoggerHook, TensorboardLoggerHook, TextLoggerHook,
+                     WandbLoggerHook)
 from .lr_updater import (CosineAnnealingLrUpdaterHook,
                          CosineRestartLrUpdaterHook, CyclicLrUpdaterHook,
                          ExpLrUpdaterHook, FixedLrUpdaterHook,
@@ -43,5 +44,5 @@ __all__ = [
     'SyncBuffersHook', 'EMAHook', 'EvalHook', 'DistEvalHook', 'ProfilerHook',
     'GradientCumulativeOptimizerHook', 'GradientCumulativeFp16OptimizerHook',
     'SegmindLoggerHook', 'LinearAnnealingLrUpdaterHook',
-    'LinearAnnealingMomentumUpdaterHook'
+    'LinearAnnealingMomentumUpdaterHook', 'ClearMLLoggerHook'
 ]

@@ -11,8 +11,10 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - ContextBlock
 - ConvexIoU
 - CornerPool
+- ChamferDistance
 - Deformable Convolution v1/v2
 - Deformable RoIPool
+- DiffIoURotated
 - DynamicScatter
 - GatherPoints
 - FurthestPointSample
@@ -23,6 +25,7 @@ We implement common CUDA ops used in detection, segmentation, etc.
 - MaskedConv
 - MinAreaPolygon
 - NMS
+- NMS3D
 - PointsInPolygons
 - PSAMask
 - RiRoIAlignRotated

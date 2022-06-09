@@ -59,7 +59,7 @@ def _parse_arg(value, desc):
             raise RuntimeError(
                 "ONNX symbolic doesn't know to interpret ListConstruct node")
 
-    raise RuntimeError('Unexpected node type: {}'.format(value.node().kind()))
+    raise RuntimeError(f'Unexpected node type: {value.node().kind()}')
 
 
 def _maybe_get_const(value, desc):
@@ -328,4 +328,4 @@ cast_pytorch_to_onnx = {
 # Global set to store the list of quantized operators in the network.
 # This is currently only used in the conversion of quantized ops from PT
 # -> C2 via ONNX.
-_quantized_ops = set()
+_quantized_ops: set = set()

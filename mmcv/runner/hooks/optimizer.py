@@ -110,7 +110,7 @@ class GradientCumulativeOptimizerHook(OptimizerHook):
     """
 
     def __init__(self, cumulative_iters=1, **kwargs):
-        super(GradientCumulativeOptimizerHook, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         assert isinstance(cumulative_iters, int) and cumulative_iters > 0, \
             f'cumulative_iters only accepts positive int, but got ' \
@@ -297,8 +297,7 @@ if (TORCH_VERSION != 'parrots'
         """
 
         def __init__(self, *args, **kwargs):
-            super(GradientCumulativeFp16OptimizerHook,
-                  self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
 
         def after_train_iter(self, runner):
             if not self.initialized:
@@ -342,7 +341,7 @@ if (TORCH_VERSION != 'parrots'
 else:
 
     @HOOKS.register_module()
-    class Fp16OptimizerHook(OptimizerHook):
+    class Fp16OptimizerHook(OptimizerHook):  # type: ignore
         """FP16 optimizer hook (mmcv's implementation).
 
         The steps of fp16 optimizer is as follows.
@@ -484,14 +483,13 @@ else:
                 'fp16', {})['loss_scaler'] = self.loss_scaler.state_dict()
 
     @HOOKS.register_module()
-    class GradientCumulativeFp16OptimizerHook(GradientCumulativeOptimizerHook,
-                                              Fp16OptimizerHook):
+    class GradientCumulativeFp16OptimizerHook(  # type: ignore
+            GradientCumulativeOptimizerHook, Fp16OptimizerHook):
         """Fp16 optimizer Hook (using mmcv implementation) implements multi-
         iters gradient cumulating."""
 
         def __init__(self, *args, **kwargs):
-            super(GradientCumulativeFp16OptimizerHook,
-                  self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
 
         def after_train_iter(self, runner):
             if not self.initialized:

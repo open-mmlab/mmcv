@@ -128,7 +128,7 @@ def test_register_handler():
     assert content == '1.jpg\n2.jpg\n3.jpg\n4.jpg\n5.jpg'
     tmp_filename = osp.join(tempfile.gettempdir(), 'mmcv_test.txt2')
     mmcv.dump(content, tmp_filename)
-    with open(tmp_filename, 'r') as f:
+    with open(tmp_filename) as f:
         written = f.read()
     os.remove(tmp_filename)
     assert written == '\n' + content

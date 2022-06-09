@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Tuple
+
 import torch
 from torch.autograd import Function
 
@@ -18,7 +20,7 @@ class BallQuery(Function):
             min_radius (float): minimum radius of the balls.
             max_radius (float): maximum radius of the balls.
             sample_num (int): maximum number of features in the balls.
-            xyz (Tensor): (B, N, 3) xyz coordinates of the features.
+            xyz (torch.Tensor): (B, N, 3) xyz coordinates of the features.
             center_xyz (torch.Tensor): (B, npoint, 3) centers of the ball
                 query.
 
@@ -49,7 +51,7 @@ class BallQuery(Function):
         return idx
 
     @staticmethod
-    def backward(ctx, a=None):
+    def backward(ctx, a=None) -> Tuple[None, None, None, None]:
         return None, None, None, None
 
 

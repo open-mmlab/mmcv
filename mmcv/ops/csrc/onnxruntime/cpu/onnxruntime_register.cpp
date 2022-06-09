@@ -10,6 +10,7 @@
 #include "reduce_ops.h"
 #include "roi_align.h"
 #include "roi_align_rotated.h"
+#include "rotated_feature_align.h"
 #include "soft_nms.h"
 
 const char *c_MMCVOpDomain = "mmcv";
@@ -17,6 +18,7 @@ SoftNmsOp c_SoftNmsOp;
 NmsOp c_NmsOp;
 MMCVRoiAlignCustomOp c_MMCVRoiAlignCustomOp;
 MMCVRoIAlignRotatedCustomOp c_MMCVRoIAlignRotatedCustomOp;
+MMCVRotatedFeatureAlignCustomOp c_MMCVRotatedFeatureAlignCustomOp;
 GridSampleOp c_GridSampleOp;
 MMCVCumMaxCustomOp c_MMCVCumMaxCustomOp;
 MMCVCumMinCustomOp c_MMCVCumMinCustomOp;
@@ -74,6 +76,11 @@ OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options,
   }
 
   if (auto status = ortApi->CustomOpDomain_Add(domain, &c_MMCVDeformConvOp)) {
+    return status;
+  }
+
+  if (auto status = ortApi->CustomOpDomain_Add(
+          domain, &c_MMCVRotatedFeatureAlignCustomOp)) {
     return status;
   }
 

@@ -176,7 +176,7 @@ class StepMomentumUpdaterHook(MomentumUpdaterHook):
         self.step = step
         self.gamma = gamma
         self.min_momentum = min_momentum
-        super(StepMomentumUpdaterHook, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def get_momentum(self, runner, base_momentum):
         progress = runner.epoch if self.by_epoch else runner.iter
@@ -214,7 +214,7 @@ class CosineAnnealingMomentumUpdaterHook(MomentumUpdaterHook):
         assert (min_momentum is None) ^ (min_momentum_ratio is None)
         self.min_momentum = min_momentum
         self.min_momentum_ratio = min_momentum_ratio
-        super(CosineAnnealingMomentumUpdaterHook, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def get_momentum(self, runner, base_momentum):
         if self.by_epoch:
@@ -247,7 +247,7 @@ class LinearAnnealingMomentumUpdaterHook(MomentumUpdaterHook):
         assert (min_momentum is None) ^ (min_momentum_ratio is None)
         self.min_momentum = min_momentum
         self.min_momentum_ratio = min_momentum_ratio
-        super(LinearAnnealingMomentumUpdaterHook, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def get_momentum(self, runner, base_momentum):
         if self.by_epoch:
@@ -328,10 +328,10 @@ class CyclicMomentumUpdaterHook(MomentumUpdaterHook):
         # currently only support by_epoch=False
         assert not by_epoch, \
             'currently only support "by_epoch" = False'
-        super(CyclicMomentumUpdaterHook, self).__init__(by_epoch, **kwargs)
+        super().__init__(by_epoch, **kwargs)
 
     def before_run(self, runner):
-        super(CyclicMomentumUpdaterHook, self).before_run(runner)
+        super().before_run(runner)
         # initiate momentum_phases
         # total momentum_phases are separated as up and down
         max_iter_per_phase = runner.max_iters // self.cyclic_times
@@ -439,7 +439,7 @@ class OneCycleMomentumUpdaterHook(MomentumUpdaterHook):
             self.anneal_func = annealing_linear
         self.three_phase = three_phase
         self.momentum_phases = []  # init momentum_phases
-        super(OneCycleMomentumUpdaterHook, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def before_run(self, runner):
         if isinstance(runner.optimizer, dict):

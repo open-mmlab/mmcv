@@ -22,9 +22,9 @@ if is_tensorrt_available():
     # load tensorrt plugin lib
     load_tensorrt_plugin()
 
-    __all__.append([
+    __all__.extend([
         'onnx2trt', 'save_trt_engine', 'load_trt_engine', 'TRTWraper',
         'TRTWrapper'
     ])
 
-__all__.append(['is_tensorrt_plugin_loaded', 'preprocess_onnx'])
+__all__.extend(['is_tensorrt_plugin_loaded', 'preprocess_onnx'])

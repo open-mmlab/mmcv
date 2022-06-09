@@ -7,6 +7,9 @@ from mmcv.cnn import build_conv_layer, build_norm_layer
 from mmcv.ops import (SparseConvTensor, SparseInverseConv3d, SparseSequential,
                       SubMConv3d)
 
+if torch.__version__ == 'parrots':
+    pytest.skip('not supported in parrots now', allow_module_level=True)
+
 
 def make_sparse_convmodule(in_channels,
                            out_channels,
@@ -76,6 +79,7 @@ def make_sparse_convmodule(in_channels,
 @pytest.mark.skipif(
     not torch.cuda.is_available(), reason='requires CUDA support')
 def test_make_sparse_convmodule():
+    torch.cuda.empty_cache()
     voxel_features = torch.tensor([[6.56126, 0.9648336, -1.7339306, 0.315],
                                    [6.8162713, -2.480431, -1.3616394, 0.36],
                                    [11.643568, -4.744306, -1.3580885, 0.16],

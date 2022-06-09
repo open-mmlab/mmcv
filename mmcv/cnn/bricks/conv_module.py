@@ -83,7 +83,7 @@ class ConvModule(nn.Module):
                  with_spectral_norm=False,
                  padding_mode='zeros',
                  order=('conv', 'norm', 'act')):
-        super(ConvModule, self).__init__()
+        super().__init__()
         assert conv_cfg is None or isinstance(conv_cfg, dict)
         assert norm_cfg is None or isinstance(norm_cfg, dict)
         assert act_cfg is None or isinstance(act_cfg, dict)
@@ -96,7 +96,7 @@ class ConvModule(nn.Module):
         self.with_explicit_padding = padding_mode not in official_padding_mode
         self.order = order
         assert isinstance(self.order, tuple) and len(self.order) == 3
-        assert set(order) == set(['conv', 'norm', 'act'])
+        assert set(order) == {'conv', 'norm', 'act'}
 
         self.with_norm = norm_cfg is not None
         self.with_activation = act_cfg is not None
@@ -157,7 +157,7 @@ class ConvModule(nn.Module):
             act_cfg_ = act_cfg.copy()
             # nn.Tanh has no 'inplace' argument
             if act_cfg_['type'] not in [
-                    'Tanh', 'PReLU', 'Sigmoid', 'HSigmoid', 'Swish'
+                    'Tanh', 'PReLU', 'Sigmoid', 'HSigmoid', 'Swish', 'GELU'
             ]:
                 act_cfg_.setdefault('inplace', inplace)
             self.activate = build_activation_layer(act_cfg_)

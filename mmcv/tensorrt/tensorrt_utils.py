@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
+from typing import Union
 
 import onnx
 import tensorrt as trt
@@ -8,12 +9,12 @@ import torch
 from .preprocess import preprocess_onnx
 
 
-def onnx2trt(onnx_model,
-             opt_shape_dict,
-             log_level=trt.Logger.ERROR,
-             fp16_mode=False,
-             max_workspace_size=0,
-             device_id=0):
+def onnx2trt(onnx_model: Union[str, onnx.ModelProto],
+             opt_shape_dict: dict,
+             log_level: trt.ILogger.Severity = trt.Logger.ERROR,
+             fp16_mode: bool = False,
+             max_workspace_size: int = 0,
+             device_id: int = 0) -> trt.ICudaEngine:
     """Convert onnx model to tensorrt engine.
 
     Arguments:
@@ -53,7 +54,7 @@ def onnx2trt(onnx_model,
     msg += reset_style
     warnings.warn(msg)
 
-    device = torch.device('cuda:{}'.format(device_id))
+    device = torch.device(f'cuda:{device_id}')
     # create builder and network
     logger = trt.Logger(log_level)
     builder = trt.Builder(logger)
@@ -100,7 +101,7 @@ def onnx2trt(onnx_model,
     return engine
 
 
-def save_trt_engine(engine, path):
+def save_trt_engine(engine: trt.ICudaEngine, path: str) -> None:
     """Serialize TensorRT engine to disk.
 
     Arguments:
@@ -124,7 +125,7 @@ def save_trt_engine(engine, path):
         f.write(bytearray(engine.serialize()))
 
 
-def load_trt_engine(path):
+def load_trt_engine(path: str) -> trt.ICudaEngine:
     """Deserialize TensorRT engine from disk.
 
     Arguments:
@@ -153,7 +154,7 @@ def load_trt_engine(path):
         return engine
 
 
-def torch_dtype_from_trt(dtype):
+def torch_dtype_from_trt(dtype: trt.DataType) -> Union[torch.dtype, TypeError]:
     """Convert pytorch dtype to TensorRT dtype."""
     if dtype == trt.bool:
         return torch.bool
@@ -169,7 +170,8 @@ def torch_dtype_from_trt(dtype):
         raise TypeError('%s is not supported by torch' % dtype)
 
 
-def torch_device_from_trt(device):
+def torch_device_from_trt(
+        device: trt.TensorLocation) -> Union[torch.device, TypeError]:
     """Convert pytorch device to TensorRT device."""
     if device == trt.TensorLocation.DEVICE:
         return torch.device('cuda')
@@ -207,7 +209,7 @@ class TRTWrapper(torch.nn.Module):
         msg += reset_style
         warnings.warn(msg)
 
-        super(TRTWrapper, self).__init__()
+        super().__init__()
         self.engine = engine
         if isinstance(self.engine, str):
             self.engine = load_trt_engine(engine)

@@ -6,12 +6,6 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
-          command: |
-            sudo apt-add-repository ppa:brightbox/ruby-ng -y
-            sudo apt-get update
-            sudo apt-get install -y ruby2.7
-      - run:
           name: Install pre-commit hook
           command: |
             pip install pre-commit
@@ -170,6 +164,10 @@ workflows:
           python: "3.8.0"
           requires:
             - lint
-      - build_cu102:
+      - hold:
+          type: approval # <<< This key-value pair will set your workflow to a status of "On Hold"
           requires:
             - build_py3.8_pt1.9_cpu
+      - build_cu102:
+          requires:
+            - hold

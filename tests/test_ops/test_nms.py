@@ -3,12 +3,22 @@ import numpy as np
 import pytest
 import torch
 
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
-class Testnms(object):
 
-    def test_nms_allclose(self):
-        if not torch.cuda.is_available():
-            return
+class Testnms:
+
+    @pytest.mark.parametrize('device', [
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'mlu',
+            marks=pytest.mark.skipif(
+                not IS_MLU_AVAILABLE, reason='requires MLU support'))
+    ])
+    def test_nms_allclose(self, device):
         from mmcv.ops import nms
         np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
                              [3.0, 7.0, 10.0, 12.0], [1.0, 4.0, 13.0, 7.0]],
@@ -24,7 +34,7 @@ class Testnms(object):
         assert np.allclose(dets, np_dets)  # test cpu
         assert np.allclose(inds, np_inds)  # test cpu
         dets, inds = nms(
-            boxes.cuda(), scores.cuda(), iou_threshold=0.3, offset=0)
+            boxes.to(device), scores.to(device), iou_threshold=0.3, offset=0)
         assert np.allclose(dets.cpu().numpy(), np_dets)  # test gpu
         assert np.allclose(inds.cpu().numpy(), np_inds)  # test gpu
 
@@ -119,8 +129,7 @@ class Testnms(object):
         scores = tensor_dets[:, 4]
         nms_keep_inds = nms(boxes.contiguous(), scores.contiguous(),
                             iou_thr)[1]
-        assert set([g[0].item()
-                    for g in np_groups]) == set(nms_keep_inds.tolist())
+        assert {g[0].item() for g in np_groups} == set(nms_keep_inds.tolist())
 
         # non empty tensor input
         tensor_dets = torch.from_numpy(np_dets)

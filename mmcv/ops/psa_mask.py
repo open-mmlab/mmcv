@@ -72,7 +72,7 @@ psa_mask = PSAMaskFunction.apply
 class PSAMask(nn.Module):
 
     def __init__(self, psa_type, mask_size=None):
-        super(PSAMask, self).__init__()
+        super().__init__()
         assert psa_type in ['collect', 'distribute']
         if psa_type == 'collect':
             psa_type_enum = 0

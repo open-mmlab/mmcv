@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
+from typing import Dict, Optional, Union
 
 from mmcv.utils import scandir
 from ...dist_utils import master_only
@@ -48,17 +49,16 @@ class WandbLoggerHook(LoggerHook):
     """
 
     def __init__(self,
-                 init_kwargs=None,
-                 interval=10,
-                 ignore_last=True,
-                 reset_flag=False,
-                 commit=True,
-                 by_epoch=True,
-                 with_step=True,
-                 log_artifact=True,
-                 out_suffix=('.log.json', '.log', '.py')):
-        super(WandbLoggerHook, self).__init__(interval, ignore_last,
-                                              reset_flag, by_epoch)
+                 init_kwargs: Optional[Dict] = None,
+                 interval: int = 10,
+                 ignore_last: bool = True,
+                 reset_flag: bool = False,
+                 commit: bool = True,
+                 by_epoch: bool = True,
+                 with_step: bool = True,
+                 log_artifact: bool = True,
+                 out_suffix: Union[str, tuple] = ('.log.json', '.log', '.py')):
+        super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.import_wandb()
         self.init_kwargs = init_kwargs
         self.commit = commit
@@ -66,7 +66,7 @@ class WandbLoggerHook(LoggerHook):
         self.log_artifact = log_artifact
         self.out_suffix = out_suffix
 
-    def import_wandb(self):
+    def import_wandb(self) -> None:
         try:
             import wandb
         except ImportError:
@@ -75,17 +75,17 @@ class WandbLoggerHook(LoggerHook):
         self.wandb = wandb
 
     @master_only
-    def before_run(self, runner):
-        super(WandbLoggerHook, self).before_run(runner)
+    def before_run(self, runner) -> None:
+        super().before_run(runner)
         if self.wandb is None:
             self.import_wandb()
         if self.init_kwargs:
-            self.wandb.init(**self.init_kwargs)
+            self.wandb.init(**self.init_kwargs)  # type: ignore
         else:
-            self.wandb.init()
+            self.wandb.init()  # type: ignore
 
     @master_only
-    def log(self, runner):
+    def log(self, runner) -> None:
         tags = self.get_loggable_tags(runner)
         if tags:
             if self.with_step:
@@ -96,7 +96,7 @@ class WandbLoggerHook(LoggerHook):
                 self.wandb.log(tags, commit=self.commit)
 
     @master_only
-    def after_run(self, runner):
+    def after_run(self, runner) -> None:
         if self.log_artifact:
             wandb_artifact = self.wandb.Artifact(
                 name='artifacts', type='model')

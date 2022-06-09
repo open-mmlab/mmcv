@@ -9,7 +9,8 @@ void hard_voxelize_forward(const at::Tensor &points,
                            const at::Tensor &coors_range, at::Tensor &voxels,
                            at::Tensor &coors, at::Tensor &num_points_per_voxel,
                            at::Tensor &voxel_num, const int max_points,
-                           const int max_voxels, const int NDim = 3);
+                           const int max_voxels, const int NDim = 3,
+                           const bool deterministic = true);
 
 void dynamic_voxelize_forward(const at::Tensor &points,
                               const at::Tensor &voxel_size,

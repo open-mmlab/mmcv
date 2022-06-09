@@ -3,6 +3,8 @@ import numpy as np
 import pytest
 import torch
 
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+
 _USING_PARROTS = True
 try:
     from parrots.autograd import gradcheck
@@ -11,6 +13,7 @@ except ImportError:
     _USING_PARROTS = False
 
 # yapf:disable
+
 inputs = [([[[[1., 2.], [3., 4.]]]],
            [[0., 0., 0., 1., 1.]]),
           ([[[[1., 2.], [3., 4.]],
@@ -39,8 +42,6 @@ sampling_ratio = 2
 
 
 def _test_roialign_gradcheck(device, dtype):
-    if not torch.cuda.is_available() and device == 'cuda':
-        pytest.skip('test requires GPU')
     try:
         from mmcv.ops import RoIAlign
     except ModuleNotFoundError:
@@ -65,8 +66,6 @@ def _test_roialign_gradcheck(device, dtype):
 
 
 def _test_roialign_allclose(device, dtype):
-    if not torch.cuda.is_available() and device == 'cuda':
-        pytest.skip('test requires GPU')
     try:
         from mmcv.ops import roi_align
     except ModuleNotFoundError:
@@ -75,7 +74,6 @@ def _test_roialign_allclose(device, dtype):
     pool_w = 2
     spatial_scale = 1.0
     sampling_ratio = 2
-
     for case, output in zip(inputs, outputs):
         np_input = np.array(case[0])
         np_rois = np.array(case[1])
@@ -95,8 +93,26 @@ def _test_roialign_allclose(device, dtype):
             x.grad.data.type(torch.float).cpu().numpy(), np_grad, atol=1e-3)
 
 
-@pytest.mark.parametrize('device', ['cuda', 'cpu'])
-@pytest.mark.parametrize('dtype', [torch.float, torch.double, torch.half])
+@pytest.mark.parametrize('device', [
+    'cpu',
+    pytest.param(
+        'cuda',
+        marks=pytest.mark.skipif(
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    pytest.param(
+        'mlu',
+        marks=pytest.mark.skipif(
+            not IS_MLU_AVAILABLE, reason='requires MLU support'))
+])
+@pytest.mark.parametrize('dtype', [
+    torch.float,
+    pytest.param(
+        torch.double,
+        marks=pytest.mark.skipif(
+            IS_MLU_AVAILABLE,
+            reason='MLU does not support for 64-bit floating point')),
+    torch.half
+])
 def test_roialign(device, dtype):
     # check double only
     if dtype is torch.double:

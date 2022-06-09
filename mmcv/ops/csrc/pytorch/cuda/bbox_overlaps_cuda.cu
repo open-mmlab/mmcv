@@ -2,6 +2,22 @@
 #include "bbox_overlaps_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
 
+// Disable fp16 on ROCm device
+#ifndef HIP_DIFF
+#if __CUDA_ARCH__ >= 530
+template <>
+__global__ void bbox_overlaps_cuda_kernel<at::Half>(
+    const at::Half* bbox1, const at::Half* bbox2, at::Half* ious,
+    const int num_bbox1, const int num_bbox2, const int mode,
+    const bool aligned, const int offset) {
+  bbox_overlaps_cuda_kernel_half(reinterpret_cast<const __half*>(bbox1),
+                                 reinterpret_cast<const __half*>(bbox2),
+                                 reinterpret_cast<__half*>(ious), num_bbox1,
+                                 num_bbox2, mode, aligned, offset);
+}
+#endif  // __CUDA_ARCH__ >= 530
+#endif  // HIP_DIFF
+
 void BBoxOverlapsCUDAKernelLauncher(const Tensor bboxes1, const Tensor bboxes2,
                                     Tensor ious, const int mode,
                                     const bool aligned, const int offset) {

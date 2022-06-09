@@ -46,6 +46,7 @@ If you would like to use `opencv-python-headless` instead of `opencv-python`,
 e.g., in a minimum container environment or servers without GUI,
 you can first install it before installing MMCV to skip the installation of `opencv-python`.
 ```
+
 ### Build on Windows
 
 Building MMCV on Windows is a bit more complicated than that on Linux.
@@ -74,41 +75,41 @@ You should know how to set up environment variables, especially `Path`, on Windo
 
 1. Launch Anaconda prompt from Windows Start menu
 
-    Do not use raw `cmd.exe` s instruction is based on PowerShell syntax.
+   Do not use raw `cmd.exe` s instruction is based on PowerShell syntax.
 
 2. Create a new conda environment
 
-    ```shell
-    conda create --name mmcv python=3.7  # 3.6, 3.7, 3.8 should work too as tested
-    conda activate mmcv  # make sure to activate environment before any operation
-    ```
+   ```shell
+   conda create --name mmcv python=3.7  # 3.6, 3.7, 3.8 should work too as tested
+   conda activate mmcv  # make sure to activate environment before any operation
+   ```
 
 3. Install PyTorch. Choose a version based on your need.
 
-    ```shell
-    conda install pytorch torchvision cudatoolkit=10.2 -c pytorch
-    ```
+   ```shell
+   conda install pytorch torchvision cudatoolkit=10.2 -c pytorch
+   ```
 
-    We only tested PyTorch version >= 1.6.0.
+   We only tested PyTorch version >= 1.6.0.
 
 4. Prepare MMCV source code
 
-    ```shell
-    git clone https://github.com/open-mmlab/mmcv.git
-    cd mmcv
-    ```
+   ```shell
+   git clone https://github.com/open-mmlab/mmcv.git
+   cd mmcv
+   ```
 
 5. Install required Python packages
 
-    ```shell
-    pip3 install -r requirements/runtime.txt
-    ```
+   ```shell
+   pip3 install -r requirements/runtime.txt
+   ```
 
 6. It is recommended to install `ninja` to speed up the compilation
 
-    ```bash
-    pip install -r requirements/optional.txt
-    ```
+   ```bash
+   pip install -r requirements/optional.txt
+   ```
 
 #### Build and install MMCV
 
@@ -130,19 +131,19 @@ MMCV can be built in three ways:
 
 1. Set up MSVC compiler
 
-    Set Environment variable, add `C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\bin\Hostx86\x64` to `PATH`, so that `cl.exe` will be available in prompt, as shown below.
+   Set Environment variable, add `C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\bin\Hostx86\x64` to `PATH`, so that `cl.exe` will be available in prompt, as shown below.
 
-    ```none
-    (base) PS C:\Users\xxx> cl
-    Microsoft (R) C/C++ Optimizing  Compiler Version 19.27.29111 for x64
-    Copyright (C) Microsoft Corporation.   All rights reserved.
+   ```none
+   (base) PS C:\Users\xxx> cl
+   Microsoft (R) C/C++ Optimizing  Compiler Version 19.27.29111 for x64
+   Copyright (C) Microsoft Corporation.   All rights reserved.
 
-    usage: cl [ option... ] filename... [ / link linkoption... ]
-    ```
+   usage: cl [ option... ] filename... [ / link linkoption... ]
+   ```
 
-    For compatibility, we use the x86-hosted and x64-targeted compiler. note `Hostx86\x64` in the path.
+   For compatibility, we use the x86-hosted and x64-targeted compiler. note `Hostx86\x64` in the path.
 
-    You may want to change the system language to English because pytorch will parse text output from `cl.exe` to check its version. However only utf-8 is recognized. Navigate to Control Panel -> Region -> Administrative -> Language for Non-Unicode programs and change it to English.
+   You may want to change the system language to English because pytorch will parse text output from `cl.exe` to check its version. However only utf-8 is recognized. Navigate to Control Panel -> Region -> Administrative -> Language for Non-Unicode programs and change it to English.
 
 ##### Option 1: Build MMCV (lite version)
 
@@ -162,31 +163,33 @@ pip list
 ##### Option 2: Build MMCV (full version with CPU)
 
 1. Finish above common steps
+
 2. Set up environment variables
 
-    ```shell
-    $env:MMCV_WITH_OPS = 1
-    $env:MAX_JOBS = 8  # based on your available number of CPU cores and amount of memory
-    ```
+   ```shell
+   $env:MMCV_WITH_OPS = 1
+   $env:MAX_JOBS = 8  # based on your available number of CPU cores and amount of memory
+   ```
 
 3. Following build steps of the lite version
 
-    ```shell
-    # activate environment
-    conda activate mmcv
-    # change directory
-    cd mmcv
-    # build
-    python setup.py build_ext # if success, cl will be launched to compile ops
-    # install
-    python setup.py develop
-    # check
-    pip list
-    ```
+   ```shell
+   # activate environment
+   conda activate mmcv
+   # change directory
+   cd mmcv
+   # build
+   python setup.py build_ext # if success, cl will be launched to compile ops
+   # install
+   python setup.py develop
+   # check
+   pip list
+   ```
 
 ##### Option 3: Build MMCV (full version with CUDA)
 
 1. Finish above common steps
+
 2. Make sure `CUDA_PATH` or `CUDA_HOME` is already set in `envs` via `ls env:`, desired output is shown as below:
 
    ```none
@@ -244,3 +247,23 @@ If you are compiling against PyTorch 1.6.0, you might meet some errors from PyTo
 ```
 
 If you meet issues when running or compiling mmcv, we list some common issues in [Frequently Asked Question](../faq.html).
+
+## \[Optional\] Build MMCV on IPU machine
+
+Firstly, you need to apply for an IPU cloud machine, see [here](https://www.graphcore.ai/ipus-in-the-cloud).
+
+### Option 1: Docker
+
+1. Pull docker
+
+```shell
+  docker pull graphcore/pytorch
+```
+
+2. Build MMCV under same python environment
+
+### Option 2: Install from SDK
+
+1. Build MMCV
+
+2. Use pip to install sdk according to [IPU PyTorch document](https://docs.graphcore.ai/projects/poptorch-user-guide/en/latest/installation.html). Also, you need to apply for machine and sdk to Graphcore.
