@@ -118,16 +118,16 @@ class SoftNMSop(torch.autograd.Function):
         return nms_out
 
 
-nms_input_type = Union[Tensor, np.ndarray]
+array_like_type = Union[Tensor, np.ndarray]
 
 
 @deprecated_api_warning({'iou_thr': 'iou_threshold'})
-def nms(boxes: nms_input_type,
-        scores: nms_input_type,
+def nms(boxes: array_like_type,
+        scores: array_like_type,
         iou_threshold: float,
         offset: int = 0,
         score_threshold: float = 0,
-        max_num: int = -1) -> Tuple[nms_input_type, nms_input_type]:
+        max_num: int = -1) -> Tuple[array_like_type, array_like_type]:
     """Dispatch to either CPU or GPU NMS implementations.
 
     The input can be either torch tensor or numpy array. GPU NMS will be used
@@ -182,13 +182,13 @@ def nms(boxes: nms_input_type,
 
 
 @deprecated_api_warning({'iou_thr': 'iou_threshold'})
-def soft_nms(boxes: nms_input_type,
-             scores: nms_input_type,
+def soft_nms(boxes: array_like_type,
+             scores: array_like_type,
              iou_threshold: float = 0.3,
              sigma: float = 0.5,
              min_score: float = 1e-3,
              method: str = 'linear',
-             offset: int = 0) -> Tuple[nms_input_type, nms_input_type]:
+             offset: int = 0) -> Tuple[array_like_type, array_like_type]:
     """Dispatch to only CPU Soft NMS implementations.
 
     The input can be either a torch tensor or numpy array.
@@ -381,8 +381,8 @@ def batched_nms(boxes: Tensor,
     return boxes, keep
 
 
-def nms_match(dets: nms_input_type,
-              iou_threshold: float) -> List[nms_input_type]:
+def nms_match(dets: array_like_type,
+              iou_threshold: float) -> List[array_like_type]:
     """Matched dets into different groups by NMS.
 
     NMS match is Similar to NMS but when a bbox is suppressed, nms match will
