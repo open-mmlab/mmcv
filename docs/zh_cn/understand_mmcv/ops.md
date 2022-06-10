@@ -13,7 +13,7 @@ MMCV 提供了检测、分割等任务中常用的算子
 | CARAFE                       |     | √    |     |
 | ChamferDistance              |     | √    |     |
 | CrissCrossAttention          |     | √    |     |
-| ContourExpand                |     |      |     |
+| ContourExpand                | √   |      |     |
 | ConvexIoU                    |     | √    |     |
 | CornerPool                   |     | √    |     |
 | Correlation                  |     | √    |     |
@@ -29,7 +29,7 @@ MMCV 提供了检测、分割等任务中常用的算子
 | Iou3d                        |     | √    |     |
 | KNN                          |     | √    |     |
 | MaskedConv                   |     | √    |     |
-| MergeCells                   |     |      |     |
+| MergeCells                   |     | √    |     |
 | MinAreaPolygon               |     | √    |     |
 | ModulatedDeformConv2d        | √   | √    |     |
 | MultiScaleDeformableAttn     |     | √    |     |

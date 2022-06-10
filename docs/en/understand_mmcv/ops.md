@@ -13,7 +13,7 @@ We implement common ops used in detection, segmentation, etc.
 | CARAFE                       |     | √    |     |
 | ChamferDistance              |     | √    |     |
 | CrissCrossAttention          |     | √    |     |
-| ContourExpand                |     |      |     |
+| ContourExpand                | √   |      |     |
 | ConvexIoU                    |     | √    |     |
 | CornerPool                   |     | √    |     |
 | Correlation                  |     | √    |     |
@@ -29,7 +29,7 @@ We implement common ops used in detection, segmentation, etc.
 | Iou3d                        |     | √    |     |
 | KNN                          |     | √    |     |
 | MaskedConv                   |     | √    |     |
-| MergeCells                   |     |      |     |
+| MergeCells                   |     | √    |     |
 | MinAreaPolygon               |     | √    |     |
 | ModulatedDeformConv2d        | √   | √    |     |
 | MultiScaleDeformableAttn     |     | √    |     |
