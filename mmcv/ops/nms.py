@@ -322,7 +322,13 @@ def batched_nms(boxes: Tensor,
     else:
         # When using rotated boxes, only apply offsets on center.
         if boxes.size(-1) == 5:
-            # Use max_center+max_wh as max_coordinate
+            # Strictly, the maximum coordinates of the rotating box
+            # (x,y,w,h,a) should be calculated by polygon coordinates.
+            # But the conversion from rotated box to polygon will
+            # slow down the speed.
+            # So we use max(x,y) + max(w,h) as max coordinate
+            # which is larger than polygon max coordinate
+            # max(x1, y1, x2, y2,x3, y3, x4, y4)
             max_coordinate = boxes[..., :2].max() + boxes[..., 2:4].max()
             offsets = idxs.to(boxes) * (
                 max_coordinate + torch.tensor(1).to(boxes))
