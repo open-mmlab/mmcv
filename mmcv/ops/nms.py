@@ -322,7 +322,8 @@ def batched_nms(boxes: Tensor,
     else:
         # When using rotated boxes, only apply offsets on center.
         if boxes.size(-1) == 5:
-            max_coordinate = boxes[..., :2].max()
+            # Use max_center+max_wh as max_coordinate
+            max_coordinate = boxes[..., :2].max() + boxes[..., 2:4].max()
             offsets = idxs.to(boxes) * (
                 max_coordinate + torch.tensor(1).to(boxes))
             boxes_ctr_for_nms = boxes[..., :2] + offsets[:, None]
