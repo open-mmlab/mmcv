@@ -289,7 +289,7 @@ def batched_nms(boxes: Tensor,
             is None, otherwise it should specify nms type and other
             parameters like `iou_thr`. Possible keys includes the following.
 
-            - iou_thr (float): IoU threshold used for NMS.
+            - iou_threshold (float): IoU threshold used for NMS.
             - split_thr (float): threshold number of boxes. In some cases the
               number of boxes is large (e.g., 200k). To avoid OOM during
               training, the users could set `split_thr` to a small value.
@@ -391,7 +391,7 @@ def nms_match(dets: array_like_type,
 
     Args:
         dets (torch.Tensor | np.ndarray): Det boxes with scores, shape (N, 5).
-        iou_thr (float): IoU thresh for NMS.
+        iou_threshold (float): IoU thresh for NMS.
 
     Returns:
         list[torch.Tensor | np.ndarray]: The outer list corresponds different
