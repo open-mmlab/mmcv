@@ -66,7 +66,7 @@ def get_input_device(input: Union[List, torch.Tensor]) -> int:
 class Scatter:
 
     @staticmethod
-    def forward(target_gpus: List, input: List) -> tuple:
+    def forward(target_gpus: List[int], input: Union[List, torch.Tensor]) -> tuple:
         input_device = get_input_device(input)
         streams = None
         if input_device == -1 and target_gpus != [-1]:
