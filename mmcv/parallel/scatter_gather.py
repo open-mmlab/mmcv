@@ -59,10 +59,10 @@ def scatter_kwargs(inputs: ScatterInputs,
     kwargs = scatter(kwargs, target_gpus, dim) if kwargs else []
     if len(inputs) < len(kwargs):
         inputs.extend([() for _ in range(len(kwargs) - len(inputs))
-                       ])  # type: ignore
+                       ])  # type: ignore # noqa: E501
     elif len(kwargs) < len(inputs):
         kwargs.extend([{} for _ in range(len(inputs) - len(kwargs))
-                       ])  # type: ignore
+                       ])  # type: ignore # noqa: E501
     inputs = tuple(inputs)
     kwargs = tuple(kwargs)
     return inputs, kwargs
