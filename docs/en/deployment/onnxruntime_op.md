@@ -107,7 +107,7 @@ Take custom operator `soft_nms` for example.
 
 2. Add source `soft_nms.cpp` to ONNX Runtime source directory `mmcv/ops/csrc/onnxruntime/cpu/`
 
-3. Register `soft_nms` operator in [onnxruntime_register.cpp](../../mmcv/ops/csrc/onnxruntime/cpu/onnxruntime_register.cpp)
+3. Register `soft_nms` operator in [onnxruntime_register.cpp](../../../mmcv/ops/csrc/onnxruntime/cpu/onnxruntime_register.cpp)
 
    ```c++
    #include "soft_nms.h"
@@ -133,4 +133,4 @@ Take custom operator `soft_nms` for example.
 ### References
 
 - [How to export Pytorch model with custom op to ONNX and run it in ONNX Runtime](https://github.com/onnx/tutorials/blob/master/PyTorchCustomOperator/README.md)
-- [How to add a custom operator/kernel in ONNX Runtime](https://github.com/microsoft/onnxruntime/blob/master/docs/AddingCustomOp.md)
+- [How to add a custom operator/kernel in ONNX Runtime](https://onnxruntime.ai/docs/reference/operators/add-custom-op.html)

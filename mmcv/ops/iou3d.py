@@ -8,9 +8,28 @@ from torch import Tensor
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', [
-    'iou3d_boxes_iou3d_forward', 'iou3d_nms3d_forward',
+    'iou3d_boxes_overlap_bev_forward', 'iou3d_nms3d_forward',
     'iou3d_nms3d_normal_forward'
 ])
+
+
+def boxes_overlap_bev(boxes_a: Tensor, boxes_b: Tensor) -> Tensor:
+    """Calculate boxes BEV overlap.
+
+    Args:
+        boxes_a (torch.Tensor): Input boxes a with shape (M, 7).
+        boxes_b (torch.Tensor): Input boxes b with shape (N, 7).
+
+    Returns:
+        torch.Tensor: BEV overlap result with shape (M, N).
+    """
+    ans_overlap = boxes_a.new_zeros(
+        torch.Size((boxes_a.shape[0], boxes_b.shape[0])))
+    ext_module.iou3d_boxes_overlap_bev_forward(boxes_a.contiguous(),
+                                               boxes_b.contiguous(),
+                                               ans_overlap)
+
+    return ans_overlap
 
 
 def boxes_iou3d(boxes_a: Tensor, boxes_b: Tensor) -> Tensor:
@@ -21,15 +40,30 @@ def boxes_iou3d(boxes_a: Tensor, boxes_b: Tensor) -> Tensor:
         boxes_b (torch.Tensor): Input boxes b with shape (N, 7).
 
     Returns:
-        torch.Tensor: IoU result with shape (M, N).
+        torch.Tensor: 3D IoU result with shape (M, N).
     """
-    ans_iou = boxes_a.new_zeros(
+    assert boxes_a.shape[1] == boxes_b.shape[1] == 7,\
+        'Input boxes shape should be (N, 7)'
+
+    boxes_a_height_max = (boxes_a[:, 2] + boxes_a[:, 5] / 2).view(-1, 1)
+    boxes_a_height_min = (boxes_a[:, 2] - boxes_a[:, 5] / 2).view(-1, 1)
+    boxes_b_height_max = (boxes_b[:, 2] + boxes_b[:, 5] / 2).view(1, -1)
+    boxes_b_height_min = (boxes_b[:, 2] - boxes_b[:, 5] / 2).view(1, -1)
+
+    overlaps_bev = boxes_a.new_zeros(
         torch.Size((boxes_a.shape[0], boxes_b.shape[0])))
+    ext_module.iou3d_boxes_overlap_bev_forward(boxes_a.contiguous(),
+                                               boxes_b.contiguous(),
+                                               overlaps_bev)
 
-    ext_module.iou3d_boxes_iou3d_forward(boxes_a.contiguous(),
-                                         boxes_b.contiguous(), ans_iou)
-
-    return ans_iou
+    max_of_min = torch.max(boxes_a_height_min, boxes_b_height_min)
+    min_of_max = torch.min(boxes_a_height_max, boxes_b_height_max)
+    overlaps_h = torch.clamp(min_of_max - max_of_min, min=0)
+    overlaps_3d = overlaps_bev * overlaps_h
+    vol_a = (boxes_a[:, 3] * boxes_a[:, 4] * boxes_a[:, 5]).view(-1, 1)
+    vol_b = (boxes_b[:, 3] * boxes_b[:, 4] * boxes_b[:, 5]).view(1, -1)
+    iou3d = overlaps_3d / torch.clamp(vol_a + vol_b - overlaps_3d, min=1e-6)
+    return iou3d
 
 
 def nms3d(boxes: Tensor, scores: Tensor, iou_threshold: float) -> Tensor:
