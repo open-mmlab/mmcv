@@ -348,6 +348,15 @@ class BaseRunner(metaclass=ABCMeta):
                checkpoint,
                resume_optimizer=True,
                map_location='default'):
+        """Resume model from checkpoint.
+
+        Args:
+            checkpoint (str): Checkpoint to resume from.
+            resume_optimizer (bool, optional): Whether resume the optimizer(s)
+                if the checkpoint file includes optimizer(s). Default to True.
+            map_location (str, optional): Same as :func:`torch.load`.
+                Default to 'default'.
+        """
         if map_location == 'default':
             if torch.cuda.is_available():
                 device_id = torch.cuda.current_device()
@@ -360,17 +369,25 @@ class BaseRunner(metaclass=ABCMeta):
             checkpoint = self.load_checkpoint(
                 checkpoint, map_location=map_location)
 
+        # Note that runner may resume a checkpoint in the middle of workflows
+        # or epoch and resuming checkpoint will reset workflow and dataloader
         self._epoch = checkpoint['meta']['epoch']
         self._iter = checkpoint['meta']['iter']
         if self.meta is None:
             self.meta = {}
-        self.meta.setdefault('hook_msgs', {})
-        # load `last_ckpt`, `best_score`, `best_ckpt`, etc. for hook messages
-        self.meta['hook_msgs'].update(checkpoint['meta'].get('hook_msgs', {}))
+        else:
+            # use current env information and seed if available
+            # instead of resuming them from checkpoint
+            if self.meta.get('env_info', None) is not None:
+                checkpoint['meta'].update(env_info=self.meta['env_info'])
+            if self.meta.get('seed', None) is not None:
+                checkpoint['meta'].update(seed=self.meta['seed'])
+        # resume meta information
+        self.meta.update(checkpoint['meta'])
 
-        # Re-calculate the number of iterations when resuming
-        # models with different number of GPUs
-        if 'config' in checkpoint['meta']:
+        # Re-calculate the number of iterations for epoch based runner
+        # when resuming models with different number of GPUs
+        if self.max_epochs is not None and 'config' in checkpoint['meta']:
             config = mmcv.Config.fromstring(
                 checkpoint['meta']['config'], file_format='.py')
             previous_gpu_ids = config.get('gpu_ids', None)
@@ -380,9 +397,6 @@ class BaseRunner(metaclass=ABCMeta):
                                  self.world_size)
                 self.logger.info('the iteration number is changed due to '
                                  'change of GPU number')
-
-        # resume meta information meta
-        self.meta = checkpoint['meta']
 
         if 'optimizer' in checkpoint and resume_optimizer:
             if isinstance(self.optimizer, Optimizer):

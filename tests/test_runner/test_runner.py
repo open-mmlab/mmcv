@@ -56,7 +56,6 @@ def test_build_runner():
 
 @pytest.mark.parametrize('runner_class', RUNNERS.module_dict.values())
 def test_epoch_based_runner(runner_class):
-
     with pytest.warns(DeprecationWarning):
         # batch_processor is deprecated
         model = OldStyleModel()
@@ -287,3 +286,51 @@ def test_register_timer_hook(runner_class):
     runner.register_timer_hook(timer_config)
     assert len(runner.hooks) == 2
     assert isinstance(runner.hooks[1], IterTimerHook)
+
+
+@pytest.mark.parametrize('runner_class', RUNNERS.module_dict.values())
+def test_runner_resume(runner_class):
+    model = Model()
+    runner = runner_class(model=model, logger=logging.getLogger())
+    runner_resumed = runner_class(model=model, logger=logging.getLogger())
+
+    with tempfile.TemporaryDirectory() as root:
+        runner.meta = {'test_info': 'test_info', 'seed': 0}
+        if isinstance(runner, EpochBasedRunner):
+            # test epoch based runner resume
+            runner._epoch = 1
+            runner._iter = 2
+            runner.save_checkpoint(root)
+            ckp_path = osp.join(root, f'epoch_{runner._epoch + 1}.pth')
+            assert osp.exists(ckp_path)
+            runner_resumed.resume(ckp_path)
+            assert runner_resumed.meta['test_info'] == 'test_info'
+            assert runner_resumed._epoch == runner._epoch + 1
+            assert runner_resumed._iter == runner._iter
+            assert runner_resumed.meta['seed'] == 0
+
+        elif isinstance(runner, IterBasedRunner):
+            # test iter based runner resume in the middle of one epoch
+            runner._epoch = 1
+            runner._iter = 1
+            runner.save_checkpoint(root)
+            ckp_path = osp.join(root, f'iter_{runner._iter + 1}.pth')
+            assert osp.exists(ckp_path)
+            runner_resumed.resume(ckp_path)
+            assert runner_resumed.meta['test_info'] == 'test_info'
+            assert runner_resumed._epoch == runner._epoch
+            assert runner_resumed._iter == runner._iter + 1
+            assert runner_resumed.meta['seed'] == 0
+
+            # test iter based runner resume in the between of epochs
+            runner._epoch = 1
+            runner._iter = 1
+            runner.iter_per_epoch = 2
+            runner.save_checkpoint(root)
+            ckp_path = osp.join(root, f'iter_{runner._iter + 1}.pth')
+            assert osp.exists(ckp_path)
+            runner_resumed.resume(ckp_path)
+            assert runner_resumed.meta['test_info'] == 'test_info'
+            assert runner_resumed._epoch == runner._epoch + 1
+            assert runner_resumed._iter == runner._iter + 1
+            assert runner_resumed.meta['seed'] == 0
