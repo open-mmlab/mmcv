@@ -390,7 +390,8 @@ class CyclicMomentumUpdaterHook(MomentumUpdaterHook):
                 return self.anneal_func(base_momentum * start_ratio,
                                         base_momentum * end_ratio,
                                         progress / (end_iter - start_iter))
-        assert False, 'not supposed to get here, report as a bug.'
+        raise RuntimeError('The method should return in the for-loop and '
+                           'should not be executed until this')
 
 
 @HOOKS.register_module()
