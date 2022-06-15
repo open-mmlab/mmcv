@@ -4,7 +4,7 @@ import platform
 import shutil
 import time
 import warnings
-from typing import Any, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import torch
 from torch.optim import Optimizer
@@ -20,7 +20,7 @@ from .utils import get_host_info
 
 class IterLoader:
 
-    def __init__(self, dataloader: DataLoader) -> None:
+    def __init__(self, dataloader: DataLoader):
         self._dataloader = dataloader
         self.iter_loader = iter(self._dataloader)
         self._epoch = 0
@@ -29,7 +29,7 @@ class IterLoader:
     def epoch(self) -> int:
         return self._epoch
 
-    def __next__(self) -> Any:
+    def __next__(self):
         try:
             data = next(self.iter_loader)
         except StopIteration:
@@ -42,7 +42,7 @@ class IterLoader:
 
         return data
 
-    def __len__(self) -> int:
+    def __len__(self):
         return len(self._dataloader)
 
 
@@ -92,7 +92,7 @@ class IterBasedRunner(BaseRunner):
 
     def run(self,
             data_loaders: List[DataLoader],
-            workflow: List[tuple],
+            workflow: List[Tuple[str, int]],
             max_iters: Optional[int] = None,
             **kwargs) -> None:
         """Start running.
@@ -150,7 +150,7 @@ class IterBasedRunner(BaseRunner):
     def resume(self,
                checkpoint: str,
                resume_optimizer: bool = True,
-               map_location: str = 'default') -> None:
+               map_location: Union[str, Callable] = 'default') -> None:
         """Resume model from checkpoint.
 
         Args:
@@ -164,8 +164,7 @@ class IterBasedRunner(BaseRunner):
             device_id = torch.cuda.current_device()
             loaded_checkpoint = self.load_checkpoint(
                 checkpoint,
-                map_location=lambda  # type: ignore
-                storage, loc: storage.cuda(device_id))
+                map_location=lambda storage, loc: storage.cuda(device_id))
         else:
             loaded_checkpoint = self.load_checkpoint(
                 checkpoint, map_location=map_location)

@@ -5,7 +5,7 @@ import os.path as osp
 import warnings
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import torch
 from torch.optim import Optimizer
@@ -195,8 +195,8 @@ class BaseRunner(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def run(self, data_loaders: List[DataLoader], workflow: List[tuple],
-            **kwargs) -> Any:
+    def run(self, data_loaders: List[DataLoader],
+            workflow: List[Tuple[str, int]], **kwargs) -> Any:
         pass
 
     @abstractmethod
@@ -340,12 +340,12 @@ class BaseRunner(metaclass=ABCMeta):
         return '\n'.join(stage_hook_infos)
 
     def load_checkpoint(
-            self,
-            filename: str,
-            map_location: str = 'cpu',
-            strict: bool = False,
-            revise_keys: List = [(r'^module.', '')
-                                 ]) -> Union[Dict, OrderedDict]:
+        self,
+        filename: str,
+        map_location: Union[str, Callable] = 'cpu',
+        strict: bool = False,
+        revise_keys: List = [(r'^module.', '')],
+    ) -> Union[Dict, OrderedDict]:
         return load_checkpoint(
             self.model,
             filename,
@@ -357,14 +357,13 @@ class BaseRunner(metaclass=ABCMeta):
     def resume(self,
                checkpoint: str,
                resume_optimizer: bool = True,
-               map_location: str = 'default') -> None:
+               map_location: Union[str, Callable] = 'default') -> None:
         if map_location == 'default':
             if torch.cuda.is_available():
                 device_id = torch.cuda.current_device()
                 loaded_checkpoint = self.load_checkpoint(
                     checkpoint,
-                    map_location=lambda  # type: ignore
-                    storage, loc: storage.cuda(device_id))
+                    map_location=lambda storage, loc: storage.cuda(device_id))
             else:
                 loaded_checkpoint = self.load_checkpoint(checkpoint)
         else:
@@ -507,8 +506,10 @@ class BaseRunner(metaclass=ABCMeta):
             else:
                 self.register_hook(item, priority='NORMAL')
 
-    def register_profiler_hook(self, profiler_config: Union[Dict,
-                                                            Hook]) -> None:
+    def register_profiler_hook(
+        self,
+        profiler_config: Union[Dict, Hook],
+    ) -> None:
         if profiler_config is None:
             return
         if isinstance(profiler_config, dict):

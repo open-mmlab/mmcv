@@ -139,17 +139,16 @@ class LrUpdaterHook(Hook):
 
     def before_train_iter(self, runner: 'runner.BaseRunner'):
         cur_iter = runner.iter
+        assert isinstance(self.warmup_iters, int)
         if not self.by_epoch:
             self.regular_lr = self.get_regular_lr(runner)
-            if self.warmup is None or \
-                    cur_iter >= self.warmup_iters:  # type: ignore
+            if self.warmup is None or cur_iter >= self.warmup_iters:
                 self._set_lr(runner, self.regular_lr)
             else:
                 warmup_lr = self.get_warmup_lr(cur_iter)
                 self._set_lr(runner, warmup_lr)
         elif self.by_epoch:
-            if self.warmup is None or \
-                    cur_iter > self.warmup_iters:  # type: ignore
+            if self.warmup is None or cur_iter > self.warmup_iters:
                 return
             elif cur_iter == self.warmup_iters:
                 self._set_lr(runner, self.regular_lr)
@@ -506,9 +505,9 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
         super().before_run(runner)
         # initiate lr_phases
         # total lr_phases are separated as up and down
+        assert isinstance(self.max_iter_per_phase, int)
         self.max_iter_per_phase = runner.max_iters // self.cyclic_times
-        iter_up_phase = int(self.step_ratio_up *
-                            self.max_iter_per_phase)  # type:ignore
+        iter_up_phase = int(self.step_ratio_up * self.max_iter_per_phase)
         self.lr_phases.append([0, iter_up_phase, 1, self.target_ratio[0]])
         self.lr_phases.append([
             iter_up_phase, self.max_iter_per_phase, self.target_ratio[0],

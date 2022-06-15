@@ -4,7 +4,7 @@ import platform
 import shutil
 import time
 import warnings
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import torch
 from torch.utils.data import DataLoader
@@ -43,8 +43,7 @@ class EpochBasedRunner(BaseRunner):
         self.model.train()
         self.mode = 'train'
         self.data_loader = data_loader
-        length_data_loader = len(self.data_loader)
-        self._max_iters = self._max_epochs * length_data_loader
+        self._max_iters = self._max_epochs * len(self.data_loader)
 
         self.call_hook('before_train_epoch')
         time.sleep(2)  # Prevent possible deadlock during epoch transition
@@ -78,7 +77,7 @@ class EpochBasedRunner(BaseRunner):
 
     def run(self,
             data_loaders: List[DataLoader],
-            workflow: List[tuple],
+            workflow: List[Tuple[str, int]],
             max_epochs: Optional[int] = None,
             **kwargs) -> None:
         """Start running.
