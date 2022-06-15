@@ -86,6 +86,7 @@ git 走代理。初始化完 pre-commit 后，提交会继续进行，如果提�
 ![image](https://user-images.githubusercontent.com/57566630/167306461-3cb3b5bf-d9b3-4d5a-9c0a-34cfded8dbbc.png)
 
 修改并提交符合代码风格的代码
+
 ![image](https://user-images.githubusercontent.com/57566630/167306496-d2b8daf7-d72c-4129-a0e8-175f8a32cc47.png)
 
 2.3. 如果你想临时提交一些内容，并绕开 pre-commit 的检查
