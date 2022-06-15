@@ -68,6 +68,21 @@ C++ 和 CUDA 的代码规范遵从 [Google C++ Style Guide](https://google.githu
 git clone https://github.com/{username}/mmcv.git
 ```
 
+添加原代码库为上游代码库
+
+```bash
+git remote add upstream git@github.com:open-mmlab/mmcv
+```
+
+从第二个 PR 起
+
+检出本地代码库的主分支，然后从最新的原代码库的主分支拉取更新
+
+```bash
+git checkout master
+git pull upstream master
+```
+
 #### 2. 第一次配置 pre-commit
 
 2.1. 在本地仓库中执行
@@ -80,12 +95,12 @@ pre-commit install
 2.2. 此后第一次提交代码时，会自动安装代码风格检查的依赖库：
 
 ![image](https://user-images.githubusercontent.com/57566630/173660750-3df20a63-cb66-4d33-a986-1f643f1d8aaf.png)
-如果本地网络状态不佳，可能会导致代码检查的三方库安装失败，建议重复执行 `git commit -m xxx`，继续下载代码检查的三方库，或者让
-git 走代理。初始化完 pre-commit 后，提交会继续进行，如果提交的代码不符合代码风格规范时，pre-commit 会发出警告，并自动修复部分错误。
+如果本地网络状态不佳，可能会导致代码检查的三方库安装失败，建议重复执行 `git commit -m xxx`，继续下载三方库，或者让
+git 走代理。初始化完 pre-commit 后，提交会继续进行。如果提交的代码不符合代码风格规范，pre-commit 会发出警告，并自动修复部分错误。
 
 ![image](https://user-images.githubusercontent.com/57566630/167306461-3cb3b5bf-d9b3-4d5a-9c0a-34cfded8dbbc.png)
 
-修改并提交符合代码风格的代码
+修改后提交符合规范的代码
 
 ![image](https://user-images.githubusercontent.com/57566630/167306496-d2b8daf7-d72c-4129-a0e8-175f8a32cc47.png)
 
@@ -103,30 +118,28 @@ git commit -m "xxx" --no-verify
 git checkout -b username/refactor_contributing_doc
 ```
 
-#### 4. 提交代码并补充单元测试（代码修复或新增特性）
-
-#### 5. 确认提交代码能够在本地通过单元测试，以修复 runner 为例
+#### 4. 确认提交代码能够在本地通过单元测试，以修复 runner 为例
 
 ```shell
 pytest tests/test_runner/test_runner.py
 ```
 
-#### 6. 提交代码，确认代码能够通过 pre-commit
+#### 5. 提交代码，确认代码能够通过 pre-commit
 
 新增模块或修改函数接口时，需要补充参数的 Type Hints 和 docstring，具体规则参考 Type Hints 教程
 https://zhuanlan.zhihu.com/p/519335398%E3%80%82
 
-#### 7. 提交拉取请求
+#### 6. 提交拉取请求
 
-7.1. 创建拉取请求 ![avatar](../../en/_static/community/2.png)
+6.1. 创建拉取请求 ![avatar](../../en/_static/community/2.png)
 修改`拉取请求`信息模板，描述修改原因和修改内容。还可以在 PR 描述中，手动关联到相关的`议题` (issue),（更多细节，请参考\[官方文档\]
 (https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)）。
 
-7.2. 如果是第一次提交拉取请求，需要签名 CLA
+6.2. 如果是第一次提交拉取请求，需要签名 CLA，并确认本地的 git 邮箱和
 
 ![image](https://user-images.githubusercontent.com/57566630/167307569-a794b967-6e28-4eac-a942-00deb657815f.png)
 
-7.3. 检查 是否通过 CI/CD
+6.3. 检查 是否通过 CI/CD
 
 ![image](https://user-images.githubusercontent.com/57566630/167307490-f9ebf9fa-63c0-4d83-8ba1-081ea169eb3a.png)
 
