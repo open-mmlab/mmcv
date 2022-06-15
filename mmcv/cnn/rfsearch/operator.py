@@ -26,7 +26,7 @@ class BaseRFSearchOperator(abc.ABC):
 class ConvRFSearchOp(BaseRFSearchOperator, nn.Module):
 
     def __init__(self, op_layer, global_config):
-        super(ConvRFSearchOp, self).__init__()
+        super().__init__()
         self.op_layer = op_layer
         self.global_config = global_config
 
