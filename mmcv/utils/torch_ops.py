@@ -18,10 +18,10 @@ def torch_meshgrid(*tensors):
     PyTorch.
 
     Args:
-        tensors (list of Tensor): List of scalars or 1 dimensional tensors.
+        tensors (List[Tensor]): List of scalars or 1 dimensional tensors.
 
     Returns:
-        seq (sequence of Tensors): Sequence of meshgrid tensors.
+        Sequence[Tensor]: Sequence of meshgrid tensors.
     """
     if _torch_version_meshgrid_indexing:
         return torch.meshgrid(*tensors, indexing='ij')
