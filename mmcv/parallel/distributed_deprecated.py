@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List, Sequence
+from typing import List, Sequence, Tuple
 
 import torch
 import torch.distributed as dist
@@ -53,7 +53,7 @@ class MMDistributedDataParallel(nn.Module):
                                                self.broadcast_bucket_size)
 
     def scatter(self, inputs: ScatterInputs, kwargs: ScatterInputs,
-                device_ids: List[int]) -> tuple:
+                device_ids: List[int]) -> Tuple[tuple, tuple]:
         return scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
 
     def forward(self, *inputs, **kwargs):

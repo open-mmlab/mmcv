@@ -55,7 +55,7 @@ def scatter(inputs: ScatterInputs,
 def scatter_kwargs(inputs: ScatterInputs,
                    kwargs: ScatterInputs,
                    target_gpus: List[int],
-                   dim: int = 0) -> Tuple[tuple, ...]:
+                   dim: int = 0) -> Tuple[tuple, tuple]:
     """Scatter with support for kwargs dictionary."""
     inputs = scatter(inputs, target_gpus, dim) if inputs else []
     kwargs = scatter(kwargs, target_gpus, dim) if kwargs else []

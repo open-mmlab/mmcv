@@ -21,13 +21,13 @@ class MMDistributedDataParallel(DistributedDataParallel):
     """
 
     def to_kwargs(self, inputs: ScatterInputs, kwargs: ScatterInputs,
-                  device_id: int) -> Tuple[tuple, ...]:
+                  device_id: int) -> Tuple[tuple, tuple]:
         # Use `self.to_kwargs` instead of `self.scatter` in pytorch1.8
         # to move all tensors to device_id
         return scatter_kwargs(inputs, kwargs, [device_id], dim=self.dim)
 
     def scatter(self, inputs: ScatterInputs, kwargs: ScatterInputs,
-                device_ids: List[int]) -> Tuple[tuple, ...]:
+                device_ids: List[int]) -> Tuple[tuple, tuple]:
         return scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
 
     def train_step(self, *inputs, **kwargs):
