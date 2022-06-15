@@ -1,9 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from itertools import chain
+from typing import List, Tuple
 
 from torch.nn.parallel import DataParallel
 
-from .scatter_gather import scatter_kwargs
+from .scatter_gather import ScatterInputs, scatter_kwargs
 
 
 class MMDataParallel(DataParallel):
@@ -49,7 +50,8 @@ class MMDataParallel(DataParallel):
         else:
             return super().forward(*inputs, **kwargs)
 
-    def scatter(self, inputs, kwargs, device_ids):
+    def scatter(self, inputs: ScatterInputs, kwargs: ScatterInputs,
+                device_ids: List[int]) -> Tuple[tuple, ...]:
         return scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
 
     def train_step(self, *inputs, **kwargs):

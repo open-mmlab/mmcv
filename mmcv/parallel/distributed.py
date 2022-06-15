@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Tuple
+from typing import List, Tuple
 
 import torch
 from torch.nn.parallel.distributed import (DistributedDataParallel,
@@ -20,15 +20,14 @@ class MMDistributedDataParallel(DistributedDataParallel):
     - It implement two APIs ``train_step()`` and ``val_step()``.
     """
 
-    # Union[DataContainer, Tensor, dict, tuple, list]
-    def to_kwargs(self, inputs: ScatterInputs, kwargs: list,
-                  device_id: int) -> Tuple[tuple, tuple]:
+    def to_kwargs(self, inputs: ScatterInputs, kwargs: ScatterInputs,
+                  device_id: int) -> Tuple[tuple, ...]:
         # Use `self.to_kwargs` instead of `self.scatter` in pytorch1.8
         # to move all tensors to device_id
         return scatter_kwargs(inputs, kwargs, [device_id], dim=self.dim)
 
     def scatter(self, inputs: ScatterInputs, kwargs: ScatterInputs,
-                device_ids: list) -> Tuple[tuple, tuple]:
+                device_ids: List[int]) -> Tuple[tuple, ...]:
         return scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
 
     def train_step(self, *inputs, **kwargs):

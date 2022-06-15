@@ -1,16 +1,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Tuple, Union
+from typing import List, Tuple, Union
 
-import torch
+from torch import Tensor
 from torch.nn.parallel._functions import Scatter as OrigScatter
 
 from ._functions import Scatter
 from .data_container import DataContainer
 
-ScatterInputs = Union[tuple, list, dict]
+ScatterInputs = Union[Tensor, DataContainer, tuple, list, dict]
 
 
-def scatter(inputs: ScatterInputs, target_gpus: list, dim: int = 0) -> list:
+def scatter(inputs: ScatterInputs,
+            target_gpus: List[int],
+            dim: int = 0) -> list:
     """Scatter inputs to target gpus.
 
     The only difference from original :func:`scatter` is to add support for
@@ -18,7 +20,7 @@ def scatter(inputs: ScatterInputs, target_gpus: list, dim: int = 0) -> list:
     """
 
     def scatter_map(obj):
-        if isinstance(obj, torch.Tensor):
+        if isinstance(obj, Tensor):
             if target_gpus != [-1]:
                 return OrigScatter.apply(target_gpus, None, dim, obj)
             else:
@@ -37,7 +39,7 @@ def scatter(inputs: ScatterInputs, target_gpus: list, dim: int = 0) -> list:
         if isinstance(obj, dict) and len(obj) > 0:
             out = list(map(type(obj), zip(*map(scatter_map, obj.items()))))
             return out
-        return [obj for targets in target_gpus]
+        return [obj for _ in target_gpus]
 
     # After scatter_map is called, a scatter_map cell will exist. This cell
     # has a reference to the actual function scatter_map, which has references
@@ -52,17 +54,17 @@ def scatter(inputs: ScatterInputs, target_gpus: list, dim: int = 0) -> list:
 
 def scatter_kwargs(inputs: ScatterInputs,
                    kwargs: ScatterInputs,
-                   target_gpus: list,
-                   dim: int = 0) -> Tuple[tuple, tuple]:
+                   target_gpus: List[int],
+                   dim: int = 0) -> Tuple[tuple, ...]:
     """Scatter with support for kwargs dictionary."""
     inputs = scatter(inputs, target_gpus, dim) if inputs else []
     kwargs = scatter(kwargs, target_gpus, dim) if kwargs else []
     if len(inputs) < len(kwargs):
-        inputs.extend([() for _ in range(len(kwargs) - len(inputs))
-                       ])  # type: ignore # noqa: E501
+        length = len(kwargs) - len(inputs)
+        inputs.extend([() for _ in range(length)])  # type: ignore
     elif len(kwargs) < len(inputs):
-        kwargs.extend([{} for _ in range(len(inputs) - len(kwargs))
-                       ])  # type: ignore # noqa: E501
+        length = len(inputs) - len(kwargs)
+        kwargs.extend([{} for _ in range(length)])  # type: ignore
     inputs = tuple(inputs)
     kwargs = tuple(kwargs)
     return inputs, kwargs
