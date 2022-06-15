@@ -68,7 +68,7 @@ class OptimizerHook(Hook):
                                          runner.outputs['num_samples'])
         runner.optimizer.step()
 
-    def detect_anomalous_parameters(self, loss: Tensor, runner):
+    def detect_anomalous_parameters(self, loss: Tensor, runner) -> None:
         logger = runner.logger
         parameters_in_graph = set()
         visited = set()
@@ -234,7 +234,7 @@ if (TORCH_VERSION != 'parrots'
                 raise ValueError('loss_scale must be of type float, dict, or '
                                  f'"dynamic", got {loss_scale}')
 
-        def before_run(self, runner):
+        def before_run(self, runner) -> None:
             """Preparing steps before Mixed Precision Training."""
             # wrap model mode to fp16
             wrap_fp16_model(runner.model)
@@ -244,7 +244,7 @@ if (TORCH_VERSION != 'parrots'
                 self.loss_scaler.load_state_dict(scaler_state_dict)
 
         def copy_grads_to_fp32(self, fp16_net: nn.Module,
-                               fp32_weights: Tensor):
+                               fp32_weights: Tensor) -> None:
             """Copy gradients from fp16 model to fp32 weight copy."""
             for fp32_param, fp16_param in zip(fp32_weights,
                                               fp16_net.parameters()):
@@ -255,13 +255,13 @@ if (TORCH_VERSION != 'parrots'
                     fp32_param.grad.copy_(fp16_param.grad)
 
         def copy_params_to_fp16(self, fp16_net: nn.Module,
-                                fp32_weights: Tensor):
+                                fp32_weights: Tensor) -> None:
             """Copy updated params from fp32 weight copy to fp16 model."""
             for fp16_param, fp32_param in zip(fp16_net.parameters(),
                                               fp32_weights):
                 fp16_param.data.copy_(fp32_param.data)
 
-        def after_train_iter(self, runner):
+        def after_train_iter(self, runner) -> None:
             """Backward optimization steps for Mixed Precision Training. For
             dynamic loss scaling, please refer to
             https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler.
@@ -306,7 +306,7 @@ if (TORCH_VERSION != 'parrots'
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
 
-        def after_train_iter(self, runner):
+        def after_train_iter(self, runner) -> None:
             if not self.initialized:
                 self._init(runner)
 
@@ -390,7 +390,7 @@ else:
                 raise ValueError('loss_scale must be of type float, dict, or '
                                  f'"dynamic", got {loss_scale}')
 
-        def before_run(self, runner):
+        def before_run(self, runner) -> None:
             """Preparing steps before Mixed Precision Training.
 
             1. Make a master copy of fp32 weights for optimization.
@@ -400,7 +400,7 @@ else:
             old_groups = runner.optimizer.param_groups
             runner.optimizer.param_groups = copy.deepcopy(
                 runner.optimizer.param_groups)
-            state = defaultdict(dict)
+            state: defaultdict = defaultdict(dict)
             p_map = {
                 old_p: p
                 for old_p, p in zip(
@@ -419,7 +419,7 @@ else:
                 self.loss_scaler.load_state_dict(scaler_state_dict)
 
         def copy_grads_to_fp32(self, fp16_net: nn.Module,
-                               fp32_weights: Tensor):
+                               fp32_weights: Tensor) -> None:
             """Copy gradients from fp16 model to fp32 weight copy."""
             for fp32_param, fp16_param in zip(fp32_weights,
                                               fp16_net.parameters()):
@@ -430,13 +430,13 @@ else:
                     fp32_param.grad.copy_(fp16_param.grad)
 
         def copy_params_to_fp16(self, fp16_net: nn.Module,
-                                fp32_weights: Tensor):
+                                fp32_weights: Tensor) -> None:
             """Copy updated params from fp32 weight copy to fp16 model."""
             for fp16_param, fp32_param in zip(fp16_net.parameters(),
                                               fp32_weights):
                 fp16_param.data.copy_(fp32_param.data)
 
-        def after_train_iter(self, runner):
+        def after_train_iter(self, runner) -> None:
             """Backward optimization steps for Mixed Precision Training. For
             dynamic loss scaling, please refer `loss_scalar.py`
 
@@ -500,7 +500,7 @@ else:
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
 
-        def after_train_iter(self, runner):
+        def after_train_iter(self, runner) -> None:
             if not self.initialized:
                 self._init(runner)
 
