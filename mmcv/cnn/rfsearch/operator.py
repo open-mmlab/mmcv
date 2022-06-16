@@ -2,9 +2,11 @@
 import abc
 import copy
 import logging
+from typing import Dict
 
 import torch
 import torch.nn as nn
+from torch import Tensor
 
 from .utils import expands_rate, value_crop
 
@@ -13,6 +15,9 @@ logger.setLevel(logging.INFO)
 
 
 class BaseRFSearchOperator(abc.ABC):
+
+    def __init__(self):
+        self.op_layer = None
 
     @abc.abstractmethod
     def estimate(self):
@@ -25,12 +30,31 @@ class BaseRFSearchOperator(abc.ABC):
 
 class ConvRFSearchOp(BaseRFSearchOperator, nn.Module):
 
-    def __init__(self, op_layer, global_config):
+    def __init__(self, op_layer: nn.Module, global_config: Dict = {}):
+        """Based class of ConvRFSearchOp.
+
+        Args:
+        op_layer (nn.Module): pytorch module, e,g, Conv2d
+        global_config (Dict): config dict. Defaults to None.
+        """
         super().__init__()
         self.op_layer = op_layer
         self.global_config = global_config
 
-    def normlize(self, w):
+    def normlize(self, w: nn.Parameter) -> nn.Parameter:
+        """norm weights.
+
+        Args:
+            w (nn.Parameter): unnormed weights
+
+        Raises:
+            NotImplementedError:
+                support norm type: absavg
+                (proposed in rf-next paper)
+
+        Returns:
+            nn.Parameters: normed weights
+        """
         if self.global_config['normlize'] == 'absavg':
             abs_w = torch.abs(w)
             norm_w = abs_w / torch.sum(abs_w)
@@ -40,8 +64,20 @@ class ConvRFSearchOp(BaseRFSearchOperator, nn.Module):
 
 
 class Conv2dRFSearchOp(ConvRFSearchOp):
+    """Enable Conv2d with rf search ability.
 
-    def __init__(self, op_layer, init_dilation, global_config, S=3):
+    Args:
+        op_layer (nn.Module): pytorch module, e,g, Conv2d
+        init_dilation (int, optional): init dilation rate. Defaults to None.
+        global_config (Dict, optional): config dict. Defaults to None.
+        S (int, optional): number of branch. Defaults to 3.
+    """
+
+    def __init__(self,
+                 op_layer: nn.Module,
+                 init_dilation: int = None,
+                 global_config: Dict = {},
+                 S: int = 3):
         super().__init__(op_layer, global_config)
         assert S in [2, 3]
         self.S = S
@@ -64,7 +100,7 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
                             (self.rates[0], self.rates[1], self.rates[2]))
         nn.init.constant_(self.weights, global_config['init_alphas'])
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         norm_w = self.normlize(self.weights[:len(self.rates)])
         if len(self.rates) == 1:
             xx = [
@@ -97,6 +133,7 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
         return x
 
     def estimate(self):
+        """estimate new dilation rate based on trained weights."""
         norm_w = self.normlize(self.weights[:len(self.rates)])
         if len(self.rates) == 2:
             logger.info('Estimate dilation %d %d with weight %f %f.' %
@@ -126,6 +163,7 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
         logger.info('Estimate as %d' % estimated)
 
     def expand(self):
+        """expand dilation rate."""
         d = self.op_layer.dilation
         rates = expands_rate(d, self.global_config)
         self.rates = copy.deepcopy(rates)

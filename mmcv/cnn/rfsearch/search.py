@@ -1,8 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
 import os
+from typing import Dict
 
 import torch  # noqa
+import torch.nn as nn
 
 from mmcv.runner import HOOKS, Hook
 from .operator import BaseRFSearchOperator, Conv2dRFSearchOp  # noqa
@@ -20,20 +22,24 @@ logger.setLevel(logging.ERROR)
 @HOOKS.register_module()
 class RFSearch(Hook):
     """Rcecptive field search via dilation rates.
+        Paper: RF-Next: Efficient Receptive Field
+            Search for Convolutional Neural Networks
 
-    Paper: Efficient Receptive Field Search for Convolutional Neural Networks
     Args:
-        logdir : save path of searched structure.
-        mode : search/fixed_single_branch/fixed_multi_branch.
-        config : config file of search.
-        rfstructure_file : searched recptive fields of the model.
+        logdir (str, optional): save path of searched structure.
+                        Defaults to './log'.
+        mode (str, optional):
+                search/fixed_single_branch/fixed_multi_branch.
+        config (Dict, optional): config dict of search.
+        rfstructure_file (Optional[str], optional):
+                searched recptive fields of the model.
     """
 
     def __init__(self,
-                 logdir='./log',
-                 mode='search',
-                 config=None,
-                 rfstructure_file=None):
+                 logdir: str = './log',
+                 mode: str = 'search',
+                 config: Dict = {},
+                 rfstructure_file: str = None):
         assert logdir is not None
         assert mode in ['search', 'fixed_single_branch', 'fixed_multi_branch']
         assert config is not None
@@ -47,7 +53,17 @@ class RFSearch(Hook):
         self.S = self.config['search']['S']
         os.makedirs(self.logdir, exist_ok=True)
 
-    def model_init(self, model):
+    def model_init(self, model: nn.Module):
+        """init model with search ability.
+
+        Args:
+            model (nn.Module): pytorch model
+
+        Raises:
+            NotImplementedError:
+                only support three modes:
+                    search/fixed_single_branch/fixed_multi_branch
+        """
         print('RFSearch init begin.')
         # print(runner.model)
         if self.mode == 'search':
@@ -74,6 +90,11 @@ class RFSearch(Hook):
         pass
 
     def after_epoch(self, runner):
+        """Do search after one training epoch.
+
+        Args:
+            runner (_type_): MMCV runner
+        """
         if self.mode == 'search':
             print('Local-Search step begin.')
             self.step(runner.model)
@@ -86,7 +107,12 @@ class RFSearch(Hook):
     def after_iter(self, runner):
         pass
 
-    def step(self, model):
+    def step(self, model: nn.Module):
+        """do one step of dilation search.
+
+        Args:
+            model (nn.Module): pytorch model
+        """
         self.config['search']['step'] += 1
         if (self.config['search']['step']
             ) % self.config['search']['search_interval'] == 0 and (self.config[
@@ -107,18 +133,42 @@ class RFSearch(Hook):
               1) == self.config['search']['max_step']:
             self.search_estimate_only(model)
 
-    def search(self, model):
+    def search(self, model: nn.Module):
+        """estimate and search for RFConvOp.
+
+        Args:
+            model (nn.Module): pytorch model
+        """
         for _, module in model.named_modules():
             if isinstance(module, BaseRFSearchOperator):
                 module.estimate()
                 module.expand()
 
-    def search_estimate_only(self, model):
+    def search_estimate_only(self, model: nn.Module):
+        """do dilation estimate for RFConvOp.
+
+        Args:
+            model (nn.Module): pytorch model
+        """
         for _, module in model.named_modules():
             if isinstance(module, BaseRFSearchOperator):
                 module.estimate()
 
-    def wrap_model(self, model, config, search_op='Conv2d', init_rates=None):
+    def wrap_model(self,
+                   model: nn.Module,
+                   config: Dict,
+                   search_op: str = 'Conv2d',
+                   init_rates: int = None):
+        """wrap model to support searchable conv op.
+
+        Args:
+            model (nn.Module): pytorch model
+            config (Dict): search config file
+            search_op (str, optional):
+                the module that uses RF search. Defaults to 'Conv2d'.
+            init_rates (int, optional):
+                Set to other initial dilation rates. Defaults to None.
+        """
         op = 'torch.nn.' + search_op
         for name, module in model.named_children():
             if isinstance(module, eval(op)):
@@ -144,11 +194,23 @@ class RFSearch(Hook):
                 self.wrap_model(module, config, search_op, init_rates)
 
     def set_model(self,
-                  model,
-                  config,
-                  search_op='Conv2d',
-                  init_rates=None,
-                  prefix=''):
+                  model: nn.Module,
+                  config: Dict,
+                  search_op: str = 'Conv2d',
+                  init_rates: int = None,
+                  prefix: str = ''):
+        """set model based on config.
+
+        Args:
+            model (nn.Module): pytorch model
+            config (Dict): config file
+            search_op (str, optional):
+                the module that uses RF search. Defaults to 'Conv2d'.
+            init_rates (int, optional):
+                Set to other initial dilation rates. Defaults to None.
+            prefix (str, optional):
+                prefix for function recursion. Defaults to ''.
+        """
         op = 'torch.nn.' + search_op
         for name, module in model.named_children():
             if prefix == '':
