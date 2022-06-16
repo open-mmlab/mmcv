@@ -144,13 +144,8 @@ class RFSearch(Hook):
                 module.estimate()
                 module.expand()
 
-    def search_estimate_only(self, model: nn.Module):
-        """do dilation estimate for RFConvOp.
-
-        Args:
-            model (nn.Module): pytorch model
-        """
-        for _, module in model.named_modules():
+    def search_estimate_only(self, model):
+        for module in model.modules():
             if isinstance(module, BaseRFSearchOperator):
                 module.estimate()
 
