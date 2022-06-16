@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import abc
 import copy
 import logging
 from typing import Dict
@@ -14,21 +13,7 @@ logger = logging.getLogger('Operators')
 logger.setLevel(logging.INFO)
 
 
-class BaseRFSearchOperator(abc.ABC):
-
-    def __init__(self):
-        self.op_layer = None
-
-    @abc.abstractmethod
-    def estimate(self):
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def expand(self):
-        raise NotImplementedError
-
-
-class ConvRFSearchOp(BaseRFSearchOperator, nn.Module):
+class ConvRFSearchOp(nn.Module):
 
     def __init__(self, op_layer: nn.Module, global_config: Dict = {}):
         """Based class of ConvRFSearchOp.

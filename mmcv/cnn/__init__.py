@@ -14,8 +14,7 @@ from .bricks import (ACTIVATION_LAYERS, CONV_LAYERS, NORM_LAYERS,
 from .builder import MODELS, build_model_from_cfg
 # yapf: enable
 from .resnet import ResNet, make_res_layer
-from .rfsearch import (BaseRFSearchOperator, Conv2dRFSearchOp, ConvRFSearchOp,
-                       RFSearch)
+from .rfsearch import Conv2dRFSearchOp, ConvRFSearchOp, RFSearch
 from .utils import (INITIALIZERS, Caffe2XavierInit, ConstantInit, KaimingInit,
                     NormalInit, PretrainedInit, TruncNormalInit, UniformInit,
                     XavierInit, bias_init_with_prob, caffe2_xavier_init,
@@ -39,6 +38,6 @@ __all__ = [
     'ConvTranspose2d', 'MaxPool2d', 'ConvTranspose3d', 'MaxPool3d', 'Conv3d',
     'initialize', 'INITIALIZERS', 'ConstantInit', 'XavierInit', 'NormalInit',
     'TruncNormalInit', 'UniformInit', 'KaimingInit', 'PretrainedInit',
-    'Caffe2XavierInit', 'MODELS', 'build_model_from_cfg',
-    'BaseRFSearchOperator', 'ConvRFSearchOp', 'Conv2dRFSearchOp', 'RFSearch'
+    'Caffe2XavierInit', 'MODELS', 'build_model_from_cfg', 'ConvRFSearchOp',
+    'Conv2dRFSearchOp', 'RFSearch'
 ]

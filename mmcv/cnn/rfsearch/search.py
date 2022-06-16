@@ -7,7 +7,7 @@ import torch  # noqa
 import torch.nn as nn
 
 from mmcv.runner import HOOKS, Hook
-from .operator import BaseRFSearchOperator, Conv2dRFSearchOp  # noqa
+from .operator import Conv2dRFSearchOp, ConvRFSearchOp  # noqa
 from .utils import load_structure, write_to_json
 
 logging.basicConfig(
@@ -119,7 +119,7 @@ class RFSearch(Hook):
                 'search']['step']) < self.config['search']['max_step']:
             self.search(model)
             for name, module in model.named_modules():
-                if isinstance(module, BaseRFSearchOperator):
+                if isinstance(module, ConvRFSearchOp):
                     self.config['structure'][name] = module.op_layer.dilation
             write_to_json(
                 self.config,
@@ -140,13 +140,13 @@ class RFSearch(Hook):
             model (nn.Module): pytorch model
         """
         for _, module in model.named_modules():
-            if isinstance(module, BaseRFSearchOperator):
+            if isinstance(module, ConvRFSearchOp):
                 module.estimate()
                 module.expand()
 
     def search_estimate_only(self, model):
         for module in model.modules():
-            if isinstance(module, BaseRFSearchOperator):
+            if isinstance(module, ConvRFSearchOp):
                 module.estimate()
 
     def wrap_model(self,
@@ -177,7 +177,7 @@ class RFSearch(Hook):
                     print('Wrap model %s to %s.' %
                           (str(module), str(moduleWrap)))
                     setattr(model, name, moduleWrap)
-            elif isinstance(module, BaseRFSearchOperator):
+            elif isinstance(module, ConvRFSearchOp):
                 pass
             else:
                 if self.config['search']['skip_layer'] is not None:
@@ -232,7 +232,7 @@ class RFSearch(Hook):
                     setattr(model, name, module)
                     logger.info('Set module %s dilation as: [%d]' %
                                 (fullname, module.dilation[0]))
-            elif isinstance(module, BaseRFSearchOperator):
+            elif isinstance(module, ConvRFSearchOp):
                 pass
             else:
                 if self.config['search']['skip_layer'] is not None:
