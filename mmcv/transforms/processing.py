@@ -1086,12 +1086,12 @@ class RandomFlip(BaseTransform):
         else:
             raise ValueError(
                 f"Flipping direction must be 'horizontal', 'vertical', \
-                  or 'diagnal', but got '{direction}'")
+                  or 'diagonal', but got '{direction}'")
         return flipped
 
     def flip_keypoints(self, keypoints: np.ndarray, img_shape: Tuple[int, int],
                        direction: str) -> np.ndarray:
-        """Flip keypoints horizontally, vertically or diagnally.
+        """Flip keypoints horizontally, vertically or diagonally.
 
         Args:
             keypoints (numpy.ndarray): Keypoints, shape (..., 2)
@@ -1116,7 +1116,7 @@ class RandomFlip(BaseTransform):
         else:
             raise ValueError(
                 f"Flipping direction must be 'horizontal', 'vertical', \
-                  or 'diagnal', but got '{direction}'")
+                  or 'diagonal', but got '{direction}'")
         flipped = np.concatenate([keypoints, meta_info], axis=-1)
         return flipped
 
