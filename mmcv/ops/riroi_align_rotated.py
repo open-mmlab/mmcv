@@ -118,7 +118,7 @@ class RiRoIAlignRotated(nn.Module):
 
     def __init__(self,
                  out_size: tuple,
-                 spatial_scale: int,
+                 spatial_scale: float,
                  num_samples: int = 0,
                  num_orientations: int = 8,
                  clockwise: bool = False):
