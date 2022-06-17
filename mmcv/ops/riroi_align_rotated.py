@@ -18,7 +18,7 @@ class RiRoIAlignRotatedFunction(Function):
                 features: torch.Tensor,
                 rois: torch.Tensor,
                 out_size: Union[int, tuple],
-                spatial_scale: int,
+                spatial_scale: float,
                 num_samples: int = 0,
                 num_orientations: int = 8,
                 clockwise: bool = False) -> torch.Tensor:
