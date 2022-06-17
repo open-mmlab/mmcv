@@ -28,13 +28,15 @@ jobs:
   build_parrots:
     runs-on: ubuntu-18.04
     container:
-      image: ghcr.io/zhouzaida/parrots20220307:latest
+      image: ghcr.io/zhouzaida/parrots:latest
       credentials:
         username: zhouzaida
         password: ${{ secrets.PARROTS_TOKEN }}
 
     steps:
       - uses: actions/checkout@v2
+      - name: activate env
+        run: source pat_latest
       - name: Install unittest dependencies
         run: pip install -r requirements/test.txt
       - name: Build and install
