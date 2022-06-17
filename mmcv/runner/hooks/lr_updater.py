@@ -705,7 +705,7 @@ class LinearAnnealingLrUpdaterHook(LrUpdaterHook):
 def annealing_cos(start: float,
                   end: float,
                   factor: float,
-                  weight: float = 1) -> float:
+                  weight: float = 1.) -> float:
     """Calculate annealing cos learning rate.
 
     Cosine anneal from `weight * start + (1 - weight) * end` to `end` as

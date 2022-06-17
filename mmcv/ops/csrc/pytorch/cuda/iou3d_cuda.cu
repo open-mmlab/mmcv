@@ -12,11 +12,11 @@ All Rights Reserved 2019-2020.
 #include "iou3d_cuda_kernel.cuh"
 #include "pytorch_cuda_helper.hpp"
 
-void IoU3DBoxesIoU3DForwardCUDAKernelLauncher(const int num_a,
-                                              const Tensor boxes_a,
-                                              const int num_b,
-                                              const Tensor boxes_b,
-                                              Tensor ans_iou) {
+void IoU3DBoxesOverlapBevForwardCUDAKernelLauncher(const int num_a,
+                                                   const Tensor boxes_a,
+                                                   const int num_b,
+                                                   const Tensor boxes_b,
+                                                   Tensor ans_overlap) {
   at::cuda::CUDAGuard device_guard(boxes_a.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
@@ -25,9 +25,9 @@ void IoU3DBoxesIoU3DForwardCUDAKernelLauncher(const int num_a,
               GET_BLOCKS(num_a, THREADS_PER_BLOCK_IOU3D));
   dim3 threads(THREADS_PER_BLOCK_IOU3D, THREADS_PER_BLOCK_IOU3D);
 
-  iou3d_boxes_iou3d_forward_cuda_kernel<<<blocks, threads, 0, stream>>>(
+  iou3d_boxes_overlap_bev_forward_cuda_kernel<<<blocks, threads, 0, stream>>>(
       num_a, boxes_a.data_ptr<float>(), num_b, boxes_b.data_ptr<float>(),
-      ans_iou.data_ptr<float>());
+      ans_overlap.data_ptr<float>());
 
   AT_CUDA_CHECK(cudaGetLastError());
 }
