@@ -708,7 +708,8 @@ class TestRandomChoiceResize:
         transform = dict(
             type='RandomChoiceResize',
             scales=[(900, 600)],
-            resize_cfg=dict(type='Resize', keep_ratio=True))
+            resize_type='Resize',
+            keep_ratio=True)
         random_multiscale_resize = TRANSFORMS.build(transform)
         self.reset_results(results)
         _input_ratio = results['img'].shape[0] / results['img'].shape[1]
@@ -721,7 +722,8 @@ class TestRandomChoiceResize:
         transform = dict(
             type='RandomChoiceResize',
             scales=[(200, 150)],
-            resize_cfg=dict(type='Resize', clip_object_border=True))
+            resize_type='Resize',
+            clip_object_border=True)
         random_multiscale_resize = TRANSFORMS.build(transform)
         self.reset_results(results)
         results['gt_bboxes'] = np.array(gt_bboxes)
@@ -733,7 +735,8 @@ class TestRandomChoiceResize:
         transform = dict(
             type='RandomChoiceResize',
             scales=[(200, 150)],
-            resize_cfg=dict(type='Resize', clip_object_border=False))
+            resize_type='Resize',
+            clip_object_border=False)
         random_multiscale_resize = TRANSFORMS.build(transform)
         self.reset_results(results)
         results['gt_bboxes'] = np.array(gt_bboxes)
@@ -861,9 +864,9 @@ class TestRandomResize:
             'gt_keypoints': np.array([[[112, 112]]])
         }
 
-        TRANSFORMS = RandomResize(
-            (224, 224), (1.0, 2.0),
-            resize_cfg=dict(type='Resize', keep_ratio=True))
+        TRANSFORMS = RandomResize((224, 224), (1.0, 2.0),
+                                  resize_type='Resize',
+                                  keep_ratio=True)
         results_update = TRANSFORMS.transform(copy.deepcopy(results))
         assert 224 <= results_update['img_shape'][0]
         assert 448 >= results_update['img_shape'][0]
@@ -874,17 +877,17 @@ class TestRandomResize:
         assert results['gt_bboxes'][0][2] <= 112
 
         # keep ratio is False
-        TRANSFORMS = RandomResize(
-            (224, 224), (1.0, 2.0),
-            resize_cfg=dict(type='Resize', keep_ratio=False))
+        TRANSFORMS = RandomResize((224, 224), (1.0, 2.0),
+                                  resize_type='Resize',
+                                  keep_ratio=False)
         results_update = TRANSFORMS.transform(copy.deepcopy(results))
 
         # choose target scale from init when override is False and scale is a
         # list of tuples
         results = {}
         TRANSFORMS = RandomResize([(224, 448), (112, 224)],
-                                  resize_cfg=dict(
-                                      type='Resize', keep_ratio=True))
+                                  resize_type='Resize',
+                                  keep_ratio=True)
         results_update = TRANSFORMS.transform(copy.deepcopy(results))
         assert results_update['scale'][1] >= 224 and results_update['scale'][
             1] <= 448
@@ -895,6 +898,6 @@ class TestRandomResize:
         with pytest.raises(NotImplementedError):
             results = {}
             TRANSFORMS = RandomResize([(224, 448), [112, 224]],
-                                      resize_cfg=dict(
-                                          type='Resize', keep_ratio=True))
+                                      resize_type='Resize',
+                                      keep_ratio=True)
             results_update = TRANSFORMS.transform(copy.deepcopy(results))
