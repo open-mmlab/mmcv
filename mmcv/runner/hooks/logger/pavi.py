@@ -21,16 +21,16 @@ class PaviLoggerHook(LoggerHook):
     Args:
         init_kwargs (dict): A dict contains the initialization keys as below:
 
-            - name (str, optional): custom training name. Defaults to None,
-                which means Current work_dir.
-            - project (str, optional): project name. Defaults to "default".
-            - model (str, optional): training model name. Defaults to Current
+            - name (str, optional): Custom training name. Defaults to None,
+                which means current work_dir.
+            - project (str, optional): Project name. Defaults to "default".
+            - model (str, optional): Training model name. Defaults to current
                 model.
-            - session_text (str, optional): session string in YAML format.
-                Defaults to Current config.
-            - training_id (int, optional): training ID in PAVI, if you want to
+            - session_text (str, optional): Session string in YAML format.
+                Defaults to current config.
+            - training_id (int, optional): Training ID in PAVI, if you want to
                 use an existing training. Defaults to None.
-            - compare_id (int, optional): compare ID in PAVI, if you want to
+            - compare_id (int, optional): Compare ID in PAVI, if you want to
                 add the task to an existing compare. Defaults to None.
             - overwrite_last_training (bool, optional): Whether to upload data
                 to the training with the same name in the same project, rather
