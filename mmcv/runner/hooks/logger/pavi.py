@@ -19,7 +19,22 @@ class PaviLoggerHook(LoggerHook):
     """Class to visual model, log metrics (for internal use).
 
     Args:
-        init_kwargs (dict): A dict contains the initialization keys.
+        init_kwargs (dict): A dict contains the initialization keys as below:
+
+            - name (str, optional): custom training name. Defaults to None,
+                which means Current work_dir.
+            - project (str, optional): project name. Defaults to "default".
+            - model (str, optional): training model name. Defaults to Current
+                model.
+            - session_text (str, optional): session string in YAML format.
+                Defaults to Current config.
+            - training_id (int, optional): training ID in PAVI, if you want to
+                use an existing training. Defaults to None.
+            - compare_id (int, optional): compare ID in PAVI, if you want to
+                add the task to an existing compare. Defaults to None.
+            - overwrite_last_training (bool, optional): Whether to upload data
+                to the training with the same name in the same project, rather
+                than creating a new one. Defaults to False.
         add_graph (bool): Whether to visual model. Default: False.
         add_last_ckpt (bool): Whether to save checkpoint after run.
             Default: False.
