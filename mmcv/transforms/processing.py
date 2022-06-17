@@ -909,15 +909,26 @@ class RandomChoiceResize(BaseTransform):
 
     Args:
         scales (Union[list, Tuple]): Images scales for resizing.
-        resize_cfg (dict): Base config for resizing. Refer to
-            ``mmcv.Resize`` for detail. Defaults to
-            ``dict(type='Resize')``.
+        resize_type (str): The type of resize class to use. Defaults to
+            "Resize".
+        **resize_kwargs: Other keyword arguments for the ``resize_type``.
+
+    Note:
+        By defaults, the ``resize_type`` is "Resize", if it's not overwritten
+        by your registry, it indicates the :class:`mmcv.Resize`. And therefore,
+        ``resize_kwargs`` accepts any keyword arguments of it, like
+        ``keep_ratio``, ``interpolation`` and so on.
+
+        If you want to use your custom resize class, the class should accept
+        ``scale`` argument and have ``scale`` attribution which determines the
+        resize shape.
     """
 
     def __init__(
         self,
         scales: Sequence[Union[int, Tuple]],
-        resize_cfg: dict = dict(type='Resize')
+        resize_type: str = 'Resize',
+        **resize_kwargs,
     ) -> None:
         super().__init__()
         if isinstance(scales, list):
@@ -925,7 +936,10 @@ class RandomChoiceResize(BaseTransform):
         else:
             self.scales = [scales]
         assert mmcv.is_list_of(self.scales, tuple)
-        self.resize_cfg = resize_cfg
+
+        self.resize_cfg = dict(type=resize_type, **resize_kwargs)
+        # create a empty Reisize object
+        self.resize = TRANSFORMS.build({'scale': 0, **self.resize_cfg})
 
     @cache_randomness
     def _random_select(self) -> Tuple[int, int]:
@@ -955,10 +969,8 @@ class RandomChoiceResize(BaseTransform):
         """
 
         target_scale, scale_idx = self._random_select()
-        _resize_cfg = self.resize_cfg.copy()
-        _resize_cfg.update(dict(scale=target_scale))
-        resize_transform = TRANSFORMS.build(_resize_cfg)
-        results = resize_transform(results)
+        self.resize.scale = target_scale
+        results = self.resize(results)
         results['scale_idx'] = scale_idx
         return results
 
@@ -1254,30 +1266,35 @@ class RandomResize(BaseTransform):
             Defaults to None.
         ratio_range (tuple[float], optional): (min_ratio, max_ratio).
             Defaults to None.
-        resize_cfg (dict): Config to initialize a ``Resize`` transform.
-            Defaults to dict(type='Resize', keep_ratio=True,
-            clip_object_border=True, backend='cv2', interpolation='bilinear').
+        resize_type (str): The type of resize class to use. Defaults to
+            "Resize".
+        **resize_kwargs: Other keyword arguments for the ``resize_type``.
+
+    Note:
+        By defaults, the ``resize_type`` is "Resize", if it's not overwritten
+        by your registry, it indicates the :class:`mmcv.Resize`. And therefore,
+        ``resize_kwargs`` accepts any keyword arguments of it, like
+        ``keep_ratio``, ``interpolation`` and so on.
+
+        If you want to use your custom resize class, the class should accept
+        ``scale`` argument and have ``scale`` attribution which determines the
+        resize shape.
     """
 
     def __init__(
         self,
         scale: Union[Tuple[int, int], Sequence[Tuple[int, int]]],
         ratio_range: Tuple[float, float] = None,
-        resize_cfg: dict = dict(
-            type='Resize',
-            keep_ratio=True,
-            clip_object_border=True,
-            backend='cv2',
-            interpolation='bilinear')
+        resize_type: str = 'Resize',
+        **resize_kwargs,
     ) -> None:
 
         self.scale = scale
         self.ratio_range = ratio_range
-        self.resize_cfg = resize_cfg
 
+        self.resize_cfg = dict(type=resize_type, **resize_kwargs)
         # create a empty Reisize object
-        self.resize_cfg.update(dict(scale=0))
-        self.resize = TRANSFORMS.build(self.resize_cfg)
+        self.resize = TRANSFORMS.build({'scale': 0, **self.resize_cfg})
 
     @staticmethod
     def _random_sample(scales: Sequence[Tuple[int, int]]) -> tuple:
@@ -1361,7 +1378,7 @@ class RandomResize(BaseTransform):
         """
         results['scale'] = self._random_scale()
         self.resize.scale = results['scale']
-        results = self.resize.transform(results)
+        results = self.resize(results)
         return results
 
     def __repr__(self) -> str:
