@@ -137,7 +137,7 @@ def master_only(func: Callable) -> Callable:
     return wrapper
 
 
-def allreduce_params(params: List[torch.Parameters],
+def allreduce_params(params: List[torch.nnParameters],
                      coalesce: bool = True,
                      bucket_size_mb: int = -1) -> None:
     """Allreduce parameters.
@@ -161,7 +161,7 @@ def allreduce_params(params: List[torch.Parameters],
             dist.all_reduce(tensor.div_(world_size))
 
 
-def allreduce_grads(params: List[torch.Parameters],
+def allreduce_grads(params: List[torch.nn.Parameters],
                     coalesce: bool = True,
                     bucket_size_mb: int = -1) -> None:
     """Allreduce gradients.

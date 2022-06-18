@@ -23,10 +23,7 @@ except ImportError:
     pass
 
 
-def cast_tensor_type(
-    inputs: Union[torch.Tensor, nn.Module, str, np.ndarray, abc.Mapping,
-                  abc.Iterable], src_type: torch.dtype, dst_type: torch.dtype
-) -> Union[torch.Tensor, nn.Module, str, abc.Mapping, abc.Iterable]:
+def cast_tensor_type(inputs, src_type: torch.dtype, dst_type: torch.dtype):
     """Recursively convert Tensor in inputs from src_type to dst_type.
 
     Note:
@@ -361,7 +358,7 @@ class LossScaler:
     """
 
     def __init__(self,
-                 init_scale: float = 2.**32,
+                 init_scale: float = 2**32,
                  mode: str = 'dynamic',
                  scale_factor: float = 2.,
                  scale_window: int = 1000):

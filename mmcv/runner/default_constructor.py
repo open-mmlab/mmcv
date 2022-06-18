@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, Optional
+from typing import Optional
 
 from .builder import RUNNER_BUILDERS, RUNNERS
 
@@ -43,5 +43,5 @@ class DefaultRunnerConstructor:
         self.runner_cfg = runner_cfg
         self.default_args = default_args
 
-    def __call__(self) -> Any:
+    def __call__(self):
         return RUNNERS.build(self.runner_cfg, default_args=self.default_args)
