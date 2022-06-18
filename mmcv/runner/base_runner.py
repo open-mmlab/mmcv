@@ -5,7 +5,8 @@ import os.path as osp
 import warnings
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import (Any, Callable, Dict, List, Optional, Tuple, Union,
+                    no_type_check)
 
 import torch
 from torch.optim import Optimizer
@@ -216,10 +217,9 @@ class BaseRunner(metaclass=ABCMeta):
             param groups. If the runner has a dict of optimizers, this method
             will return a dict.
         """
+        lr: Union[List[float], Dict[str, List[float]]]
         if isinstance(self.optimizer, torch.optim.Optimizer):
-            lr: Union[List[float], Dict[str, List[float]]] = [
-                group['lr'] for group in self.optimizer.param_groups
-            ]
+            lr = [group['lr'] for group in self.optimizer.param_groups]
         elif isinstance(self.optimizer, dict):
             lr = dict()
             for name, optim in self.optimizer.items():
@@ -354,6 +354,7 @@ class BaseRunner(metaclass=ABCMeta):
             self.logger,
             revise_keys=revise_keys)
 
+    @no_type_check
     def resume(self,
                checkpoint: str,
                resume_optimizer: bool = True,
@@ -361,29 +362,28 @@ class BaseRunner(metaclass=ABCMeta):
         if map_location == 'default':
             if torch.cuda.is_available():
                 device_id = torch.cuda.current_device()
-                loaded_checkpoint = self.load_checkpoint(
+                checkpoint = self.load_checkpoint(
                     checkpoint,
                     map_location=lambda storage, loc: storage.cuda(device_id))
             else:
-                loaded_checkpoint = self.load_checkpoint(checkpoint)
+                checkpoint = self.load_checkpoint(checkpoint)
         else:
-            loaded_checkpoint = self.load_checkpoint(
+            checkpoint = self.load_checkpoint(
                 checkpoint, map_location=map_location)
 
-        self._epoch = loaded_checkpoint['meta']['epoch']
-        self._iter = loaded_checkpoint['meta']['iter']
+        self._epoch = checkpoint['meta']['epoch']
+        self._iter = checkpoint['meta']['iter']
         if self.meta is None:
             self.meta = {}
         self.meta.setdefault('hook_msgs', {})
         # load `last_ckpt`, `best_score`, `best_ckpt`, etc. for hook messages
-        self.meta['hook_msgs'].update(loaded_checkpoint['meta'].get(
-            'hook_msgs', {}))
+        self.meta['hook_msgs'].update(checkpoint['meta'].get('hook_msgs', {}))
 
         # Re-calculate the number of iterations when resuming
         # models with different number of GPUs
-        if 'config' in loaded_checkpoint['meta']:
+        if 'config' in checkpoint['meta']:
             config = mmcv.Config.fromstring(
-                loaded_checkpoint['meta']['config'], file_format='.py')
+                checkpoint['meta']['config'], file_format='.py')
             previous_gpu_ids = config.get('gpu_ids', None)
             if previous_gpu_ids and len(previous_gpu_ids) > 0 and len(
                     previous_gpu_ids) != self.world_size:
@@ -393,15 +393,15 @@ class BaseRunner(metaclass=ABCMeta):
                                  'change of GPU number')
 
         # resume meta information meta
-        self.meta = loaded_checkpoint['meta']
+        self.meta = checkpoint['meta']
 
-        if 'optimizer' in loaded_checkpoint and resume_optimizer:
+        if 'optimizer' in checkpoint and resume_optimizer:
             if isinstance(self.optimizer, Optimizer):
-                self.optimizer.load_state_dict(loaded_checkpoint['optimizer'])
+                self.optimizer.load_state_dict(checkpoint['optimizer'])
             elif isinstance(self.optimizer, dict):
                 for k in self.optimizer.keys():
                     self.optimizer[k].load_state_dict(
-                        loaded_checkpoint['optimizer'][k])
+                        checkpoint['optimizer'][k])
             else:
                 raise TypeError(
                     'Optimizer should be dict or torch.optim.Optimizer '
@@ -409,7 +409,7 @@ class BaseRunner(metaclass=ABCMeta):
 
         self.logger.info('resumed epoch %d, iter %d', self.epoch, self.iter)
 
-    def register_lr_hook(self, lr_config: Union[Dict, Hook]) -> None:
+    def register_lr_hook(self, lr_config: Union[Dict, Hook, None]) -> None:
         if lr_config is None:
             return
         elif isinstance(lr_config, dict):
@@ -431,7 +431,7 @@ class BaseRunner(metaclass=ABCMeta):
         self.register_hook(hook, priority='VERY_HIGH')
 
     def register_momentum_hook(
-            self, momentum_config: Optional[Union[Dict, Hook]]) -> None:
+            self, momentum_config: Union[Dict, Hook, None]) -> None:
         if momentum_config is None:
             return
         if isinstance(momentum_config, dict):
@@ -453,7 +453,7 @@ class BaseRunner(metaclass=ABCMeta):
         self.register_hook(hook, priority='HIGH')
 
     def register_optimizer_hook(
-            self, optimizer_config: Optional[Union[Dict, Hook]]) -> None:
+            self, optimizer_config: Union[Dict, Hook, None]) -> None:
         if optimizer_config is None:
             return
         if isinstance(optimizer_config, dict):
@@ -464,7 +464,7 @@ class BaseRunner(metaclass=ABCMeta):
         self.register_hook(hook, priority='ABOVE_NORMAL')
 
     def register_checkpoint_hook(
-            self, checkpoint_config: Optional[Union[Dict, Hook]]) -> None:
+            self, checkpoint_config: Union[Dict, Hook, None]) -> None:
         if checkpoint_config is None:
             return
         if isinstance(checkpoint_config, dict):
@@ -483,7 +483,8 @@ class BaseRunner(metaclass=ABCMeta):
                 info, HOOKS, default_args=dict(interval=log_interval))
             self.register_hook(logger_hook, priority='VERY_LOW')
 
-    def register_timer_hook(self, timer_config: Union[Dict, Hook]) -> None:
+    def register_timer_hook(self, timer_config: Union[Dict, Hook,
+                                                      None]) -> None:
         if timer_config is None:
             return
         if isinstance(timer_config, dict):
@@ -493,7 +494,8 @@ class BaseRunner(metaclass=ABCMeta):
             hook = timer_config
         self.register_hook(hook, priority='LOW')
 
-    def register_custom_hooks(self, custom_config: Optional[Any]) -> None:
+    def register_custom_hooks(
+            self, custom_config: Union[List, Dict, Hook, None]) -> None:
         if custom_config is None:
             return
 
@@ -508,7 +510,7 @@ class BaseRunner(metaclass=ABCMeta):
 
     def register_profiler_hook(
         self,
-        profiler_config: Union[Dict, Hook],
+        profiler_config: Union[Dict, Hook, None],
     ) -> None:
         if profiler_config is None:
             return
@@ -521,7 +523,7 @@ class BaseRunner(metaclass=ABCMeta):
 
     def register_training_hooks(
             self,
-            lr_config: Union[Dict, Hook],
+            lr_config: Union[Dict, Hook, None],
             optimizer_config: Union[Dict, Hook, None] = None,
             checkpoint_config: Union[Dict, Hook, None] = None,
             log_config: Optional[Dict] = None,

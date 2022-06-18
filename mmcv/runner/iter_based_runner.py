@@ -4,7 +4,7 @@ import platform
 import shutil
 import time
 import warnings
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Optional, Tuple, Union, no_type_check
 
 import torch
 from torch.optim import Optimizer
@@ -147,6 +147,7 @@ class IterBasedRunner(BaseRunner):
         self.call_hook('after_epoch')
         self.call_hook('after_run')
 
+    @no_type_check
     def resume(self,
                checkpoint: str,
                resume_optimizer: bool = True,
@@ -162,23 +163,23 @@ class IterBasedRunner(BaseRunner):
         """
         if map_location == 'default':
             device_id = torch.cuda.current_device()
-            loaded_checkpoint = self.load_checkpoint(
+            checkpoint = self.load_checkpoint(
                 checkpoint,
                 map_location=lambda storage, loc: storage.cuda(device_id))
         else:
-            loaded_checkpoint = self.load_checkpoint(
+            checkpoint = self.load_checkpoint(
                 checkpoint, map_location=map_location)
 
-        self._epoch = loaded_checkpoint['meta']['epoch']
-        self._iter = loaded_checkpoint['meta']['iter']
-        self._inner_iter = loaded_checkpoint['meta']['iter']
-        if 'optimizer' in loaded_checkpoint and resume_optimizer:
+        self._epoch = checkpoint['meta']['epoch']
+        self._iter = checkpoint['meta']['iter']
+        self._inner_iter = checkpoint['meta']['iter']
+        if 'optimizer' in checkpoint and resume_optimizer:
             if isinstance(self.optimizer, Optimizer):
-                self.optimizer.load_state_dict(loaded_checkpoint['optimizer'])
+                self.optimizer.load_state_dict(checkpoint['optimizer'])
             elif isinstance(self.optimizer, dict):
                 for k in self.optimizer.keys():
                     self.optimizer[k].load_state_dict(
-                        loaded_checkpoint['optimizer'][k])
+                        checkpoint['optimizer'][k])
             else:
                 raise TypeError(
                     'Optimizer should be dict or torch.optim.Optimizer '
@@ -186,22 +187,23 @@ class IterBasedRunner(BaseRunner):
 
         self.logger.info(f'resumed from epoch: {self.epoch}, iter {self.iter}')
 
-    def save_checkpoint(self,
-                        out_dir: str,
-                        filename_tmpl: str = 'iter_{}.pth',
-                        save_optimizer: bool = True,
-                        meta: Optional[Dict] = None,
-                        create_symlink: bool = True) -> None:
+    def save_checkpoint(  # type: ignore
+            self,
+            out_dir: str,
+            filename_tmpl: str = 'iter_{}.pth',
+            meta: Optional[Dict] = None,
+            save_optimizer: bool = True,
+            create_symlink: bool = True) -> None:
         """Save checkpoint to file.
 
         Args:
             out_dir (str): Directory to save checkpoint files.
             filename_tmpl (str, optional): Checkpoint file template.
                 Defaults to 'iter_{}.pth'.
-            save_optimizer (bool, optional): Whether save optimizer.
-                Defaults to True.
             meta (dict, optional): Metadata to be saved in checkpoint.
                 Defaults to None.
+            save_optimizer (bool, optional): Whether save optimizer.
+                Defaults to True.
             create_symlink (bool, optional): Whether create symlink to the
                 latest checkpoint file. Defaults to True.
         """
