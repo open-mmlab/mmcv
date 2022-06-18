@@ -3,7 +3,7 @@ import functools
 import warnings
 from collections import abc
 from inspect import getfullargspec
-from typing import Callable, Iterable, List, Optional, Union
+from typing import Callable, Iterable, List, Optional
 
 import numpy as np
 import torch

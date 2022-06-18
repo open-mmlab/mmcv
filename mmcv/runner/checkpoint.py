@@ -112,7 +112,7 @@ def load_state_dict(module: nn.Module,
             print(err_msg)
 
 
-def get_torchvision_models() -> Dict:
+def get_torchvision_models():
     if digit_version(torchvision.__version__) < digit_version('0.13.0a0'):
         model_urls = dict()
         # When the version of torchvision is lower than 0.13, the model url is
@@ -134,9 +134,8 @@ def get_torchvision_models() -> Dict:
         # torchvision version>=0.13.0, new URLs will be added. Users can get
         # the resnet50 checkpoint by setting 'resnet50.imagent1k_v1',
         # 'resnet50' or 'ResNet50_Weights.IMAGENET1K_V1' in the config.
-        json_path = osp.join(
-            mmcv.__path__[0],  # type: ignore
-            'model_zoo/torchvision_0.12.json')
+        json_path = osp.join(mmcv.__path__[0],
+                             'model_zoo/torchvision_0.12.json')
         model_urls = mmcv.load(json_path)
         for cls_name, cls in torchvision.models.__dict__.items():
             # The name of torchvision model weights classes ends with
@@ -159,11 +158,9 @@ def get_torchvision_models() -> Dict:
     return model_urls
 
 
-def get_external_models() -> Dict:
+def get_external_models():
     mmcv_home = _get_mmcv_home()
-    default_json_path = osp.join(
-        mmcv.__path__[0],  # type: ignore
-        'model_zoo/open_mmlab.json')
+    default_json_path = osp.join(mmcv.__path__[0], 'model_zoo/open_mmlab.json')
     default_urls = load_file(default_json_path)
     assert isinstance(default_urls, dict)
     external_json_path = osp.join(mmcv_home, 'open_mmlab.json')
@@ -175,19 +172,16 @@ def get_external_models() -> Dict:
     return default_urls
 
 
-def get_mmcls_models() -> Dict:
-    mmcls_json_path = osp.join(
-        mmcv.__path__[0],  # type: ignore
-        'model_zoo/mmcls.json')
+def get_mmcls_models():
+    mmcls_json_path = osp.join(mmcv.__path__[0], 'model_zoo/mmcls.json')
     mmcls_urls = load_file(mmcls_json_path)
 
     return mmcls_urls
 
 
-def get_deprecated_model_names() -> Dict:
-    deprecate_json_path = osp.join(
-        mmcv.__path__[0],  # type: ignore
-        'model_zoo/deprecated.json')
+def get_deprecated_model_names():
+    deprecate_json_path = osp.join(mmcv.__path__[0],
+                                   'model_zoo/deprecated.json')
     deprecate_urls = load_file(deprecate_json_path)
     assert isinstance(deprecate_urls, dict)
 
@@ -239,7 +233,7 @@ class CheckpointLoader:
     def register_scheme(cls,
                         prefixes: Union[str, List[str], Tuple[str, ...]],
                         loader: Optional[Callable] = None,
-                        force: bool = False) -> Callable:
+                        force: bool = False) -> Optional[Callable]:
         """Register a loader to CheckpointLoader.
 
         This method can be used as a normal class method or a decorator.
@@ -256,7 +250,7 @@ class CheckpointLoader:
 
         if loader is not None:
             cls._register_scheme(prefixes, loader, force=force)
-            return  # type: ignore
+            return
 
         def _register(loader_cls):
             cls._register_scheme(prefixes, loader_cls, force=force)
