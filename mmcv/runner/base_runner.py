@@ -483,8 +483,10 @@ class BaseRunner(metaclass=ABCMeta):
                 info, HOOKS, default_args=dict(interval=log_interval))
             self.register_hook(logger_hook, priority='VERY_LOW')
 
-    def register_timer_hook(self, timer_config: Union[Dict, Hook,
-                                                      None]) -> None:
+    def register_timer_hook(
+        self,
+        timer_config: Union[Dict, Hook, None],
+    ) -> None:
         if timer_config is None:
             return
         if isinstance(timer_config, dict):
