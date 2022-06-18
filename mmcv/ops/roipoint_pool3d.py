@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Tuple
 
 import torch
 from torch import nn as nn
@@ -25,7 +25,7 @@ class RoIPointPool3d(nn.Module):
         self.num_sampled_points = num_sampled_points
 
     def forward(self, points: torch.Tensor, point_features: torch.Tensor,
-                boxes3d: torch.Tensor) -> tuple:
+                boxes3d: torch.Tensor) -> Tuple[torch.Tensor]:
         """
         Args:
             points (torch.Tensor): Input points whose shape is (B, N, C).
@@ -49,7 +49,7 @@ class RoIPointPool3dFunction(Function):
                 points: torch.Tensor,
                 point_features: torch.Tensor,
                 boxes3d: torch.Tensor,
-                num_sampled_points: int = 512) -> tuple:
+                num_sampled_points: int = 512) -> Tuple[torch.Tensor]:
         """
         Args:
             points (torch.Tensor): Input points whose shape is (B, N, C).

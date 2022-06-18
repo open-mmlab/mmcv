@@ -120,7 +120,7 @@ class SparseSequential(SparseModule):
     def sparity_dict(self):
         return self._sparity_dict
 
-    def add(self, module: Any, name: Optional[str] = None):
+    def add(self, module: Any, name: Optional[str] = None) -> None:
         if name is None:
             name = str(len(self._modules))
             if name in self._modules:

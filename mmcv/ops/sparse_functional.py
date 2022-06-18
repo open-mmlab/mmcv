@@ -28,7 +28,7 @@ class SparseConvFunction(Function):
 
     @staticmethod
     def forward(ctx: Any, features: torch.Tensor,
-                filters: torch.nn.parameter.Parameter,
+                filters: torch.nn.Parameter,
                 indice_pairs: torch.Tensor, indice_pair_num: torch.Tensor,
                 num_activate_out: torch.Tensor) -> torch.Tensor:
         """
@@ -61,7 +61,7 @@ class SparseInverseConvFunction(Function):
 
     @staticmethod
     def forward(ctx: Any, features: torch.Tensor,
-                filters: torch.nn.parameter.Parameter,
+                filters: torch.nn.Parameter,
                 indice_pairs: torch.Tensor, indice_pair_num: torch.Tensor,
                 num_activate_out: torch.Tensor) -> torch.Tensor:
         """
@@ -94,7 +94,7 @@ class SubMConvFunction(Function):
 
     @staticmethod
     def forward(ctx: Any, features: torch.Tensor,
-                filters: torch.nn.parameter.Parameter,
+                filters: torch.nn.Parameter,
                 indice_pairs: torch.Tensor, indice_pair_num: torch.Tensor,
                 num_activate_out: torch.Tensor) -> torch.Tensor:
         """

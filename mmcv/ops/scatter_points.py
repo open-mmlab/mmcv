@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple
 
 import torch
 import torch.nn.functional as F
@@ -19,7 +19,7 @@ class _DynamicScatter(Function):
     def forward(ctx: Any,
                 feats: torch.Tensor,
                 coors: torch.Tensor,
-                reduce_type: str = 'max') -> tuple:
+                reduce_type: str = 'max') -> Tuple[torch.Tensor]:
         """convert kitti points(N, >=3) to voxels.
 
         Args:
@@ -89,7 +89,7 @@ class DynamicScatter(nn.Module):
         self.average_points = average_points
 
     def forward_single(self, points: torch.Tensor,
-                       coors: torch.Tensor) -> tuple:
+                       coors: torch.Tensor) -> Tuple[torch.Tensor]:
         """Scatters points into voxels.
 
         Args:

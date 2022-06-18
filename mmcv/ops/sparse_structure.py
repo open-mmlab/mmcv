@@ -35,7 +35,7 @@ class SparseConvTensor:
             self.indices.int()
         self.spatial_shape = spatial_shape
         self.batch_size = batch_size
-        self.indice_dict: Dict = {}
+        self.indice_dict: dict = {}
         self.grid = grid
 
     @property

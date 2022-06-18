@@ -15,7 +15,7 @@ ext_module = ext_loader.load_ext('_ext',
 class PSAMaskFunction(Function):
 
     @staticmethod
-    def symbolic(g, input: torch.Tensor, psa_type: str, mask_size: int):
+    def symbolic(g, input, psa_type, mask_size):
         return g.op(
             'mmcv::MMCVPSAMask',
             input,
