@@ -45,11 +45,13 @@ class RoIPointPool3d(nn.Module):
 class RoIPointPool3dFunction(Function):
 
     @staticmethod
-    def forward(ctx: Any,
-                points: torch.Tensor,
-                point_features: torch.Tensor,
-                boxes3d: torch.Tensor,
-                num_sampled_points: int = 512) -> Tuple[torch.Tensor]:
+    def forward(
+            ctx: Any,
+            points: torch.Tensor,
+            point_features: torch.Tensor,
+            boxes3d: torch.Tensor,
+            num_sampled_points: int = 512
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Args:
             points (torch.Tensor): Input points whose shape is (B, N, C).

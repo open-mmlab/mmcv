@@ -19,7 +19,7 @@ class _DynamicScatter(Function):
     def forward(ctx: Any,
                 feats: torch.Tensor,
                 coors: torch.Tensor,
-                reduce_type: str = 'max') -> Tuple[torch.Tensor]:
+                reduce_type: str = 'max') -> Tuple[torch.Tensor, torch.Tensor]:
         """convert kitti points(N, >=3) to voxels.
 
         Args:
@@ -88,8 +88,9 @@ class DynamicScatter(nn.Module):
         self.point_cloud_range = point_cloud_range
         self.average_points = average_points
 
-    def forward_single(self, points: torch.Tensor,
-                       coors: torch.Tensor) -> Tuple[torch.Tensor]:
+    def forward_single(
+            self, points: torch.Tensor,
+            coors: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """Scatters points into voxels.
 
         Args:
@@ -106,7 +107,8 @@ class DynamicScatter(nn.Module):
         reduce = 'mean' if self.average_points else 'max'
         return dynamic_scatter(points.contiguous(), coors.contiguous(), reduce)
 
-    def forward(self, points: torch.Tensor, coors: torch.Tensor) -> tuple:
+    def forward(self, points: torch.Tensor,
+                coors: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """Scatters points/features into voxels.
 
         Args:
