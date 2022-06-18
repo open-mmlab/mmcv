@@ -233,7 +233,7 @@ class CheckpointLoader:
     def register_scheme(cls,
                         prefixes: Union[str, List[str], Tuple[str, ...]],
                         loader: Optional[Callable] = None,
-                        force: bool = False) -> Optional[Callable]:
+                        force: bool = False) -> Callable:
         """Register a loader to CheckpointLoader.
 
         This method can be used as a normal class method or a decorator.
@@ -250,7 +250,7 @@ class CheckpointLoader:
 
         if loader is not None:
             cls._register_scheme(prefixes, loader, force=force)
-            return
+            return  # type: ignore
 
         def _register(loader_cls):
             cls._register_scheme(prefixes, loader_cls, force=force)
