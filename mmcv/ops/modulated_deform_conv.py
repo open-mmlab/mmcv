@@ -20,10 +20,8 @@ ext_module = ext_loader.load_ext(
 class ModulatedDeformConv2dFunction(Function):
 
     @staticmethod
-    def symbolic(g, input: torch.Tensor, offset: torch.Tensor,
-                 mask: torch.Tensor, weight: nn.Parameter, bias: nn.Parameter,
-                 stride: int, padding: int, dilation: int, groups: int,
-                 deform_groups: int):
+    def symbolic(g, input, offset, mask, weight, bias, stride, padding,
+                 dilation, groups, deform_groups):
         input_tensors = [input, offset, mask, weight]
         if bias is not None:
             input_tensors.append(bias)
