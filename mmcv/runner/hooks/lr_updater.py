@@ -505,9 +505,9 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
         super().before_run(runner)
         # initiate lr_phases
         # total lr_phases are separated as up and down
-        assert isinstance(self.max_iter_per_phase, int)
         self.max_iter_per_phase = runner.max_iters // self.cyclic_times
-        iter_up_phase = int(self.step_ratio_up * self.max_iter_per_phase)
+        iter_up_phase = int(self.step_ratio_up *
+                            self.max_iter_per_phase)  # type: ignore
         self.lr_phases.append([0, iter_up_phase, 1, self.target_ratio[0]])
         self.lr_phases.append([
             iter_up_phase, self.max_iter_per_phase, self.target_ratio[0],
