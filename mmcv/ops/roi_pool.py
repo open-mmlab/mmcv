@@ -16,8 +16,7 @@ ext_module = ext_loader.load_ext('_ext',
 class RoIPoolFunction(Function):
 
     @staticmethod
-    def symbolic(g: torch._C.Graph, input: torch.Tensor, rois: torch.Tensor,
-                 output_size: Union[int, tuple], spatial_scale: float):
+    def symbolic(g, input, rois, output_size, spatial_scale):
         return g.op(
             'MaxRoiPool',
             input,

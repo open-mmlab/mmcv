@@ -15,9 +15,8 @@ ext_module = ext_loader.load_ext(
 class RoIAlignRotatedFunction(Function):
 
     @staticmethod
-    def symbolic(g: torch._C.Graph, input: torch.Tensor, rois: torch.Tensor,
-                 output_size: Union[int, tuple], spatial_scale: float,
-                 sampling_ratio: int, aligned: bool, clockwise: bool):
+    def symbolic(g, input, rois, output_size, spatial_scale, sampling_ratio,
+                 aligned, clockwise):
         if isinstance(output_size, int):
             out_h = output_size
             out_w = output_size

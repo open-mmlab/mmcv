@@ -16,9 +16,8 @@ ext_module = ext_loader.load_ext('_ext',
 class RoIAlignFunction(Function):
 
     @staticmethod
-    def symbolic(g: torch._C.Graph, input: torch.Tensor, rois: torch.Tensor,
-                 output_size: tuple, spatial_scale: float, sampling_ratio: int,
-                 pool_mode: str, aligned: bool):
+    def symbolic(g, input, rois, output_size, spatial_scale, sampling_ratio,
+                 pool_mode, aligned):
         from ..onnx import is_custom_op_loaded
         has_custom_op = is_custom_op_loaded()
         if has_custom_op:
