@@ -276,12 +276,12 @@ def upfirdn2d(
         if len(pad) == 2:
             pad = (pad[0], pad[1], pad[0], pad[1])  # type: ignore
 
-        out = upfirdn2d_native(input, kernel,
-                               to_2tuple(up)[0],
-                               to_2tuple(up)[1],
-                               to_2tuple(down)[0],
-                               to_2tuple(down)[1], pad[0], pad[1], pad[2],
-                               pad[3])
+        _up = to_2tuple(up)
+
+        _down = to_2tuple(down)
+
+        out = upfirdn2d_native(input, kernel, _up[0], _up[1], _down[0],
+                               _down[1], pad[0], pad[1], pad[2], pad[3])
     else:
         _up = to_2tuple(up)
 
