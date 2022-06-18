@@ -137,7 +137,7 @@ def master_only(func: Callable) -> Callable:
     return wrapper
 
 
-def allreduce_params(params: List[torch.nnParameters],
+def allreduce_params(params: List[torch.nn.Parameters],
                      coalesce: bool = True,
                      bucket_size_mb: int = -1) -> None:
     """Allreduce parameters.
