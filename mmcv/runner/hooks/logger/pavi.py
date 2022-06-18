@@ -53,7 +53,10 @@ class PaviLoggerHook(LoggerHook):
         try:
             from pavi import SummaryWriter
         except ImportError:
-            raise ImportError('Please run "pip install pavi" to install pavi.')
+            raise ImportError(
+                'No module named pavi, please go to '
+                '"http://sdkdoc.parrots.sensetime.com/en/install.html" '
+                'get pavi install command.')
 
         self.run_name = runner.work_dir.split('/')[-1]
 
