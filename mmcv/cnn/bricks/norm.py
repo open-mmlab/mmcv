@@ -123,7 +123,7 @@ def build_norm_layer(cfg: Dict,
 
 
 def is_norm(layer: nn.Module,
-            exclude: Optional[Union[type, tuple]] = None) -> bool:
+            exclude: Union[type, tuple, None] = None) -> bool:
     """Check if a layer is a normalization layer.
 
     Args:

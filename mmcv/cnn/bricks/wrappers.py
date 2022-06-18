@@ -28,13 +28,12 @@ def obsolete_torch_version(torch_version, version_threshold) -> bool:
 class NewEmptyTensorOp(torch.autograd.Function):
 
     @staticmethod
-    def forward(ctx: torch.Tensor, x: torch.Tensor,
-                new_shape: tuple) -> torch.Tensor:
+    def forward(ctx, x: torch.Tensor, new_shape: tuple) -> torch.Tensor:
         ctx.shape = x.shape
         return x.new_empty(new_shape)
 
     @staticmethod
-    def backward(ctx: torch.Tensor, grad: torch.Tensor) -> tuple:
+    def backward(ctx, grad: torch.Tensor) -> tuple:
         shape = ctx.shape
         return NewEmptyTensorOp.apply(grad, shape), None
 
