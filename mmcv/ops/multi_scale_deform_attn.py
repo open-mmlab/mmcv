@@ -1,8 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-# mypy: ignore-errors
 import math
 import warnings
-from typing import Optional
+from typing import Optional, no_type_check
 
 import torch
 import torch.nn as nn
@@ -253,6 +252,7 @@ class MultiScaleDeformableAttention(BaseModule):
         xavier_init(self.output_proj, distribution='uniform', bias=0.)
         self._is_init = True
 
+    @no_type_check
     @deprecated_api_warning({'residual': 'identity'},
                             cls_name='MultiScaleDeformableAttention')
     def forward(self,
@@ -320,7 +320,7 @@ class MultiScaleDeformableAttention(BaseModule):
         value = self.value_proj(value)
         if key_padding_mask is not None:
             value = value.masked_fill(key_padding_mask[..., None], 0.0)
-        value = value.view(bs, num_value, self.num_heads, -1)  # type: ignore
+        value = value.view(bs, num_value, self.num_heads, -1)
         sampling_offsets = self.sampling_offsets(query).view(
             bs, num_query, self.num_heads, self.num_levels, self.num_points, 2)
         attention_weights = self.attention_weights(query).view(
@@ -331,13 +331,13 @@ class MultiScaleDeformableAttention(BaseModule):
                                                    self.num_heads,
                                                    self.num_levels,
                                                    self.num_points)
-        if reference_points.shape[-1] == 2:  # type: ignore
+        if reference_points.shape[-1] == 2:
             offset_normalizer = torch.stack(
                 [spatial_shapes[..., 1], spatial_shapes[..., 0]], -1)
             sampling_locations = reference_points[:, :, None, :, None, :] \
                 + sampling_offsets \
                 / offset_normalizer[None, None, None, :, None, :]
-        elif reference_points.shape[-1] == 4:  # type: ignore
+        elif reference_points.shape[-1] == 4:
             sampling_locations = reference_points[:, :, None, :, None, :2] \
                 + sampling_offsets / self.num_points \
                 * reference_points[:, :, None, :, None, 2:] \
@@ -352,10 +352,7 @@ class MultiScaleDeformableAttention(BaseModule):
                 attention_weights, self.im2col_step)
         else:
             output = multi_scale_deformable_attn_pytorch(
-                value,
-                spatial_shapes,  # type: ignore
-                sampling_locations,
-                attention_weights)
+                value, spatial_shapes, sampling_locations, attention_weights)
 
         output = self.output_proj(output)
 
