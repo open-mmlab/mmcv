@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Tuple, Union
 
 import torch.nn as nn
 
