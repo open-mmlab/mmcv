@@ -158,10 +158,8 @@ def imresize_to_multiple(
     elif size is not None:
         size = to_2tuple(size)  # type: ignore
         if keep_ratio:
-            size = rescale_size(
-                (w, h),
-                size,  # type: ignore
-                return_scale=False)
+            size = rescale_size(  # type: ignore
+                (w, h), size, return_scale=False)  # type: ignore
     else:
         size = _scale_size((w, h), scale_factor)  # type: ignore
 
