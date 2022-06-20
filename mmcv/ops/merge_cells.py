@@ -64,8 +64,8 @@ class BaseMergeCell(nn.Module):
 
         if self.with_out_conv:
             self.out_conv = ConvModule(
-                fused_channels,
-                out_channels,
+                fused_channels,  # type: ignore
+                out_channels,  # type: ignore
                 **out_conv_cfg,
                 norm_cfg=out_norm_cfg,
                 order=out_conv_order)
