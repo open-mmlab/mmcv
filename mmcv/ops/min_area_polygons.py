@@ -1,10 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import torch
+
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', ['min_area_polygons'])
 
 
-def min_area_polygons(pointsets):
+def min_area_polygons(pointsets: torch.Tensor) -> torch.Tensor:
     """Find the smallest polygons that surrounds all points in the point sets.
 
     Args:

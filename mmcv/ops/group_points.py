@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Tuple
+from typing import Optional, Tuple, Union
 
 import torch
 from torch import nn as nn
@@ -37,15 +37,15 @@ class QueryAndGroup(nn.Module):
     """
 
     def __init__(self,
-                 max_radius,
-                 sample_num,
-                 min_radius=0,
-                 use_xyz=True,
-                 return_grouped_xyz=False,
-                 normalize_xyz=False,
-                 uniform_sample=False,
-                 return_unique_cnt=False,
-                 return_grouped_idx=False):
+                 max_radius: float,
+                 sample_num: int,
+                 min_radius: float = 0.,
+                 use_xyz: bool = True,
+                 return_grouped_xyz: bool = False,
+                 normalize_xyz: bool = False,
+                 uniform_sample: bool = False,
+                 return_unique_cnt: bool = False,
+                 return_grouped_idx: bool = False):
         super().__init__()
         self.max_radius = max_radius
         self.min_radius = min_radius
@@ -64,7 +64,12 @@ class QueryAndGroup(nn.Module):
             assert not self.normalize_xyz, \
                 'can not normalize grouped xyz when max_radius is None'
 
-    def forward(self, points_xyz, center_xyz, features=None):
+    def forward(
+        self,
+        points_xyz: torch.Tensor,
+        center_xyz: torch.Tensor,
+        features: Optional[torch.Tensor] = None,
+    ) -> Union[torch.Tensor, Tuple]:
         """
         Args:
             points_xyz (torch.Tensor): (B, N, 3) xyz coordinates of the
@@ -75,7 +80,7 @@ class QueryAndGroup(nn.Module):
                 points.
 
         Returns:
-            torch.Tensor: (B, 3 + C, npoint, sample_num) Grouped
+            Tuple | torch.Tensor: (B, 3 + C, npoint, sample_num) Grouped
             concatenated coordinates and features of points.
         """
         # if self.max_radius is None, we will perform kNN instead of ball query
@@ -149,7 +154,7 @@ class GroupAll(nn.Module):
     def forward(self,
                 xyz: torch.Tensor,
                 new_xyz: torch.Tensor,
-                features: torch.Tensor = None):
+                features: Optional[torch.Tensor] = None) -> torch.Tensor:
         """
         Args:
             xyz (Tensor): (B, N, 3) xyz coordinates of the features.
@@ -210,8 +215,7 @@ class GroupingOperation(Function):
         return output
 
     @staticmethod
-    def backward(ctx,
-                 grad_out: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def backward(ctx, grad_out: torch.Tensor) -> Tuple[torch.Tensor, None]:
         """
         Args:
             grad_out (Tensor): (B, C, npoint, nsample) tensor of the gradients
