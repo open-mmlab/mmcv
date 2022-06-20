@@ -114,7 +114,7 @@ def imresize(
 def imresize_to_multiple(
     img: np.ndarray,
     divisor: Union[int, Tuple[int, int]],
-    size: Optional[Union[Tuple[int, int], int]] = None,
+    size: Union[Tuple[int, int], int, None] = None,
     scale_factor: Optional[Union[Tuple[float, float], float]] = None,
     keep_ratio: bool = False,
     return_scale: bool = False,
