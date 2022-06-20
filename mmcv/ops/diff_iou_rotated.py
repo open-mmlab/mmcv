@@ -7,26 +7,7 @@ import torch
 from torch import Tensor
 from torch.autograd import Function
 
-from ..utils import ext_loader
-
 EPSILON = 1e-8
-ext_module = ext_loader.load_ext('_ext',
-                                 ['diff_iou_rotated_sort_vertices_forward'])
-
-
-class SortVertices(Function):
-
-    @staticmethod
-    def forward(ctx, vertices, mask, num_valid):
-        idx = ext_module.diff_iou_rotated_sort_vertices_forward(
-            vertices, mask, num_valid)
-        if torch.__version__ != 'parrots':
-            ctx.mark_non_differentiable(idx)
-        return idx
-
-    @staticmethod
-    def backward(ctx, gradout):
-        return ()
 
 
 def box_intersection(corners1: Tensor,
@@ -96,12 +77,8 @@ def box1_in_box2(corners1: Tensor, corners2: Tensor) -> Tensor:
     norm_ab = torch.sum(ab * ab, dim=-1)  # (B, N, 1)
     prod_ad = torch.sum(ad * am, dim=-1)  # (B, N, 4)
     norm_ad = torch.sum(ad * ad, dim=-1)  # (B, N, 1)
-    # NOTE: the expression looks ugly but is stable if the two boxes
-    # are exactly the same also stable with different scale of bboxes
-    cond1 = (prod_ab / norm_ab > -1e-6) * (prod_ab / norm_ab < 1 + 1e-6
-                                           )  # (B, N, 4)
-    cond2 = (prod_ad / norm_ad > -1e-6) * (prod_ad / norm_ad < 1 + 1e-6
-                                           )  # (B, N, 4)
+    cond1 = (prod_ab >= 0) & (prod_ab <= norm_ab)  # (B, N, 4)
+    cond2 = (prod_ad >= 0) & (prod_ad <= norm_ad)  # (B, N, 4)
     return cond1 * cond2
 
 
@@ -154,8 +131,8 @@ def build_vertices(corners1: Tensor, corners2: Tensor, c1_in_2: Tensor,
     return vertices, mask
 
 
-def sort_indices(vertices: Tensor, mask: Tensor) -> Tensor:
-    """Sort indices.
+def sort_vertices(vertices: Tensor, mask: Tensor) -> Tensor:
+    """Sort vertices.
     Note:
         why 9? the polygon has maximal 8 vertices.
         +1 to duplicate the first element.
@@ -170,37 +147,121 @@ def sort_indices(vertices: Tensor, mask: Tensor) -> Tensor:
         mask (Tensor): (B, N, 24) Mask.
 
     Returns:
-        Tensor: (B, N, 9) Sorted indices.
-
+        Tensor: (B, N, 9, 2) Sorted vertices.
     """
     num_valid = torch.sum(mask.int(), dim=2).int()  # (B, N)
     mean = torch.sum(
         vertices * mask.float().unsqueeze(-1), dim=2,
         keepdim=True) / num_valid.unsqueeze(-1).unsqueeze(-1)
-    vertices_normalized = vertices - mean  # normalization makes sorting easier
-    return SortVertices.apply(vertices_normalized, mask, num_valid).long()
+    normalized_vertices = vertices - mean  # normalization makes sorting easier
+    idx_sorted = sort_normalized_vertices(normalized_vertices, mask,
+                                          num_valid.long()).long()
+    idx_sorted = idx_sorted.unsqueeze(-1).repeat([1, 1, 1, 2])
+    selected = torch.gather(vertices, 2, idx_sorted)
+    # zero padding for invalid vertices
+    sorted_mask = generate_mask(num_valid + 1)
+    selected = selected * sorted_mask.unsqueeze(-1)
+    # set zero of too few vertices
+    sorted_mask = num_valid >= 3
+    selected = selected * sorted_mask.type(
+        selected.dtype).unsqueeze(-1).unsqueeze(-1)
+    return selected
 
 
-def calculate_area(idx_sorted: Tensor,
-                   vertices: Tensor) -> Tuple[Tensor, Tensor]:
+def calculate_area(vertices: Tensor) -> Tuple[Tensor, Tensor]:
     """Calculate area of intersection.
 
     Args:
-        idx_sorted (Tensor): (B, N, 9) Sorted vertex ids.
-        vertices (Tensor): (B, N, 24, 2) Vertices.
+        vertices (Tensor): (B, N, 9, 2) Vertices.
 
     Returns:
         Tuple:
-         - Tensor (B, N): Area of intersection.
+         - Tensor: (B, N) Area of intersection.
          - Tensor: (B, N, 9, 2) Vertices of polygon with zero padding.
     """
-    idx_ext = idx_sorted.unsqueeze(-1).repeat([1, 1, 1, 2])
-    selected = torch.gather(vertices, 2, idx_ext)
-    total = selected[:, :, 0:-1, 0] * selected[:, :, 1:, 1] \
-        - selected[:, :, 0:-1, 1] * selected[:, :, 1:, 0]
+    total = vertices[:, :, 0:-1, 0] * vertices[:, :, 1:, 1] \
+        - vertices[:, :, 0:-1, 1] * vertices[:, :, 1:, 0]
     total = torch.sum(total, dim=2)
     area = torch.abs(total) / 2
-    return area, selected
+    return area, vertices
+
+
+@torch.no_grad()
+def check_overlap(corners1: Tensor, corners2: Tensor, c1_in_2: Tensor,
+                  c2_in_1: Tensor) -> Tuple[Tensor, Tensor]:
+    """Check if corners are overlapped and update the conditions. Useful to
+    avoid incorrect intersection calculation. Without this check, the
+    intersection would have duplicated vertices, which makes the shoelace-
+    formula broken.
+
+    Args:
+        corners1 (Tensor): (B, N, 4, 2) First batch of boxes.
+        corners2 (Tensor): (B, N, 4, 2) Second batch of boxes.
+        c1_in_2 (Tensor): (B, N, 4) True if i-th corner of box1 is in box2.
+        c2_in_1 (Tensor): bool, (B, N, 4) True if i-th corner of box2 is in box1.
+
+    Returns:
+        Tuple:
+         - Tensor: (B, N, 4) True if i-th corner of box1 is in box2.
+         - Tensor: (B, N, 4) True if i-th corner of box2 is in box1.
+    """
+    rolled_corners2 = corners2
+    rolled_c2_in_1 = c2_in_1
+    for _ in range(4):
+        rolled_corners2 = torch.roll(rolled_corners2, shifts=1, dims=2)
+        rolled_c2_in_1 = torch.roll(rolled_c2_in_1, shifts=1, dims=2)
+        critical = torch.all(corners1 == rolled_corners2, dim=-1)
+        c1_in_2[critical] = True
+        rolled_c2_in_1[critical] = False
+    return c1_in_2, rolled_c2_in_1
+
+
+@torch.no_grad()
+def sort_normalized_vertices(vertices: Tensor, mask: Tensor,
+                             num_valid: Tensor) -> Tensor:
+    """Sort normalized vertices by counterclockwise angle.
+
+    Args:
+        vertices_normalized (Tensor): (B, N, 24, 2) Normalized vertices.
+        mask (Tensor): (B, N, 24) Mask.
+        num_valid (Tensor): (B, N) Number of valid vertices per pair of boxes.
+
+    Returns:
+        Tensor: (B, N, 9) Order of sorted vertices.
+    """
+    x = vertices[..., 0]
+    y = vertices[..., 1]
+
+    # sorting
+    x[~mask] = -1e6
+    y[~mask] = 1e-6
+    ang = torch.atan2(y, x)
+    index = torch.argsort(ang, dim=-1)  # (B, N, 24)
+
+    # duplicate the first
+    temp = index[..., :1].clone()  # (B, N, 1)
+    index.scatter_(
+        dim=-1,
+        index=num_valid.unsqueeze(-1),
+        src=temp.expand(-1, -1, index.size(-1)))
+    return index[..., :9]
+
+
+@torch.no_grad()
+def generate_mask(num_valid: Tensor) -> Tensor:
+    """Pad mask of invalid vertices with zeros.
+
+    Args:
+        num_valid (Tensor): (B, N) Number of valid vertices per pair of boxes.
+
+    Returns:
+       Tensor: (B, N, 9) Mask.
+    """
+    B, N = num_valid.size()
+    arange = torch.arange(9).unsqueeze(0).unsqueeze(0).repeat(B, N, 1).to(
+        num_valid.device)
+    mask = arange < num_valid.unsqueeze(-1)
+    return mask
 
 
 def oriented_box_intersection_2d(corners1: Tensor,
@@ -213,15 +274,16 @@ def oriented_box_intersection_2d(corners1: Tensor,
 
     Returns:
         Tuple:
-         - Tensor (B, N): Area of intersection.
-         - Tensor (B, N, 9, 2): Vertices of polygon with zero padding.
+         - Tensor: (B, N) Area of intersection.
+         - Tensor: (B, N, 9, 2) Vertices of polygon with zero padding.
     """
     intersections, valid_mask = box_intersection(corners1, corners2)
-    c12, c21 = box_in_box(corners1, corners2)
-    vertices, mask = build_vertices(corners1, corners2, c12, c21,
+    c1_in_2, c2_in_1 = box_in_box(corners1, corners2)
+    c1_in_2, c2_in_1 = check_overlap(corners1, corners2, c1_in_2, c2_in_1)
+    vertices, mask = build_vertices(corners1, corners2, c1_in_2, c2_in_1,
                                     intersections, valid_mask)
-    sorted_indices = sort_indices(vertices, mask)
-    return calculate_area(sorted_indices, vertices)
+    sorted_indices = sort_vertices(vertices, mask)
+    return calculate_area(sorted_indices)
 
 
 def box2corners(box: Tensor) -> Tensor:
