@@ -1,3 +1,5 @@
+from typing import Optional
+
 import torch
 from torch.autograd import Function
 
@@ -19,7 +21,7 @@ class KNN(Function):
     def forward(ctx,
                 k: int,
                 xyz: torch.Tensor,
-                center_xyz: torch.Tensor = None,
+                center_xyz: Optional[torch.Tensor] = None,
                 transposed: bool = False) -> torch.Tensor:
         """
         Args:

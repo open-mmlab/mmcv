@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
+from typing import Dict, Tuple, Union
 
 import torch.nn as nn
 
@@ -69,7 +70,9 @@ def infer_abbr(class_type):
             return 'norm_layer'
 
 
-def build_norm_layer(cfg, num_features, postfix=''):
+def build_norm_layer(cfg: Dict,
+                     num_features: int,
+                     postfix: Union[int, str] = '') -> Tuple[str, nn.Module]:
     """Build normalization layer.
 
     Args:
@@ -119,7 +122,8 @@ def build_norm_layer(cfg, num_features, postfix=''):
     return name, layer
 
 
-def is_norm(layer, exclude=None):
+def is_norm(layer: nn.Module,
+            exclude: Union[type, tuple, None] = None) -> bool:
     """Check if a layer is a normalization layer.
 
     Args:
