@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Any, Tuple
 
 import torch
 from torch.autograd import Function
@@ -17,7 +17,7 @@ class ThreeInterpolate(Function):
     """
 
     @staticmethod
-    def forward(ctx, features: torch.Tensor, indices: torch.Tensor,
+    def forward(ctx: Any, features: torch.Tensor, indices: torch.Tensor,
                 weight: torch.Tensor) -> torch.Tensor:
         """
         Args:

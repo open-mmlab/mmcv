@@ -1,11 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import List, Tuple
+
 import torch
 from torch.nn.parallel.distributed import (DistributedDataParallel,
                                            _find_tensors)
 
 from mmcv import print_log
 from mmcv.utils import TORCH_VERSION, digit_version
-from .scatter_gather import scatter_kwargs
+from .scatter_gather import ScatterInputs, scatter_kwargs
 
 
 class MMDistributedDataParallel(DistributedDataParallel):
@@ -18,12 +20,14 @@ class MMDistributedDataParallel(DistributedDataParallel):
     - It implement two APIs ``train_step()`` and ``val_step()``.
     """
 
-    def to_kwargs(self, inputs, kwargs, device_id):
+    def to_kwargs(self, inputs: ScatterInputs, kwargs: ScatterInputs,
+                  device_id: int) -> Tuple[tuple, tuple]:
         # Use `self.to_kwargs` instead of `self.scatter` in pytorch1.8
         # to move all tensors to device_id
         return scatter_kwargs(inputs, kwargs, [device_id], dim=self.dim)
 
-    def scatter(self, inputs, kwargs, device_ids):
+    def scatter(self, inputs: ScatterInputs, kwargs: ScatterInputs,
+                device_ids: List[int]) -> Tuple[tuple, tuple]:
         return scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
 
     def train_step(self, *inputs, **kwargs):

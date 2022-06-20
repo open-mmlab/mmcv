@@ -280,7 +280,7 @@ class CheckpointLoader:
     def load_checkpoint(
             cls,
             filename: str,
-            map_location: Optional[str] = None,
+            map_location: Union[str, Callable, None] = None,
             logger: Optional[logging.Logger] = None
     ) -> Union[dict, OrderedDict]:
         """load checkpoint through URL scheme path.
@@ -305,8 +305,9 @@ class CheckpointLoader:
 
 @CheckpointLoader.register_scheme(prefixes='')
 def load_from_local(
-        filename: str,
-        map_location: Optional[str] = None) -> Union[dict, OrderedDict]:
+    filename: str,
+    map_location: Union[str, Callable, None] = None,
+) -> Union[dict, OrderedDict]:
     """load checkpoint by local file path.
 
     Args:
@@ -326,7 +327,7 @@ def load_from_local(
 @CheckpointLoader.register_scheme(prefixes=('http://', 'https://'))
 def load_from_http(
         filename: str,
-        map_location: Optional[str] = None,
+        map_location: Union[str, Callable, None] = None,
         model_dir: Optional[str] = None) -> Union[dict, OrderedDict]:
     """load checkpoint through HTTP or HTTPS scheme path. In distributed
     setting, this function only download checkpoint at local rank 0.
@@ -355,8 +356,9 @@ def load_from_http(
 
 @CheckpointLoader.register_scheme(prefixes='pavi://')
 def load_from_pavi(
-        filename: str,
-        map_location: Optional[str] = None) -> Union[dict, OrderedDict]:
+    filename: str,
+    map_location: Union[str, Callable, None] = None,
+) -> Union[dict, OrderedDict]:
     """load checkpoint through the file path prefixed with pavi. In distributed
     setting, this function download ckpt at all ranks to different temporary
     directories.
@@ -389,7 +391,7 @@ def load_from_pavi(
 
 @CheckpointLoader.register_scheme(prefixes=r'(\S+\:)?s3://')
 def load_from_ceph(filename: str,
-                   map_location: Optional[str] = None,
+                   map_location: Union[str, Callable, None] = None,
                    backend: str = 'petrel') -> Union[dict, OrderedDict]:
     """load checkpoint through the file path prefixed with s3.  In distributed
     setting, this function download ckpt at all ranks to different temporary
@@ -438,8 +440,9 @@ def load_from_ceph(filename: str,
 
 @CheckpointLoader.register_scheme(prefixes=('modelzoo://', 'torchvision://'))
 def load_from_torchvision(
-        filename: str,
-        map_location: Optional[str] = None) -> Union[dict, OrderedDict]:
+    filename: str,
+    map_location: Union[str, Callable, None] = None,
+) -> Union[dict, OrderedDict]:
     """load checkpoint through the file path prefixed with modelzoo or
     torchvision.
 
@@ -469,8 +472,9 @@ def load_from_torchvision(
 
 @CheckpointLoader.register_scheme(prefixes=('open-mmlab://', 'openmmlab://'))
 def load_from_openmmlab(
-        filename: str,
-        map_location: Optional[str] = None) -> Union[dict, OrderedDict]:
+    filename: str,
+    map_location: Union[str, Callable, None] = None,
+) -> Union[dict, OrderedDict]:
     """load checkpoint through the file path prefixed with open-mmlab or
     openmmlab.
 
@@ -513,8 +517,9 @@ def load_from_openmmlab(
 
 @CheckpointLoader.register_scheme(prefixes='mmcls://')
 def load_from_mmcls(
-        filename: str,
-        map_location: Optional[str] = None) -> Union[dict, OrderedDict]:
+    filename: str,
+    map_location: Union[str, Callable, None] = None,
+) -> Union[dict, OrderedDict]:
     """load checkpoint through the file path prefixed with mmcls.
 
     Args:
@@ -535,7 +540,7 @@ def load_from_mmcls(
 
 def _load_checkpoint(
         filename: str,
-        map_location: Optional[str] = None,
+        map_location: Union[str, Callable, None] = None,
         logger: Optional[logging.Logger] = None) -> Union[dict, OrderedDict]:
     """Load checkpoint from somewhere (modelzoo, file, url).
 
@@ -556,9 +561,11 @@ def _load_checkpoint(
     return CheckpointLoader.load_checkpoint(filename, map_location, logger)
 
 
-def _load_checkpoint_with_prefix(prefix: str,
-                                 filename: str,
-                                 map_location: Optional[str] = None) -> dict:
+def _load_checkpoint_with_prefix(
+    prefix: str,
+    filename: str,
+    map_location: Union[str, Callable, None] = None,
+) -> Union[dict, OrderedDict]:
     """Load partial pretrained model with specific prefix.
 
     Args:
@@ -594,7 +601,7 @@ def _load_checkpoint_with_prefix(prefix: str,
 def load_checkpoint(
         model: torch.nn.Module,
         filename: str,
-        map_location: Optional[str] = None,
+        map_location: Union[str, Callable, None] = None,
         strict: bool = False,
         logger: Optional[logging.Logger] = None,
         revise_keys: list = [(r'^module\.', '')]) -> Union[dict, OrderedDict]:

@@ -13,6 +13,7 @@
 # limitations under the License.
 import sys
 from collections import OrderedDict
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import nn
@@ -20,17 +21,18 @@ from torch import nn
 from .sparse_structure import SparseConvTensor
 
 
-def is_spconv_module(module):
+def is_spconv_module(module: nn.Module) -> bool:
     spconv_modules = (SparseModule, )
     return isinstance(module, spconv_modules)
 
 
-def is_sparse_conv(module):
+def is_sparse_conv(module: nn.Module) -> bool:
     from .sparse_conv import SparseConvolution
     return isinstance(module, SparseConvolution)
 
 
-def _mean_update(vals, m_vals, t):
+def _mean_update(vals: Union[int, List], m_vals: Union[int, List],
+                 t: float) -> List:
     outputs = []
     if not isinstance(vals, list):
         vals = [vals]
@@ -101,7 +103,7 @@ class SparseSequential(SparseModule):
             self.add_module(name, module)
         self._sparity_dict = {}
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> torch.Tensor:
         if not (-len(self) <= idx < len(self)):
             raise IndexError(f'index {idx} is out of range')
         if idx < 0:
@@ -118,14 +120,14 @@ class SparseSequential(SparseModule):
     def sparity_dict(self):
         return self._sparity_dict
 
-    def add(self, module, name=None):
+    def add(self, module: Any, name: Optional[str] = None) -> None:
         if name is None:
             name = str(len(self._modules))
             if name in self._modules:
                 raise KeyError('name exists')
         self.add_module(name, module)
 
-    def forward(self, input):
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         for k, module in self._modules.items():
             if is_spconv_module(module):
                 assert isinstance(input, SparseConvTensor)

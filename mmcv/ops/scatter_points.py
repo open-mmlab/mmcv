@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Any, List, Optional, Tuple
+
 import torch
 import torch.nn.functional as F
 from torch import nn
@@ -14,7 +16,10 @@ ext_module = ext_loader.load_ext(
 class _DynamicScatter(Function):
 
     @staticmethod
-    def forward(ctx, feats, coors, reduce_type='max'):
+    def forward(ctx: Any,
+                feats: torch.Tensor,
+                coors: torch.Tensor,
+                reduce_type: str = 'max') -> Tuple[torch.Tensor, torch.Tensor]:
         """convert kitti points(N, >=3) to voxels.
 
         Args:
@@ -42,7 +47,9 @@ class _DynamicScatter(Function):
         return voxel_feats, voxel_coors
 
     @staticmethod
-    def backward(ctx, grad_voxel_feats, grad_voxel_coors=None):
+    def backward(ctx: Any,
+                 grad_voxel_feats: torch.Tensor,
+                 grad_voxel_coors: Optional[torch.Tensor] = None) -> tuple:
         (feats, voxel_feats, point2voxel_map,
          voxel_points_count) = ctx.saved_tensors
         grad_feats = torch.zeros_like(feats)
@@ -73,14 +80,17 @@ class DynamicScatter(nn.Module):
             into voxel.
     """
 
-    def __init__(self, voxel_size, point_cloud_range, average_points: bool):
+    def __init__(self, voxel_size: List, point_cloud_range: List,
+                 average_points: bool):
         super().__init__()
 
         self.voxel_size = voxel_size
         self.point_cloud_range = point_cloud_range
         self.average_points = average_points
 
-    def forward_single(self, points, coors):
+    def forward_single(
+            self, points: torch.Tensor,
+            coors: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """Scatters points into voxels.
 
         Args:
@@ -97,7 +107,8 @@ class DynamicScatter(nn.Module):
         reduce = 'mean' if self.average_points else 'max'
         return dynamic_scatter(points.contiguous(), coors.contiguous(), reduce)
 
-    def forward(self, points, coors):
+    def forward(self, points: torch.Tensor,
+                coors: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """Scatters points/features into voxels.
 
         Args:

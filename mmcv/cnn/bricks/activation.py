@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Dict
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -28,12 +30,12 @@ class Clamp(nn.Module):
             Default to 1.
     """
 
-    def __init__(self, min=-1., max=1.):
+    def __init__(self, min: float = -1., max: float = 1.):
         super().__init__()
         self.min = min
         self.max = max
 
-    def forward(self, x):
+    def forward(self, x) -> torch.Tensor:
         """Forward function.
 
         Args:
@@ -67,7 +69,7 @@ class GELU(nn.Module):
         >>> output = m(input)
     """
 
-    def forward(self, input):
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         return F.gelu(input)
 
 
@@ -78,7 +80,7 @@ else:
     ACTIVATION_LAYERS.register_module(module=nn.GELU)
 
 
-def build_activation_layer(cfg):
+def build_activation_layer(cfg: Dict) -> nn.Module:
     """Build activation layer.
 
     Args:
