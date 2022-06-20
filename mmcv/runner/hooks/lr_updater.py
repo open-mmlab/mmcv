@@ -119,10 +119,11 @@ class LrUpdaterHook(Hook):
                 ]
                 self.base_lr.update({k: _base_lr})
         else:
-            for group in runner.optimizer.param_groups:
+            for group in runner.optimizer.param_groups:  # type: ignore
                 group.setdefault('initial_lr', group['lr'])
             self.base_lr = [
-                group['initial_lr'] for group in runner.optimizer.param_groups
+                group['initial_lr']
+                for group in runner.optimizer.param_groups  # type: ignore
             ]
 
     def before_train_epoch(self, runner: 'runner.BaseRunner'):
@@ -138,6 +139,7 @@ class LrUpdaterHook(Hook):
 
     def before_train_iter(self, runner: 'runner.BaseRunner'):
         cur_iter = runner.iter
+        assert isinstance(self.warmup_iters, int)
         if not self.by_epoch:
             self.regular_lr = self.get_regular_lr(runner)
             if self.warmup is None or cur_iter >= self.warmup_iters:
@@ -505,7 +507,7 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
         # total lr_phases are separated as up and down
         self.max_iter_per_phase = runner.max_iters // self.cyclic_times
         iter_up_phase = int(self.step_ratio_up *
-                            self.max_iter_per_phase)  # type:ignore
+                            self.max_iter_per_phase)  # type: ignore
         self.lr_phases.append([0, iter_up_phase, 1, self.target_ratio[0]])
         self.lr_phases.append([
             iter_up_phase, self.max_iter_per_phase, self.target_ratio[0],
@@ -513,8 +515,8 @@ class CyclicLrUpdaterHook(LrUpdaterHook):
         ])
 
     def get_lr(self, runner: 'runner.BaseRunner', base_lr: float):
-        curr_iter = runner.iter % self.max_iter_per_phase
-        curr_cycle = runner.iter // self.max_iter_per_phase
+        curr_iter = runner.iter % self.max_iter_per_phase  # type: ignore
+        curr_cycle = runner.iter // self.max_iter_per_phase  # type: ignore
         # Update weight decay
         scale = self.gamma**curr_cycle
 
@@ -637,7 +639,8 @@ class OneCycleLrUpdaterHook(LrUpdaterHook):
             k = type(runner.optimizer).__name__
             _max_lr = format_param(k, runner.optimizer, self._max_lr)
             self.base_lr = [lr / self.div_factor for lr in _max_lr]
-            for group, lr in zip(runner.optimizer.param_groups, self.base_lr):
+            optim_param_groups = runner.optimizer.param_groups  # type: ignore
+            for group, lr in zip(optim_param_groups, self.base_lr):
                 group.setdefault('initial_lr', lr)
 
         if self.three_phase:
