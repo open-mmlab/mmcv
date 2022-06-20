@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
 
+import torch
 import torch.nn as nn
 
 from .registry import ACTIVATION_LAYERS
@@ -26,7 +27,11 @@ class HSigmoid(nn.Module):
         Tensor: The output tensor.
     """
 
-    def __init__(self, bias=3.0, divisor=6.0, min_value=0.0, max_value=1.0):
+    def __init__(self,
+                 bias: float = 3.0,
+                 divisor: float = 6.0,
+                 min_value: float = 0.0,
+                 max_value: float = 1.0):
         super().__init__()
         warnings.warn(
             'In MMCV v1.4.4, we modified the default value of args to align '
@@ -40,7 +45,7 @@ class HSigmoid(nn.Module):
         self.min_value = min_value
         self.max_value = max_value
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = (x + self.bias) / self.divisor
 
         return x.clamp_(self.min_value, self.max_value)
