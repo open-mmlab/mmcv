@@ -520,9 +520,3 @@ def test_utils():
     transform = DummyTransform()
     with cache_random_params(transform):
         pass
-
-
-test_key_mapper()
-test_transform_broadcaster()
-test_random_choice()
-test_random_apply()
