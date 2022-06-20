@@ -10,7 +10,7 @@ import warnings
 from collections import OrderedDict
 from importlib import import_module
 from tempfile import TemporaryDirectory
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -41,7 +41,7 @@ def _get_mmcv_home() -> str:
 
 
 def load_state_dict(module: nn.Module,
-                    state_dict: dict,
+                    state_dict: Union[dict, OrderedDict],
                     strict: bool = False,
                     logger: Optional[logging.Logger] = None) -> None:
     """Load state_dict to a module.
@@ -52,7 +52,7 @@ def load_state_dict(module: nn.Module,
 
     Args:
         module (Module): Module that receives the state_dict.
-        state_dict (dict): Weights.
+        state_dict (dict or OrderedDict): Weights.
         strict (bool): whether to strictly enforce that the keys
             in :attr:`state_dict` match the keys returned by this module's
             :meth:`~torch.nn.Module.state_dict` function. Default: ``False``.
@@ -212,7 +212,7 @@ class CheckpointLoader:
     @classmethod
     def _register_scheme(cls,
                          prefixes: Union[str, List, Tuple],
-                         loader: Any,
+                         loader: Callable,
                          force: bool = False) -> None:
         if isinstance(prefixes, str):
             prefixes = [prefixes]
