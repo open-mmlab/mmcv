@@ -5,7 +5,6 @@ from typing import Tuple
 
 import torch
 from torch import Tensor
-from torch.autograd import Function
 
 EPSILON = 1e-8
 
@@ -198,7 +197,7 @@ def check_overlap(corners1: Tensor, corners2: Tensor, c1_in_2: Tensor,
         corners1 (Tensor): (B, N, 4, 2) First batch of boxes.
         corners2 (Tensor): (B, N, 4, 2) Second batch of boxes.
         c1_in_2 (Tensor): (B, N, 4) True if i-th corner of box1 is in box2.
-        c2_in_1 (Tensor): bool, (B, N, 4) True if i-th corner of box2 is in box1.
+        c2_in_1 (Tensor): (B, N, 4) True if i-th corner of box2 is in box1.
 
     Returns:
         Tuple:
