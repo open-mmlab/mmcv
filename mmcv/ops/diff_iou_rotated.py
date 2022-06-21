@@ -282,8 +282,8 @@ def oriented_box_intersection_2d(corners1: Tensor,
     c1_in_2, c2_in_1 = check_overlap(corners1, corners2, c1_in_2, c2_in_1)
     vertices, mask = build_vertices(corners1, corners2, c1_in_2, c2_in_1,
                                     intersections, valid_mask)
-    sorted_indices = sort_vertices(vertices, mask)
-    return calculate_area(sorted_indices)
+    sorted_vertices = sort_vertices(vertices, mask)
+    return calculate_area(sorted_vertices)
 
 
 def box2corners(box: Tensor) -> Tensor:
