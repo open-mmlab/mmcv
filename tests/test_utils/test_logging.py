@@ -91,8 +91,14 @@ def test_print_log_logger(caplog):
     print_log('welcome', logger='mmcv')
     assert caplog.record_tuples[-1] == ('mmcv', logging.INFO, 'welcome')
 
+    print_log('welcome', logger='mmcv', level=logging.WARNING)
+    assert caplog.record_tuples[-1] == ('mmcv', logging.WARNING, 'welcome')
+
     print_log('welcome', logger='mmcv', level=logging.ERROR)
     assert caplog.record_tuples[-1] == ('mmcv', logging.ERROR, 'welcome')
+
+    print_log('welcome', logger='mmcv', level=logging.CRITICAL)
+    assert caplog.record_tuples[-1] == ('mmcv', logging.CRITICAL, 'welcome')
 
     # the name can not be used to open the file a second time in windows,
     # so `delete` should be set as `False` and we need to manually remove it
