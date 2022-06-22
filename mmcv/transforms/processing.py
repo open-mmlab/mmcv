@@ -210,13 +210,13 @@ class Resize(BaseTransform):
                 gt_seg = mmcv.imrescale(
                     results['gt_seg_map'],
                     results['scale'],
-                    interpolation=self.interpolation,
+                    interpolation='nearest',
                     backend=self.backend)
             else:
                 gt_seg = mmcv.imresize(
                     results['gt_seg_map'],
                     results['scale'],
-                    interpolation=self.interpolation,
+                    interpolation='nearest',
                     backend=self.backend)
             results['gt_seg_map'] = gt_seg
 
@@ -938,7 +938,7 @@ class RandomChoiceResize(BaseTransform):
         assert mmcv.is_list_of(self.scales, tuple)
 
         self.resize_cfg = dict(type=resize_type, **resize_kwargs)
-        # create a empty Reisize object
+        # create a empty Resize object
         self.resize = TRANSFORMS.build({'scale': 0, **self.resize_cfg})
 
     @cache_randomness
