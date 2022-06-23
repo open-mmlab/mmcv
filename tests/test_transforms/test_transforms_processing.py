@@ -92,7 +92,6 @@ class TestResize:
         transform = Resize(scale=(2000, 2000), keep_ratio=True)
         results = transform(copy.deepcopy(data_info))
         assert results['img'].shape[:2] == (2000, 1200)
-        assert results['scale'] == (1200, 2000)
         assert results['scale_factor'] == (1200 / 800, 2000 / 1333)
 
         # test resize_bboxes/seg/kps

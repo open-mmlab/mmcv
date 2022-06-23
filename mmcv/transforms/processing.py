@@ -187,7 +187,6 @@ class Resize(BaseTransform):
                     backend=self.backend)
             results['img'] = img
             results['img_shape'] = img.shape[:2]
-            results['scale'] = img.shape[:2][::-1]
             results['scale_factor'] = (w_scale, h_scale)
             results['keep_ratio'] = self.keep_ratio
 
