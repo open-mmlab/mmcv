@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: activate env
-        run: source pat_latest
+        run: source /usr/local/env/pat_latest
       - name: Install unittest dependencies
         run: pip install -r requirements/test.txt
       - name: Build and install
