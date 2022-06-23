@@ -35,14 +35,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: activate env
-        run: source /usr/local/env/pat_latest
-      - name: Install unittest dependencies
-        run: pip install -r requirements/test.txt
-      - name: Build and install
-        run: rm -rf .eggs && MMCV_WITH_OPS=1 pip install -e .
-      - name: Test
+      - name: Build and test
         run: |
-          coverage run --branch --source=mmcv -m pytest tests/
-          coverage xml
-          coverage report -m
+          source /usr/local/env/pat_latest
+          pip install -r requirements/test.txt
+          MMCV_WITH_OPS=1 pip install -e .
+          pytest tests/
