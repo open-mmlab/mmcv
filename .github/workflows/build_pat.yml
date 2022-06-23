@@ -28,7 +28,7 @@ jobs:
   build_parrots:
     runs-on: ubuntu-18.04
     container:
-      image: ghcr.io/zhouzaida/parrots:latest
+      image: ghcr.io/zhouzaida/parrots:pat_latest_ci
       credentials:
         username: zhouzaida
         password: ${{ secrets.PARROTS_TOKEN }}
