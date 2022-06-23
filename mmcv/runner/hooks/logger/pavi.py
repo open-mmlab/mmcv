@@ -74,8 +74,8 @@ class PaviLoggerHook(LoggerHook):
 
         if not self.init_kwargs:
             self.init_kwargs = dict()
-        self.init_kwargs['name'] = self.run_name
-        self.init_kwargs['model'] = runner._model_name
+        self.init_kwargs.setdefault('name', self.run_name)
+        self.init_kwargs.setdefault('model', runner._model_name)
         if runner.meta is not None:
             if 'config_dict' in runner.meta:
                 config_dict = runner.meta['config_dict']
@@ -98,7 +98,7 @@ class PaviLoggerHook(LoggerHook):
                 config_dict = json.loads(
                     mmcv.dump(config_dict, file_format='json'))
                 session_text = yaml.dump(config_dict)
-                self.init_kwargs['session_text'] = session_text
+                self.init_kwargs.setdefault('session_text', session_text)
         self.writer = SummaryWriter(**self.init_kwargs)
 
     def get_step(self, runner) -> int:
