@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Optional
+
 import numpy as np
 
 import mmcv
@@ -33,22 +35,24 @@ class LoadImageFromFile(BaseTransform):
         file_client_args (dict): Arguments to instantiate a FileClient.
             See :class:`mmcv.fileio.FileClient` for details.
             Defaults to ``dict(backend='disk')``.
+        ignore_empty (bool): Whether to allow loading empty image or file path
+            not existent. Defaults to False.
     """
 
-    def __init__(
-        self,
-        to_float32: bool = False,
-        color_type: str = 'color',
-        imdecode_backend: str = 'cv2',
-        file_client_args: dict = dict(backend='disk')
-    ) -> None:
+    def __init__(self,
+                 to_float32: bool = False,
+                 color_type: str = 'color',
+                 imdecode_backend: str = 'cv2',
+                 file_client_args: dict = dict(backend='disk'),
+                 ignore_empty: bool = False) -> None:
+        self.ignore_empty = ignore_empty
         self.to_float32 = to_float32
         self.color_type = color_type
         self.imdecode_backend = imdecode_backend
         self.file_client_args = file_client_args.copy()
         self.file_client = mmcv.FileClient(**self.file_client_args)
 
-    def transform(self, results: dict) -> dict:
+    def transform(self, results: dict) -> Optional[dict]:
         """Functions to load image.
 
         Args:
@@ -59,9 +63,15 @@ class LoadImageFromFile(BaseTransform):
         """
 
         filename = results['img_path']
-        img_bytes = self.file_client.get(filename)
-        img = mmcv.imfrombytes(
-            img_bytes, flag=self.color_type, backend=self.imdecode_backend)
+        try:
+            img_bytes = self.file_client.get(filename)
+            img = mmcv.imfrombytes(
+                img_bytes, flag=self.color_type, backend=self.imdecode_backend)
+        except Exception as e:
+            if self.ignore_empty:
+                return None
+            else:
+                raise e
         if self.to_float32:
             img = img.astype(np.float32)
 
@@ -72,6 +82,7 @@ class LoadImageFromFile(BaseTransform):
 
     def __repr__(self):
         repr_str = (f'{self.__class__.__name__}('
+                    f'ignore_empty={self.ignore_empty}, '
                     f'to_float32={self.to_float32}, '
                     f"color_type='{self.color_type}', "
                     f"imdecode_backend='{self.imdecode_backend}', "

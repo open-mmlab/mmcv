@@ -3,6 +3,7 @@ import copy
 import os.path as osp
 
 import numpy as np
+import pytest
 
 from mmcv.transforms import LoadAnnotations, LoadImageFromFile
 
@@ -21,7 +22,7 @@ class TestLoadImageFromFile:
         assert results['img_shape'] == (300, 400)
         assert results['ori_shape'] == (300, 400)
         assert repr(transform) == transform.__class__.__name__ + \
-            "(to_float32=False, color_type='color', " + \
+            "(ignore_empty=False, to_float32=False, color_type='color', " + \
             "imdecode_backend='cv2', file_client_args={'backend': 'disk'})"
 
         # to_float32
@@ -40,6 +41,15 @@ class TestLoadImageFromFile:
         results = transform(copy.deepcopy(results))
         assert results['img'].shape == (300, 400)
         assert results['img'].dtype == np.uint8
+
+        # test load empty
+        fake_img_path = osp.join(data_prefix, 'fake.jpg')
+        results['img_path'] = fake_img_path
+        transform = LoadImageFromFile(ignore_empty=False)
+        with pytest.raises(FileNotFoundError):
+            transform(copy.deepcopy(results))
+        transform = LoadImageFromFile(ignore_empty=True)
+        assert transform(copy.deepcopy(results)) is None
 
 
 class TestLoadAnnotations:
