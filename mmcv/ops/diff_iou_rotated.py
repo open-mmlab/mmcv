@@ -257,8 +257,7 @@ def generate_mask(num_valid: Tensor) -> Tensor:
        Tensor: (B, N, 9) Mask.
     """
     B, N = num_valid.size()
-    arange = torch.arange(9).unsqueeze(0).unsqueeze(0).repeat(B, N, 1).to(
-        num_valid.device)
+    arange = torch.arange(9).unsqueeze(0).unsqueeze(0).to(num_valid.device)
     mask = arange < num_valid.unsqueeze(-1)
     return mask
 
