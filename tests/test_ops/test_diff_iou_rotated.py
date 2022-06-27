@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
-import pytest
 import torch
 
 from mmcv.ops import diff_iou_rotated_2d, diff_iou_rotated_3d
@@ -43,4 +42,3 @@ def test_diff_iou_rotated_3d():
     np_expect_ious = np.asarray([[1., .5, .7071, 1 / 15, .0]])
     ious = diff_iou_rotated_3d(boxes1, boxes2)
     assert np.allclose(ious.numpy(), np_expect_ious, atol=1e-4)
-
