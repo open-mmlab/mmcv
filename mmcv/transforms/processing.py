@@ -1198,8 +1198,8 @@ class RandomFlip(BaseTransform):
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
-        repr_str += f'(scale={self.prob}, '
-        repr_str += f'interpolation={self.direction})'
+        repr_str += f'(prob={self.prob}, '
+        repr_str += f'direction={self.direction})'
 
         return repr_str
 
