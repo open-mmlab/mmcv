@@ -610,10 +610,10 @@ class CenterCrop(BaseTransform):
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
-        repr_str += f', crop_size = {self.crop_size}'
+        repr_str += f'(crop_size = {self.crop_size}'
         repr_str += f', auto_pad={self.auto_pad}'
         repr_str += f', pad_cfg={self.pad_cfg}'
-        repr_str += f',clip_object_border = {self.clip_object_border}'
+        repr_str += f',clip_object_border = {self.clip_object_border})'
         return repr_str
 
 
@@ -705,10 +705,10 @@ class RandomGrayscale(BaseTransform):
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
-        repr_str += f', prob = {self.prob}'
+        repr_str += f'(prob = {self.prob}'
         repr_str += f', keep_channels = {self.keep_channels}'
         repr_str += f', channel_weights = {self.channel_weights}'
-        repr_str += f', color_format = {self.color_format}'
+        repr_str += f', color_format = {self.color_format})'
         return repr_str
 
 
@@ -861,10 +861,10 @@ class MultiScaleFlipAug(BaseTransform):
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
-        repr_str += f', transforms={self.transforms}'
+        repr_str += f'(transforms={self.transforms}'
         repr_str += f', scales={self.scales}'
         repr_str += f', allow_flip={self.allow_flip}'
-        repr_str += f', flip_direction={self.flip_direction}'
+        repr_str += f', flip_direction={self.flip_direction})'
         return repr_str
 
 
@@ -975,8 +975,8 @@ class RandomChoiceResize(BaseTransform):
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
-        repr_str += f', scales={self.scales}'
-        repr_str += f', resize_cfg={self.resize_cfg}'
+        repr_str += f'(scales={self.scales}'
+        repr_str += f', resize_cfg={self.resize_cfg})'
         return repr_str
 
 

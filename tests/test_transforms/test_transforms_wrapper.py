@@ -41,6 +41,11 @@ class AddToValue(BaseTransform):
     def transform(self, results):
         return self.add(results, self.addend)
 
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f'addend = {self.addend}'
+        return repr_str
+
 
 @TRANSFORMS.register_module()
 class RandomAddToValue(AddToValue):
@@ -59,6 +64,11 @@ class RandomAddToValue(AddToValue):
             results = self.add(results, addend=self.get_random_addend())
         return results
 
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f'repeat = {self.repeat}'
+        return repr_str
+
 
 @TRANSFORMS.register_module()
 class SumTwoValues(BaseTransform):
@@ -74,6 +84,10 @@ class SumTwoValues(BaseTransform):
         else:
             results['sum'] = np.nan
         return results
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        return repr_str
 
 
 def test_compose():
@@ -296,7 +310,11 @@ def test_key_mapper():
         pass
 
     # __repr__
-    _ = str(pipeline)
+    assert repr(pipeline) == (
+        'KeyMapper(transforms = Compose(\n    ' + 'AddToValueaddend = 1' +
+        '\n), mapping = {\'value\': \'v_in\'}, ' +
+        'remapping = {\'value\': \'v_out\'}, auto_remap = False, ' +
+        'allow_nonexist_keys = False)')
 
 
 def test_transform_broadcaster():
@@ -394,7 +412,12 @@ def test_transform_broadcaster():
     assert 'b' not in results
 
     # Test repr
-    _ = str(pipeline)
+    assert repr(pipeline) == (
+        'TransformBroadcaster(transforms = Compose(\n' + '    SumTwoValues' +
+        '\n), mapping = {\'num_1\': [\'a_1\', \'b_1\'], ' +
+        '\'num_2\': [\'a_2\', \'b_2\']}, ' +
+        'remapping = {\'sum\': [\'a\', Ellipsis]}, auto_remap = False, ' +
+        'allow_nonexist_keys = False, share_random_params = False)')
 
 
 def test_random_choice():
@@ -430,6 +453,16 @@ def test_random_choice():
     values = results['values']
     assert all(map(lambda x: x == values[0], values))
 
+    # repr
+    assert repr(pipeline) == (
+        'TransformBroadcaster(transforms = Compose(\n' +
+        '    RandomChoice(transforms = [Compose(\n' +
+        '    AddToValueaddend = 1.0' + '\n), Compose(\n' +
+        '    AddToValueaddend = 2.0' + '\n)]prob = None)' +
+        '\n), mapping = {\'value\': \'values\'}, ' +
+        'remapping = {\'value\': \'values\'}, auto_remap = True, ' +
+        'allow_nonexist_keys = False, share_random_params = True)')
+
 
 def test_random_apply():
 
@@ -458,6 +491,15 @@ def test_random_apply():
     # __iter__
     for _ in pipeline:
         pass
+
+    # repr
+    assert repr(pipeline) == (
+        'TransformBroadcaster(transforms = Compose(\n' +
+        '    RandomApply(transforms = Compose(\n' +
+        '    AddToValueaddend = 1' + '\n), prob = 0.5)' +
+        '\n), mapping = {\'value\': \'values\'}, ' +
+        'remapping = {\'value\': \'values\'}, auto_remap = True, ' +
+        'allow_nonexist_keys = False, share_random_params = True)')
 
 
 def test_utils():

@@ -339,6 +339,15 @@ class KeyMapper(BaseTransform):
         results.update(outputs)  # type: ignore
         return results
 
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f'(transforms = {self.transforms}'
+        repr_str += f', mapping = {self.mapping}'
+        repr_str += f', remapping = {self.remapping}'
+        repr_str += f', auto_remap = {self.auto_remap}'
+        repr_str += f', allow_nonexist_keys = {self.allow_nonexist_keys})'
+        return repr_str
+
 
 @TRANSFORMS.register_module()
 class TransformBroadcaster(KeyMapper):
@@ -518,6 +527,16 @@ class TransformBroadcaster(KeyMapper):
         results.update(outputs)
         return results
 
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f'(transforms = {self.transforms}'
+        repr_str += f', mapping = {self.mapping}'
+        repr_str += f', remapping = {self.remapping}'
+        repr_str += f', auto_remap = {self.auto_remap}'
+        repr_str += f', allow_nonexist_keys = {self.allow_nonexist_keys}'
+        repr_str += f', share_random_params = {self.share_random_params})'
+        return repr_str
+
 
 @TRANSFORMS.register_module()
 class RandomChoice(BaseTransform):
@@ -573,6 +592,12 @@ class RandomChoice(BaseTransform):
         idx = self.random_pipeline_index()
         return self.transforms[idx](results)
 
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f'(transforms = {self.transforms}'
+        repr_str += f'prob = {self.prob})'
+        return repr_str
+
 
 @TRANSFORMS.register_module()
 class RandomApply(BaseTransform):
@@ -615,3 +640,9 @@ class RandomApply(BaseTransform):
             return self.transforms(results)  # type: ignore
         else:
             return results
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f'(transforms = {self.transforms}'
+        repr_str += f', prob = {self.prob})'
+        return repr_str
