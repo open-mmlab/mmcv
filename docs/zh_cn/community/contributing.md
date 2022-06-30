@@ -162,6 +162,12 @@ https://zhuanlan.zhihu.com/p/519335398%E3%80%82
   python -m coverage html
   # check file in htmlcov/index.html
   ```
+  
+  如果您的系统环境没有安装 libturbojpeg，请先执行
+  ```shell
+  sudo apt-get update -y
+  sudo apt-get install -y libturbojpeg
+  ```
 
 - 文档渲染
 
