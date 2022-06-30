@@ -155,6 +155,13 @@ https://zhuanlan.zhihu.com/p/519335398%E3%80%82
 
 - 单元测试
 
+  如果您的系统环境没有安装 libturbojpeg 和 ffmpeg 请先执行
+  ```shell
+  sudo apt-get update -y
+  sudo apt-get install -y libturbojpeg
+  sudo apt-get install -y ffmpeg
+  ```
+
   在提交修复代码错误或新增特性的拉取请求时，我们应该尽可能的让单元测试覆盖所有提交的代码，计算单元测试覆盖率的方法如下
 
   ```shell
@@ -162,12 +169,7 @@ https://zhuanlan.zhihu.com/p/519335398%E3%80%82
   python -m coverage html
   # check file in htmlcov/index.html
   ```
-  
-  如果您的系统环境没有安装 libturbojpeg，请先执行
-  ```shell
-  sudo apt-get update -y
-  sudo apt-get install -y libturbojpeg
-  ```
+
 
 - 文档渲染
 
