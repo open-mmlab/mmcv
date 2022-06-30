@@ -1,6 +1,6 @@
-# Docker image
+# Docker images
 
-There are two `Dockerfile` files to build images, one to build an image with the mmcv-full pre-built package and the other with the mmcv development environment.
+There are two `Dockerfile` files to build docker images, one to build an image with the mmcv-full pre-built package and the other with the mmcv development environment.
 
 ```text
 .
@@ -11,7 +11,7 @@ There are two `Dockerfile` files to build images, one to build an image with the
     `-- Dockerfile
 ```
 
-## Build images
+## Build docker images
 
 ### Build with mmcv pre-built package
 
@@ -28,13 +28,13 @@ Or build with remote repository
 docker build -t mmcv https://github.com/open-mmlab/mmcv.git#master:docker/release
 ```
 
-The [Dockerfile](release/Dockerfile) installs latest released version of mmcv-full by default, but you can specific mmcv versions to install expected versions.
+The [Dockerfile](release/Dockerfile) installs latest released version of mmcv-full by default, but you can specify mmcv versions to install expected versions.
 
 ```bash
 docker image build -t mmcv -f docker/release/Dockerfile --build-arg MMCV=1.5.0 .
 ```
 
-If you also want to use other versions of PyTorch and CUDA, you can also pass them when building images.
+If you also want to use other versions of PyTorch and CUDA, you can also pass them when building docker images.
 
 An example to build an image with PyTorch 1.11 and CUDA 11.3.
 
@@ -50,7 +50,7 @@ More available versions of PyTorch and CUDA can be found at [dockerhub/pytorch](
 
 ### Build with mmcv development environment
 
-If you want to build an image with the mmcv development environment, you can use the following command
+If you want to build an docker image with the mmcv development environment, you can use the following command
 
 ```bash
 git clone https://github.com/open-mmlab/mmcv.git && cd mmcv
