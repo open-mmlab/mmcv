@@ -2,7 +2,10 @@
 import os
 
 import numpy as np
+import pytest
 import torch
+
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
 _USING_PARROTS = True
 try:
@@ -54,9 +57,7 @@ class TestRoiPool:
             else:
                 gradcheck(froipool, (x, rois), eps=1e-2, atol=1e-2)
 
-    def _test_roipool_allclose(self, dtype=torch.float):
-        if not torch.cuda.is_available():
-            return
+    def _test_roipool_allclose(self, device, dtype=torch.float):
         from mmcv.ops import roi_pool
         pool_h = 2
         pool_w = 2
@@ -69,15 +70,32 @@ class TestRoiPool:
             np_grad = np.array(output[1])
 
             x = torch.tensor(
-                np_input, dtype=dtype, device='cuda', requires_grad=True)
-            rois = torch.tensor(np_rois, dtype=dtype, device='cuda')
+                np_input, dtype=dtype, device=device, requires_grad=True)
+            rois = torch.tensor(np_rois, dtype=dtype, device=device)
 
             output = roi_pool(x, rois, (pool_h, pool_w), spatial_scale)
             output.backward(torch.ones_like(output))
             assert np.allclose(output.data.cpu().numpy(), np_output, 1e-3)
             assert np.allclose(x.grad.data.cpu().numpy(), np_grad, 1e-3)
 
-    def test_roipool_allclose(self):
-        self._test_roipool_allclose(torch.double)
-        self._test_roipool_allclose(torch.float)
-        self._test_roipool_allclose(torch.half)
+    @pytest.mark.parametrize('device', [
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'mlu',
+            marks=pytest.mark.skipif(
+                not IS_MLU_AVAILABLE, reason='requires MLU support'))
+    ])
+    @pytest.mark.parametrize('dtype', [
+        torch.float,
+        pytest.param(
+            torch.double,
+            marks=pytest.mark.skipif(
+                IS_MLU_AVAILABLE,
+                reason='MLU does not support for 64-bit floating point')),
+        torch.half
+    ])
+    def test_roipool_allclose(self, device, dtype):
+        self._test_roipool_allclose(device, dtype)

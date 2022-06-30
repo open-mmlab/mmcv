@@ -19,7 +19,22 @@ class PaviLoggerHook(LoggerHook):
     """Class to visual model, log metrics (for internal use).
 
     Args:
-        init_kwargs (dict): A dict contains the initialization keys.
+        init_kwargs (dict): A dict contains the initialization keys as below:
+
+            - name (str, optional): Custom training name. Defaults to None,
+              which means current work_dir.
+            - project (str, optional): Project name. Defaults to "default".
+            - model (str, optional): Training model name. Defaults to current
+              model.
+            - session_text (str, optional): Session string in YAML format.
+              Defaults to current config.
+            - training_id (int, optional): Training ID in PAVI, if you want to
+              use an existing training. Defaults to None.
+            - compare_id (int, optional): Compare ID in PAVI, if you want to
+              add the task to an existing compare. Defaults to None.
+            - overwrite_last_training (bool, optional): Whether to upload data
+              to the training with the same name in the same project, rather
+              than creating a new one. Defaults to False.
         add_graph (bool): Whether to visual model. Default: False.
         add_last_ckpt (bool): Whether to save checkpoint after run.
             Default: False.
@@ -59,8 +74,8 @@ class PaviLoggerHook(LoggerHook):
 
         if not self.init_kwargs:
             self.init_kwargs = dict()
-        self.init_kwargs['name'] = self.run_name
-        self.init_kwargs['model'] = runner._model_name
+        self.init_kwargs.setdefault('name', self.run_name)
+        self.init_kwargs.setdefault('model', runner._model_name)
         if runner.meta is not None:
             if 'config_dict' in runner.meta:
                 config_dict = runner.meta['config_dict']
@@ -83,7 +98,7 @@ class PaviLoggerHook(LoggerHook):
                 config_dict = json.loads(
                     mmcv.dump(config_dict, file_format='json'))
                 session_text = yaml.dump(config_dict)
-                self.init_kwargs['session_text'] = session_text
+                self.init_kwargs.setdefault('session_text', session_text)
         self.writer = SummaryWriter(**self.init_kwargs)
 
     def get_step(self, runner) -> int:
