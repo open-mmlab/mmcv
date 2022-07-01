@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import numbers
+from typing import List, Optional, Tuple, Union
 
 import cv2
 import numpy as np
@@ -13,7 +14,11 @@ except ImportError:
     Image = None
 
 
-def _scale_size(size, scale):
+def _scale_size(
+    size: Tuple[int, int], scale: Union[Union[int, float],
+                                        Union[Tuple[float, float], Tuple[int,
+                                                                         int]]]
+) -> Tuple[int, int]:
     """Rescale a size by a ratio.
 
     Args:
@@ -60,12 +65,14 @@ if Image is not None:
         }
 
 
-def imresize(img,
-             size,
-             return_scale=False,
-             interpolation='bilinear',
-             out=None,
-             backend=None):
+def imresize(
+    img: np.ndarray,
+    size: tuple,
+    return_scale: bool = False,
+    interpolation: str = 'bilinear',
+    out: Optional[np.ndarray] = None,
+    backend: Optional[str] = None
+) -> Union[Tuple[np.ndarray, float, float], np.ndarray]:
     """Resize image to a given size.
 
     Args:
@@ -107,15 +114,17 @@ def imresize(img,
         return resized_img, w_scale, h_scale
 
 
-def imresize_to_multiple(img,
-                         divisor,
-                         size=None,
-                         scale_factor=None,
-                         keep_ratio=False,
-                         return_scale=False,
-                         interpolation='bilinear',
-                         out=None,
-                         backend=None):
+def imresize_to_multiple(
+    img: np.ndarray,
+    divisor: Union[int, Tuple[int, int]],
+    size: Union[Tuple[int, int], int, None] = None,
+    scale_factor: Union[Tuple[float, float], float, None] = None,
+    keep_ratio: bool = False,
+    return_scale: bool = False,
+    interpolation: str = 'bilinear',
+    out: Optional[np.ndarray] = None,
+    backend: Optional[str] = None
+) -> Union[Tuple[np.ndarray, float, float], np.ndarray]:
     """Resize image according to a given size or scale factor and then rounds
     up the the resized or rescaled image size to the nearest value that can be
     divided by the divisor.
@@ -150,17 +159,19 @@ def imresize_to_multiple(img,
     elif size is None and scale_factor is None:
         raise ValueError('one of size or scale_factor should be defined')
     elif size is not None:
-        size = to_2tuple(size)
+        size = to_2tuple(size)  # type: ignore
         if keep_ratio:
-            size = rescale_size((w, h), size, return_scale=False)
+            size = rescale_size(  # type: ignore
+                (w, h), size, return_scale=False)  # type: ignore
     else:
-        size = _scale_size((w, h), scale_factor)
+        size = _scale_size((w, h), scale_factor)  # type: ignore
 
     divisor = to_2tuple(divisor)
-    size = tuple(int(np.ceil(s / d)) * d for s, d in zip(size, divisor))
+    size = tuple(int(np.ceil(s / d)) * d
+                 for s, d in zip(size, divisor))  # type: ignore
     resized_img, w_scale, h_scale = imresize(
         img,
-        size,
+        size,  # type: ignore
         return_scale=True,
         interpolation=interpolation,
         out=out,
@@ -171,11 +182,13 @@ def imresize_to_multiple(img,
         return resized_img
 
 
-def imresize_like(img,
-                  dst_img,
-                  return_scale=False,
-                  interpolation='bilinear',
-                  backend=None):
+def imresize_like(
+    img: np.ndarray,
+    dst_img: np.ndarray,
+    return_scale: bool = False,
+    interpolation: str = 'bilinear',
+    backend: Optional[str] = None
+) -> Union[Tuple[np.ndarray, float, float], np.ndarray]:
     """Resize image to the same size of a given image.
 
     Args:
@@ -193,7 +206,9 @@ def imresize_like(img,
     return imresize(img, (w, h), return_scale, interpolation, backend=backend)
 
 
-def rescale_size(old_size, scale, return_scale=False):
+def rescale_size(old_size: tuple,
+                 scale: Union[float, tuple],
+                 return_scale: bool = False) -> tuple:
     """Calculate the new size to be rescaled to.
 
     Args:
@@ -230,11 +245,13 @@ def rescale_size(old_size, scale, return_scale=False):
         return new_size
 
 
-def imrescale(img,
-              scale,
-              return_scale=False,
-              interpolation='bilinear',
-              backend=None):
+def imrescale(
+    img: np.ndarray,
+    scale: Union[float, Tuple[int, int]],
+    return_scale: bool = False,
+    interpolation: str = 'bilinear',
+    backend: Optional[str] = None
+) -> Union[np.ndarray, Tuple[np.ndarray, float]]:
     """Resize image while keeping the aspect ratio.
 
     Args:
@@ -261,7 +278,7 @@ def imrescale(img,
         return rescaled_img
 
 
-def imflip(img, direction='horizontal'):
+def imflip(img: np.ndarray, direction: str = 'horizontal') -> np.ndarray:
     """Flip an image horizontally or vertically.
 
     Args:
@@ -281,7 +298,7 @@ def imflip(img, direction='horizontal'):
         return np.flip(img, axis=(0, 1))
 
 
-def imflip_(img, direction='horizontal'):
+def imflip_(img: np.ndarray, direction: str = 'horizontal') -> np.ndarray:
     """Inplace flip an image horizontally or vertically.
 
     Args:
@@ -301,13 +318,13 @@ def imflip_(img, direction='horizontal'):
         return cv2.flip(img, -1, img)
 
 
-def imrotate(img,
-             angle,
-             center=None,
-             scale=1.0,
-             border_value=0,
-             interpolation='bilinear',
-             auto_bound=False):
+def imrotate(img: np.ndarray,
+             angle: float,
+             center: Optional[tuple] = None,
+             scale: float = 1.0,
+             border_value: int = 0,
+             interpolation: str = 'bilinear',
+             auto_bound: bool = False) -> np.ndarray:
     """Rotate an image.
 
     Args:
@@ -351,7 +368,7 @@ def imrotate(img,
     return rotated
 
 
-def bbox_clip(bboxes, img_shape):
+def bbox_clip(bboxes: np.ndarray, img_shape: Tuple[int, int]) -> np.ndarray:
     """Clip bboxes to fit the image shape.
 
     Args:
@@ -369,7 +386,9 @@ def bbox_clip(bboxes, img_shape):
     return clipped_bboxes
 
 
-def bbox_scaling(bboxes, scale, clip_shape=None):
+def bbox_scaling(bboxes: np.ndarray,
+                 scale: float,
+                 clip_shape: Optional[Tuple[int, int]] = None) -> np.ndarray:
     """Scaling bboxes w.r.t the box center.
 
     Args:
@@ -395,7 +414,12 @@ def bbox_scaling(bboxes, scale, clip_shape=None):
         return scaled_bboxes
 
 
-def imcrop(img, bboxes, scale=1.0, pad_fill=None):
+def imcrop(
+    img: np.ndarray,
+    bboxes: np.ndarray,
+    scale: float = 1.0,
+    pad_fill: Optional[Union[int, List]] = None
+) -> Union[np.ndarray, List[np.ndarray]]:
     """Crop image patches.
 
     3 steps: scale the bboxes -> clip bboxes -> crop and pad.
@@ -431,7 +455,8 @@ def imcrop(img, bboxes, scale=1.0, pad_fill=None):
             if chn == 1:
                 patch_shape = (_y2 - _y1 + 1, _x2 - _x1 + 1)
             else:
-                patch_shape = (_y2 - _y1 + 1, _x2 - _x1 + 1, chn)
+                patch_shape = (_y2 - _y1 + 1, _x2 - _x1 + 1, chn
+                               )  # type: ignore
             patch = np.array(
                 pad_fill, dtype=img.dtype) * np.ones(
                     patch_shape, dtype=img.dtype)
@@ -449,12 +474,12 @@ def imcrop(img, bboxes, scale=1.0, pad_fill=None):
         return patches
 
 
-def impad(img,
+def impad(img: np.ndarray,
           *,
-          shape=None,
-          padding=None,
-          pad_val=0,
-          padding_mode='constant'):
+          shape: Optional[Tuple[int, int]] = None,
+          padding: Optional[Union[int, tuple]] = None,
+          pad_val: Union[int, List] = 0,
+          padding_mode: str = 'constant') -> np.ndarray:
     """Pad the given image to a certain shape or pad on all sides with
     specified padding mode and padding value.
 
@@ -532,7 +557,9 @@ def impad(img,
     return img
 
 
-def impad_to_multiple(img, divisor, pad_val=0):
+def impad_to_multiple(img: np.ndarray,
+                      divisor: int,
+                      pad_val: Union[int, List] = 0) -> np.ndarray:
     """Pad an image to ensure each edge to be multiple to some number.
 
     Args:
@@ -548,7 +575,9 @@ def impad_to_multiple(img, divisor, pad_val=0):
     return impad(img, shape=(pad_h, pad_w), pad_val=pad_val)
 
 
-def cutout(img, shape, pad_val=0):
+def cutout(img: np.ndarray,
+           shape: Union[int, Tuple[int, int]],
+           pad_val: Union[int, float, tuple] = 0) -> np.ndarray:
     """Randomly cut out a rectangle from the original img.
 
     Args:
@@ -592,7 +621,7 @@ def cutout(img, shape, pad_val=0):
     if img.ndim == 2:
         patch_shape = (y2 - y1, x2 - x1)
     else:
-        patch_shape = (y2 - y1, x2 - x1, channels)
+        patch_shape = (y2 - y1, x2 - x1, channels)  # type: ignore
 
     img_cutout = img.copy()
     patch = np.array(
@@ -603,7 +632,8 @@ def cutout(img, shape, pad_val=0):
     return img_cutout
 
 
-def _get_shear_matrix(magnitude, direction='horizontal'):
+def _get_shear_matrix(magnitude: Union[int, float],
+                      direction: str = 'horizontal') -> np.ndarray:
     """Generate the shear matrix for transformation.
 
     Args:
@@ -621,11 +651,11 @@ def _get_shear_matrix(magnitude, direction='horizontal'):
     return shear_matrix
 
 
-def imshear(img,
-            magnitude,
-            direction='horizontal',
-            border_value=0,
-            interpolation='bilinear'):
+def imshear(img: np.ndarray,
+            magnitude: Union[int, float],
+            direction: str = 'horizontal',
+            border_value: Union[int, Tuple[int, int]] = 0,
+            interpolation: str = 'bilinear') -> np.ndarray:
     """Shear an image.
 
     Args:
@@ -649,7 +679,7 @@ def imshear(img,
     elif img.ndim == 3:
         channels = img.shape[-1]
     if isinstance(border_value, int):
-        border_value = tuple([border_value] * channels)
+        border_value = tuple([border_value] * channels)  # type: ignore
     elif isinstance(border_value, tuple):
         assert len(border_value) == channels, \
             'Expected the num of elements in tuple equals the channels' \
@@ -667,12 +697,13 @@ def imshear(img,
         # greater than 3 (e.g. shearing masks whose channels large
         # than 3) will raise TypeError in `cv2.warpAffine`.
         # Here simply slice the first 3 values in `border_value`.
-        borderValue=border_value[:3],
+        borderValue=border_value[:3],  # type: ignore
         flags=cv2_interp_codes[interpolation])
     return sheared
 
 
-def _get_translate_matrix(offset, direction='horizontal'):
+def _get_translate_matrix(offset: Union[int, float],
+                          direction: str = 'horizontal') -> np.ndarray:
     """Generate the translate matrix.
 
     Args:
@@ -690,11 +721,11 @@ def _get_translate_matrix(offset, direction='horizontal'):
     return translate_matrix
 
 
-def imtranslate(img,
-                offset,
-                direction='horizontal',
-                border_value=0,
-                interpolation='bilinear'):
+def imtranslate(img: np.ndarray,
+                offset: Union[int, float],
+                direction: str = 'horizontal',
+                border_value: Union[int, tuple] = 0,
+                interpolation: str = 'bilinear') -> np.ndarray:
     """Translate an image.
 
     Args:
