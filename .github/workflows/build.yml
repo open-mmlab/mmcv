@@ -61,7 +61,7 @@ jobs:
               --ignore=tests/test_utils/test_parrots_jit.py \
               --ignore=tests/test_utils/test_trace.py \
               --ignore=tests/test_utils/test_hub.py \
-              --ignore=tests/test_device/test_mlu/test_mlu_parallel.py \
+              --ignore=tests/test_device \
               --ignore=tests/test_utils/test_torch_ops.py
 
   build_without_ops:
