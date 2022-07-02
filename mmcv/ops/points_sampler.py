@@ -116,11 +116,13 @@ class PointsSampler(nn.Module):
                 else:
                     sample_features = None
             else:
-                sample_points_xyz = \
-                    points_xyz[:, last_fps_end_index:fps_sample_range]
+                sample_points_xyz = points_xyz[:, last_fps_end_index:
+                                               fps_sample_range +
+                                               last_fps_end_index]
                 if features is not None:
                     sample_features = features[:, :, last_fps_end_index:
-                                               fps_sample_range]
+                                               fps_sample_range +
+                                               last_fps_end_index]
                 else:
                     sample_features = None
 
