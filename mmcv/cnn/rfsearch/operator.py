@@ -3,25 +3,28 @@ import copy
 import logging
 from typing import Dict
 
+import numpy as np
 import torch
 import torch.nn as nn
 from torch import Tensor
 
-from .utils import expands_rate, value_crop
+from mmcv.runner import BaseModule
+from .utils import expands_rate
 
 logger = logging.getLogger('Operators')
 logger.setLevel(logging.INFO)
 
 
-class ConvRFSearchOp(nn.Module):
+class ConvRFSearchOp(BaseModule):
+    """Based class of ConvRFSearchOp.
 
-    def __init__(self, op_layer: nn.Module, global_config: Dict = {}):
-        """Based class of ConvRFSearchOp.
-
-        Args:
+    Args:
         op_layer (nn.Module): pytorch module, e,g, Conv2d
         global_config (Dict): config dict. Defaults to None.
-        """
+    """
+
+    def __init__(self, op_layer: nn.Module, global_config: Dict = {}):
+
         super().__init__()
         self.op_layer = op_layer
         self.global_config = global_config
@@ -138,7 +141,7 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
         for i in range(len(self.rates)):
             group_sum += norm_w[i].item() * self.rates[i]
             w_sum += norm_w[i].item()
-        estimated = value_crop(
+        estimated = np.clip(
             int(round(group_sum / w_sum)),
             self.global_config['mmin'],
             self.global_config['mmax'],

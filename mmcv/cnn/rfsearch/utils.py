@@ -1,19 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import json
+import numpy as np
 
-
-def load_structure(filename: str) -> dict:
-    """load structure file.
-
-    Args:
-        filename (str): file path
-
-    Returns:
-        dict: model config
-    """
-    with open(filename, encoding='utf-8') as f:
-        config = json.load(f)
-        return config['model']
+import mmcv
 
 
 def write_to_json(dicts, filename: str):
@@ -25,7 +13,7 @@ def write_to_json(dicts, filename: str):
     """
 
     with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(dicts, f, indent=4)
+        mmcv.dump(dicts, f, file_format='json')
 
 
 def expands_rate(d: int, config: dict) -> list:
@@ -41,27 +29,9 @@ def expands_rate(d: int, config: dict) -> list:
     exp_rate = config['exp_rate']
 
     return [
-        value_crop(
+        np.clip(
             int(round((1 - exp_rate) * d)), config['mmin'], config['mmax']),
-        value_crop(d, config['mmin'], config['mmax']),
-        value_crop(
+        np.clip(d, config['mmin'], config['mmax']),
+        np.clip(
             int(round((1 + exp_rate) * d)), config['mmin'], config['mmax']),
     ]
-
-
-def value_crop(d: int, mind: int, maxd: int) -> int:
-    """crop dilation value.
-
-    Args:
-        d (int): dilation rate
-        mind (int): min dilation rate
-        maxd (int): max dilation rate
-
-    Returns:
-        int: dilation rate
-    """
-    if d < mind:
-        d = mind
-    elif d > maxd:
-        d = maxd
-    return d

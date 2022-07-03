@@ -6,9 +6,10 @@ from typing import Dict
 import torch  # noqa
 import torch.nn as nn
 
+import mmcv
 from mmcv.runner import HOOKS, Hook
 from .operator import Conv2dRFSearchOp, ConvRFSearchOp  # noqa
-from .utils import load_structure, write_to_json
+from .utils import write_to_json
 
 logging.basicConfig(
     format='[%(asctime)s-%(filename)s-%(levelname)s:%(message)s]',
@@ -20,14 +21,14 @@ logger.setLevel(logging.ERROR)
 
 
 @HOOKS.register_module()
-class RFSearch(Hook):
+class RFSearchHook(Hook):
     """Rcecptive field search via dilation rates.
         Paper: RF-Next: Efficient Receptive Field
             Search for Convolutional Neural Networks
 
     Args:
         logdir (str, optional): save path of searched structure.
-                        Defaults to './log'.
+                        Defaults to './work_dir'.
         mode (str, optional):
                 search/fixed_single_branch/fixed_multi_branch.
         config (Dict, optional): config dict of search.
@@ -36,7 +37,7 @@ class RFSearch(Hook):
     """
 
     def __init__(self,
-                 logdir: str = './log',
+                 logdir: str = './work_dir',
                  mode: str = 'search',
                  config: Dict = {},
                  rfstructure_file: str = None):
@@ -46,7 +47,7 @@ class RFSearch(Hook):
         self.config = config
         self.config['structure'] = {}
         if rfstructure_file is not None:
-            rfstructure = load_structure(rfstructure_file)
+            rfstructure = mmcv.load(rfstructure_file)['model']
             self.config['structure'] = rfstructure
         self.logdir = logdir
         self.mode = mode
@@ -80,15 +81,6 @@ class RFSearch(Hook):
         print('RFSearch init end.')
         pass
 
-    def before_run(self, runner):
-        pass
-
-    def after_run(self, runner):
-        pass
-
-    def before_epoch(self, runner):
-        pass
-
     def after_epoch(self, runner):
         """Do search after one training epoch.
 
@@ -99,12 +91,6 @@ class RFSearch(Hook):
             print('Local-Search step begin.')
             self.step(runner.model)
             print('Local-Search step end.')
-        pass
-
-    def before_iter(self, runner):
-        pass
-
-    def after_iter(self, runner):
         pass
 
     def step(self, model: nn.Module):
