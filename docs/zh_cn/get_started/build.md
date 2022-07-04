@@ -213,7 +213,7 @@ pip list
    ```
 
 ```{note}
-我们可以在 [here](https://developer.nvidia.com/cuda-gpus) 查看 GPU 的计算能力
+我们可以点击[这里](https://developer.nvidia.com/cuda-gpus)查看 GPU 的计算能力
 ```
 
 5. 编译安装

@@ -73,7 +73,7 @@ mim install mmcv-full
 mim install mmcv-full==1.5.0
 ```
 
-需要注意的是，你需要参考下表查看 mmcv-full 提供对应 PyTorch 和 CUDA 版本的最低版本。
+需要注意的是，你需要查看下表确认 mmcv-full 提供 PyTorch 和 CUDA 预编译包的最低版本。
 
 <table class="docutils">
   <tbody>
