@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 from mmcv.parallel import MMDistributedDataParallel
-from ..scatter_gather import scatter_kwargs
+from .scatter_gather import scatter_kwargs
 
 
 class MLUDistributedDataParallel(MMDistributedDataParallel):

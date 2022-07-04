@@ -2,33 +2,29 @@
 import torch
 
 from mmcv.parallel.data_container import DataContainer
-from mmcv.utils import deprecated_api_warning
 from ._functions import Scatter
-from .utils import get_device
 
 
-@deprecated_api_warning({'target_mlus': 'target_devices'})
-def scatter(inputs, target_devices, dim=0):
-    """Scatter inputs to target devices.
+def scatter(inputs, target_mlus, dim=0):
+    """Scatter inputs to target mlu.
 
     The only difference from original :func:`scatter` is to add support for
     :type:`~mmcv.parallel.DataContainer`.
     """
-    current_device = get_device()
 
     def scatter_map(obj):
         if isinstance(obj, torch.Tensor):
-            if target_devices != [-1]:
-                obj = obj.to(current_device)
+            if target_mlus != [-1]:
+                obj = obj.to('mlu')
                 return [obj]
             else:
                 # for CPU inference we use self-implemented scatter
-                return Scatter.forward(target_devices, obj)
+                return Scatter.forward(target_mlus, obj)
         if isinstance(obj, DataContainer):
             if obj.cpu_only:
                 return obj.data
             else:
-                return Scatter.forward(target_devices, obj.data)
+                return Scatter.forward(target_mlus, obj.data)
         if isinstance(obj, tuple) and len(obj) > 0:
             return list(zip(*map(scatter_map, obj)))
         if isinstance(obj, list) and len(obj) > 0:
@@ -37,7 +33,7 @@ def scatter(inputs, target_devices, dim=0):
         if isinstance(obj, dict) and len(obj) > 0:
             out = list(map(type(obj), zip(*map(scatter_map, obj.items()))))
             return out
-        return [obj for _ in target_devices]
+        return [obj for targets in target_mlus]
 
     # After scatter_map is called, a scatter_map cell will exist. This cell
     # has a reference to the actual function scatter_map, which has references
@@ -50,11 +46,10 @@ def scatter(inputs, target_devices, dim=0):
         scatter_map = None
 
 
-@deprecated_api_warning({'target_mlus': 'target_devices'})
-def scatter_kwargs(inputs, kwargs, target_devices, dim=0):
+def scatter_kwargs(inputs, kwargs, target_mlus, dim=0):
     """Scatter with support for kwargs dictionary."""
-    inputs = scatter(inputs, target_devices, dim) if inputs else []
-    kwargs = scatter(kwargs, target_devices, dim) if kwargs else []
+    inputs = scatter(inputs, target_mlus, dim) if inputs else []
+    kwargs = scatter(kwargs, target_mlus, dim) if kwargs else []
     if len(inputs) < len(kwargs):
         inputs.extend([() for _ in range(len(kwargs) - len(inputs))])
     elif len(kwargs) < len(inputs):

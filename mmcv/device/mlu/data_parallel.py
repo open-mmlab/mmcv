@@ -3,7 +3,7 @@
 import torch
 
 from mmcv.parallel import MMDataParallel
-from ..scatter_gather import scatter_kwargs
+from .scatter_gather import scatter_kwargs
 
 
 class MLUDataParallel(MMDataParallel):
