@@ -68,7 +68,9 @@ class PaviLoggerHook(LoggerHook):
         try:
             from pavi import SummaryWriter
         except ImportError:
-            raise ImportError('Please run "pip install pavi" to install pavi.')
+            raise ImportError(
+                'No module named pavi, please contact pavi team or visit'
+                'document for pavi installation instructions.')
 
         self.run_name = runner.work_dir.split('/')[-1]
 
