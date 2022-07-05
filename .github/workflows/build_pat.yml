@@ -29,6 +29,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
+        with:
+          sudo: false
       - name: Build and test
         run: |
           unset $PIP_CONFIG_FILE
