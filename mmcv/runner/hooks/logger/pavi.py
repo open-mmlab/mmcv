@@ -2,14 +2,17 @@
 import json
 import os
 import os.path as osp
+from functools import partial
 from typing import Dict, Optional
 
 import torch
 import yaml
 
 import mmcv
+from ....parallel.scatter_gather import scatter
 from ....parallel.utils import is_module_wrapper
 from ...dist_utils import master_only
+from ...iter_based_runner import IterLoader
 from ..hook import HOOKS
 from .base import LoggerHook
 
@@ -44,7 +47,10 @@ class PaviLoggerHook(LoggerHook):
         reset_flag (bool): Whether to clear the output buffer after logging.
             Default: False.
         by_epoch (bool): Whether EpochBasedRunner is used. Default: True.
-        img_key (string): Get image data from Dataset. Default: 'img_info'.
+        img_key (string): Get image data from Dataset. Default: 'img'.
+        opset_version (int): `opset_version` of export onnx. Default: 11.
+        partial_args (dict, optional): Set default parameters other than image
+            for model forward function. Default: {'return_loss': False}
     """
 
     def __init__(self,
@@ -55,12 +61,16 @@ class PaviLoggerHook(LoggerHook):
                  ignore_last: bool = True,
                  reset_flag: bool = False,
                  by_epoch: bool = True,
-                 img_key: str = 'img_info'):
+                 img_key: str = 'img',
+                 opset_version: int = 11,
+                 partial_args: dict = dict(return_loss=False)):
         super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.init_kwargs = init_kwargs
         self.add_graph = add_graph
         self.add_last_ckpt = add_last_ckpt
         self.img_key = img_key
+        self.opset_version = opset_version
+        self.partial_args = partial_args
 
     @master_only
     def before_run(self, runner) -> None:
@@ -137,13 +147,33 @@ class PaviLoggerHook(LoggerHook):
 
     @master_only
     def before_epoch(self, runner) -> None:
-        if runner.epoch == 0 and self.add_graph:
-            if is_module_wrapper(runner.model):
-                _model = runner.model.module
-            else:
-                _model = runner.model
-            device = next(_model.parameters()).device
+        if self.by_epoch and runner.epoch == 0 and self.add_graph:
+            self.upload_graph(runner)
+
+    @master_only
+    def before_iter(self, runner) -> None:
+        if not self.by_epoch and runner.iter == 0 and self.add_graph:
+            self.upload_graph(runner)
+
+    def upload_graph(self, runner):
+        """Upload the model graph to Pavi to visualize."""
+        if is_module_wrapper(runner.model):
+            _model = runner.model.module
+        else:
+            _model = runner.model
+        device = next(_model.parameters()).device
+        if isinstance(runner.data_loader, IterLoader):
+            data = next(iter(runner.data_loader._dataloader))
+        else:
             data = next(iter(runner.data_loader))
-            image = data[self.img_key][0:1].to(device)
-            with torch.no_grad():
-                self.writer.add_graph(_model, image)
+        data = scatter(data, [device.index])[0]
+        img = data[self.img_key]
+        with torch.no_grad():
+            origin_forward = _model.forward
+            if hasattr(_model, 'forward_dummy'):
+                _model.forward = _model.forward_dummy
+            if self.partial_args:
+                _model.forward = partial(_model.forward, **self.partial_args)
+            self.writer.add_graph(
+                _model, img, opset_version=self.opset_version)
+            _model.forward = origin_forward
