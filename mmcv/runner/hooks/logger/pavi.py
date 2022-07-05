@@ -9,10 +9,9 @@ import torch
 import yaml
 
 import mmcv
-from ....parallel.scatter_gather import scatter
-from ....parallel.utils import is_module_wrapper
-from ...dist_utils import master_only
-from ...iter_based_runner import IterLoader
+from mmcv.parallel.scatter_gather import scatter
+from mmcv.parallel.utils import is_module_wrapper
+from mmcv.runner.dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
 
@@ -157,6 +156,7 @@ class PaviLoggerHook(LoggerHook):
 
     def upload_graph(self, runner):
         """Upload the model graph to Pavi to visualize."""
+        from mmcv.runner.iter_based_runner import IterLoader
         if is_module_wrapper(runner.model):
             _model = runner.model.module
         else:
