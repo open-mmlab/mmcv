@@ -125,14 +125,17 @@ class PaviLoggerHook(LoggerHook):
         else:
             return self.get_iter(runner)
 
-    def _add_ckpt(self, runner) -> None:
-        ckpt_path = osp.join(runner.work_dir, 'latest.pth')
+    def _add_ckpt(self, runner, last_ckpt=False) -> None:
+        iteration = runner.epoch if self.by_epoch else runner.iter
+        if last_ckpt:
+            ckpt_path = osp.join(runner.work_dir, 'latest.pth')
+        else:
+            ckpt_path = osp.join(runner.work_dir, f'epoch_{iteration}.pth')
         if osp.islink(ckpt_path):
             ckpt_path = osp.join(runner.work_dir, os.readlink(ckpt_path))
 
         if osp.isfile(ckpt_path):
             # runner.epoch += 1 has been done before `after_run`.
-            iteration = runner.epoch if self.by_epoch else runner.iter
             self.writer.add_snapshot_file(
                 tag=self.run_name,
                 snapshot_file_path=ckpt_path,
@@ -148,15 +151,15 @@ class PaviLoggerHook(LoggerHook):
     @master_only
     def after_run(self, runner) -> None:
         if self.add_last_ckpt:
-            self._add_ckpt(runner)
+            self._add_ckpt(runner, last_ckpt=True)
 
         # flush the buffer and send a task ending signal to Pavi
         self.writer.close()
 
     @master_only
     def before_epoch(self, runner) -> None:
-        if self.add_graph and (runner.epoch % self.add_graph_interval_epoch
-                               == self.add_graph_start_epoch):
+        if self.add_graph and ((runner.epoch - self.add_graph_start_epoch) %
+                               self.add_graph_interval_epoch == 0):
             if is_module_wrapper(runner.model):
                 _model = runner.model.module
             else:
@@ -169,6 +172,6 @@ class PaviLoggerHook(LoggerHook):
 
     @master_only
     def after_train_epoch(self, runner) -> None:
-        if runner.epoch % self.add_ckpt_interval_epoch == \
-                self.add_ckpt_start_epoch:
+        if (runner.epoch-self.add_ckpt_start_epoch) % \
+                self.add_ckpt_interval_epoch == 0:
             self._add_ckpt(runner)
