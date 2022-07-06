@@ -126,6 +126,7 @@ class PaviLoggerHook(LoggerHook):
             return self.get_iter(runner)
 
     def _add_ckpt(self, runner, last_ckpt=False) -> None:
+        # runner.epoch += 1 has been done before `after_run`.
         iteration = runner.epoch if self.by_epoch else runner.iter
         if last_ckpt:
             ckpt_path = osp.join(runner.work_dir, 'latest.pth')
@@ -135,7 +136,6 @@ class PaviLoggerHook(LoggerHook):
             ckpt_path = osp.join(runner.work_dir, os.readlink(ckpt_path))
 
         if osp.isfile(ckpt_path):
-            # runner.epoch += 1 has been done before `after_run`.
             self.writer.add_snapshot_file(
                 tag=self.run_name,
                 snapshot_file_path=ckpt_path,
