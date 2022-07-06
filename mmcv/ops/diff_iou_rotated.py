@@ -243,6 +243,8 @@ def sort_normalized_vertices(vertices: Tensor, mask: Tensor,
         dim=-1,
         index=num_valid.unsqueeze(-1),
         src=temp.expand(-1, -1, index.size(-1)))
+    # resulting intersection area has not more than 8 vertices,
+    # check the note in sort_vertices for +1 explanation
     return index[..., :9]
 
 
@@ -254,7 +256,7 @@ def generate_mask(num_valid: Tensor) -> Tensor:
         num_valid (Tensor): (B, N) Number of valid vertices per pair of boxes.
 
     Returns:
-       Tensor: (B, N, 9) Mask.
+        Tensor: (B, N, 9) Mask.
     """
     B, N = num_valid.size()
     arange = torch.arange(9).unsqueeze(0).unsqueeze(0).to(num_valid.device)
