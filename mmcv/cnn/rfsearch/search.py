@@ -27,8 +27,6 @@ class RFSearchHook(Hook):
             Search for Convolutional Neural Networks
 
     Args:
-        logdir (str, optional): save path of searched structure.
-                        Defaults to './work_dir'.
         mode (str, optional):
                 search/fixed_single_branch/fixed_multi_branch.
         config (Dict, optional): config dict of search.
@@ -37,11 +35,9 @@ class RFSearchHook(Hook):
     """
 
     def __init__(self,
-                 logdir: str = './work_dir',
                  mode: str = 'search',
                  config: Dict = {},
                  rfstructure_file: str = None):
-        assert logdir is not None
         assert mode in ['search', 'fixed_single_branch', 'fixed_multi_branch']
         assert config is not None
         self.config = config
@@ -49,10 +45,8 @@ class RFSearchHook(Hook):
         if rfstructure_file is not None:
             rfstructure = mmcv.load(rfstructure_file)['model']
             self.config['structure'] = rfstructure
-        self.logdir = logdir
         self.mode = mode
         self.S = self.config['search']['S']
-        os.makedirs(self.logdir, exist_ok=True)
 
     def model_init(self, model: nn.Module):
         """init model with search ability.
@@ -66,7 +60,6 @@ class RFSearchHook(Hook):
                     search/fixed_single_branch/fixed_multi_branch
         """
         print('RFSearch init begin.')
-        # print(runner.model)
         if self.mode == 'search':
             if self.config['structure']:
                 self.set_model(model, self.config, search_op='Conv2d')
@@ -89,15 +82,16 @@ class RFSearchHook(Hook):
         """
         if self.mode == 'search':
             print('Local-Search step begin.')
-            self.step(runner.model)
+            self.step(runner.model, runner.work_dir)
             print('Local-Search step end.')
         pass
 
-    def step(self, model: nn.Module):
+    def step(self, model: nn.Module, work_dir: str):
         """do one step of dilation search.
 
         Args:
             model (nn.Module): pytorch model
+            work_dir (str): save path
         """
         self.config['search']['step'] += 1
         if (self.config['search']['step']
@@ -110,7 +104,7 @@ class RFSearchHook(Hook):
             write_to_json(
                 self.config,
                 os.path.join(
-                    self.logdir,
+                    work_dir,
                     'local_search_config_step%d.json' %
                     self.config['search']['step'],
                 ),

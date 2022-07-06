@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
-import logging
 from typing import Dict
 
 import numpy as np
@@ -9,10 +8,10 @@ import torch.nn as nn
 from torch import Tensor
 
 from mmcv.runner import BaseModule
+from mmcv.utils.logging import get_logger
 from .utils import expands_rate
 
-logger = logging.getLogger('Operators')
-logger.setLevel(logging.INFO)
+logger = get_logger('Operators')
 
 
 class ConvRFSearchOp(BaseModule):
