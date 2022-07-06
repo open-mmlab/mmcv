@@ -36,8 +36,12 @@ class PaviLoggerHook(LoggerHook):
               to the training with the same name in the same project, rather
               than creating a new one. Defaults to False.
         add_graph (bool): Whether to visual model. Default: False.
+        add_graph_defined (dict, optional): Define the params for adding graph.
+            Default: {'start_epoch': 0, 'interval_epoch': 1}.
         add_last_ckpt (bool): Whether to save checkpoint after run.
             Default: False.
+        add_ckpt_defined (dict, optional): Define the params for adding
+            checkpoint. Default: {'start_epoch': 0, 'interval_epoch': 1}.
         interval (int): Logging interval (every k iterations). Default: True.
         ignore_last (bool): Ignore the log of last iterations in each epoch
             if less than `interval`. Default: True.
@@ -50,16 +54,30 @@ class PaviLoggerHook(LoggerHook):
     def __init__(self,
                  init_kwargs: Optional[Dict] = None,
                  add_graph: bool = False,
+                 add_graph_defined: dict = {
+                     'start_epoch': 0,
+                     'interval_epoch': 1
+                 },
                  add_last_ckpt: bool = False,
+                 add_ckpt_defined: dict = {
+                     'start_epoch': 0,
+                     'interval_epoch': 1
+                 },
                  interval: int = 10,
                  ignore_last: bool = True,
                  reset_flag: bool = False,
                  by_epoch: bool = True,
-                 img_key: str = 'img_info'):
+                 img_key: str = 'img_info') -> None:
         super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.init_kwargs = init_kwargs
         self.add_graph = add_graph
+        self.add_graph_start_epoch = add_graph_defined.get('start_epoch', 0)
+        self.add_graph_interval_epoch = add_graph_defined.get(
+            'interval_epoch', 1)
         self.add_last_ckpt = add_last_ckpt
+        self.add_ckpt_start_epoch = add_ckpt_defined.get('start_epoch', 0)
+        self.add_ckpt_interval_epoch = add_ckpt_defined.get(
+            'interval_epoch', 0)
         self.img_key = img_key
 
     @master_only
@@ -110,6 +128,22 @@ class PaviLoggerHook(LoggerHook):
         else:
             return self.get_iter(runner)
 
+    def _add_ckpt(self, runner, last_ckpt=False) -> None:
+        # runner.epoch += 1 has been done before `after_run`.
+        iteration = runner.epoch if self.by_epoch else runner.iter
+        if last_ckpt:
+            ckpt_path = osp.join(runner.work_dir, 'latest.pth')
+        else:
+            ckpt_path = osp.join(runner.work_dir, f'epoch_{iteration}.pth')
+        if osp.islink(ckpt_path):
+            ckpt_path = osp.join(runner.work_dir, os.readlink(ckpt_path))
+
+        if osp.isfile(ckpt_path):
+            self.writer.add_snapshot_file(
+                tag=self.run_name,
+                snapshot_file_path=ckpt_path,
+                iteration=iteration)
+
     @master_only
     def log(self, runner) -> None:
         tags = self.get_loggable_tags(runner, add_mode=False)
@@ -120,24 +154,15 @@ class PaviLoggerHook(LoggerHook):
     @master_only
     def after_run(self, runner) -> None:
         if self.add_last_ckpt:
-            ckpt_path = osp.join(runner.work_dir, 'latest.pth')
-            if osp.islink(ckpt_path):
-                ckpt_path = osp.join(runner.work_dir, os.readlink(ckpt_path))
-
-            if osp.isfile(ckpt_path):
-                # runner.epoch += 1 has been done before `after_run`.
-                iteration = runner.epoch if self.by_epoch else runner.iter
-                return self.writer.add_snapshot_file(
-                    tag=self.run_name,
-                    snapshot_file_path=ckpt_path,
-                    iteration=iteration)
+            self._add_ckpt(runner, last_ckpt=True)
 
         # flush the buffer and send a task ending signal to Pavi
         self.writer.close()
 
     @master_only
     def before_epoch(self, runner) -> None:
-        if runner.epoch == 0 and self.add_graph:
+        if self.add_graph and ((runner.epoch - self.add_graph_start_epoch) %
+                               self.add_graph_interval_epoch == 0):
             if is_module_wrapper(runner.model):
                 _model = runner.model.module
             else:
@@ -147,3 +172,9 @@ class PaviLoggerHook(LoggerHook):
             image = data[self.img_key][0:1].to(device)
             with torch.no_grad():
                 self.writer.add_graph(_model, image)
+
+    @master_only
+    def after_train_epoch(self, runner) -> None:
+        if (runner.epoch-self.add_ckpt_start_epoch) % \
+                self.add_ckpt_interval_epoch == 0:
+            self._add_ckpt(runner)

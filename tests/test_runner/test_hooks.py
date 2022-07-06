@@ -353,6 +353,51 @@ def test_pavi_hook():
         iteration=1)
 
 
+def test_pavi_hook_2():
+    """Test setting start epoch and interval epoch."""
+    sys.modules['pavi'] = MagicMock()
+
+    loader = DataLoader(torch.ones((5, 2)))
+    runner = _build_demo_runner(max_epochs=6)
+    runner.meta = dict(config_dict=dict(lr=0.02, gpu_ids=range(1)))
+    hook = PaviLoggerHook(
+        add_graph=False,
+        add_graph_defined={
+            'start_epoch': 0,
+            'interval_epoch': 1
+        },
+        add_last_ckpt=True,
+        add_ckpt_defined={
+            'start_epoch': 1,
+            'interval_epoch': 2
+        })
+    runner.register_hook(hook)
+    runner.run([loader, loader], [('train', 1), ('val', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    assert hasattr(hook, 'writer')
+
+    calls = [
+        call(
+            tag=runner.work_dir.split('/')[-1],
+            snapshot_file_path=osp.join(runner.work_dir, 'epoch_1.pth'),
+            iteration=1),
+        call(
+            tag=runner.work_dir.split('/')[-1],
+            snapshot_file_path=osp.join(runner.work_dir, 'epoch_3.pth'),
+            iteration=3),
+        call(
+            tag=runner.work_dir.split('/')[-1],
+            snapshot_file_path=osp.join(runner.work_dir, 'epoch_5.pth'),
+            iteration=5),
+        call(
+            tag=runner.work_dir.split('/')[-1],
+            snapshot_file_path=osp.join(runner.work_dir, 'latest.pth'),
+            iteration=6),
+    ]
+    hook.writer.add_snapshot_file.assert_has_calls(calls, any_order=False)
+
+
 def test_sync_buffers_hook():
     loader = DataLoader(torch.ones((5, 2)))
     runner = _build_demo_runner()
