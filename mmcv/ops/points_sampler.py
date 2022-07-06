@@ -104,7 +104,6 @@ class PointsSampler(nn.Module):
         """
         indices = []
         last_fps_end_index = 0
-
         for fps_sample_range, sampler, npoint in zip(
                 self.fps_sample_range_list, self.samplers, self.num_point):
             assert fps_sample_range < points_xyz.shape[1]
@@ -116,8 +115,8 @@ class PointsSampler(nn.Module):
                 else:
                     sample_features = None
             else:
-                sample_points_xyz = \
-                    points_xyz[:, last_fps_end_index:fps_sample_range]
+                sample_points_xyz = points_xyz[:, last_fps_end_index:
+                                               fps_sample_range]
                 if features is not None:
                     sample_features = features[:, :, last_fps_end_index:
                                                fps_sample_range]
@@ -128,7 +127,7 @@ class PointsSampler(nn.Module):
                               npoint)
 
             indices.append(fps_idx + last_fps_end_index)
-            last_fps_end_index += fps_sample_range
+            last_fps_end_index = fps_sample_range
         indices = torch.cat(indices, dim=1)
 
         return indices
