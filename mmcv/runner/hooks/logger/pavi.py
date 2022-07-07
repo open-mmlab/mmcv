@@ -74,7 +74,7 @@ class PaviLoggerHook(LoggerHook):
         add_ckpt_args = {} if add_ckpt_args is None else add_ckpt_args
         self.add_last_ckpt = add_last_ckpt
         self.add_ckpt_start = add_ckpt_args.get('start', 0)
-        self.add_ckpt_interval = add_ckpt_args.get('interval', 0)
+        self.add_ckpt_interval = add_ckpt_args.get('interval', 1)
         self.img_key = img_key
 
     @master_only
@@ -175,6 +175,5 @@ class PaviLoggerHook(LoggerHook):
 
     @master_only
     def after_train_epoch(self, runner) -> None:
-        if (runner.epoch-self.add_ckpt_start) % \
-                self.add_ckpt_interval == 0:
+        if (runner.epoch - self.add_ckpt_start) % self.add_ckpt_interval == 0:
             self._add_ckpt(runner)
