@@ -255,24 +255,25 @@ void CARAFEForwardMLUKernelLauncher(const Tensor input, const Tensor mask,
   // convert NCHW to NHWC
   auto memory_format_input_nhwc =
       torch_mlu::cnnl::ops::get_channels_last_memory_format(input.dim());
-  rinput =
+  auto rinput_ =
       torch_mlu::cnnl::ops::cnnl_contiguous(input, memory_format_input_nhwc);
 
   auto memory_format_mask_nhwc =
       torch_mlu::cnnl::ops::get_channels_last_memory_format(mask.dim());
-  rmask = torch_mlu::cnnl::ops::cnnl_contiguous(mask, memory_format_mask_nhwc);
+  auto rmask_ =
+      torch_mlu::cnnl::ops::cnnl_contiguous(mask, memory_format_mask_nhwc);
 
   auto memory_format_output_nhwc =
       torch_mlu::cnnl::ops::get_channels_last_memory_format(output.dim());
-  routput =
+  auto routput_ =
       torch_mlu::cnnl::ops::cnnl_contiguous(output, memory_format_output_nhwc);
 
   // get ptr of tensors
-  auto input_impl = torch_mlu::getMluTensorImpl(rinput);
+  auto input_impl = torch_mlu::getMluTensorImpl(rinput_);
   auto input_ptr = input_impl->cnnlMalloc();
-  auto mask_impl = torch_mlu::getMluTensorImpl(rmask);
+  auto mask_impl = torch_mlu::getMluTensorImpl(rmask_);
   auto mask_ptr = mask_impl->cnnlMalloc();
-  auto output_impl = torch_mlu::getMluTensorImpl(routput);
+  auto output_impl = torch_mlu::getMluTensorImpl(routput_);
   auto output_ptr = output_impl->cnnlMalloc();
 
   // get compute queue
@@ -291,7 +292,8 @@ void CARAFEForwardMLUKernelLauncher(const Tensor input, const Tensor mask,
                       block_dim, grid_dim, output_ptr);
 
   // copy output from NHWC back into NCHW
-  output.copy_(routput);
+  rinput.copy_(rinput_);
+  output.copy_(routput_);
 }
 
 // Policy Function for Backward
@@ -335,40 +337,45 @@ void CARAFEBackwardMLUKernelLauncher(
   policyFuncBackward(&k_dim, &k_type);
 
   // convert NCHW to NHWC
+  auto memory_format_input_nhwc =
+      torch_mlu::cnnl::ops::get_channels_last_memory_format(rinput.dim());
+  auto rinput_ =
+      torch_mlu::cnnl::ops::cnnl_contiguous(rinput, memory_format_input_nhwc);
+
   auto memory_format_mask_nhwc =
       torch_mlu::cnnl::ops::get_channels_last_memory_format(mask.dim());
-  auto rmask =
+  auto rmask_ =
       torch_mlu::cnnl::ops::cnnl_contiguous(mask, memory_format_mask_nhwc);
 
   auto memory_format_grad_output_nhwc =
       torch_mlu::cnnl::ops::get_channels_last_memory_format(grad_output.dim());
-  rgrad_output = torch_mlu::cnnl::ops::cnnl_contiguous(
+  auto rgrad_output_ = torch_mlu::cnnl::ops::cnnl_contiguous(
       grad_output, memory_format_grad_output_nhwc);
 
   auto memory_format_grad_input_nhwc =
       torch_mlu::cnnl::ops::get_channels_last_memory_format(grad_input.dim());
-  rgrad_input = torch_mlu::cnnl::ops::cnnl_contiguous(
-                    grad_input, memory_format_grad_input_nhwc)
-                    .zero_();
+  auto rgrad_input_ = torch_mlu::cnnl::ops::cnnl_contiguous(
+                          grad_input, memory_format_grad_input_nhwc)
+                          .zero_();
 
   auto memory_format_grad_mask_nhwc =
       torch_mlu::cnnl::ops::get_channels_last_memory_format(grad_mask.dim());
-  rgrad_mask = torch_mlu::cnnl::ops::cnnl_contiguous(
+  auto rgrad_mask_ = torch_mlu::cnnl::ops::cnnl_contiguous(
       grad_mask, memory_format_grad_mask_nhwc);
 
   // get compute queue
   auto queue = torch_mlu::getCurQueue();
 
   // get ptr of tensors
-  auto input_impl = torch_mlu::getMluTensorImpl(rinput);
+  auto input_impl = torch_mlu::getMluTensorImpl(rinput_);
   auto input_ptr = input_impl->cnnlMalloc();
-  auto mask_impl = torch_mlu::getMluTensorImpl(rmask);
+  auto mask_impl = torch_mlu::getMluTensorImpl(rmask_);
   auto mask_ptr = mask_impl->cnnlMalloc();
-  auto grad_output_impl = torch_mlu::getMluTensorImpl(rgrad_output);
+  auto grad_output_impl = torch_mlu::getMluTensorImpl(rgrad_output_);
   auto grad_output_ptr = grad_output_impl->cnnlMalloc();
-  auto grad_input_impl = torch_mlu::getMluTensorImpl(rgrad_input);
+  auto grad_input_impl = torch_mlu::getMluTensorImpl(rgrad_input_);
   auto grad_input_ptr = grad_input_impl->cnnlMalloc();
-  auto grad_mask_impl = torch_mlu::getMluTensorImpl(rgrad_mask);
+  auto grad_mask_impl = torch_mlu::getMluTensorImpl(rgrad_mask_);
   auto grad_mask_ptr = grad_mask_impl->cnnlMalloc();
 
   // get dtype of grad_output
@@ -386,8 +393,8 @@ void CARAFEBackwardMLUKernelLauncher(
                        scale_factor);
 
   // copy output from NHWC back into NCHW
-  grad_input.copy_(rgrad_input);
-  grad_mask.copy_(rgrad_mask);
+  grad_input.copy_(rgrad_input_);
+  grad_mask.copy_(rgrad_mask_);
 }
 
 void carafe_forward_mlu(Tensor features, Tensor masks, Tensor rfeatures,
