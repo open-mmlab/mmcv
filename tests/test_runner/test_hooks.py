@@ -362,14 +362,14 @@ def test_pavi_hook_2():
     runner.meta = dict(config_dict=dict(lr=0.02, gpu_ids=range(1)))
     hook = PaviLoggerHook(
         add_graph=False,
-        add_graph_defined={
-            'start_epoch': 0,
-            'interval_epoch': 1
+        add_graph_args={
+            'start': 0,
+            'interval': 1
         },
         add_last_ckpt=True,
-        add_ckpt_defined={
-            'start_epoch': 1,
-            'interval_epoch': 2
+        add_ckpt_args={
+            'start': 1,
+            'interval': 2
         })
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)])
