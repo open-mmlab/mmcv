@@ -43,7 +43,7 @@ class RFSearchHook(Hook):
         self.config = config
         self.config['structure'] = {}
         if rfstructure_file is not None:
-            rfstructure = mmcv.load(rfstructure_file)['model']
+            rfstructure = mmcv.load(rfstructure_file)['structure']
             self.config['structure'] = rfstructure
         self.mode = mode
         self.S = self.config['search']['S']
