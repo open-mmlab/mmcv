@@ -144,10 +144,14 @@ class MMDistributedDataParallel(DistributedDataParallel):
     def _run_ddp_forward(self, *inputs, **kwargs) -> Any:
         """Processes inputs and runs ``self.module.forward``.
 
-        Pytorch 1.12.0 deprecate using ``DistributedDataParallel.to_kwargs`` to
-        process inputs in ``DistributedDataParallel._run_ddp_forward``, which
-        causes BC breaking. Therefore, ``MMDistributedDataParallel`` override
-        this method to call :meth:`to_kwargs`.
+        Pytorch 1.12.0 performs ``self.module.forward`` in ``_run_ddp_forward``
+        and deprecates using ``DistributedDataParallel.to_kwargs`` to
+        process inputs, which leads to inputs cannot be processed by
+        :meth:`MMDistributedDataParallel.to_kwargs` anymore. Therefore,
+        ``MMDistributedDataParallel`` overrides this method to call
+        :meth:`to_kwargs` explicitly.
+
+        See more information in `<https://github.com/open-mmlab/mmsegmentation/issues/1742>`_.  # noqa: E501
 
         Returns:
             Any: Forward result of :attr:`module`.
