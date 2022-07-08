@@ -141,7 +141,6 @@ class MMDistributedDataParallel(DistributedDataParallel):
                 self.require_forward_param_sync = False
         return output
 
-
     def _run_ddp_forward(self, *inputs, **kwargs) -> Any:
         """Processes inputs and runs ``self.module.forward``.
 
@@ -157,8 +156,8 @@ class MMDistributedDataParallel(DistributedDataParallel):
             self._use_replicated_tensor_module else self.module
 
         if self.device_ids:
-            inputs, kwargs = self.to_kwargs(inputs, kwargs,
-                                            self.device_ids[0])
-            return module_to_run(*inputs[0], **kwargs[0])
+            inputs, kwargs = self.to_kwargs(  # type: ignore
+                inputs, kwargs, self.device_ids[0])
+            return module_to_run(*inputs[0], **kwargs[0])  # type: ignore
         else:
             return module_to_run(*inputs, **kwargs)
