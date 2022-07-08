@@ -162,6 +162,8 @@ class PaviLoggerHook(LoggerHook):
         else:
             _model = runner.model
         device = next(_model.parameters()).device
+        # Note that if your sampler indices is generated in init method, your
+        # dataset may be one less.
         if isinstance(runner.data_loader, IterLoader):
             data = next(iter(runner.data_loader._dataloader))
         else:
