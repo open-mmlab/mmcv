@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from functools import wraps
-from typing import Any, Callable, List, Tuple
+from typing import Any, List, Tuple
 
 import torch
 from torch.nn.parallel.distributed import (DistributedDataParallel,
@@ -9,36 +8,6 @@ from torch.nn.parallel.distributed import (DistributedDataParallel,
 from mmcv import print_log
 from mmcv.utils import TORCH_VERSION, digit_version
 from .scatter_gather import ScatterInputs, scatter_kwargs
-
-
-def _patch_to_kwargs(forward: Callable) -> Callable:
-    """Patch :func:`torch.distributed.utils._to_kwargs` used in
-    :meth:`torch.nn.parallel.distributed` with
-    :meth:`MMDistributedDataParallel.to_kwargs` if Pytorch version >= 1.12.0
-
-    Pytorch 1.12.0 deprecate using ``DistributedDataParallel.to_kwargs`` to
-    process inputs, which causes BC breaking.
-
-
-    Args:
-        forward (Callable): forward method of ``DistributedDataParallel``
-
-    Returns:
-        Callable: patched forward.
-    """
-
-    @wraps(forward)
-    def patched_forward(self, *args, **kwargs):
-        if digit_version(TORCH_VERSION) >= digit_version('1.12.0'):
-            import torch.nn.parallel.distributed as dist
-            new_to_kwargs = dist._to_kwargs
-            dist._to_kwargs = self.to_kwargs
-            forward(self, *args, **kwargs)
-            dist._to_kwargs = new_to_kwargs
-        else:
-            return forward(self, *args, **kwargs)
-
-    return patched_forward
 
 
 class MMDistributedDataParallel(DistributedDataParallel):
@@ -52,7 +21,7 @@ class MMDistributedDataParallel(DistributedDataParallel):
     """
 
     def to_kwargs(self, inputs: ScatterInputs, kwargs: ScatterInputs,
-                  device_id: int, *args, **_kwargs) -> Tuple[tuple, tuple]:
+                  device_id: int) -> Tuple[tuple, tuple]:
         # Use `self.to_kwargs` instead of `self.scatter` in pytorch1.8
         # to move all tensors to device_id
         return scatter_kwargs(inputs, kwargs, [device_id], dim=self.dim)
@@ -60,24 +29,6 @@ class MMDistributedDataParallel(DistributedDataParallel):
     def scatter(self, inputs: ScatterInputs, kwargs: ScatterInputs,
                 device_ids: List[int]) -> Tuple[tuple, tuple]:
         return scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
-
-    @_patch_to_kwargs
-    def forward(self, *args, **kwargs) -> Any:
-        """Overwrite to patch :func:`torch.distributed.utils._to_kwargs` used
-        in :meth:`torch.nn.parallel.distributed` with
-        :meth:`MMDistributedDataParallel.to_kwargs` if Pytorch version
-         >= 1.12.0
-
-        Args:
-            *args: Positional arguments pass to
-                ``DistributedDataParallel.forward``.
-            **kwargs: Keywords arguments pass to
-                `DistributedDataParallel.forward``.
-
-        Returns:
-            Any: forward result of :attr:`module`.
-        """
-        return super().forward(*args, **kwargs)
 
     def train_step(self, *inputs, **kwargs):
         """train_step() API for module wrapped by DistributedDataParallel.
@@ -189,3 +140,25 @@ class MMDistributedDataParallel(DistributedDataParallel):
                     and digit_version(TORCH_VERSION) > digit_version('1.2')):
                 self.require_forward_param_sync = False
         return output
+
+
+    def _run_ddp_forward(self, *inputs, **kwargs) -> Any:
+        """Processes inputs and runs ``self.module.forward``.
+
+        Pytorch 1.12.0 deprecate using ``DistributedDataParallel.to_kwargs`` to
+        process inputs in ``DistributedDataParallel._run_ddp_forward``, which
+        causes BC breaking. Therefore, ``MMDistributedDataParallel`` override
+        this method to call :meth:`to_kwargs`.
+
+        Returns:
+            Any: Forward result of :attr:`module`.
+        """
+        module_to_run = self._replicated_tensor_module if \
+            self._use_replicated_tensor_module else self.module
+
+        if self.device_ids:
+            inputs, kwargs = self.to_kwargs(inputs, kwargs,
+                                            self.device_ids[0])
+            return module_to_run(*inputs[0], **kwargs[0])
+        else:
+            return module_to_run(*inputs, **kwargs)
