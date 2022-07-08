@@ -14,7 +14,7 @@ class MMDataParallel(DataParallel):
 
     - It supports a custom type :class:`DataContainer` which allows more
       flexible control of input data during both GPU and CPU inference.
-    - It implement two more APIs ``train_step()`` and ``val_step()``.
+    - It implements two more APIs ``train_step()`` and ``val_step()``.
 
     .. warning::
         MMDataParallel only supports single GPU training, if you need to

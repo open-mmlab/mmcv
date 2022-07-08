@@ -41,7 +41,7 @@ std::vector<std::vector<float>> pixel_group_cpu(
     Tensor kernel_contour, int kernel_region_num, float dis_threshold) {
   assert(score.dim() == 2);
   assert(mask.dim() == 2);
-  assert(embedding_dim.dim() == 3);
+  assert(embedding.dim() == 3);
   int height = score.size(0);
   int width = score.size(1);
   assert(height == mask.size(0) == embedding.size(1) == kernel_label.size(1));
