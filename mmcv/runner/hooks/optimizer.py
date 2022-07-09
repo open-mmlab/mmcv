@@ -153,7 +153,8 @@ class GradientCumulativeOptimizerHook(OptimizerHook):
 
         self.initialized = True
 
-    def _calc_loss_per_iter(self, runner):
+    def _get_loss_factor(self, runner):
+        """Get loss division factor for the current iteration."""
         if runner.iter < runner.max_iters - self.remainder_iters:
             loss_factor = self.cumulative_iters
         else:
@@ -163,16 +164,14 @@ class GradientCumulativeOptimizerHook(OptimizerHook):
                 f'{self.remainder_iters} iterations because they are not '
                 f'enough for {self.cumulative_iters} cumulative_iters.')
             assert loss_factor > 0
-        loss = runner.outputs['loss']
-        loss = loss / loss_factor
 
-        return loss
+        return loss_factor
 
     def after_train_iter(self, runner):
         if not self.initialized:
             self._init(runner)
 
-        loss = self._calc_loss_per_iter(runner)
+        loss = runner.outputs['loss'] / self._get_loss_factor(runner)
         loss.backward()
 
         if (self.every_n_iters(runner, self.cumulative_iters)
@@ -318,7 +317,7 @@ if (TORCH_VERSION != 'parrots'
             if not self.initialized:
                 self._init(runner)
 
-            loss = self._calc_loss_per_iter(runner)
+            loss = runner.outputs['loss'] / self._get_loss_factor(runner)
             self.loss_scaler.scale(loss).backward()
 
             if (self.every_n_iters(runner, self.cumulative_iters)
@@ -506,7 +505,7 @@ else:
             if not self.initialized:
                 self._init(runner)
 
-            loss = self._calc_loss_per_iter(runner)
+            loss = runner.outputs['loss'] / self._get_loss_factor(runner)
             scaled_loss = loss * self.loss_scaler.loss_scale
             scaled_loss.backward()
 
