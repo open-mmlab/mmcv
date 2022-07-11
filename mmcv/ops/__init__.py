@@ -68,6 +68,7 @@ from .three_nn import three_nn
 from .tin_shift import TINShift, tin_shift
 from .upfirdn2d import upfirdn2d
 from .voxelize import Voxelization, voxelization
+from .prroi_pool import PrRoIPool, prroi_pool
 
 __all__ = [
     'bbox_overlaps', 'CARAFE', 'CARAFENaive', 'CARAFEPack', 'carafe',
@@ -100,5 +101,6 @@ __all__ = [
     'SparseConvTensor', 'scatter_nd', 'points_in_boxes_part',
     'points_in_boxes_cpu', 'points_in_boxes_all', 'points_in_polygons',
     'min_area_polygons', 'active_rotated_filter', 'convex_iou', 'convex_giou',
-    'diff_iou_rotated_2d', 'diff_iou_rotated_3d', 'chamfer_distance'
+    'diff_iou_rotated_2d', 'diff_iou_rotated_3d', 'chamfer_distance',
+    'PrRoIPool', 'prroi_pool'
 ]
