@@ -79,8 +79,6 @@ class TestCarafe:
             feat.grad.data.type(torch.float).cpu().numpy(),
             np_feat_grad,
             atol=1e-3)
-        print(mask.grad.data.type(torch.float).cpu().numpy())
-        print(np_mask_grad)
         assert np.allclose(
             mask.grad.data.type(torch.float).cpu().numpy(),
             np_mask_grad,
