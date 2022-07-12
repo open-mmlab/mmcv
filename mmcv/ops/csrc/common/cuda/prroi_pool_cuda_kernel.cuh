@@ -84,7 +84,7 @@ __device__ static T PrRoIPoolingMatCalculation(const T* this_data, const int s_h
 }
 
 template <typename T>
-__device__ static void PrRoIPoolingDistributeDiff(const T* diff, const T* top_diff, const int h, const int w, const int height, const int width, const T coeff)
+__device__ static void PrRoIPoolingDistributeDiff(T* diff, const T top_diff, const int h, const int w, const int height, const int width, const T coeff)
 {
     bool overflow = (h < 0) || (w < 0) || (h >= height) || (w >= width);
     if (!overflow)
@@ -92,7 +92,7 @@ __device__ static void PrRoIPoolingDistributeDiff(const T* diff, const T* top_di
 }
 
 template <typename T>
-__device__ static void PrRoIPoolingMatDistributeDiff(const T* diff, const T* top_diff, const int s_h, const int s_w, const int e_h, const int e_w,
+__device__ static void PrRoIPoolingMatDistributeDiff(T* diff, const T top_diff, const int s_h, const int s_w, const int e_h, const int e_w,
         const T y0, const T x0, const T y1, const T x1, const int h0, const int w0)
 {
     T alpha, beta, lim_alpha, lim_beta, tmp;
@@ -178,7 +178,7 @@ __global__ void prroi_pool_forward_cuda_kernel(
         for (int bin_y = start_y; bin_y < end_y; ++bin_y)
             sum_out += PrRoIPoolingMatCalculation(this_data, bin_y, bin_x, bin_y + 1, bin_x + 1,
                 max(bin_y1, T(bin_y)), max(bin_x1, T(bin_x)),
-                min(bin_y2, T(bin_y) + 1.0), min(bin_x2, T(bin_x + 1.0)),
+                min(bin_y2, T(bin_y) + 1.0f), min(bin_x2, T(bin_x + 1.0f)),
                 height, width);
     *this_out = sum_out / bin_size;
   }
@@ -232,7 +232,7 @@ __global__ void prroi_pool_backward_cuda_kernel(
         for (int bin_y = start_y; bin_y < end_y; ++bin_y)
             PrRoIPoolingMatDistributeDiff(this_data_grad, sum_out, bin_y, bin_x, bin_y + 1, bin_x + 1,
                 max(bin_y1, T(bin_y)), max(bin_x1, T(bin_x)),
-                min(bin_y2, T(bin_y) + 1.0), min(bin_x2, T(bin_x + 1.0)),
+                min(bin_y2, T(bin_y) + 1.0f), min(bin_x2, T(bin_x + 1.0f)),
                 height, width);
   }
 }
@@ -288,29 +288,29 @@ __global__ void prroi_pool_coor_backward_cuda_kernel(
     start_y = floorf(bin_y1);
     end_y = ceilf(bin_y2);
 
-    T grad_x1_y = 0, grad_x1_y = 0, grad_x_y1 = 0, grad_x_y2 = 0;
+    T grad_x1_y = 0, grad_x2_y = 0, grad_x_y1 = 0, grad_x_y2 = 0;
     for (int bin_y = start_y; bin_y < end_y; ++bin_y) {
         grad_x1_y += PrRoIPoolingSingleCoorIntegral(max(bin_y1, T(bin_y)) - bin_y,
                 min(bin_y2, T(bin_y + 1)) - bin_y,
-                PrRoIPoolingInterpolation(this_input_data, bin_y, bin_x1, height, width),
-                PrRoIPoolingInterpolation(this_input_data, bin_y + 1, bin_x1, height, width));
+                PrRoIPoolingInterpolation(this_input_data, float(bin_y), bin_x1, height, width),
+                PrRoIPoolingInterpolation(this_input_data, float(bin_y + 1), bin_x1, height, width));
 
-        grad_x1_y += PrRoIPoolingSingleCoorIntegral(max(bin_y1, T(bin_y)) - bin_y,
+        grad_x2_y += PrRoIPoolingSingleCoorIntegral(max(bin_y1, T(bin_y)) - bin_y,
                 min(bin_y2, T(bin_y + 1)) - bin_y,
-                PrRoIPoolingInterpolation(this_input_data, bin_y, bin_x2, height, width),
-                PrRoIPoolingInterpolation(this_input_data, bin_y + 1, bin_x2, height, width));
+                PrRoIPoolingInterpolation(this_input_data, float(bin_y), bin_x2, height, width),
+                PrRoIPoolingInterpolation(this_input_data, float(bin_y + 1), bin_x2, height, width));
     }
 
     for (int bin_x = start_x; bin_x < end_x; ++bin_x) {
         grad_x_y1 += PrRoIPoolingSingleCoorIntegral(max(bin_x1, T(bin_x)) - bin_x,
                 min(bin_x2, T(bin_x + 1)) - bin_x,
-                PrRoIPoolingInterpolation(this_input_data, bin_y1, bin_x, height, width),
-                PrRoIPoolingInterpolation(this_input_data, bin_y1, bin_x + 1, height, width));
+                PrRoIPoolingInterpolation(this_input_data, bin_y1, float(bin_x), height, width),
+                PrRoIPoolingInterpolation(this_input_data, bin_y1, float(bin_x + 1), height, width));
 
         grad_x_y2 += PrRoIPoolingSingleCoorIntegral(max(bin_x1, T(bin_x)) - bin_x,
                 min(bin_x2, T(bin_x + 1)) - bin_x,
-                PrRoIPoolingInterpolation(this_input_data, bin_y2, bin_x, height, width),
-                PrRoIPoolingInterpolation(this_input_data, bin_y2, bin_x + 1, height, width));
+                PrRoIPoolingInterpolation(this_input_data, bin_y2, float(bin_x), height, width),
+                PrRoIPoolingInterpolation(this_input_data, bin_y2, float(bin_x + 1), height, width));
     }
 
     T partial_x1 = -grad_x1_y + (bin_y2 - bin_y1) * (*this_output_data);
@@ -325,9 +325,9 @@ __global__ void prroi_pool_coor_backward_cuda_kernel(
 
     // (index, x1, y1, x2, y2)
     this_rois_grad[0] = 0;
-    atomicAdd(this_rois_grad + 1, (partial_x1 * (1.0 - T(pw) / pooled_width) + partial_x2 * (1.0 - T(pw + 1) / pooled_width))
+    atomicAdd(this_rois_grad + 1, (partial_x1 * (1.0f - T(pw) / pooled_width) + partial_x2 * (1.0f - T(pw + 1) / pooled_width))
             * (*this_output_grad));
-    atomicAdd(this_rois_grad + 2, (partial_y1 * (1.0 - T(ph) / pooled_height) + partial_y2 * (1.0 - T(ph + 1) / pooled_height))
+    atomicAdd(this_rois_grad + 2, (partial_y1 * (1.0f - T(ph) / pooled_height) + partial_y2 * (1.0f - T(ph + 1) / pooled_height))
             * (*this_output_grad));
     atomicAdd(this_rois_grad + 3, (partial_x2 * T(pw + 1) / pooled_width + partial_x1 * T(pw) / pooled_width)
             * (*this_output_grad));

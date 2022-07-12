@@ -12,15 +12,12 @@ void PrROIPoolForwardCUDAKernelLauncher(Tensor input, Tensor rois, Tensor output
 
   at::cuda::CUDAGuard device_guard(input.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
-  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      input.scalar_type(), "prroi_pool_forward_cuda_kernel", [&] {
-        prroi_pool_forward_cuda_kernel<scalar_t>
-            <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
-                output_size, input.data_ptr<scalar_t>(),
-                rois.data_ptr<scalar_t>(), output.data_ptr<scalar_t>(),
-                pooled_height, pooled_width,
-                static_cast<scalar_t>(spatial_scale), channels, height, width);
-      });
+  prroi_pool_forward_cuda_kernel<float>
+      <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
+          output_size, input.data_ptr<float>(),
+          rois.data_ptr<float>(), output.data_ptr<float>(),
+          pooled_height, pooled_width,
+          static_cast<float>(spatial_scale), channels, height, width);
 
   AT_CUDA_CHECK(cudaGetLastError());
 }
@@ -35,15 +32,12 @@ void PrROIPoolBackwardCUDAKernelLauncher(Tensor grad_output, Tensor rois, Tensor
 
   at::cuda::CUDAGuard device_guard(grad_output.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
-  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      grad_output.scalar_type(), "prroi_pool_backward_cuda_kernel", [&] {
-        prroi_pool_backward_cuda_kernel<scalar_t>
-            <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
-                output_size, grad_output.data_ptr<scalar_t>(),
-                rois.data_ptr<scalar_t>(),
-                grad_input.data_ptr<scalar_t>(), pooled_height, pooled_width,
-                static_cast<scalar_t>(spatial_scale), channels, height, width);
-      });
+  prroi_pool_backward_cuda_kernel<float>
+      <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
+          output_size, grad_output.data_ptr<float>(),
+          rois.data_ptr<float>(),
+          grad_input.data_ptr<float>(), pooled_height, pooled_width,
+          static_cast<float>(spatial_scale), channels, height, width);
 
   AT_CUDA_CHECK(cudaGetLastError());
 }
@@ -59,15 +53,12 @@ void PrROIPoolCoorBackwardCUDAKernelLauncher(Tensor output, Tensor grad_output,
 
   at::cuda::CUDAGuard device_guard(grad_output.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
-  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      grad_output.scalar_type(), "prroi_pool_coor_backward_cuda_kernel", [&] {
-        prroi_pool_coor_backward_cuda_kernel<scalar_t>
-            <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
-                output_size, output.data_ptr<scalar_t>(), grad_output.data_ptr<scalar_t>(),
-                input.data_ptr<scalar_t>(), rois.data_ptr<scalar_t>(),
-                grad_rois.data_ptr<scalar_t>(), pooled_height, pooled_width,
-                static_cast<scalar_t>(spatial_scale), channels, height, width);
-      });
+  prroi_pool_coor_backward_cuda_kernel<float>
+      <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
+          output_size, output.data_ptr<float>(), grad_output.data_ptr<float>(),
+          input.data_ptr<float>(), rois.data_ptr<float>(),
+          grad_rois.data_ptr<float>(), pooled_height, pooled_width,
+          static_cast<float>(spatial_scale), channels, height, width);
 
   AT_CUDA_CHECK(cudaGetLastError());
 }
