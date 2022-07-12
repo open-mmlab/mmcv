@@ -449,7 +449,8 @@ class TestPhotometric:
 
         # test pillow backend
         with pytest.raises(AssertionError):
-            mmcv.adjust_hue(self.img.astype(np.float32), backend='pillow')
+            mmcv.adjust_hue(
+                self.img.astype(np.float32), hue_factor=0, backend='pillow')
 
         for i in np.arange(-0.5, 0.5, 0.2):
             img_out = mmcv.adjust_hue(
