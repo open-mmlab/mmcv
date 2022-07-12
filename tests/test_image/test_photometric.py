@@ -108,6 +108,17 @@ class TestPhotometric:
             np.round(mmcv.adjust_color(img, 0.8, -0.6, gamma=-0.6)),
             np.round(np.clip(img * 0.8 - 0.6 * img_r - 0.6, 0, 255)))
 
+        # test pillow backend
+        with pytest.raises(AssertionError):
+            mmcv.adjust_color(img.astype(np.float32), backend='pillow')
+
+        img_out = mmcv.adjust_color(img.astype(np.uint8), backend='pillow')
+        assert img.shape == img_out.shape
+
+        # backend must be 'cv2' or 'pillow'
+        with pytest.raises(ValueError):
+            mmcv.adjust_color(img.astype(np.uint8), backend='not support')
+
     def test_imequalize(self, nb_rand_test=100):
 
         def _imequalize(img):
@@ -166,6 +177,18 @@ class TestPhotometric:
                 rtol=0,
                 atol=1)
 
+        # test pillow backend
+        with pytest.raises(AssertionError):
+            mmcv.adjust_brightness(img.astype(np.float32), backend='pillow')
+
+        img_out = mmcv.adjust_brightness(
+            img.astype(np.uint8), backend='pillow')
+        assert img.shape == img_out.shape
+
+        # backend must be 'cv2' or 'pillow'
+        with pytest.raises(ValueError):
+            mmcv.adjust_brightness(img.astype(np.uint8), backend='not support')
+
     def test_adjust_contrast(self, nb_rand_test=100):
 
         def _adjust_contrast(img, factor):
@@ -201,6 +224,17 @@ class TestPhotometric:
                 _adjust_contrast(img, factor).astype(np.int32),
                 rtol=0,
                 atol=1)
+
+        # test pillow backend
+        with pytest.raises(AssertionError):
+            mmcv.adjust_contrast(img.astype(np.float32), backend='pillow')
+
+        img_out = mmcv.adjust_contrast(img.astype(np.uint8), backend='pillow')
+        assert img.shape == img_out.shape
+
+        # backend must be 'cv2' or 'pillow'
+        with pytest.raises(ValueError):
+            mmcv.adjust_contrast(img.astype(np.uint8), backend='not support')
 
     def test_auto_contrast(self, nb_rand_test=100):
 
@@ -412,3 +446,17 @@ class TestPhotometric:
             pil_res = np.array(pil_res)
             cv2_res = mmcv.adjust_hue(self.img, hue_factor=i)
             assert np.allclose(pil_res, cv2_res, atol=10.0)
+
+        # test pillow backend
+        with pytest.raises(AssertionError):
+            mmcv.adjust_hue(self.img.astype(np.float32), backend='pillow')
+
+        for i in np.arange(-0.5, 0.5, 0.2):
+            img_out = mmcv.adjust_hue(
+                self.img.astype(np.uint8), hue_factor=i, backend='pillow')
+            assert self.img.shape == img_out.shape
+
+        # backend must be 'cv2' or 'pillow'
+        with pytest.raises(ValueError):
+            mmcv.adjust_hue(
+                self.img.astype(np.uint8), hue_factor=0, backend='not support')
