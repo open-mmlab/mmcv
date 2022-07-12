@@ -1,47 +1,59 @@
-## CUDA ops
+## ops
 
-We implement common CUDA ops used in detection, segmentation, etc.
+We implement common ops used in detection, segmentation, etc.
 
-- ActiveRotatedFilter
-- AssignScoreWithK
-- BallQuery
-- BBoxOverlaps
-- CARAFE
-- CrissCrossAttention
-- ContextBlock
-- ConvexIoU
-- CornerPool
-- ChamferDistance
-- Deformable Convolution v1/v2
-- Deformable RoIPool
-- DiffIoURotated
-- DynamicScatter
-- GatherPoints
-- FurthestPointSample
-- FurthestPointSampleWithDist
-- GeneralizedAttention
-- GroupPoints
-- KNN
-- MaskedConv
-- MinAreaPolygon
-- NMS
-- NMS3D
-- PointsInPolygons
-- PSAMask
-- RiRoIAlignRotated
-- RotatedFeatureAlign
-- RoIPointPool3d
-- RoIPool
-- RoIAlign
-- RoIAwarePool3d
-- SimpleRoIAlign
-- SigmoidFocalLoss
-- SoftmaxFocalLoss
-- SoftNMS
-- Sparse Convolution
-- Synchronized BatchNorm
-- Voxelization
-- ThreeInterpolate
-- ThreeNN
-- Weight standardization
-- Correlation
+| Device                       | CPU | CUDA | MLU |
+| ---------------------------- | --- | ---- | --- |
+| ActiveRotatedFilter          | √   | √    |     |
+| AssignScoreWithK             |     | √    |     |
+| BallQuery                    |     | √    |     |
+| BBoxOverlaps                 |     | √    | √   |
+| BorderAlign                  |     | √    |     |
+| BoxIouRotated                | √   | √    |     |
+| CARAFE                       |     | √    |     |
+| ChamferDistance              |     | √    |     |
+| CrissCrossAttention          |     | √    |     |
+| ContourExpand                | √   |      |     |
+| ConvexIoU                    |     | √    |     |
+| CornerPool                   |     | √    |     |
+| Correlation                  |     | √    |     |
+| Deformable Convolution v1/v2 | √   | √    |     |
+| Deformable RoIPool           |     | √    |     |
+| DiffIoURotated               |     | √    |     |
+| DynamicScatter               |     | √    |     |
+| FurthestPointSample          |     | √    |     |
+| FurthestPointSampleWithDist  |     | √    |     |
+| FusedBiasLeakyrelu           |     | √    |     |
+| GatherPoints                 |     | √    |     |
+| GroupPoints                  |     | √    |     |
+| Iou3d                        |     | √    |     |
+| KNN                          |     | √    |     |
+| MaskedConv                   |     | √    |     |
+| MergeCells                   |     | √    |     |
+| MinAreaPolygon               |     | √    |     |
+| ModulatedDeformConv2d        | √   | √    |     |
+| MultiScaleDeformableAttn     |     | √    |     |
+| NMS                          | √   | √    | √   |
+| NMSRotated                   | √   | √    |     |
+| PixelGroup                   | √   |      |     |
+| PointsInBoxes                | √   | √    |     |
+| PointsInPolygons             |     | √    |     |
+| PSAMask                      | √   | √    | √   |
+| RotatedFeatureAlign          | √   | √    |     |
+| RoIPointPool3d               |     | √    |     |
+| RoIPool                      |     | √    | √   |
+| RoIAlignRotated              | √   | √    | √   |
+| RiRoIAlignRotated            |     | √    |     |
+| RoIAlign                     | √   | √    | √   |
+| RoIAwarePool3d               |     | √    |     |
+| SAConv2d                     |     | √    |     |
+| SigmoidFocalLoss             |     | √    | √   |
+| SoftmaxFocalLoss             |     | √    |     |
+| SoftNMS                      |     | √    |     |
+| Sparse Convolution           |     | √    |     |
+| Synchronized BatchNorm       |     | √    |     |
+| ThreeInterpolate             |     | √    |     |
+| ThreeNN                      |     | √    |     |
+| TINShift                     |     | √    | √   |
+| UpFirDn2d                    |     | √    |     |
+| Voxelization                 | √   | √    |     |

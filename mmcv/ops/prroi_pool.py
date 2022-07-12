@@ -6,27 +6,27 @@ from torch.nn.modules.utils import _pair
 
 from ..utils import ext_loader
 
-ext_module = ext_loader.load_ext('_ext', [
-    'prroi_pool_forward', 'prroi_pool_backward', 'prroi_pooling_coor_backward'
-])
+ext_module = ext_loader.load_ext(
+    '_ext',
+    ['prroi_pool_forward', 'prroi_pool_backward', 'prroi_pool_coor_backward'])
 
 
 class PrRoIPoolFunction(Function):
 
     @staticmethod
     def forward(ctx, features, rois, output_size, spatial_scale):
-        # assert 'FloatTensor' in features.type() and 'FloatTensor' in rois.type(),
-        #         f"Precise RoI Pooling only takes float input, got {features.type()} for features and {rois.type()} for rois."
-
         pooled_height = int(output_size[0])
         pooled_width = int(output_size[1])
         spatial_scale = float(spatial_scale)
 
         features = features.contiguous()
         rois = rois.contiguous()
+        output_shape = (rois.size(0), features.size(1), pooled_height,
+                        pooled_width)
+        output = features.new_zeros(output_shape)
         params = (pooled_height, pooled_width, spatial_scale)
 
-        output = ext_module.prroi_pool_forward(features, rois, *params)
+        ext_module.prroi_pool_forward(features, rois, output, *params)
         ctx.params = params
         # everything here is contiguous.
         ctx.save_for_backward(features, rois, output)

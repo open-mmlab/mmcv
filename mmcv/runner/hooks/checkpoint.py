@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 import warnings
+from typing import Optional
 
 from mmcv.fileio import FileClient
 from ..dist_utils import allreduce_params, master_only
@@ -49,14 +50,14 @@ class CheckpointHook(Hook):
     """
 
     def __init__(self,
-                 interval=-1,
-                 by_epoch=True,
-                 save_optimizer=True,
-                 out_dir=None,
-                 max_keep_ckpts=-1,
-                 save_last=True,
-                 sync_buffer=False,
-                 file_client_args=None,
+                 interval: int = -1,
+                 by_epoch: bool = True,
+                 save_optimizer: bool = True,
+                 out_dir: Optional[str] = None,
+                 max_keep_ckpts: int = -1,
+                 save_last: bool = True,
+                 sync_buffer: bool = False,
+                 file_client_args: Optional[dict] = None,
                  **kwargs):
         self.interval = interval
         self.by_epoch = by_epoch
