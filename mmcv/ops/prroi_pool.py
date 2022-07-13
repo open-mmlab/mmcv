@@ -15,6 +15,10 @@ class PrRoIPoolFunction(Function):
 
     @staticmethod
     def forward(ctx, features, rois, output_size, spatial_scale):
+        assert 'FloatTensor' in features.type() and 'FloatTensor' in rois.type(
+        ), f'Precise RoI Pooling only takes float input, got {features.type()}'
+        f' for features and {rois.type()} for rois.'
+
         pooled_height = int(output_size[0])
         pooled_width = int(output_size[1])
         spatial_scale = float(spatial_scale)
