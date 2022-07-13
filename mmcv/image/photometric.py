@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import warnings
 from typing import Optional
 
 import cv2
@@ -130,10 +131,12 @@ def adjust_color(img, alpha=1, beta=None, gamma=0, backend=None):
 
     if backend == 'pillow':
         assert img.dtype == np.uint8, 'Pillow backend only support uint8 type'
-        pil_image = Image.fromarray(img)
+        warnings.warn("Only use 'alpha' for pillow backend.")
+        # Image.fromarray defaultly supports RGB, not BGR.
+        pil_image = Image.fromarray(img[..., ::-1], mode='RGB')
         enhancer = ImageEnhance.Color(pil_image)
         pil_image = enhancer.enhance(alpha)
-        return np.array(pil_image, dtype=img.dtype)
+        return np.array(pil_image, dtype=img.dtype)[..., ::-1]
     else:
         gray_img = bgr2gray(img)
         gray_img = np.tile(gray_img[..., None], [1, 1, 3])
@@ -227,10 +230,11 @@ def adjust_brightness(img, factor=1., backend=None):
 
     if backend == 'pillow':
         assert img.dtype == np.uint8, 'Pillow backend only support uint8 type'
-        pil_image = Image.fromarray(img)
+        # Image.fromarray defaultly supports RGB, not BGR.
+        pil_image = Image.fromarray(img[..., ::-1], mode='RGB')
         enhancer = ImageEnhance.Brightness(pil_image)
         pil_image = enhancer.enhance(factor)
-        return np.array(pil_image, dtype=img.dtype)
+        return np.array(pil_image, dtype=img.dtype)[..., ::-1]
     else:
         degenerated = np.zeros_like(img)
         # Note manually convert the dtype to np.float32, to
@@ -273,10 +277,11 @@ def adjust_contrast(img, factor=1., backend=None):
 
     if backend == 'pillow':
         assert img.dtype == np.uint8, 'Pillow backend only support uint8 type'
-        pil_image = Image.fromarray(img)
+        # Image.fromarray defaultly supports RGB, not BGR.
+        pil_image = Image.fromarray(img[..., ::-1], mode='RGB')
         enhancer = ImageEnhance.Contrast(pil_image)
         pil_image = enhancer.enhance(factor)
-        return np.array(pil_image, dtype=img.dtype)
+        return np.array(pil_image, dtype=img.dtype)[..., ::-1]
     else:
         gray_img = bgr2gray(img)
         hist = np.histogram(gray_img, 256, (0, 255))[0]
@@ -527,7 +532,8 @@ def adjust_hue(img: np.ndarray,
 
     if backend == 'pillow':
         assert img.dtype == np.uint8, 'Pillow backend only support uint8 type'
-        pil_image = Image.fromarray(img)
+        # Image.fromarray defaultly supports RGB, not BGR.
+        pil_image = Image.fromarray(img[..., ::-1], mode='RGB')
         input_mode = pil_image.mode
         if input_mode in {'L', '1', 'I', 'F'}:
             return pil_image
@@ -541,15 +547,15 @@ def adjust_hue(img: np.ndarray,
         h = Image.fromarray(np_h, 'L')
 
         pil_image = Image.merge('HSV', (h, s, v)).convert(input_mode)
-        return np.array(pil_image, dtype=img.dtype)
+        return np.array(pil_image, dtype=img.dtype)[..., ::-1]
     else:
         dtype = img.dtype
         img = img.astype(np.uint8)
-        hsv_img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV_FULL)
+        hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV_FULL)
         h, s, v = cv2.split(hsv_img)
         h = h.astype(np.uint8)
         # uint8 addition take cares of rotation across boundaries
         with np.errstate(over='ignore'):
             h += np.uint8(hue_factor * 255)
         hsv_img = cv2.merge([h, s, v])
-        return cv2.cvtColor(hsv_img, cv2.COLOR_HSV2RGB_FULL).astype(dtype)
+        return cv2.cvtColor(hsv_img, cv2.COLOR_HSV2BGR_FULL).astype(dtype)
