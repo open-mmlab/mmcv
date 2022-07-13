@@ -1748,7 +1748,7 @@ void PrROIPoolBackwardCUDAKernelLauncher(Tensor grad_output, Tensor rois,
                                        float spatial_scale);
 
 void PrROIPoolCoorBackwardCUDAKernelLauncher(Tensor output, Tensor grad_output,
-                                       Tensor input, Tensor rois, Tensor grad_rois, 
+                                       Tensor input, Tensor rois, Tensor grad_rois,
                                        int pooled_height, int pooled_width,
                                        float spatial_scale);
 

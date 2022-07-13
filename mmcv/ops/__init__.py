@@ -46,6 +46,7 @@ from .points_in_boxes import (points_in_boxes_all, points_in_boxes_cpu,
                               points_in_boxes_part)
 from .points_in_polygons import points_in_polygons
 from .points_sampler import PointsSampler
+from .prroi_pool import PrRoIPool, prroi_pool
 from .psa_mask import PSAMask
 from .riroi_align_rotated import RiRoIAlignRotated, riroi_align_rotated
 from .roi_align import RoIAlign, roi_align
@@ -68,7 +69,6 @@ from .three_nn import three_nn
 from .tin_shift import TINShift, tin_shift
 from .upfirdn2d import upfirdn2d
 from .voxelize import Voxelization, voxelization
-from .prroi_pool import PrRoIPool, prroi_pool
 
 __all__ = [
     'bbox_overlaps', 'CARAFE', 'CARAFENaive', 'CARAFEPack', 'carafe',
