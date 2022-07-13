@@ -260,20 +260,20 @@ __global__ void prroi_pool_coor_backward_cuda_kernel(
 
     T roi_width = max(roi_x2 - roi_x1, (T)0);
     T roi_height = max(roi_y2 - roi_y1, (T)0);
-    T bin_sizend_y = roi_height / static_cast<T>(pooled_height);
-    T bin_sizend_x = roi_width / static_cast<T>(pooled_width);
+    T bin_size_h = roi_height / static_cast<T>(pooled_height);
+    T bin_size_w = roi_width / static_cast<T>(pooled_width);
 
     const T *this_output_grad = grad_output + index;
     const T *this_input_data = input + (roi_batch_ind * channels + c) * height * width;
     const T *this_output_data = output + index;
     T *this_rois_grad = grad_rois + n * 5;
 
-    T bin_x1 = roi_x1 + bin_sizend_x * pw;
-    T bin_y1 = roi_y1 + bin_sizend_y * ph;
-    T bin_x2 = bin_x1 + bin_sizend_x;
-    T bin_y2 = bin_y1 + bin_sizend_y;
+    T bin_x1 = roi_x1 + bin_size_w * pw;
+    T bin_y1 = roi_y1 + bin_size_h * ph;
+    T bin_x2 = bin_x1 + bin_size_w;
+    T bin_y2 = bin_y1 + bin_size_h;
 
-    T bin_size = max(T(0.0), bin_sizend_x * bin_sizend_y);
+    T bin_size = max(T(0.0), bin_size_w * bin_size_h);
 
     T sum_out = bin_size == T(0) ? T(0) : *this_output_grad / bin_size;
 
@@ -315,7 +315,7 @@ __global__ void prroi_pool_coor_backward_cuda_kernel(
 
     T partial_x1 = -grad_x1_y + (bin_y2 - bin_y1) * (*this_output_data);
     T partial_y1 = -grad_x_y1 + (bin_x2 - bin_x1) * (*this_output_data);
-    T partial_x2 = grad_x1_y - (bin_y2 - bin_y1) * (*this_output_data);
+    T partial_x2 = grad_x2_y - (bin_y2 - bin_y1) * (*this_output_data);
     T partial_y2 = grad_x_y2 - (bin_x2 - bin_x1) * (*this_output_data);
 
     partial_x1 = partial_x1 / bin_size * spatial_scale;

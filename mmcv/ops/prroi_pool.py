@@ -37,8 +37,8 @@ class PrRoIPoolFunction(Function):
     @once_differentiable
     def backward(ctx, grad_output):
         features, rois, output = ctx.saved_tensors
-        grad_input = grad_output.zeros_like(*features.shape)
-        grad_coor = grad_output.zeros_like(*rois.shape)
+        grad_input = grad_output.new_zeros(*features.shape)
+        grad_coor = grad_output.new_zeros(*rois.shape)
 
         if features.requires_grad:
             grad_output = grad_output.contiguous()
@@ -47,7 +47,7 @@ class PrRoIPoolFunction(Function):
         if rois.requires_grad:
             grad_output = grad_output.contiguous()
             ext_module.prroi_pool_coor_backward(output, grad_output, features,
-                                                rois, grad_input, *ctx.params)
+                                                rois, grad_coor, *ctx.params)
 
         return grad_input, grad_coor, None, None, None
 
