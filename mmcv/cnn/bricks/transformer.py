@@ -942,3 +942,208 @@ class TransformerLayerSequence(BaseModule):
                 key_padding_mask=key_padding_mask,
                 **kwargs)
         return query
+
+
+@ATTENTION.register_module()
+class ConditionalAttention(BaseModule):
+    """Implements conditional attention for calculating multi-head attention
+    when the dimensions of query, key, and value varies.
+
+    The main difference between this module and nn.MultiheadAttention is that
+    the in_proj is removed and optionally the out_proj can be removed.
+    Additionally, attn_output_weights contains attention maps of various heads,
+    which is the mean weight of all heads in nn.MultiheadAttention.
+
+    Args:
+        TODO
+
+    """
+
+    def __init__(self,
+                 out_dims,
+                 num_heads,
+                 attn_drop=0.,
+                 proj_drop=0.,
+                 what_are_you_doing=False,  # TODO
+                 remove_out_proj=False,
+                 dropout_layer=dict(type='Dropout', drop_prob=0.),
+                 init_cfg=None,
+                 **kwargs):
+        super().__init__(init_cfg)
+        self.out_dims = out_dims
+        self.num_heads = num_heads
+        self.what_are_you_doing = what_are_you_doing  # TODO
+
+        self.attn_drop = nn.Dropout(attn_drop)
+        if not remove_out_proj:
+            self.out_proj = nn.Linear(out_dims, out_dims)
+            self.proj_drop = nn.Dropout(proj_drop)
+        else:
+            self.out_proj = None
+            self.proj_drop = None
+        self.dropout_layer = build_dropout(dropout_layer) \
+            if dropout_layer else nn.Identity()
+
+        self.init_weights()
+
+    def init_weights(self):
+        if self.out_proj is not None:
+            nn.init.constant_(self.out_proj.bias, 0.)
+
+    @deprecated_api_warning({'residual': 'identity'},
+                            cls_name='ConditionalAttention')
+    def forward(self,
+                query,
+                key,
+                value,
+                identity=None,
+                attn_mask=None,
+                key_padding_mask=None,
+                need_weights=False,
+                **kwargs):
+        """Forward function for `MultiheadAttention`.
+
+        **kwargs allow passing a more general data flow when combining
+        with other operations in `transformerlayer`.
+
+        Args:
+            query (Tensor): The input query with shape [num_queries, bs,
+                embed_dims]
+            key (Tensor): The key tensor with shape [num_keys, bs,
+                embed_dims]
+                If None, the ``query`` will be used. Defaults to None.
+            value (Tensor): The value tensor with same shape as `key`.
+                Same in `nn.MultiheadAttention.forward`. Defaults to None.
+                If None, the `key` will be used.
+            identity (Tensor): This tensor, with the same shape as x,
+                will be used for the identity link.
+                If None, `x` will be used. Defaults to None.
+            attn_mask (Tensor): ByteTensor mask with shape [num_queries,
+                num_keys]. Same in `nn.MultiheadAttention.forward`.
+                Defaults to None.
+            key_padding_mask (Tensor): ByteTensor with shape [bs, num_keys].
+                Defaults to None.
+            need_weights (Bool): TODO
+
+        Returns:
+            Tensor: forwarded results with shape
+            [num_queries, bs, embed_dims] TODO
+        """
+
+        # match size
+        assert query.size(2) == key.size(2), \
+            f'The q_dim {query.size(2)} must be equal to the k_dim' \
+            f' {key.size(2)}'
+        assert value.size(2) == self.out_dims, \
+            f'The v_dim {value.size(2)} must be equal to the out_dims ' \
+            f'{self.out_dims}'
+        assert key.size(0) == value.size(0), \
+            f'The k_len {key.size(0)} must be equal to the v_len ' \
+            f'{value.size(0)}'
+        assert query.size(1) == key.size(1) == value.size(1), \
+            f'The batch size (2nd) of q, k, v must be equal, ' \
+            f'but got {query.size(1)}(q), {key.size(1)}(k), ' \
+            f'{value.size(1)}(v)'
+        tgt_len, bsz, tgt_dim = query.size()
+        src_len, _, src_dim = value.size()
+        # For conditional attention:
+        #   out_dims == src_dim, out_len == tgt_len
+        #   src_dim in self-attn: d_model
+        #   src_dim in cross-attn: d_model * 2
+
+        head_dim = tgt_dim // self.num_heads
+        v_head_dim = src_dim // self.num_heads
+        scaling = float(head_dim) ** -0.5
+        q = query * scaling
+        k = key
+        v = value
+
+        # check attention mask
+        if attn_mask is not None:
+            assert attn_mask.dtype in (torch.float32, torch.float64,
+                                       torch.float16, torch.uint8,
+                                       torch.bool), \
+                'Only float, byte, and bool types are supported for ' \
+                'attn_mask, not {}'.format(attn_mask.dtype)
+            if attn_mask.dtype == torch.uint8:
+                warnings.warn(
+                    "Byte tensor for attn_mask in nn.MultiheadAttention "
+                    "is deprecated. Use bool tensor instead.")
+                attn_mask = attn_mask.to(torch.bool)
+            if attn_mask.dim() == 2:
+                attn_mask = attn_mask.unsqueeze(0)
+                if list(attn_mask.size()) != [1, query.size(0), key.size(0)]:
+                    raise RuntimeError(
+                        'The size of the 2D attn_mask is not correct.')
+            elif attn_mask.dim() == 3:
+                if list(attn_mask.size()) != \
+                        [bsz * self.num_heads, query.size(0), key.size(0)]:
+                    raise RuntimeError(
+                        'The size of the 3D attn_mask is not correct.')
+            else:
+                raise RuntimeError(
+                    "attn_mask's dimension {} is not supported".format(
+                        attn_mask.dim()))
+            # attn_mask's dim is 3 now.
+
+        # convert ByteTensor key_padding_mask to bool
+        if key_padding_mask is not None \
+                and key_padding_mask.dtype == torch.uint8:
+            warnings.warn(
+                "Byte tensor for key_padding_mask in nn.MultiheadAttention is "
+                "deprecated. Use bool tensor instead.")
+            key_padding_mask = key_padding_mask.to(torch.bool)
+        if key_padding_mask is not None:
+            assert key_padding_mask.size(0) == bsz
+            assert key_padding_mask.size(1) == src_len
+
+        # prepare q, k, v
+        q = q.contiguous().view(
+            tgt_len, bsz * self.num_heads, head_dim).transpose(0, 1)
+        if k is not None:
+            k = k.contiguous().view(
+                -1, bsz * self.num_heads, head_dim).transpose(0, 1)
+        if v is not None:
+            v = v.contiguous().view(
+                -1, bsz * self.num_heads, v_head_dim).transpose(0, 1)
+
+        # calculate attention map
+        attn_output_weights = torch.bmm(q, k.transpose(1, 2))
+        assert list(attn_output_weights.size()) == \
+               [bsz * self.num_heads, tgt_len, src_len]
+        if attn_mask is not None:
+            if attn_mask.dtype == torch.bool:
+                attn_output_weights.masked_fill_(attn_mask, float('-inf'))
+            else:
+                attn_output_weights += attn_mask
+        if key_padding_mask is not None:
+            attn_output_weights = attn_output_weights.view(
+                bsz, self.num_heads, tgt_len, src_len)
+            attn_output_weights = attn_output_weights.masked_fill(
+                key_padding_mask.unsqueeze(1).unsqueeze(2),
+                float('-inf'),)
+            attn_output_weights = attn_output_weights.view(
+                bsz * self.num_heads, tgt_len, src_len)
+        if self.what_are_you_doing:  # TODO
+            max_weight = attn_output_weights.max(dim=-1, keepdim=True)[0]
+            attn_output_weights = attn_output_weights - max_weight
+        attn_output_weights = nn.functional.softmax(attn_output_weights, dim=-1)
+        attn_output_weights = self.attn_drop(attn_output_weights)
+
+        # calculate output embeddings
+        attn_output = torch.bmm(attn_output_weights, v)
+        assert list(attn_output.size()) == [bsz * self.num_heads, tgt_len, v_head_dim]
+        attn_output = attn_output.transpose(0, 1).contiguous().view(
+            tgt_len, bsz, self.out_dims)
+        if self.out_proj is not None:
+            attn_output = self.proj_drop(self.out_proj(attn_output))
+        attn_output = self.dropout_layer(attn_output)
+        if identity is not None:
+            attn_output += identity
+
+        if need_weights:
+            attn_output_weights = attn_output_weights.view(
+                bsz, self.num_heads, tgt_len, src_len)
+            return attn_output, attn_output_weights
+        else:
+            return attn_output
