@@ -22,3 +22,14 @@ def is_mlu_available() -> bool:
 
 
 IS_MLU_AVAILABLE = is_mlu_available()
+
+
+def is_mps_available() -> bool:
+    try:
+        import torch
+        return torch.backends.mps.is_available()
+    except Exception:
+        return False
+
+
+IS_MPS_AVAILABLE = is_mps_available()
