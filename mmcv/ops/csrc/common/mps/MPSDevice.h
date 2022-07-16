@@ -4,10 +4,9 @@
 // https://github.com/pytorch/pytorch/blob/a85d1f0bcdd02cf18d3b0517337458cb51a18cdb/aten/src/ATen/mps/MPSDevice.h
 
 #pragma once
+#include <ATen/ATen.h>
 #include <c10/macros/Macros.h>
 #include <c10/util/Exception.h>
-#include <ATen/ATen.h>
-
 
 #ifdef __OBJC__
 #include <Foundation/Foundation.h>
@@ -47,9 +46,7 @@ class TORCH_API MPSDevice {
   /**
    * Returns the single device.
    */
-  MTLDevice_t device() {
-    return _mtl_device;
-  }
+  MTLDevice_t device() { return _mtl_device; }
 
   ~MPSDevice();
 
@@ -63,5 +60,5 @@ TORCH_API bool is_available();
 
 TORCH_API at::Allocator* GetMPSAllocator(bool useSharedAllocator = false);
 
-} // namespace mps
-} // namespace at
+}  // namespace mps
+}  // namespace at

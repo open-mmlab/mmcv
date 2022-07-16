@@ -1,8 +1,8 @@
 #ifndef _MPS_LIBRARY_H_
 #define _MPS_LIBRARY_H_
 
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
 
 #ifdef __OBJC__
 #include <Foundation/Foundation.h>
@@ -18,42 +18,44 @@ typedef void* MTLLibrary;
 typedef void* MTLLibrary_t;
 #endif
 
-class MPSLibrary{
-public:
-    // disable constractor for singleton
-    static MPSLibrary* createFromUrl(const std::string& library_url);
-    static MPSLibrary* createFromSource(const std::string& source);
-    ~MPSLibrary();
+class MPSLibrary {
+ public:
+  // disable constructor for singleton
+  static MPSLibrary* createFromUrl(const std::string& library_url);
+  static MPSLibrary* createFromSource(const std::string& source);
+  ~MPSLibrary();
 
-    MTLLibrary_t library(){
-        return _library;
-    }
+  MTLLibrary_t library() { return _library; }
 
-    MTLComputePipelineState_t getComputePipelineState(const std::string& function_name);
-private:
-    MTLLibrary_t _library;
-    std::unordered_map<std::string, MTLComputePipelineState_t> _pso_map;
+  MTLComputePipelineState_t getComputePipelineState(
+      const std::string& function_name);
+
+ private:
+  MTLLibrary_t _library;
+  std::unordered_map<std::string, MTLComputePipelineState_t> _pso_map;
 };
 
-class MPSLibraryManager{
-public:
-    // disable constractor for singleton
-    MPSLibraryManager(const MPSLibraryManager&)=delete;
-    MPSLibraryManager& operator=(const MPSLibraryManager&)=delete;
-    MPSLibraryManager(MPSLibraryManager &&)=delete;
-    MPSLibraryManager& operator=(MPSLibraryManager &&)=delete;
+class MPSLibraryManager {
+ public:
+  // disable constructor for singleton
+  MPSLibraryManager(const MPSLibraryManager&) = delete;
+  MPSLibraryManager& operator=(const MPSLibraryManager&) = delete;
+  MPSLibraryManager(MPSLibraryManager&&) = delete;
+  MPSLibraryManager& operator=(MPSLibraryManager&&) = delete;
 
-    static MPSLibraryManager* getInstance();
+  static MPSLibraryManager* getInstance();
 
-    bool hasLibrary(const std::string& name);
+  bool hasLibrary(const std::string& name);
 
-    MPSLibrary* getLibrary(const std::string& library_url);
+  MPSLibrary* getLibrary(const std::string& library_url);
 
-    MPSLibrary* createLibraryFromSouce(const std::string& name, const std::string& sources);
+  MPSLibrary* createLibraryFromSouce(const std::string& name,
+                                     const std::string& sources);
 
-    ~MPSLibraryManager();
-private:
-    MPSLibraryManager();
-    std::unordered_map<std::string, std::unique_ptr<MPSLibrary>> _library_map;
+  ~MPSLibraryManager();
+
+ private:
+  MPSLibraryManager();
+  std::unordered_map<std::string, std::unique_ptr<MPSLibrary>> _library_map;
 };
 #endif

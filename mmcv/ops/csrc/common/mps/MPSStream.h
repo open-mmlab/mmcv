@@ -9,8 +9,8 @@
 #include <utility>
 
 #include <c10/core/DeviceGuard.h>
-#include <c10/util/Exception.h>
 #include <c10/core/Stream.h>
+#include <c10/util/Exception.h>
 #include "MPSDevice.h"
 
 #ifdef __OBJC__
@@ -33,7 +33,6 @@ typedef void* MTLDevice_t;
 #define nil NULL;
 #endif
 
-
 namespace at {
 namespace mps {
 
@@ -41,9 +40,8 @@ namespace mps {
 //  MPSStream
 //-----------------------------------------------------------------
 
-class TORCH_API MPSStream
-{
-public:
+class TORCH_API MPSStream {
+ public:
   enum Unchecked { UNCHECKED };
   /// Construct a MPSStream from a Stream.  This construction is checked,
   /// and will raise an error if the Stream is not, in fact, a MPS stream.
@@ -65,18 +63,18 @@ public:
 
   MTLCommandQueue_t stream() const { return _commandQueue; };
 
-  MTLDevice_t device() const { return [_commandQueue device];}
+  MTLDevice_t device() const { return [_commandQueue device]; }
 
   /// Explicit conversion to Stream.
   Stream unwrap() const { return _stream; }
 
-private:
+ private:
   Stream _stream;
-  MTLCommandQueue_t   _commandQueue = nil;
-  MTLCommandBuffer_t  _commandBuffer = nil;
+  MTLCommandQueue_t _commandQueue = nil;
+  MTLCommandBuffer_t _commandBuffer = nil;
   void _flush(bool commitAndWait) const;
 
-  dispatch_queue_t    _serialQueue = nullptr;
+  dispatch_queue_t _serialQueue = nullptr;
 };
 
 /**
@@ -93,8 +91,7 @@ TORCH_API MPSStream* getDefaultMPSStream();
 //  MPSStreamImpl
 //-----------------------------------------------------------------
 
-class TORCH_API MPSStreamImpl
-{
+class TORCH_API MPSStreamImpl {
  public:
   /**
    * Gets single instance of the MPSStream.
@@ -106,32 +103,30 @@ class TORCH_API MPSStreamImpl
   MPSStreamImpl();
 };
 
-
 //-----------------------------------------------------------------
 //  MPSEvent
 //-----------------------------------------------------------------
 
-struct TORCH_API MPSEvent
-{
+struct TORCH_API MPSEvent {
   MPSEvent();
   // MPSEvent(id<MTLDevice> device);
 
   ~MPSEvent();
-  MTLSharedEvent_t event() const {return _event; }
+  MTLSharedEvent_t event() const { return _event; }
 
-  void recordEvent(MPSStream *stream);
-  void waitForEvent(MPSStream *queue); // waits on the cpu
+  void recordEvent(MPSStream* stream);
+  void waitForEvent(MPSStream* queue);  // waits on the cpu
   bool queryEvent();
   uint64_t getCurrentValue() { return _currentValue; }
   void setCurrentValue(uint64_t currValue) { _currentValue = currValue; }
-private:
+
+ private:
   bool _isRecorded = false;
-  uint64_t  _currentValue = 0;
+  uint64_t _currentValue = 0;
   MTLSharedEvent_t _event;
 };
 
 typedef MPSEvent* mpsEvent_t;
 
-
-} // namespace mps
-} // namespace at
+}  // namespace mps
+}  // namespace at
