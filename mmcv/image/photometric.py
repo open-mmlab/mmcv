@@ -117,8 +117,8 @@ def adjust_color(img, alpha=1, beta=None, gamma=0, backend=None):
             Same as :func:`cv2.addWeighted`. Default 0.
         backend (str | None): The image processing backend type. Options are
             `cv2`, `pillow`, `None`. If backend is None, the global
-            imread_backend specified by ``mmcv.use_backend()`` will be used.
-            Defaults to None.
+            ``imread_backend`` specified by ``mmcv.use_backend()`` will be
+            used. Defaults to None.
 
     Returns:
         ndarray: Colored image which has the same size and dtype as input.
@@ -149,7 +149,7 @@ def adjust_color(img, alpha=1, beta=None, gamma=0, backend=None):
             # is not guaranteed to be in range [0, 255], so here clip
             # is needed.
             colored_img = np.clip(colored_img, 0, 255)
-        return colored_img
+        return colored_img.astype(img.dtype)
 
 
 def imequalize(img):
@@ -216,8 +216,8 @@ def adjust_brightness(img, factor=1., backend=None):
             etc), and higher values more. Default 1.
         backend (str | None): The image processing backend type. Options are
             `cv2`, `pillow`, `None`. If backend is None, the global
-            imread_backend specified by ``mmcv.use_backend()`` will be used.
-            Defaults to None.
+            ``imread_backend`` specified by ``mmcv.use_backend()`` will be
+            used. Defaults to None.
 
     Returns:
         ndarray: The brightened image.
@@ -263,8 +263,8 @@ def adjust_contrast(img, factor=1., backend=None):
         factor (float): Same as :func:`mmcv.adjust_brightness`.
         backend (str | None): The image processing backend type. Options are
             `cv2`, `pillow`, `None`. If backend is None, the global
-            imread_backend specified by ``mmcv.use_backend()`` will be used.
-            Defaults to None.
+            ``imread_backend`` specified by ``mmcv.use_backend()`` will be
+            used. Defaults to None.
 
     Returns:
         ndarray: The contrasted image.
@@ -513,8 +513,8 @@ def adjust_hue(img: np.ndarray,
             with complementary colors while 0 gives the original image.
         backend (str | None): The image processing backend type. Options are
             `cv2`, `pillow`, `None`. If backend is None, the global
-            imread_backend specified by ``mmcv.use_backend()`` will be used.
-            Defaults to None.
+            ``imread_backend`` specified by ``mmcv.use_backend()`` will be
+            used. Defaults to None.
 
     Returns:
         ndarray: Hue adjusted image.
