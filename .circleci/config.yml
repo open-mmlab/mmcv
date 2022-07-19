@@ -14,7 +14,6 @@ jobs:
       - run:
           name: Install pre-commit hook
           command: |
-            pip install git+ssh://git@github.com/open-mmlab/mmengine.git
             pip install pre-commit
             pre-commit install
       - run:
@@ -92,9 +91,6 @@ jobs:
       image: ubuntu-1604-cuda-10.1:201909-23  # the actual version of cuda is 10.2
     resource_class: gpu.nvidia.small
     steps:
-      - add_ssh_keys:
-          fingerprints:
-            - "58:b6:20:b1:71:85:15:a8:04:38:1f:77:3b:33:ff:19"
       - checkout
       - run:
           name: Set CUDA environment
