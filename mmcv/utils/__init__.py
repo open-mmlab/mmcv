@@ -36,7 +36,8 @@ except ImportError:
         'is_method_overridden', 'has_method'
     ]
 else:
-    from .device_type import IS_IPU_AVAILABLE, IS_MLU_AVAILABLE
+    from .device_type import (IS_IPU_AVAILABLE, IS_MLU_AVAILABLE,
+                              IS_MPS_AVAILABLE)
     from .env import collect_env
     from .hub import load_url
     from .logging import get_logger, print_log
@@ -76,5 +77,5 @@ else:
         'is_method_overridden', 'is_jit_tracing', 'is_rocm_pytorch',
         '_get_cuda_home', 'load_url', 'has_method', 'IS_CUDA_AVAILABLE',
         'worker_init_fn', 'IS_MLU_AVAILABLE', 'IS_IPU_AVAILABLE',
-        'torch_meshgrid'
+        'IS_MPS_AVAILABLE', 'torch_meshgrid'
     ]

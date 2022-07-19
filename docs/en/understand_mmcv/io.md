@@ -195,8 +195,8 @@ disk_backend = HardDiskBackend()
 with io.BytesIO(disk_backend.get(filepath1)) as buffer:
     checkpoint = torch.load(buffer)
 with io.BytesIO() as buffer:
-    torch.save(checkpoint, f)
-    disk_backend.put(f.getvalue(), filepath2)
+    torch.save(checkpoint, buffer)
+    disk_backend.put(buffer.getvalue(), filepath2)
 ```
 
 If we want to implement an interface which automatically select the corresponding

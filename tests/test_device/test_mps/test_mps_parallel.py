@@ -1,11 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import torch.nn as nn
 
-from mmcv.device.mlu import MLUDataParallel, MLUDistributedDataParallel
+from mmcv.device.mps import MPSDataParallel
 from mmcv.parallel import is_module_wrapper
-from mmcv.utils import IS_MLU_AVAILABLE
+from mmcv.utils import IS_MPS_AVAILABLE
 
 
 def mock(*args, **kwargs):
@@ -29,9 +29,6 @@ def test_is_module_wrapper():
     model = Model()
     assert not is_module_wrapper(model)
 
-    if IS_MLU_AVAILABLE:
-        mludp = MLUDataParallel(model)
-        assert is_module_wrapper(mludp)
-
-        mluddp = MLUDistributedDataParallel(model, process_group=MagicMock())
-        assert is_module_wrapper(mluddp)
+    if IS_MPS_AVAILABLE:
+        mpsdp = MPSDataParallel(model)
+        assert is_module_wrapper(mpsdp)
