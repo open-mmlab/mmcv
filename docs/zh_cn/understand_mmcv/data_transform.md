@@ -71,36 +71,35 @@ dataset = dict(
 
 为了支持大规模数据集的加载，通常在 `Dataset` 初始化时不加载数据，只加载相应的路径。因此需要在数据流水线中进行具体数据的加载。
 
-| class                         | 功能                                      |
-| :---------------------------: | :---------------------------------------: |
-| [`LoadImageFromFile`](TODO)   | 根据路径加载图像                          |
-| [`LoadAnnotations`](TODO)      | 加载和组织标注信息，如 bbox、语义分割图等 |
+|            class            |                   功能                    |
+| :-------------------------: | :---------------------------------------: |
+| [`LoadImageFromFile`](TODO) |             根据路径加载图像              |
+|  [`LoadAnnotations`](TODO)  | 加载和组织标注信息，如 bbox、语义分割图等 |
 
 ### 数据预处理及增强
 
 数据预处理和增强通常是对图像本身进行变换，如裁剪、填充、缩放等。
 
-| class                            | 功能                               |
+|              class               |                功能                |
 | :------------------------------: | :--------------------------------: |
-| [`Pad`](TODO)                    | 填充图像边缘                       |
-| [`CenterCrop`](TODO)             | 居中裁剪                           |
-| [`Normalize`](TODO)              | 对图像进行归一化                   |
-| [`Resize`](TODO)                 | 按照指定尺寸或比例缩放图像         |
-| [`RandomResize`](TODO)           | 缩放图像至指定范围的随机尺寸       |
+|          [`Pad`](TODO)           |            填充图像边缘            |
+|       [`CenterCrop`](TODO)       |              居中裁剪              |
+|       [`Normalize`](TODO)        |          对图像进行归一化          |
+|         [`Resize`](TODO)         |     按照指定尺寸或比例缩放图像     |
+|      [`RandomResize`](TODO)      |    缩放图像至指定范围的随机尺寸    |
 | [`RandomMultiscaleResize`](TODO) | 缩放图像至多个尺寸中的随机一个尺寸 |
-| [`RandomGrayscale`](TODO)        | 随机灰度化                         |
-| [`RandomFlip`](TODO)             | 图像随机翻转                       |
-| [`MultiScaleFlipAug`](TODO)      | 支持缩放和翻转的测试时数据增强     |
+|    [`RandomGrayscale`](TODO)     |             随机灰度化             |
+|       [`RandomFlip`](TODO)       |            图像随机翻转            |
+|   [`MultiScaleFlipAug`](TODO)    |   支持缩放和翻转的测试时数据增强   |
 
 ### 数据格式化
 
 数据格式化操作通常是对数据进行的类型转换。
 
-| class                         | 功能                               |
-| :---------------------------: | :--------------------------------: |
-| [`ToTensor`](TODO)            | 将指定的数据转换为 `torch.Tensor`  |
-| [`ImageToTensor`](TODO)       | 将图像转换为 `torch.Tensor`        |
-
+|          class          |               功能                |
+| :---------------------: | :-------------------------------: |
+|   [`ToTensor`](TODO)    | 将指定的数据转换为 `torch.Tensor` |
+| [`ImageToTensor`](TODO) |    将图像转换为 `torch.Tensor`    |
 
 ## 自定义数据变换类
 
@@ -262,7 +261,6 @@ pipeline = [
    ]
    ```
 
-
 2. 应用于一个字段的一组目标
 
    假设我们需要将数据变换应用于 `"images"` 字段，该字段为一个图像组成的 list。
@@ -282,7 +280,6 @@ pipeline = [
            ])
    ]
    ```
-
 
 #### 装饰器 `cache_randomness`
 
