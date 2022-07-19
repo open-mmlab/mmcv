@@ -55,6 +55,9 @@ jobs:
           name: Install PyTorch
           command: python -m pip install torch==<< parameters.torch >>+cpu torchvision==<< parameters.torchvision >>+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - run:
+          name: Install MMEngine
+          command: pip install git+ssh://git@github.com/open-mmlab/mmengine.git
+      - run:
           name: Install psutil
           command: python -m pip install psutil
       - run:
@@ -122,6 +125,9 @@ jobs:
       - run:
           name: Install PyTorch
           command: python -m pip install torch==1.8.1+cu102 torchvision==0.9.1+cu102 -f https://download.pytorch.org/whl/torch_stable.html
+      - run:
+          name: Install MMEngine
+          command: pip install git+ssh://git@github.com/open-mmlab/mmengine.git
       - run:
           name: Install psutil
           command: python -m pip install psutil
