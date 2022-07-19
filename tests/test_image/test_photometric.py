@@ -77,7 +77,7 @@ class TestPhotometric:
                          dtype=np.uint8)
         assert_array_equal(mmcv.posterize(img, 3), img_r)
 
-    def test_adjust_color(self):
+    def test_adjust_color(self, nb_rand_test=100):
         img = np.array([[0, 128, 255], [1, 127, 254], [2, 129, 253]],
                        dtype=np.uint8)
         img = np.stack([img, img, img], axis=-1)
@@ -108,13 +108,18 @@ class TestPhotometric:
             np.round(mmcv.adjust_color(img, 0.8, -0.6, gamma=-0.6)),
             np.round(np.clip(img * 0.8 - 0.6 * img_r - 0.6, 0, 255)))
 
-        # the input type must be uint8 pillow backend
+        # test equalize with randomly sampled image.
+        for _ in range(nb_rand_test):
+            img = np.clip(np.random.normal(0, 1, (256, 256, 3)) * 260, 0,
+                          255).astype(np.uint8)
+            factor = np.random.uniform()
+            cv2_img = mmcv.adjust_color(img, alpha=factor)
+            pil_img = mmcv.adjust_color(img, alpha=factor, backend='pillow')
+            np.testing.assert_allclose(cv2_img, pil_img, rtol=0, atol=2)
+
+        # the input type must be uint8 for pillow backend
         with pytest.raises(AssertionError):
             mmcv.adjust_color(img.astype(np.float32), backend='pillow')
-
-        # test pillow backend
-        img_out = mmcv.adjust_color(img.astype(np.uint8), backend='pillow')
-        assert img.shape == img_out.shape
 
         # backend must be 'cv2' or 'pillow'
         with pytest.raises(ValueError):
@@ -170,7 +175,7 @@ class TestPhotometric:
                 rtol=0,
                 atol=1)
 
-        # the input type must be uint8 pillow backend
+        # the input type must be uint8 for pillow backend
         with pytest.raises(AssertionError):
             mmcv.adjust_brightness(img.astype(np.float32), backend='pillow')
 
