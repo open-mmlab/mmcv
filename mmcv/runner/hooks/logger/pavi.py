@@ -62,7 +62,7 @@ class PaviLoggerHook(LoggerHook):
                  by_epoch: bool = True,
                  img_key: str = 'img',
                  opset_version: int = 11,
-                 partial_args: dict = dict(return_loss=False)):
+                 partial_args: dict = dict()):
         super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.init_kwargs = init_kwargs
         self.add_graph = add_graph
