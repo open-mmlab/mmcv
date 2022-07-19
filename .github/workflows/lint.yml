@@ -23,6 +23,9 @@ jobs:
           sudo apt-get install -y ruby2.7
           pip install pre-commit
           pre-commit install
+          eval `ssh-agent -s`
+          ssh-add - <<< '${{ secrets.PRIVATE_SSH_KEY }}'
+          pip install git+ssh://git@github.com/zhouzaida/errorhelper.git
       - name: Linting
         run: pre-commit run --all-files
       - name: Format c/cuda codes with clang-format
