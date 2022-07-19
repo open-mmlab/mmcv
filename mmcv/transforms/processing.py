@@ -369,7 +369,7 @@ class Pad(BaseTransform):
         elif self.size is not None:
             size = self.size[::-1]
         if isinstance(pad_val, int) and results['img'].ndim == 3:
-            pad_val = tuple([pad_val for _ in range(results['img'].shape[2])])
+            pad_val = tuple(pad_val for _ in range(results['img'].shape[2]))
         padded_img = mmcv.impad(
             results['img'],
             shape=size,
@@ -389,7 +389,7 @@ class Pad(BaseTransform):
             pad_val = self.pad_val.get('seg', 255)
             if isinstance(pad_val, int) and results['gt_seg_map'].ndim == 3:
                 pad_val = tuple(
-                    [pad_val for _ in range(results['gt_seg_map'].shape[2])])
+                    pad_val for _ in range(results['gt_seg_map'].shape[2]))
             results['gt_seg_map'] = mmcv.impad(
                 results['gt_seg_map'],
                 shape=results['pad_shape'][:2],
