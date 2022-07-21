@@ -95,6 +95,5 @@ class TestPrRoiPool:
             marks=pytest.mark.skipif(
                 not IS_CUDA_AVAILABLE, reason='requires CUDA support'))
     ])
-    @pytest.mark.parametrize('dtype', [torch.float])
-    def test_roipool_allclose(self, device, dtype):
-        self._test_roipool_allclose(device, dtype)
+    def test_roipool_allclose_float(self, device):
+        self._test_roipool_allclose(device, dtype=torch.float)
