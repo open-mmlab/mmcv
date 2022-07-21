@@ -12,7 +12,7 @@
 #endif
 
 template <typename T>
-__device__ static T PrRoIPoolingGetData(const T* data, const int h, const int w, const int height, const int width)
+__device__ static __forceinline__ T PrRoIPoolingGetData(const T* data, const int h, const int w, const int height, const int width)
 {
     bool overflow = (h < 0) || (w < 0) || (h >= height) || (w >= width);
     T retVal = overflow ? 0.0f : data[h * width + w];
@@ -20,15 +20,13 @@ __device__ static T PrRoIPoolingGetData(const T* data, const int h, const int w,
 }
 
 template <typename T>
-__device__ static T PrRoIPoolingGetCoeff(T dh, T dw){
-    dw = dw > 0 ? dw : -dw;
-    dh = dh > 0 ? dh : -dh;
-    return (1.0f - dh) * (1.0f - dw);
+__device__ static __forceinline__ T PrRoIPoolingGetCoeff(T dh, T dw){
+    return (1.0f - abs(dh)) * (1.0f - abs(dw));
 }
 
 template <typename T>
-__device__ static T PrRoIPoolingSingleCoorIntegral(T s, T t, T c1, T c2) {
-    return 0.5 * (t * t - s * s) * c2 + (t - 0.5 * t * t - s + 0.5 * s * s) * c1;
+__device__ static __forceinline__ T PrRoIPoolingSingleCoorIntegral(T s, T t, T c1, T c2) {
+    return 0.5 * (t * t - s * s) * (c2 - c1) + (t - s) * c1;
 }
 
 template <typename T>
@@ -166,7 +164,7 @@ __global__ void prroi_pool_forward_cuda_kernel(
     T bin_size = max(T(0.0), bin_size_w * bin_size_h);
     if (bin_size == 0) {
         *this_out = 0;
-        return;
+        continue;
     }
 
     T sum_out = 0;
@@ -267,9 +265,9 @@ __global__ void prroi_pool_coor_backward_cuda_kernel(
     T bin_size_h = roi_height / static_cast<T>(pooled_height);
     T bin_size_w = roi_width / static_cast<T>(pooled_width);
 
-    const T *this_output_grad = grad_output + index;
+    const T output_grad_val = grad_output[index];
     const T *this_input_data = input + (roi_batch_ind * channels + c) * height * width;
-    const T *this_output_data = output + index;
+    const T output_val = output[index];
     T *this_rois_grad = grad_rois + n * 5;
 
     T bin_x1 = roi_x1 + bin_size_w * pw;
@@ -279,7 +277,7 @@ __global__ void prroi_pool_coor_backward_cuda_kernel(
 
     T bin_size = max(T(0.0), bin_size_w * bin_size_h);
 
-    T sum_out = bin_size == T(0) ? T(0) : *this_output_grad / bin_size;
+    T sum_out = bin_size == T(0) ? T(0) : output_grad_val / bin_size;
 
     // WARNING: to be discussed
     if (sum_out == 0)
@@ -317,10 +315,10 @@ __global__ void prroi_pool_coor_backward_cuda_kernel(
                 PrRoIPoolingInterpolation(this_input_data, bin_y2, float(bin_x + 1), height, width));
     }
 
-    T partial_x1 = -grad_x1_y + (bin_y2 - bin_y1) * (*this_output_data);
-    T partial_y1 = -grad_x_y1 + (bin_x2 - bin_x1) * (*this_output_data);
-    T partial_x2 = grad_x2_y - (bin_y2 - bin_y1) * (*this_output_data);
-    T partial_y2 = grad_x_y2 - (bin_x2 - bin_x1) * (*this_output_data);
+    T partial_x1 = -grad_x1_y + (bin_y2 - bin_y1) * output_val;
+    T partial_y1 = -grad_x_y1 + (bin_x2 - bin_x1) * output_val;
+    T partial_x2 = grad_x2_y - (bin_y2 - bin_y1) * output_val;
+    T partial_y2 = grad_x_y2 - (bin_x2 - bin_x1) * output_val;
 
     partial_x1 = partial_x1 / bin_size * spatial_scale;
     partial_x2 = partial_x2 / bin_size * spatial_scale;
@@ -330,13 +328,13 @@ __global__ void prroi_pool_coor_backward_cuda_kernel(
     // (index, x1, y1, x2, y2)
     this_rois_grad[0] = 0;
     atomicAdd(this_rois_grad + 1, (partial_x1 * (1.0f - T(pw) / pooled_width) + partial_x2 * (1.0f - T(pw + 1) / pooled_width))
-            * (*this_output_grad));
+            * output_grad_val);
     atomicAdd(this_rois_grad + 2, (partial_y1 * (1.0f - T(ph) / pooled_height) + partial_y2 * (1.0f - T(ph + 1) / pooled_height))
-            * (*this_output_grad));
+            * output_grad_val);
     atomicAdd(this_rois_grad + 3, (partial_x2 * T(pw + 1) / pooled_width + partial_x1 * T(pw) / pooled_width)
-            * (*this_output_grad));
+            * output_grad_val);
     atomicAdd(this_rois_grad + 4, (partial_y2 * T(ph + 1) / pooled_height + partial_y1 * T(ph) / pooled_height)
-            * (*this_output_grad));
+            * output_grad_val);
   }
 }
 

@@ -2,7 +2,10 @@
 import os
 
 import numpy as np
+import pytest
 import torch
+
+from mmcv.utils import IS_CUDA_AVAILABLE
 
 _USING_PARROTS = True
 try:
@@ -61,9 +64,7 @@ class TestPrRoiPool:
             else:
                 gradcheck(froipool, (x, rois), eps=1e-2, atol=1e-2)
 
-    def test_roipool_allclose(self, dtype=torch.float):
-        if not torch.cuda.is_available():
-            return
+    def _test_roipool_allclose(self, device, dtype=torch.float):
         from mmcv.ops import prroi_pool
         pool_h = 2
         pool_w = 2
@@ -77,9 +78,9 @@ class TestPrRoiPool:
             np_rois_grad = np.array(output[2], dtype=np.float32)
 
             x = torch.tensor(
-                np_input, dtype=dtype, device='cuda', requires_grad=True)
+                np_input, dtype=dtype, device=device, requires_grad=True)
             rois = torch.tensor(
-                np_rois, dtype=dtype, device='cuda', requires_grad=True)
+                np_rois, dtype=dtype, device=device, requires_grad=True)
 
             output = prroi_pool(x, rois, (pool_h, pool_w), spatial_scale)
             output.backward(torch.ones_like(output))
@@ -87,3 +88,13 @@ class TestPrRoiPool:
             assert np.allclose(x.grad.data.cpu().numpy(), np_input_grad, 1e-3)
             assert np.allclose(rois.grad.data.cpu().numpy(), np_rois_grad,
                                1e-3)
+
+    @pytest.mark.parametrize('device', [
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support'))
+    ])
+    @pytest.mark.parametrize('dtype', [torch.float])
+    def test_roipool_allclose(self, device, dtype):
+        self._test_roipool_allclose(device, dtype)
