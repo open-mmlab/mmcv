@@ -259,7 +259,7 @@ conv = ConvModule(
           self.cls = nn.Sequential(nn.Conv1d(3, 1, 3), nn.Linear(1,2))
 
   # 如果我们想将模型的权重初始化为 1，将偏差初始化为 2
-  # 但希望 `cls` 中的权重为 3，偏差为 4，则我们可以使用关键字override
+  # 但希望 `reg` 中的权重为 3，偏差为 4，则我们可以使用关键字override
 
   model = FooNet()
   init_cfg = dict(type='Constant', layer=['Conv1d','Conv2d'], val=1, bias=2,
