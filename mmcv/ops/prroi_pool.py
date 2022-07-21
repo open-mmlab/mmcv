@@ -79,6 +79,29 @@ prroi_pool = PrRoIPoolFunction.apply
 
 
 class PrRoIPool(nn.Module):
+    """The operation of precision RoI pooling. The implementation of PrRoIPool
+    is modified from https://github.com/vacancy/PreciseRoIPooling/
+
+    Precise RoI Pooling (PrRoIPool) is an integration-based (bilinear
+    interpolation) average pooling method for RoI Pooling. It avoids any
+    quantization and has a continuous gradient on bounding box coordinates.
+    It is:
+
+    1. different from the original RoI Pooling proposed in Fast R-CNN. PrRoI
+    Pooling uses average pooling instead of max pooling for each bin and has a
+    continuous gradient on bounding box coordinates. That is, one can take the
+    derivatives of some loss function w.r.t the coordinates of each RoI and
+    optimize the RoI coordinates.
+    2. different from the RoI Align proposed in Mask R-CNN. PrRoI Pooling uses
+    a full integration-based average pooling instead of sampling a constant
+    number of points. This makes the gradient w.r.t. the coordinates
+    continuous.
+
+    Args:
+        output_size (Union[int, tuple]): h, w.
+        spatial_scale (float, optional): scale the input boxes by this number.
+            Defaults to 1.0.
+    """
 
     def __init__(self,
                  output_size: Union[int, tuple],
