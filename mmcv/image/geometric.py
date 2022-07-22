@@ -45,7 +45,7 @@ cv2_border_modes = {
     'wrap': cv2.BORDER_WRAP,
     'reflect_101': cv2.BORDER_REFLECT_101,
     'transparent': cv2.BORDER_TRANSPARENT,
-    'isolated': cv2.BORDER_ISOLATED,
+    'isolated': cv2.BORDER_ISOLATED
 }
 
 # Pillow >=v9.1.0 use a slightly different naming scheme for filters.
