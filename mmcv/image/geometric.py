@@ -330,7 +330,7 @@ def imrotate(img: np.ndarray,
             the source image. If not specified, the center of the image will be
             used.
         scale (float): Isotropic scale factor.
-        border_mode (cv2.BorderTypes): Default to 'constant'.
+        border_mode (str): Default to 'constant'.
         border_value (int): Border value used in case of a constant border.
             Defaults to 0.
         interpolation (str): Same as :func:`resize`.
