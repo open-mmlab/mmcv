@@ -3,4 +3,5 @@ include mmcv/model_zoo/open_mmlab.json mmcv/model_zoo/deprecated.json mmcv/model
 include mmcv/ops/csrc/common/cuda/*.cuh mmcv/ops/csrc/common/cuda/*.hpp mmcv/ops/csrc/common/*.hpp
 include mmcv/ops/csrc/pytorch/*.cpp mmcv/ops/csrc/pytorch/cuda/*.cu mmcv/ops/csrc/pytorch/cuda/*.cpp mmcv/ops/csrc/pytorch/cpu/*.cpp
 include mmcv/ops/csrc/parrots/*.h mmcv/ops/csrc/parrots/*.cpp
-recursive-include mmcv/ops/csrc/ *.h *.hpp *.cpp *.cuh *.cu
+include mmcv/ops/csrc/pytorch/mps/*.mm mmcv/ops/csrc/common/mps/*.h mmcv/ops/csrc/common/mps/*.mm
+recursive-include mmcv/ops/csrc/ *.h *.hpp *.cpp *.cuh *.cu *.mm
