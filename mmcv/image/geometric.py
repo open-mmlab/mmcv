@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import numbers
+from typing import Optional, Tuple
 
 import cv2
 import numpy as np
@@ -35,6 +36,16 @@ cv2_interp_codes = {
     'bicubic': cv2.INTER_CUBIC,
     'area': cv2.INTER_AREA,
     'lanczos': cv2.INTER_LANCZOS4
+}
+
+cv2_border_modes = {
+    'constant': cv2.BORDER_CONSTANT,
+    'replicate': cv2.BORDER_REPLICATE,
+    'reflect': cv2.BORDER_REFLECT,
+    'wrap': cv2.BORDER_WRAP,
+    'reflect_101': cv2.BORDER_REFLECT_101,
+    'transparent': cv2.BORDER_TRANSPARENT,
+    'isolated': cv2.BORDER_ISOLATED,
 }
 
 # Pillow >=v9.1.0 use a slightly different naming scheme for filters.
@@ -301,30 +312,33 @@ def imflip_(img, direction='horizontal'):
         return cv2.flip(img, -1, img)
 
 
-def imrotate(img,
-             angle,
-             center=None,
-             scale=1.0,
-             border_value=0,
-             interpolation='bilinear',
-             auto_bound=False):
+def imrotate(img: np.ndarray,
+             angle: float,
+             center: Optional[Tuple[float, float]] = None,
+             scale: float = 1.0,
+             border_mode: str = 'constant',
+             border_value: int = 0,
+             interpolation: str = 'bilinear',
+             auto_bound: bool = False) -> np.ndarray:
     """Rotate an image.
 
     Args:
-        img (ndarray): Image to be rotated.
+        img (np.ndarray): Image to be rotated.
         angle (float): Rotation angle in degrees, positive values mean
             clockwise rotation.
         center (tuple[float], optional): Center point (w, h) of the rotation in
             the source image. If not specified, the center of the image will be
             used.
         scale (float): Isotropic scale factor.
-        border_value (int): Border value.
+        border_mode (cv2.BorderTypes): Default to 'constant'.
+        border_value (int): Border value used in case of a constant border.
+            Defaults to 0.
         interpolation (str): Same as :func:`resize`.
         auto_bound (bool): Whether to adjust the image size to cover the whole
             rotated image.
 
     Returns:
-        ndarray: The rotated image.
+        np.ndarray: The rotated image.
     """
     if center is not None and auto_bound:
         raise ValueError('`auto_bound` conflicts with `center`')
@@ -347,6 +361,7 @@ def imrotate(img,
         img,
         matrix, (w, h),
         flags=cv2_interp_codes[interpolation],
+        borderMode=cv2_border_modes[border_mode],
         borderValue=border_value)
     return rotated
 
