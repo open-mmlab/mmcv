@@ -305,6 +305,30 @@ def get_extensions():
             extension = MLUExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/mlu'))
+        elif (hasattr(torch.backends, 'mps')
+              and torch.backends.mps.is_available()) or os.getenv(
+                  'FORCE_MPS', '0') == '1':
+            # objc compiler support
+            from distutils.unixccompiler import UnixCCompiler
+            if '.mm' not in UnixCCompiler.src_extensions:
+                UnixCCompiler.src_extensions.append('.mm')
+                UnixCCompiler.language_map['.mm'] = 'objc'
+
+            define_macros += [('MMCV_WITH_MPS', None)]
+            extra_compile_args = {}
+            extra_compile_args['cxx'] = ['-Wall', '-std=c++17']
+            extra_compile_args['cxx'] += [
+                '-framework', 'Metal', '-framework', 'Foundation'
+            ]
+            extra_compile_args['cxx'] += ['-ObjC++']
+            # src
+            op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/common/mps/*.mm') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/mps/*.mm')
+            extension = CppExtension
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/mps'))
         else:
             print(f'Compiling {ext_name} only with CPU')
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
