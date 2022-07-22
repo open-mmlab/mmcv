@@ -3,8 +3,9 @@
 #include "prroi_pool_cuda_kernel.cuh"
 
 void PrROIPoolForwardCUDAKernelLauncher(Tensor input, Tensor rois, Tensor output,
-                                      int pooled_height, int pooled_width,
-                                      float spatial_scale) {
+                                        int pooled_height, int pooled_width,
+                                        float spatial_scale)
+{
   int output_size = output.numel();
   int channels = input.size(1);
   int height = input.size(2);
@@ -23,8 +24,9 @@ void PrROIPoolForwardCUDAKernelLauncher(Tensor input, Tensor rois, Tensor output
 }
 
 void PrROIPoolBackwardCUDAKernelLauncher(Tensor grad_output, Tensor rois, Tensor grad_input,
-                                       int pooled_height, int pooled_width,
-                                       float spatial_scale) {
+                                         int pooled_height, int pooled_width,
+                                         float spatial_scale)
+{
   int output_size = grad_output.numel();
   int channels = grad_input.size(1);
   int height = grad_input.size(2);
@@ -43,9 +45,10 @@ void PrROIPoolBackwardCUDAKernelLauncher(Tensor grad_output, Tensor rois, Tensor
 }
 
 void PrROIPoolCoorBackwardCUDAKernelLauncher(Tensor output, Tensor grad_output,
-                                       Tensor input, Tensor rois, Tensor grad_rois,
-                                       int pooled_height, int pooled_width,
-                                       float spatial_scale) {
+                                             Tensor input, Tensor rois, Tensor grad_rois,
+                                             int pooled_height, int pooled_width,
+                                             float spatial_scale)
+{
   int output_size = grad_output.numel();
   int channels = input.size(1);
   int height = input.size(2);
