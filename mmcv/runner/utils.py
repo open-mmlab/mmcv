@@ -15,7 +15,7 @@ import torch
 import mmcv
 
 
-def get_host_info():
+def get_host_info() -> str:
     """Get hostname and username.
 
     Return empty string if exception raised, e.g. ``getpass.getuser()`` will
@@ -30,7 +30,7 @@ def get_host_info():
         return host
 
 
-def get_time_str():
+def get_time_str() -> str:
     return time.strftime('%Y%m%d_%H%M%S', time.localtime())
 
 

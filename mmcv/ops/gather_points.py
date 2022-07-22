@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import torch
 from torch.autograd import Function
 
@@ -37,7 +39,7 @@ class GatherPoints(Function):
         return output
 
     @staticmethod
-    def backward(ctx, grad_out):
+    def backward(ctx, grad_out: torch.Tensor) -> Tuple[torch.Tensor, None]:
         idx, C, N = ctx.for_backwards
         B, npoint = idx.size()
 

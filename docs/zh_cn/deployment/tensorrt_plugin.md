@@ -24,17 +24,17 @@
 
 ### MMCV中的TensorRT插件列表
 
-|          ONNX算子           |                                   TensorRT插件                                    | MMCV版本 |
-| :-----------------------: | :-----------------------------------------------------------------------------: | :----: |
-|       MMCVRoiAlign        |              [MMCVRoiAlign](./tensorrt_custom_ops.md#mmcvroialign)              | 1.2.6  |
-|         ScatterND         |                 [ScatterND](./tensorrt_custom_ops.md#scatternd)                 | 1.2.6  |
-|     NonMaxSuppression     |         [NonMaxSuppression](./tensorrt_custom_ops.md#nonmaxsuppression)         | 1.3.0  |
-|     MMCVDeformConv2d      |          [MMCVDeformConv2d](./tensorrt_custom_ops.md#mmcvdeformconv2d)          | 1.3.0  |
-|       grid_sampler        |              [grid_sampler](./tensorrt_custom_ops.md#grid-sampler)              | 1.3.1  |
-|          cummax           |                    [cummax](./tensorrt_custom_ops.md#cummax)                    | 1.3.5  |
-|          cummin           |                    [cummin](./tensorrt_custom_ops.md#cummin)                    | 1.3.5  |
-| MMCVInstanceNormalization | [MMCVInstanceNormalization](./tensorrt_custom_ops.md#mmcvinstancenormalization) | 1.3.5  |
-| MMCVModulatedDeformConv2d | [MMCVModulatedDeformConv2d](./tensorrt_custom_ops.md#mmcvmodulateddeformconv2d) | master |
+|         ONNX算子          |                                  TensorRT插件                                   | MMCV版本 |
+| :-----------------------: | :-----------------------------------------------------------------------------: | :------: |
+|       MMCVRoiAlign        |              [MMCVRoiAlign](./tensorrt_custom_ops.md#mmcvroialign)              |  1.2.6   |
+|         ScatterND         |                 [ScatterND](./tensorrt_custom_ops.md#scatternd)                 |  1.2.6   |
+|     NonMaxSuppression     |         [NonMaxSuppression](./tensorrt_custom_ops.md#nonmaxsuppression)         |  1.3.0   |
+|     MMCVDeformConv2d      |          [MMCVDeformConv2d](./tensorrt_custom_ops.md#mmcvdeformconv2d)          |  1.3.0   |
+|       grid_sampler        |              [grid_sampler](./tensorrt_custom_ops.md#grid-sampler)              |  1.3.1   |
+|          cummax           |                    [cummax](./tensorrt_custom_ops.md#cummax)                    |  1.3.5   |
+|          cummin           |                    [cummin](./tensorrt_custom_ops.md#cummin)                    |  1.3.5   |
+| MMCVInstanceNormalization | [MMCVInstanceNormalization](./tensorrt_custom_ops.md#mmcvinstancenormalization) |  1.3.5   |
+| MMCVModulatedDeformConv2d | [MMCVModulatedDeformConv2d](./tensorrt_custom_ops.md#mmcvmodulateddeformconv2d) |  master  |
 
 注意
 
