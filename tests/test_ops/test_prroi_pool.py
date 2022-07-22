@@ -1,6 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os
-
 import numpy as np
 import pytest
 import torch
@@ -14,8 +12,6 @@ except ImportError:
     from torch.autograd import gradcheck
 
     _USING_PARROTS = False
-
-cur_dir = os.path.dirname(os.path.abspath(__file__))
 
 inputs = [([[[[1., 2.], [3., 4.]]]], [[0., 0., 0., 1., 1.]]),
           ([[[[1., 2.], [3., 4.]], [[4., 3.], [2.,
@@ -41,9 +37,13 @@ outputs = [
 
 class TestPrRoiPool:
 
-    def test_roipool_gradcheck(self):
-        if not torch.cuda.is_available():
-            return
+    @pytest.mark.parametrize('device', [
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support'))
+    ])
+    def test_roipool_gradcheck(self, device):
         from mmcv.ops import PrRoIPool
         pool_h = 2
         pool_w = 2
@@ -53,8 +53,8 @@ class TestPrRoiPool:
             np_input = np.array(case[0], dtype=np.float32)
             np_rois = np.array(case[1], dtype=np.float32)
 
-            x = torch.tensor(np_input, device='cuda', requires_grad=True)
-            rois = torch.tensor(np_rois, device='cuda')
+            x = torch.tensor(np_input, device=device, requires_grad=True)
+            rois = torch.tensor(np_rois, device=device)
 
             froipool = PrRoIPool((pool_h, pool_w), spatial_scale)
 

@@ -32,9 +32,11 @@ class PrRoIPoolFunction(Function):
                 rois: torch.Tensor,
                 output_size: Tuple,
                 spatial_scale: float = 1.0) -> torch.Tensor:
-        assert 'FloatTensor' in features.type() and 'FloatTensor' in rois.type(
-        ), f'Precise RoI Pooling only takes float input, got {features.type()}'
-        f' for features and {rois.type()} for rois.'
+        if 'FloatTensor' not in features.type(
+        ) or 'FloatTensor' not in rois.type():
+            raise ValueError(
+                'Precise RoI Pooling only takes float input, got '
+                f'{features.type()} for features and {rois.type()} for rois.')
 
         pooled_height = int(output_size[0])
         pooled_width = int(output_size[1])
@@ -113,6 +115,16 @@ class PrRoIPool(nn.Module):
 
     def forward(self, features: torch.Tensor,
                 rois: torch.Tensor) -> torch.Tensor:
+        """Forward function.
+
+        Args:
+            features (torch.Tensor): The feature map.
+            rois (torch.Tensor): The RoI bboxes in [tl_x, tl_y, br_x, br_y]
+                format.
+
+        Returns:
+            torch.Tensor: The pooled results.
+        """
         return prroi_pool(features, rois, self.output_size, self.spatial_scale)
 
     def __repr__(self):
