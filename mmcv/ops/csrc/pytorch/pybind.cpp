@@ -241,15 +241,16 @@ void ball_query_forward(Tensor new_xyz_tensor, Tensor xyz_tensor,
                         float min_radius, float max_radius, int nsample);
 
 void prroi_pool_forward(Tensor input, Tensor rois, Tensor output,
-                        int pooled_height, int pooled_width, float spatial_scale);
-
-void prroi_pool_backward(Tensor grad_output, Tensor rois, Tensor grad_input,
                         int pooled_height, int pooled_width,
                         float spatial_scale);
 
+void prroi_pool_backward(Tensor grad_output, Tensor rois, Tensor grad_input,
+                         int pooled_height, int pooled_width,
+                         float spatial_scale);
+
 void prroi_pool_coor_backward(Tensor output, Tensor grad_output, Tensor input,
-                        Tensor rois, Tensor grad_rois, int pooled_height, int pooled_width,
-                        float spatial_scale);
+                              Tensor rois, Tensor grad_rois, int pooled_height,
+                              int pooled_width, float spatial_scale);
 
 template <unsigned NDim>
 std::vector<torch::Tensor> get_indice_pairs_forward(
@@ -844,11 +845,12 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("pooled_height"), py::arg("pooled_width"),
         py::arg("spatial_scale"));
   m.def("prroi_pool_backward", &prroi_pool_backward, "prroi_pool_backward",
-        py::arg("grad_output"), py::arg("rois"),
-        py::arg("grad_input"), py::arg("pooled_height"),
-        py::arg("pooled_width"), py::arg("spatial_scale"));
-  m.def("prroi_pool_coor_backward", &prroi_pool_coor_backward, "prroi_pool_coor_backward",
-        py::arg("output"), py::arg("grad_output"), py::arg("input"), py::arg("rois"),
-        py::arg("grad_rois"), py::arg("pooled_height"),
-        py::arg("pooled_width"), py::arg("spatial_scale"));
+        py::arg("grad_output"), py::arg("rois"), py::arg("grad_input"),
+        py::arg("pooled_height"), py::arg("pooled_width"),
+        py::arg("spatial_scale"));
+  m.def("prroi_pool_coor_backward", &prroi_pool_coor_backward,
+        "prroi_pool_coor_backward", py::arg("output"), py::arg("grad_output"),
+        py::arg("input"), py::arg("rois"), py::arg("grad_rois"),
+        py::arg("pooled_height"), py::arg("pooled_width"),
+        py::arg("spatial_scale"));
 }
