@@ -8,11 +8,16 @@
 python -c 'import torch;print(torch.__version__)'
 ```
 
+```{note}
+1. 如需编译 ONNX Runtime 自定义算子，请参考[如何编译ONNX Runtime自定义算子？](https://mmcv.readthedocs.io/zh_CN/latest/deployment/onnxruntime_op.html#id1)
+2. 如需编译 TensorRT 自定义，请参考[如何编译MMCV中的TensorRT插件](https://mmcv.readthedocs.io/zh_CN/latest/deployment/tensorrt_plugin.html#id3)
+```
+
 #### 在 Linux 上编译 mmcv-full
 
 | TODO: 视频教程
 
-- 克隆算法库
+- 克隆代码仓库
 
 ```bash
 git clone https://github.com/open-mmlab/mmcv.git
@@ -20,7 +25,7 @@ cd mmcv
 ```
 
 :::{note}
-如果克隆算法库的速度过慢，可以使用以下命令克隆
+如果克隆代码仓库的速度过慢，可以使用以下命令克隆
 
 ```bash
 git clone https://gitee.com/open-mmlab/mmcv.git
@@ -91,7 +96,7 @@ python .dev_scripts/check_installation.py
 
 | TODO: 视频教程以及 MPS 的编译步骤
 
-- 克隆算法库
+- 克隆代码仓库
 
 ```bash
 git clone https://github.com/open-mmlab/mmcv.git
@@ -99,7 +104,7 @@ cd mmcv
 ```
 
 :::{note}
-如果克隆算法库的速度过慢，可以使用以下命令克隆
+如果克隆代码仓库的速度过慢，可以使用以下命令克隆
 
 ```bash
 git clone https://gitee.com/open-mmlab/mmcv.git
@@ -181,7 +186,7 @@ conda install pytorch torchvision cudatoolkit=10.2 -c pytorch
 conda install pytorch torchvision cpuonly -c pytorch
 ```
 
-- 克隆算法库
+- 克隆代码仓库
 
 ```shell
 git clone https://github.com/open-mmlab/mmcv.git
@@ -189,7 +194,7 @@ cd mmcv
 ```
 
 :::{note}
-如果克隆算法库的速度过慢，可以使用以下命令克隆
+如果克隆代码仓库的速度过慢，可以使用以下命令克隆
 
 ```bash
 git clone https://gitee.com/open-mmlab/mmcv.git
@@ -337,7 +342,7 @@ python .dev_scripts/check_installation.py
 
 如果你需要使用和 PyTorch 相关的模块，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://github.com/pytorch/pytorch#installation)。
 
-- 克隆算法库
+- 克隆代码仓库
 
 ```bash
 git clone https://github.com/open-mmlab/mmcv.git
@@ -345,7 +350,7 @@ cd mmcv
 ```
 
 :::{note}
-如果克隆算法库的速度过慢，可以使用以下命令克隆
+如果克隆代码仓库的速度过慢，可以使用以下命令克隆
 
 ```bash
 git clone https://gitee.com/open-mmlab/mmcv.git

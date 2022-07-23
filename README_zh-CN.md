@@ -55,17 +55,19 @@ MMCV 支持多种平台，包括：
 
 MMCV 有两个版本：
 
-- **mmcv-full**: 完整版，包含所有的特性以及丰富的开箱即用的 CUDA 算子。
-- **mmcv**: 精简版，不包含 CUDA 算子但包含其余所有特性和功能，类似 MMCV 1.0 之前的版本。如果你不需要使用 CUDA 算子的话，精简版可以作为一个考虑选项。
+- **mmcv-full**: 完整版，包含所有的特性以及丰富的开箱即用的 CPU 和 CUDA 算子。
+- **mmcv**: 精简版，不包含 CPU 和 CUDA 算子但包含其余所有特性和功能，类似 MMCV 1.0 之前的版本。如果你不需要使用算子的话，精简版可以作为一个考虑选项。
+
+**注意**: 请不要在同一个环境中安装两个版本，否则可能会遇到类似 `ModuleNotFound` 的错误。在安装一个版本之前，需要先卸载另一个。`如果CUDA可用，强烈推荐安装mmcv-full`。
 
 ### 安装 mmcv-full
 
 在安装 mmcv-full 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://github.com/pytorch/pytorch#installation)。
 
-在 Linux 和 Windows 平台安装 mmcv-full 的命令如下
+在 Linux 和 Windows 平台安装 mmcv-full 的命令如下（如果你的系统是 macOS，请参考[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html#macos-mmcv-full)）
 
 ```bash
-pip install openmim
+pip install -U openmim
 mim install mmcv-full
 ```
 
@@ -75,18 +77,18 @@ mim install mmcv-full
 mim install mmcv-full==1.5.0
 ```
 
-如果发现上述的安装命令没有使用 mmcv-full 预编译包安装，则表示没有提供对应 PyTorch 或者 CUDA 或者 mmcv-full 版本的预编译包，此时，请参考[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html#mmcv-full)。
+如果发现上述的安装过程没有使用 mmcv-full 预编译包安装，则可能是没有对应 PyTorch 或者 CUDA 或者 mmcv-full 版本的预编译包，那么，你可能需要[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html#mmcv-full)。
 
-如果想要在 macOS 平台安装 mmcv-full，请参考[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html#macos-mmcv-full)。
+更多安装方式请参考[安装文档](https://mmcv.readthedocs.io/zh_CN/latest/get_started/installation.html)。
 
 ### 安装 mmcv
 
+如果你需要使用和 PyTorch 相关的模块，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://github.com/pytorch/pytorch#installation)。
+
 ```bash
-pip install openmim
+pip install -U openmim
 mim install mmcv
 ```
-
-如果想从源码编译 MMCV，请参考[源码安装 mmcv](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html#mmcv)。
 
 ## 支持的部分开源项目
 
@@ -111,7 +113,7 @@ mim install mmcv
 
 ## FAQ
 
-如果你遇到了安装问题，CUDA 相关的问题或者 RuntimeErrors，可以首先参考[问题解决页面](https://mmcv.readthedocs.io/zh_CN/latest/faq.html)查看是否已经有解决方案。
+如果你遇到了安装问题，CUDA 相关的问题或者 RuntimeError，可以先参考[问题解决页面](https://mmcv.readthedocs.io/zh_CN/latest/faq.html)查看是否已有解决方案。如果问题仍然没有解决，欢迎提 [issue](https://github.com/open-mmlab/mmcv/issues)。
 
 ## 贡献指南
 
@@ -119,11 +121,11 @@ mim install mmcv
 
 ## 许可证
 
-`MMCV` 目前以 Apache 2.0 的许可证发布，但是其中有一部分功能并不是使用的 Apache2.0 许可证，我们在 [许可证](LICENSES.md) 中详细地列出了这些功能以及他们对应的许可证，如果您正在从事盈利性活动，请谨慎参考此文档。
+`MMCV` 目前以 Apache 2.0 的许可证发布，但是其中有一部分功能并不是使用的 Apache2.0 许可证，我们在[许可证](LICENSES.md)中详细地列出了这些功能以及他们对应的许可证，如果您正在从事盈利性活动，请谨慎参考此文档。
 
 ## 欢迎加入 OpenMMLab 社区
 
-扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=3ijNTqfg)，或添加微信小助手”OpenMMLabwx“加入官方交流微信群。
+扫描下方的二维码可关注 OpenMMLab 团队的[知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的[官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=3ijNTqfg)，或添加微信小助手”OpenMMLabwx“加入官方交流微信群。
 
 <div align="center">
 <img src="docs/en/_static/zhihu_qrcode.jpg" height="400" />  <img src="docs/en/_static/qq_group_qrcode.jpg" height="400" /> <img src="docs/en/_static/wechat_qrcode.jpg" height="400" />

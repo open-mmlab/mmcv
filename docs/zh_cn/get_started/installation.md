@@ -3,16 +3,18 @@
 MMCV 有两个版本：
 
 - **mmcv-full**: 完整版，包含所有的特性以及丰富的开箱即用的 CPU 和 CUDA 算子。注意完整版本可能需要更长时间来编译。
-- **mmcv**: 精简版，不包含 CPU 和 CUDA 算子但包含其余所有特性和功能，类似 MMCV 1.0 之前的版本。如果你不需要使用 CUDA 算子的话，精简版可以作为一个考虑选项。
+- **mmcv**: 精简版，不包含 CPU 和 CUDA 算子但包含其余所有特性和功能，类似 MMCV 1.0 之前的版本。如果你不需要使用算子的话，精简版可以作为一个考虑选项。
 
 ```{warning}
 请不要在同一个环境中安装两个版本，否则可能会遇到类似 `ModuleNotFound` 的错误。在安装一个版本之前，需要先卸载另一个。`如果CUDA可用，强烈推荐安装mmcv-full`。
 ```
 
-### 安装完整版 mmcv-full
+### 安装 mmcv-full
 
-```{important}
-下述安装步骤仅适用于 Linux 和 Windows 平台，如需在 macOS 平台安装 mmcv-full，请参考[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html#macos-mmcv-full)。
+```{note}
+1. 下述安装步骤仅适用于 Linux 和 Windows 平台，如需在 macOS 平台安装 mmcv-full，请参考[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html#macos-mmcv-full)。
+2. 如需编译 ONNX Runtime 自定义算子，请参考[如何编译ONNX Runtime自定义算子？](https://mmcv.readthedocs.io/zh_CN/latest/deployment/onnxruntime_op.html#id1)
+3. 如需编译 TensorRT 自定义，请参考[如何编译MMCV中的TensorRT插件](https://mmcv.readthedocs.io/zh_CN/latest/deployment/tensorrt_plugin.html#id3)
 ```
 
 在安装 mmcv-full 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://github.com/pytorch/pytorch#installation)。可使用以下命令验证
@@ -47,7 +49,7 @@ mim install mmcv-full -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 安装完成后可以运行 [check_installation.py](https://github.com/open-mmlab/mmcv/.dev_scripts/check_installation.py) 脚本检查 mmcv-full 是否安装成功。
 
-如果发现上述的安装命令没有使用 mmcv-full 预编译包安装，则表示没有提供对应 PyTorch 或者 CUDA 或者 mmcv-full 版本的预编译包，此时，请参考[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html)。
+如果发现上述的安装命令没有使用 mmcv-full 预编译包安装，则可能是没有对应 PyTorch 或者 CUDA 或者 mmcv-full 版本的预编译包，那么，你可能需要[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html)。
 
 #### 使用 pip 安装
 
@@ -121,7 +123,7 @@ pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9
 
 :::
 
-如果上面的下拉框中没有找到对应的版本，则表示没有提供对应 PyTorch 或者 CUDA 或者 mmcv-full 版本的预编译包，此时，请参考[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html)。
+如果上面的下拉框中没有找到对应的版本，则可能是没有对应 PyTorch 或者 CUDA 或者 mmcv-full 版本的预编译包，那么，你可能需要[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html)。
 
 #### 使用 docker 镜像
 
@@ -158,14 +160,10 @@ docker build -t mmcv -f docker/release/Dockerfile \
 
 更多 PyTorch 和 CUDA 镜像可以点击 [dockerhub/pytorch](https://hub.docker.com/r/pytorch/pytorch/tags)。
 
-### 安装精简版 mmcv
+### 安装 mmcv
+
+如果你需要使用和 PyTorch 相关的模块，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://github.com/pytorch/pytorch#installation)。
 
 ```python
 pip install mmcv
 ```
-
-### 安装完整版并且编译 onnxruntime 的自定义算子
-
-详细的指南请查看 [这里](https://mmcv.readthedocs.io/zh_CN/latest/deployment/onnxruntime_custom_ops.html)。
-
-如果想从源码编译 MMCV，请参考[该文档](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html)。
