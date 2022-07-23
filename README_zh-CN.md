@@ -33,13 +33,13 @@
 
 MMCV 是一个面向计算机视觉的基础库，它提供了以下功能：
 
-- 通用的 IO 接口
-- 图像和视频处理
-- 图像和标注结果可视化
-- 常用小工具（进度条，计时器等）
-- 基于 PyTorch 的通用训练框架
-- 多种 CNN 网络结构
-- 高质量实现的常见 CUDA 算子
+- [通用的 IO 接口](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/io.html)
+- [图像和视频处理](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/data_process.html)
+- [图像和标注结果可视化](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/visualization.html)
+- [常用小工具（进度条，计时器等）](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/utils.html)
+- [基于 PyTorch 的通用训练框架](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/runner.html)
+- [多种 CNN 网络结构](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/cnn.html)
+- [高质量实现的 CPU 和 CUDA 算子](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/ops.html)
 
 MMCV 支持多种平台，包括：
 
@@ -58,9 +58,11 @@ MMCV 有两个版本：
 - **mmcv-full**: 完整版，包含所有的特性以及丰富的开箱即用的 CUDA 算子。
 - **mmcv**: 精简版，不包含 CUDA 算子但包含其余所有特性和功能，类似 MMCV 1.0 之前的版本。如果你不需要使用 CUDA 算子的话，精简版可以作为一个考虑选项。
 
-本文档只提供 mmcv-full 的安装教程，如需安装精简版的 mmcv，请参考[安装文档](todo)。另外，在安装 mmcv-full 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 PyTorch [官方文档](https://pytorch.org/)。
+### 安装 mmcv-full
 
-在 Linux 和 Windows 平台安装 mmcv-full 的命令如下，如需在 macOS 平台安装 mmcv-full，请参考[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html)。
+在安装 mmcv-full 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://github.com/pytorch/pytorch#installation)。
+
+在 Linux 和 Windows 平台安装 mmcv-full 的命令如下
 
 ```bash
 pip install openmim
@@ -73,66 +75,18 @@ mim install mmcv-full
 mim install mmcv-full==1.5.0
 ```
 
-需要注意的是，你需要查看下表确认 mmcv-full 提供 PyTorch 和 CUDA 预编译包的最低版本。
+如果发现上述的安装命令没有使用 mmcv-full 预编译包安装，则表示没有提供对应 PyTorch 或者 CUDA 或者 mmcv-full 版本的预编译包，此时，请参考[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html#mmcv-full)。
 
-<table class="docutils">
-  <tbody>
-    <tr>
-      <th width="80"> CUDA </th>
-      <th valign="bottom" align="left" width="120">torch 1.11.x</th>
-      <th valign="bottom" align="left" width="120">torch 1.10.x</th>
-      <th valign="bottom" align="left" width="120">torch 1.9.x</th>
-      <th valign="bottom" align="left" width="120">torch 1.8.x</th>
-      <th valign="bottom" align="left" width="120">torch 1.7.x</th>
-      <th valign="bottom" align="left" width="120">torch 1.6.x</th>
-      <th valign="bottom" align="left" width="120">torch 1.5.x</th>
-    </tr>
-    <tr>
-      <td align="left">11.5</td><td align="left">1.4.7</td><td align="left"></td>
-      <td align="left"></td><td align="left"></td><td align="left"></td>
-      <td align="left"></td><td align="left"></td>
-    </tr>
-    <tr>
-      <td align="left">11.3</td><td align="left">1.4.7</td><td align="left">1.3.16</td>
-      <td align="left"></td><td align="left"></td><td align="left"></td>
-      <td align="left"></td><td align="left"></td>
-    </tr>
-    <tr>
-      <td align="left">11.1</td><td align="left"></td><td align="left">1.3.16</td>
-      <td align="left">1.3.9</td><td align="left">1.3.0</td><td align="left"></td>
-      <td align="left"></td><td align="left"></td>
-    </tr>
-    <tr>
-      <td align="left">11.0</td><td align="left"></td><td align="left"></td>
-      <td align="left"></td><td align="left"></td><td align="left">1.2.0</td>
-      <td align="left"></td><td align="left"></td>
-    </tr>
-    <tr>
-      <td align="left">10.2</td><td align="left">1.4.7 (Linux only)</td><td align="left">1.3.16</td>
-      <td align="left">1.3.9</td><td align="left">1.3.0</td><td align="left">1.2.0</td>
-      <td align="left">1.0.5</td><td align="left">1.0.0</td>
-    </tr>
-    <tr>
-      <td align="left">10.1</td><td align="left"></td><td align="left"></td>
-      <td align="left"></td><td align="left">1.3.0</td><td align="left">1.2.0</td>
-      <td align="left">1.0.5</td><td align="left">1.0.0</td>
-    </tr>
-    <tr>
-      <td align="left">9.2</td><td align="left"></td><td align="left"></td>
-      <td align="left"></td><td align="left"></td><td align="left">1.2.0 (Linux only)</td>
-      <td align="left">1.0.5 (Linux only)</td><td align="left">1.0.0</td>
-    </tr>
-    <tr>
-      <td align="left">cpu</td><td align="left">1.4.7</td><td align="left">1.3.16</td>
-      <td align="left">1.3.9</td><td align="left">1.3.0</td><td align="left">1.2.0</td>
-      <td align="left">1.0.5</td><td align="left">1.0.0</td>
-    </tr>
-  </tbody>
-</table>
+如果想要在 macOS 平台安装 mmcv-full，请参考[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html#macos-mmcv-full)。
 
-**注意**：mmcv-full>=1.4.0 才开始提供 Windows 平台的预编译包。
+### 安装 mmcv
 
-如果想从源码编译 MMCV，请参考[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html)。
+```bash
+pip install openmim
+mim install mmcv
+```
+
+如果想从源码编译 MMCV，请参考[源码安装 mmcv](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html#mmcv)。
 
 ## 支持的部分开源项目
 
