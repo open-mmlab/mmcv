@@ -57,3 +57,4 @@ We implement common ops used in detection, segmentation, etc.
 | TINShift                     |     | √    | √   |     |
 | UpFirDn2d                    |     | √    |     |     |
 | Voxelization                 | √   | √    |     |     |
+| PrRoIPool                    |     | √    |     |     |

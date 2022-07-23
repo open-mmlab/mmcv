@@ -240,6 +240,18 @@ void ball_query_forward(Tensor new_xyz_tensor, Tensor xyz_tensor,
                         Tensor idx_tensor, int b, int n, int m,
                         float min_radius, float max_radius, int nsample);
 
+void prroi_pool_forward(Tensor input, Tensor rois, Tensor output,
+                        int pooled_height, int pooled_width,
+                        float spatial_scale);
+
+void prroi_pool_backward(Tensor grad_output, Tensor rois, Tensor grad_input,
+                         int pooled_height, int pooled_width,
+                         float spatial_scale);
+
+void prroi_pool_coor_backward(Tensor output, Tensor grad_output, Tensor input,
+                              Tensor rois, Tensor grad_rois, int pooled_height,
+                              int pooled_width, float spatial_scale);
+
 template <unsigned NDim>
 std::vector<torch::Tensor> get_indice_pairs_forward(
     torch::Tensor indices, int64_t batchSize,
@@ -828,4 +840,17 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         "chamfer_distance_backward", py::arg("xyz1"), py::arg("xyz2"),
         py::arg("gradxyz1"), py::arg("gradxyz2"), py::arg("graddist1"),
         py::arg("graddist2"), py::arg("idx1"), py::arg("idx2"));
+  m.def("prroi_pool_forward", &prroi_pool_forward, "prroi_pool forward",
+        py::arg("input"), py::arg("rois"), py::arg("output"),
+        py::arg("pooled_height"), py::arg("pooled_width"),
+        py::arg("spatial_scale"));
+  m.def("prroi_pool_backward", &prroi_pool_backward, "prroi_pool_backward",
+        py::arg("grad_output"), py::arg("rois"), py::arg("grad_input"),
+        py::arg("pooled_height"), py::arg("pooled_width"),
+        py::arg("spatial_scale"));
+  m.def("prroi_pool_coor_backward", &prroi_pool_coor_backward,
+        "prroi_pool_coor_backward", py::arg("output"), py::arg("grad_output"),
+        py::arg("input"), py::arg("rois"), py::arg("grad_rois"),
+        py::arg("pooled_height"), py::arg("pooled_width"),
+        py::arg("spatial_scale"));
 }
