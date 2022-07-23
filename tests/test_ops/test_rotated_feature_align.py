@@ -3,11 +3,21 @@ import pytest
 import torch
 
 from mmcv.ops import rotated_feature_align
+from mmcv.utils import IS_CUDA_AVAILABLE
 
 
 @pytest.mark.skipif(
     not torch.cuda.is_available(), reason='requires CUDA support')
-@pytest.mark.parametrize('device', ['cuda', 'cpu'])
+@pytest.mark.parametrize('device', [
+    pytest.param(
+        'cuda',
+        marks=pytest.mark.skipif(
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    pytest.param(
+        'cpu',
+        marks=pytest.mark.skipif(
+            torch.__version__ == 'parrots', reason='requires PyTorch support'))
+])
 def test_rotated_feature_align(device):
     feature = torch.tensor([[[[1.2924, -0.2172, -0.5222, 0.1172],
                               [0.9144, 1.2248, 1.3115, -0.9690],

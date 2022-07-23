@@ -36,7 +36,8 @@ except ImportError:
         'is_method_overridden', 'has_method'
     ]
 else:
-    from .device_type import IS_IPU_AVAILABLE, IS_MLU_AVAILABLE
+    from .device_type import (IS_IPU_AVAILABLE, IS_MLU_AVAILABLE,
+                              IS_MPS_AVAILABLE)
     from .env import collect_env
     from .hub import load_url
     from .logging import get_logger, print_log
@@ -53,6 +54,7 @@ else:
     # yapf: enable
     from .registry import Registry, build_from_cfg
     from .seed import worker_init_fn
+    from .torch_ops import torch_meshgrid
     from .trace import is_jit_tracing
     __all__ = [
         'Config', 'ConfigDict', 'DictAction', 'collect_env', 'get_logger',
@@ -74,5 +76,6 @@ else:
         'assert_params_all_zeros', 'check_python_script',
         'is_method_overridden', 'is_jit_tracing', 'is_rocm_pytorch',
         '_get_cuda_home', 'load_url', 'has_method', 'IS_CUDA_AVAILABLE',
-        'worker_init_fn', 'IS_MLU_AVAILABLE', 'IS_IPU_AVAILABLE'
+        'worker_init_fn', 'IS_MLU_AVAILABLE', 'IS_IPU_AVAILABLE',
+        'IS_MPS_AVAILABLE', 'torch_meshgrid'
     ]

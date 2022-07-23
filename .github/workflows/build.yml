@@ -8,6 +8,7 @@ on:
       - 'docs/**'
       - 'examples/**'
       - '.dev_scripts/**'
+      - 'docker/**'
 
   pull_request:
     paths-ignore:
@@ -16,6 +17,7 @@ on:
       - 'docs/**'
       - 'examples/**'
       - '.dev_scripts/**'
+      - 'docker/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -45,7 +47,22 @@ jobs:
       - name: Run unittests and generate coverage report
         run: |
           pip install -r requirements/test.txt
-          pytest tests/ --ignore=tests/test_runner --ignore=tests/test_device/test_ipu --ignore=tests/test_optimizer.py --ignore=tests/test_cnn --ignore=tests/test_parallel.py --ignore=tests/test_ops --ignore=tests/test_load_model_zoo.py --ignore=tests/test_utils/test_logging.py --ignore=tests/test_image/test_io.py --ignore=tests/test_utils/test_registry.py --ignore=tests/test_utils/test_parrots_jit.py --ignore=tests/test_utils/test_trace.py --ignore=tests/test_utils/test_hub.py --ignore=tests/test_device/test_mlu/test_mlu_parallel.py
+          pytest tests/ \
+              --ignore=tests/test_runner \
+              --ignore=tests/test_device/test_ipu \
+              --ignore=tests/test_optimizer.py \
+              --ignore=tests/test_cnn \
+              --ignore=tests/test_parallel.py \
+              --ignore=tests/test_ops \
+              --ignore=tests/test_load_model_zoo.py \
+              --ignore=tests/test_utils/test_logging.py \
+              --ignore=tests/test_image/test_io.py \
+              --ignore=tests/test_utils/test_registry.py \
+              --ignore=tests/test_utils/test_parrots_jit.py \
+              --ignore=tests/test_utils/test_trace.py \
+              --ignore=tests/test_utils/test_hub.py \
+              --ignore=tests/test_device \
+              --ignore=tests/test_utils/test_torch_ops.py
 
   build_without_ops:
     runs-on: ubuntu-18.04
@@ -230,6 +247,9 @@ jobs:
           - python-version: '3.10'
             torch: 1.11.0+cu102
             torchvision: 0.12.0+cu102
+          - python-version: '3.10'
+            torch: 1.12.0+cu102
+            torchvision: 0.13.0+cu102
           - python-version: 3.6
             torch: 1.9.0+cu102
             torchvision: 0.10.0+cu102

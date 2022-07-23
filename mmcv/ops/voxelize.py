@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Any, List, Tuple, Union
+
 import torch
 from torch import nn
 from torch.autograd import Function
@@ -13,13 +15,14 @@ ext_module = ext_loader.load_ext(
 class _Voxelization(Function):
 
     @staticmethod
-    def forward(ctx,
-                points,
-                voxel_size,
-                coors_range,
-                max_points=35,
-                max_voxels=20000,
-                deterministic=True):
+    def forward(
+            ctx: Any,
+            points: torch.Tensor,
+            voxel_size: Union[tuple, float],
+            coors_range: Union[tuple, float],
+            max_points: int = 35,
+            max_voxels: int = 20000,
+            deterministic: bool = True) -> Union[Tuple[torch.Tensor], Tuple]:
         """Convert kitti points(N, >=3) to voxels.
 
         Args:
@@ -111,11 +114,11 @@ class Voxelization(nn.Module):
     """
 
     def __init__(self,
-                 voxel_size,
-                 point_cloud_range,
-                 max_num_points,
-                 max_voxels=20000,
-                 deterministic=True):
+                 voxel_size: List,
+                 point_cloud_range: List,
+                 max_num_points: int,
+                 max_voxels: Union[tuple, int] = 20000,
+                 deterministic: bool = True):
         """
         Args:
             voxel_size (list): list [x, y, z] size of three dimension
@@ -149,8 +152,9 @@ class Voxelization(nn.Module):
         point_cloud_range = torch.tensor(
             point_cloud_range, dtype=torch.float32)
         voxel_size = torch.tensor(voxel_size, dtype=torch.float32)
-        grid_size = (point_cloud_range[3:] -
-                     point_cloud_range[:3]) / voxel_size
+        grid_size = (
+            point_cloud_range[3:] -  # type: ignore
+            point_cloud_range[:3]) / voxel_size  # type: ignore
         grid_size = torch.round(grid_size).long()
         input_feat_shape = grid_size[:2]
         self.grid_size = grid_size
@@ -158,7 +162,7 @@ class Voxelization(nn.Module):
         # [w, h, d] -> [d, h, w]
         self.pcd_shape = [*input_feat_shape, 1][::-1]
 
-    def forward(self, input):
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         if self.training:
             max_voxels = self.max_voxels[0]
         else:

@@ -160,7 +160,7 @@ def test_build_norm_layer():
         for postfix in ['_test', 1]:
             cfg = dict(type=type_name)
             if type_name == 'GN':
-                cfg['num_groups'] = 2
+                cfg['num_groups'] = 3
             name, layer = build_norm_layer(cfg, 3, postfix=postfix)
             assert name == abbr_mapping[type_name] + str(postfix)
             assert isinstance(layer, module)

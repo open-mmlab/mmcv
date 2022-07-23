@@ -1,10 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Tuple
+
+import torch
+
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', ['convex_iou', 'convex_giou'])
 
 
-def convex_giou(pointsets, polygons):
+def convex_giou(pointsets: torch.Tensor,
+                polygons: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
     """Return generalized intersection-over-union (Jaccard index) between point
     sets and polygons.
 
@@ -26,7 +31,8 @@ def convex_giou(pointsets, polygons):
     return convex_giou, points_grad
 
 
-def convex_iou(pointsets, polygons):
+def convex_iou(pointsets: torch.Tensor,
+               polygons: torch.Tensor) -> torch.Tensor:
     """Return intersection-over-union (Jaccard index) between point sets and
     polygons.
 
