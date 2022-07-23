@@ -30,7 +30,7 @@ void setMTLArg(MTLComputeCommandEncoder_t encoder, int index, T&& t) {
   [encoder setBuffer:getMTLBufferStorage(t) offset:0 atIndex:index];
 }
 
-template <typename T, td::enable_if_t<!std::is_same<std::decay_t<T>, at::Tensor>::value, bool>>
+template <typename T, std::enable_if_t<!std::is_same<std::decay_t<T>, at::Tensor>::value, bool>>
 void setMTLArg(MTLComputeCommandEncoder_t encoder, int index, T&& t) {
   [encoder setBytes:&t length:sizeof(t) atIndex:index];
 }
