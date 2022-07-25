@@ -902,7 +902,7 @@ class TestRandomResize:
             results_update = TRANSFORMS.transform(copy.deepcopy(results))
 
 
-class TestTransforms:
+class TestTestTimeAug:
 
     def test_init(self):
         transforms = [[
