@@ -333,7 +333,7 @@ def test_pavi_hook():
     runner = _build_demo_runner()
     runner.meta = dict(config_dict=dict(lr=0.02, gpu_ids=range(1)))
     hook = PaviLoggerHook(
-        add_graph_kwargs=None, add_last_ckpt=True, add_ckpt_kwargs=None)
+        add_graph_kwargs=None, add_last_ckpt=False, add_ckpt_kwargs=None)
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)])
     shutil.rmtree(runner.work_dir)
@@ -343,18 +343,9 @@ def test_pavi_hook():
         'learning_rate': 0.02,
         'momentum': 0.95
     }, 1)
-    # in Windows environment, the latest checkpoint is copied from epoch_1.pth
-    if platform.system() == 'Windows':
-        snapshot_file_path = osp.join(runner.work_dir, 'latest.pth')
-    else:
-        snapshot_file_path = osp.join(runner.work_dir, 'epoch_1.pth')
-    hook.writer.add_snapshot_file.assert_called_with(
-        tag=runner.work_dir.split('/')[-1],
-        snapshot_file_path=snapshot_file_path,
-        iteration=1)
 
 
-def test_pavi_hook_2():
+def test_pavi_hook_epoch_based():
     """Test setting start epoch and interval epoch."""
     sys.modules['pavi'] = MagicMock()
 
@@ -401,6 +392,62 @@ def test_pavi_hook_2():
             tag=runner.work_dir.split('/')[-1],
             snapshot_file_path=osp.join(runner.work_dir, final_file_path),
             iteration=6),
+    ]
+    hook.writer.add_snapshot_file.assert_has_calls(calls, any_order=False)
+
+
+def test_pavi_hook_iter_based():
+    """Test setting start epoch and interval epoch."""
+    sys.modules['pavi'] = MagicMock()
+
+    loader = DataLoader(torch.ones((5, 2)))
+    runner = _build_demo_runner(
+        'IterBasedRunner', max_iters=15, max_epochs=None)
+    runner.meta = dict()
+    hook = PaviLoggerHook(
+        by_epoch=False,
+        add_graph_kwargs={
+            'active': False,
+            'start': 0,
+            'interval': 1
+        },
+        add_last_ckpt=True,
+        add_ckpt_kwargs={
+            'active': True,
+            'start': 0,
+            'interval': 4
+        })
+
+    runner.register_hook(CheckpointHook(interval=4, by_epoch=False))
+    runner.register_hook(hook)
+
+    runner.run([loader], [('train', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    assert hasattr(hook, 'writer')
+
+    # in Windows environment, the latest checkpoint is copied from epoch_1.pth
+    if platform.system() == 'Windows':
+        final_file_path = osp.join(runner.work_dir, 'latest.pth')
+    else:
+        final_file_path = osp.join(runner.work_dir, 'iter_15.pth')
+    calls = [
+        call(
+            tag=runner.work_dir.split('/')[-1],
+            snapshot_file_path=osp.join(runner.work_dir, 'iter_4.pth'),
+            iteration=4),
+        call(
+            tag=runner.work_dir.split('/')[-1],
+            snapshot_file_path=osp.join(runner.work_dir, 'iter_8.pth'),
+            iteration=8),
+        call(
+            tag=runner.work_dir.split('/')[-1],
+            snapshot_file_path=osp.join(runner.work_dir, 'iter_12.pth'),
+            iteration=12),
+        call(
+            tag=runner.work_dir.split('/')[-1],
+            snapshot_file_path=osp.join(runner.work_dir, final_file_path),
+            iteration=15),
     ]
     hook.writer.add_snapshot_file.assert_has_calls(calls, any_order=False)
 

@@ -128,8 +128,10 @@ class PaviLoggerHook(LoggerHook):
             return self.get_iter(runner)
 
     def _add_ckpt(self, runner, ckpt_path: str, step: int) -> None:
+
         if osp.islink(ckpt_path):
             ckpt_path = osp.join(runner.work_dir, os.readlink(ckpt_path))
+
         if osp.isfile(ckpt_path):
             self.writer.add_snapshot_file(
                 tag=self.run_name,
@@ -174,6 +176,7 @@ class PaviLoggerHook(LoggerHook):
 
     @master_only
     def after_train_epoch(self, runner) -> None:
+        super().after_train_epoch(runner)
         # Do not use runner.epoch since it starts from 0.
         step = self.get_epoch(runner) if self.by_epoch else self.get_iter(
             runner)
@@ -182,9 +185,21 @@ class PaviLoggerHook(LoggerHook):
             step >= self.add_ckpt_start and \
                 ((step - self.add_ckpt_start) % self.add_ckpt_interval == 0):
 
-            file_name = f'epoch_{step}.pth' \
-                if self.by_epoch else f'iter_{step}.pth'
+            ckpt_path = osp.join(runner.work_dir, f'epoch_{step}.pth')
 
-            ckpt_path = osp.join(runner.work_dir, file_name)
+            self._add_ckpt(runner, ckpt_path, step)
+
+    @master_only
+    def after_train_iter(self, runner) -> None:
+        super().after_train_iter(runner)
+
+        step = self.get_epoch(runner) if self.by_epoch else self.get_iter(
+            runner)
+
+        if self.add_ckpt and \
+            step >= self.add_ckpt_start and \
+                ((step - self.add_ckpt_start) % self.add_ckpt_interval == 0):
+
+            ckpt_path = osp.join(runner.work_dir, f'iter_{step}.pth')
 
             self._add_ckpt(runner, ckpt_path, step)
