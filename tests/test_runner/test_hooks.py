@@ -152,7 +152,7 @@ def test_checkpoint_hook(tmp_path):
         runner.run([loader], [('train', 1)])
         basename = osp.basename(runner.work_dir.rstrip(osp.sep))
         assert runner.meta['hook_msgs']['last_ckpt'] == \
-               '/'.join([out_dir, basename, 'epoch_4.pth'])
+            '/'.join([out_dir, basename, 'epoch_4.pth'])
     mock_put.assert_called()
     mock_remove.assert_called()
     mock_isfile.assert_called()
@@ -183,7 +183,7 @@ def test_checkpoint_hook(tmp_path):
         runner.run([loader], [('train', 1)])
         basename = osp.basename(runner.work_dir.rstrip(osp.sep))
         assert runner.meta['hook_msgs']['last_ckpt'] == \
-               '/'.join([out_dir, basename, 'iter_4.pth'])
+            '/'.join([out_dir, basename, 'iter_4.pth'])
     mock_put.assert_called()
     mock_remove.assert_called()
     mock_isfile.assert_called()
@@ -332,7 +332,8 @@ def test_pavi_hook():
     loader = DataLoader(torch.ones((5, 2)))
     runner = _build_demo_runner()
     runner.meta = dict(config_dict=dict(lr=0.02, gpu_ids=range(1)))
-    hook = PaviLoggerHook(add_graph=False, add_last_ckpt=True)
+    hook = PaviLoggerHook(
+        add_graph_kwargs=None, add_last_ckpt=True, add_ckpt_kwargs=None)
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)])
     shutil.rmtree(runner.work_dir)
@@ -361,13 +362,14 @@ def test_pavi_hook_2():
     runner = _build_demo_runner(max_epochs=6)
     runner.meta = dict(config_dict=dict(lr=0.02, gpu_ids=range(1)))
     hook = PaviLoggerHook(
-        add_graph=False,
-        add_graph_args={
+        add_graph_kwargs={
+            'active': False,
             'start': 0,
             'interval': 1
         },
         add_last_ckpt=True,
-        add_ckpt_args={
+        add_ckpt_kwargs={
+            'active': True,
             'start': 1,
             'interval': 2
         })
@@ -377,6 +379,11 @@ def test_pavi_hook_2():
 
     assert hasattr(hook, 'writer')
 
+    # in Windows environment, the latest checkpoint is copied from epoch_1.pth
+    if platform.system() == 'Windows':
+        final_file_path = osp.join(runner.work_dir, 'latest.pth')
+    else:
+        final_file_path = osp.join(runner.work_dir, 'epoch_6.pth')
     calls = [
         call(
             tag=runner.work_dir.split('/')[-1],
@@ -392,7 +399,7 @@ def test_pavi_hook_2():
             iteration=5),
         call(
             tag=runner.work_dir.split('/')[-1],
-            snapshot_file_path=osp.join(runner.work_dir, 'latest.pth'),
+            snapshot_file_path=osp.join(runner.work_dir, final_file_path),
             iteration=6),
     ]
     hook.writer.add_snapshot_file.assert_has_calls(calls, any_order=False)

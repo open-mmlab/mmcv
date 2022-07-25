@@ -35,7 +35,8 @@ class PaviLoggerHook(LoggerHook):
             - overwrite_last_training (bool, optional): Whether to upload data
               to the training with the same name in the same project, rather
               than creating a new one. Defaults to False.
-        add_graph (bool): Whether to visual model. Default: False.
+        add_graph (bool): **Deprecated**. Whether to visual model.
+            Default: False.
         add_last_ckpt (bool): Whether to save checkpoint after run.
             Default: False.
         interval (int): Logging interval (every k iterations). Default: True.
@@ -45,12 +46,12 @@ class PaviLoggerHook(LoggerHook):
             Default: False.
         by_epoch (bool): Whether EpochBasedRunner is used. Default: True.
         img_key (string): Get image data from Dataset. Default: 'img_info'.
-        add_graph_args (dict, optional): A dict contains the params for
+        add_graph_kwargs (dict, optional): A dict contains the params for
             adding graph, the keys are as below:
-            Default: {'start': 0, 'interval': 1}.
-        add_ckpt_args (dict, optional): A dict contains the params for
+            Default: {'active': False, 'start': 0, 'interval': 1}.
+        add_ckpt_kwargs (dict, optional): A dict contains the params for
             adding checkpoint, the keys are as below:
-            Default: {'start': 0, 'interval': 1}.
+            Default: {'active': False, 'start': 0, 'interval': 1}.
     """
 
     def __init__(self,
@@ -62,19 +63,20 @@ class PaviLoggerHook(LoggerHook):
                  reset_flag: bool = False,
                  by_epoch: bool = True,
                  img_key: str = 'img_info',
-                 add_graph_args: Optional[Dict] = None,
-                 add_ckpt_args: Optional[Dict] = None) -> None:
+                 add_graph_kwargs: Optional[Dict] = None,
+                 add_ckpt_kwargs: Optional[Dict] = None) -> None:
         super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.init_kwargs = init_kwargs
-        add_graph_args = {} if add_graph_args is None else add_graph_args
-        self.add_graph = add_graph
-        self.add_graph_start = add_graph_args.get('start', 0)
-        self.add_graph_interval = add_graph_args.get('interval', 1)
+        add_graph_kwargs = {} if add_graph_kwargs is None else add_graph_kwargs
+        self.add_graph = add_graph_kwargs.get('active', False)
+        self.add_graph_start = add_graph_kwargs.get('start', 0)
+        self.add_graph_interval = add_graph_kwargs.get('interval', 1)
 
-        add_ckpt_args = {} if add_ckpt_args is None else add_ckpt_args
+        add_ckpt_kwargs = {} if add_ckpt_kwargs is None else add_ckpt_kwargs
+        self.add_ckpt = add_ckpt_kwargs.get('active', False)
         self.add_last_ckpt = add_last_ckpt
-        self.add_ckpt_start = add_ckpt_args.get('start', 0)
-        self.add_ckpt_interval = add_ckpt_args.get('interval', 1)
+        self.add_ckpt_start = add_ckpt_kwargs.get('start', 0)
+        self.add_ckpt_interval = add_ckpt_kwargs.get('interval', 1)
         self.img_key = img_key
 
     @master_only
@@ -125,25 +127,14 @@ class PaviLoggerHook(LoggerHook):
         else:
             return self.get_iter(runner)
 
-    def _add_ckpt(self, runner, last_ckpt=False) -> None:
-        # Do not use runner.epoch since it starts from 0.
-        iteration = self.get_epoch(runner) if self.by_epoch else self.get_iter(
-            runner)
-        if last_ckpt:
-            ckpt_path = osp.join(runner.work_dir, 'latest.pth')
-        else:
-            if self.by_epoch is False:
-                ckpt_path = osp.join(runner.work_dir, f'iter_{iteration}.pth')
-            else:
-                ckpt_path = osp.join(runner.work_dir, f'epoch_{iteration}.pth')
+    def _add_ckpt(self, runner, ckpt_path: str, step: int) -> None:
         if osp.islink(ckpt_path):
             ckpt_path = osp.join(runner.work_dir, os.readlink(ckpt_path))
-
         if osp.isfile(ckpt_path):
             self.writer.add_snapshot_file(
                 tag=self.run_name,
                 snapshot_file_path=ckpt_path,
-                iteration=iteration)
+                iteration=step)
 
     @master_only
     def log(self, runner) -> None:
@@ -154,17 +145,23 @@ class PaviLoggerHook(LoggerHook):
 
     @master_only
     def after_run(self, runner) -> None:
+
         if self.add_last_ckpt:
-            self._add_ckpt(runner, last_ckpt=True)
+            step = self.get_epoch(runner) if self.by_epoch else self.get_iter(
+                runner)
+            ckpt_path = osp.join(runner.work_dir, 'latest.pth')
+            self._add_ckpt(runner, ckpt_path, step)
 
         # flush the buffer and send a task ending signal to Pavi
         self.writer.close()
 
     @master_only
     def before_epoch(self, runner) -> None:
-        if self.add_graph and runner.epoch >= self.add_graph_start and (
-            (runner.epoch - self.add_graph_start) % self.add_graph_interval
-                == 0):
+        step = self.get_epoch(runner) if self.by_epoch else self.get_iter(
+            runner)
+        if self.add_graph and \
+            step >= self.add_graph_start and \
+                ((step - self.add_graph_start) % self.add_graph_interval == 0):
             if is_module_wrapper(runner.model):
                 _model = runner.model.module
             else:
@@ -177,7 +174,17 @@ class PaviLoggerHook(LoggerHook):
 
     @master_only
     def after_train_epoch(self, runner) -> None:
-        if runner.epoch >= self.add_ckpt_start and (
-            (runner.epoch - self.add_ckpt_start) % self.add_ckpt_interval
-                == 0):
-            self._add_ckpt(runner)
+        # Do not use runner.epoch since it starts from 0.
+        step = self.get_epoch(runner) if self.by_epoch else self.get_iter(
+            runner)
+
+        if self.add_ckpt and \
+            step >= self.add_ckpt_start and \
+                ((step - self.add_ckpt_start) % self.add_ckpt_interval == 0):
+
+            file_name = f'epoch_{step}.pth' \
+                if self.by_epoch else f'iter_{step}.pth'
+
+            ckpt_path = osp.join(runner.work_dir, file_name)
+
+            self._add_ckpt(runner, ckpt_path, step)
