@@ -8,7 +8,7 @@ import pytest
 
 import mmcv
 from mmcv.transforms import (TRANSFORMS, Normalize, Pad, RandomFlip,
-                             RandomResize, Resize)
+                             RandomResize, Resize, TestTimeAug)
 from mmcv.transforms.base import BaseTransform
 
 try:
@@ -900,3 +900,90 @@ class TestRandomResize:
                                       resize_type='Resize',
                                       keep_ratio=True)
             results_update = TRANSFORMS.transform(copy.deepcopy(results))
+
+
+class TestTransforms:
+
+    def test_init(self):
+        transforms = [[
+            dict(type='Resize', scale=(1333, 800), keep_ratio=True),
+            dict(type='Resize', scale=(1333, 800), keep_ratio=True)
+        ], [
+            dict(type='RandomFlip', prob=1.),
+            dict(type='RandomFlip', prob=0.)
+        ], [dict(type='Normalize', mean=(0, 0, 0), std=(1, 1, 1))]]
+
+        tta_transform = TestTimeAug(transforms)
+        transforms = tta_transform.transforms
+        assert len(transforms) == 3
+        assert len(transforms[0]) == 2
+        assert len(transforms[1]) == 2
+        assert len(transforms[2]) == 1
+
+        assert isinstance(transforms[0][0], Resize)
+        assert isinstance(transforms[0][1], Resize)
+        assert isinstance(transforms[1][0], RandomFlip)
+        assert isinstance(transforms[1][1], RandomFlip)
+        assert isinstance(transforms[2][0], Normalize)
+
+    def test_transform(self):
+        results = {
+            'img': np.random.random((224, 224, 3)),
+            'gt_bboxes': np.array([[0, 1, 100, 101]]),
+            'gt_keypoints': np.array([[[100, 100, 1.0]]]),
+            'gt_seg_map': np.random.random((224, 224, 3))
+        }
+        input_results = copy.deepcopy(results)
+        transforms = [[
+            dict(type='Resize', scale=(1333, 800), keep_ratio=True),
+            dict(type='Resize', scale=(1333, 640), keep_ratio=True)
+        ], [
+            dict(type='RandomFlip', prob=0.),
+            dict(type='RandomFlip', prob=1.)
+        ], [dict(type='Normalize', mean=(0, 0, 0), std=(1, 1, 1))]]
+
+        tta_transform = TestTimeAug(transforms)
+        results = tta_transform.transform(results)
+        assert len(results['img']) == 4
+
+        resize1 = tta_transform.transforms[0][0]
+        resize2 = tta_transform.transforms[0][1]
+        flip1 = tta_transform.transforms[1][0]
+        flip2 = tta_transform.transforms[1][1]
+        normalize = tta_transform.transforms[2][0]
+        target_results = [
+            normalize.transform(
+                flip1.transform(
+                    resize1.transform(copy.deepcopy(input_results)))),
+            normalize.transform(
+                flip1.transform(
+                    resize2.transform(copy.deepcopy(input_results)))),
+            normalize.transform(
+                flip2.transform(
+                    resize1.transform(copy.deepcopy(input_results)))),
+            normalize.transform(
+                flip2.transform(
+                    resize2.transform(copy.deepcopy(input_results)))),
+        ]
+
+        assert np.allclose(target_results[0]['img'], results['img'][0])
+        assert np.allclose(target_results[1]['img'], results['img'][1])
+        assert np.allclose(target_results[2]['img'], results['img'][2])
+        assert np.allclose(target_results[3]['img'], results['img'][3])
+
+    def test_repr(self):
+        transforms = [[
+            dict(type='Resize', scale=(1333, 800), keep_ratio=True),
+            dict(type='Resize', scale=(1333, 640), keep_ratio=True)
+        ], [
+            dict(type='RandomFlip', prob=0.),
+            dict(type='RandomFlip', prob=1.)
+        ], [dict(type='Normalize', mean=(0, 0, 0), std=(1, 1, 1))]]
+
+        tta_transform = TestTimeAug(transforms)
+        repr_str = repr(tta_transform)
+        repr_str_list = repr_str.split('\n')
+        assert repr_str_list[0] == 'TestTimeAugtransforms='
+        assert repr_str_list[1].startswith('[Resize(scale=(1333, 800)')
+        assert repr_str_list[2].startswith('[RandomFlip(prob=0.0')
+        assert repr_str_list[3].startswith('[Normalize(mean=[0. 0. 0.]')

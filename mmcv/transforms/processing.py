@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import copy
 import random
 import warnings
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
@@ -865,6 +866,117 @@ class MultiScaleFlipAug(BaseTransform):
         repr_str += f', scales={self.scales}'
         repr_str += f', allow_flip={self.allow_flip}'
         repr_str += f', flip_direction={self.flip_direction})'
+        return repr_str
+
+
+@TRANSFORMS.register_module()
+class TestTimeAug(BaseTransform):
+    """Test-time augmentation transform.
+
+    An example configuration is as followed:
+
+    .. code-block::
+
+        dict(type='TestTimeAug',
+             transforms=[
+                [dict(type='Resize', scale=(1333, 800), keep_ratio=True),
+                 dict(type='Resize', scale=(1333, 800), keep_ratio=True)],
+                [dict(type='RandomFlip', prob=1.),
+                 dict(type='RandomFlip', prob=0.)],
+                [dict(type='PackDetInputs',
+                      meta_keys=('img_id', 'img_path', 'ori_shape',
+                                 'img_shape', 'scale_factor', 'flip',
+                                 'flip_direction'))]])
+
+    ``results`` will be transformed using all transforms defined in
+    ``transforms`` arguments.
+
+    For the above configuration, there are four combinations of resize
+    and flip:
+
+    - Resize to (1333, 400) + no flip
+    - Resize to (1333, 400) + flip
+    - Resize to (1333, 800) + no flip
+    - resize to (1333, 800) + flip
+
+    After that, results are wrapped into lists of the same length as followed:
+
+    .. code-block::
+
+        dict(
+            inputs=[...],
+            data_samples=[...]
+        )
+
+    Where the length of ``inputs`` and ``data_samples`` are both 4.
+
+    Required Keys:
+
+    - Depending on the requirements of the ``transforms`` parameter.
+
+    Modified Keys:
+
+    - All output keys of each transform.
+
+    Args:
+        transforms (list[list[dict]]): Transforms to be applied to data sampled
+            from dataset. ``transforms`` is a list of list, and each list
+            element usually represents a series of transforms with the same
+            type and different arguments. Data will be processed by each list
+            elements sequentially. See more information in :meth:`transform`.
+    """
+
+    def __init__(self, transforms: list):
+        self.transforms = []
+        for _sub_transform_list in transforms:
+            sub_transform_list = []
+            for transform in _sub_transform_list:
+                sub_transform_list.append(TRANSFORMS.build(transform))
+            self.transforms.append(sub_transform_list)
+
+    def transform(self, results: dict) -> dict:
+        """Apply all transforms defined in :attr:`transforms` to the results.
+
+        As the example given in :obj:`TestTimeAug`, ``transforms`` consists of
+        2 ``Resize``, 2 ``RandomFlip`` and 1 ``PackDetInputs``.
+        The data sampled from dataset will be processed as follows:
+
+        1. Data will be processed by 2 ``Resize`` and return a list
+           of 2 results.
+        2. Each result in list will be further passed to 2
+           ``RandomFlip``, and aggregates into a list of 4 results.
+        3. Each result will be processed by ``PackDetInputs``, and
+           return a list of dict.
+        4. Aggregates the same fields of results, and finally return
+           a dict. Each value of the dict represents 4 transformed
+           results.
+
+        Args:
+            results (dict): Result dict contains the data to transform.
+
+        Returns:
+            dict: The augmented data, where each value is wrapped
+            into a list.
+        """
+        results = [results]  # type: ignore
+        for item in self.transforms:
+            output = []
+            for transform in item:
+                for result in results:
+                    output.append(transform(result.copy()))
+            results = copy.deepcopy(output)  # type: ignore
+
+        aug_data_dict = {
+            key: [item[key] for item in results]
+            for key in results[0]
+        }
+        return aug_data_dict
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += 'transforms=\n'
+        for transform in self.transforms:
+            repr_str += f'{repr(transform)}\n'
         return repr_str
 
 
