@@ -149,8 +149,9 @@ class PaviLoggerHook(LoggerHook):
     def after_run(self, runner) -> None:
 
         if self.add_last_ckpt:
-            step = self.get_epoch(runner) if self.by_epoch else self.get_iter(
-                runner)
+            # using runner.epoch/iter is ok since the step has been + 1
+            step = runner.epoch if self.by_epoch else runner.iter
+
             ckpt_path = osp.join(runner.work_dir, 'latest.pth')
             self._add_ckpt(runner, ckpt_path, step)
 
@@ -159,6 +160,8 @@ class PaviLoggerHook(LoggerHook):
 
     @master_only
     def before_epoch(self, runner) -> None:
+        super().before_epoch(runner)
+
         step = self.get_epoch(runner) if self.by_epoch else self.get_iter(
             runner)
         if self.add_graph and \
@@ -178,8 +181,10 @@ class PaviLoggerHook(LoggerHook):
     def after_train_epoch(self, runner) -> None:
         super().after_train_epoch(runner)
         # Do not use runner.epoch since it starts from 0.
-        step = self.get_epoch(runner) if self.by_epoch else self.get_iter(
-            runner)
+        if not self.by_epoch:
+            return None
+
+        step = self.get_epoch(runner)
 
         if self.add_ckpt and \
             step >= self.add_ckpt_start and \
@@ -193,8 +198,10 @@ class PaviLoggerHook(LoggerHook):
     def after_train_iter(self, runner) -> None:
         super().after_train_iter(runner)
 
-        step = self.get_epoch(runner) if self.by_epoch else self.get_iter(
-            runner)
+        if self.by_epoch:
+            return None
+
+        step = self.get_iter(runner)
 
         if self.add_ckpt and \
             step >= self.add_ckpt_start and \
