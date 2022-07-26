@@ -1543,11 +1543,12 @@ def test_neptune_hook():
     hook.run.stop.assert_called_with()
 
 
-def test_dvclive_hook():
+@pytest.mark.parametrize('by_epoch', [True, False])
+def test_dvclive_hook(by_epoch):
     sys.modules['dvclive'] = MagicMock()
     runner = _build_demo_runner()
 
-    hook = DvcliveLoggerHook()
+    hook = DvcliveLoggerHook(by_epoch=by_epoch)
     dvclive_mock = hook.dvclive
     loader = DataLoader(torch.ones((5, 2)))
 
@@ -1555,7 +1556,8 @@ def test_dvclive_hook():
     runner.run([loader, loader], [('train', 1), ('val', 1)])
     shutil.rmtree(runner.work_dir)
 
-    dvclive_mock.set_step.assert_called_with(6)
+    dvclive_mock.set_step.assert_called_with(1 if by_epoch else 6)
+    assert dvclive_mock.set_step.call_count == 1 if by_epoch else 5
     dvclive_mock.log.assert_called_with('momentum', 0.95)
 
 
