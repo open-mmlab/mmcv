@@ -57,9 +57,10 @@ class DvcliveLoggerHook(LoggerHook):
     def log(self, runner) -> None:
         tags = self.get_loggable_tags(runner)
         if tags:
-            self.dvclive.set_step(
-                self.get_epoch(runner) if self.by_epoch else self.
-                get_iter(runner))
+            step = self.get_epoch(runner) if self.by_epoch else self.get_iter(
+                runner)
+            self.dvclive.set_step(step)
+
             for k, v in tags.items():
                 self.dvclive.log(k, v)
 
