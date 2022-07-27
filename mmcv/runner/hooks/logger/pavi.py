@@ -164,9 +164,9 @@ class PaviLoggerHook(LoggerHook):
 
         step = self.get_epoch(runner) if self.by_epoch else self.get_iter(
             runner)
-        if self.add_graph and \
-            step >= self.add_graph_start and \
-                ((step - self.add_graph_start) % self.add_graph_interval == 0):
+        if self.add_graph and step >= self.add_graph_start and \
+            ((step - self.add_graph_start) %
+                self.add_graph_interval == 0):
             if is_module_wrapper(runner.model):
                 _model = runner.model.module
             else:
@@ -186,9 +186,9 @@ class PaviLoggerHook(LoggerHook):
 
         step = self.get_epoch(runner)
 
-        if self.add_ckpt and \
-            step >= self.add_ckpt_start and \
-                ((step - self.add_ckpt_start) % self.add_ckpt_interval == 0):
+        if (self.add_ckpt and step >= self.add_ckpt_start
+                and ((step - self.add_ckpt_start) % self.add_ckpt_interval
+                     == 0)):  # noqa: E129
 
             ckpt_path = osp.join(runner.work_dir, f'epoch_{step}.pth')
 
@@ -203,9 +203,9 @@ class PaviLoggerHook(LoggerHook):
 
         step = self.get_iter(runner)
 
-        if self.add_ckpt and \
-            step >= self.add_ckpt_start and \
-                ((step - self.add_ckpt_start) % self.add_ckpt_interval == 0):
+        if (self.add_ckpt and step >= self.add_ckpt_start
+                and ((step - self.add_ckpt_start) % self.add_ckpt_interval
+                     == 0)):  # noqa: E129
 
             ckpt_path = osp.join(runner.work_dir, f'iter_{step}.pth')
 
