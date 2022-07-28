@@ -14,17 +14,17 @@ python -c 'import torch;print(torch.__version__)'
 ```
 
 :::{note}
+
 - 如果克隆代码仓库的速度过慢，可以使用以下命令克隆（注意：gitee 的 mmcv 不一定和 github 的保持一致，因为每天只同步一次）
 
 ```bash
 git clone https://gitee.com/open-mmlab/mmcv.git
 ```
 
-
 - 如果打算使用 `opencv-python-headless` 而不是 `opencv-python`，例如在一个很小的容器环境或者没有图形用户界面的服务器中，你可以先安装 `opencv-python-headless`，这样在安装 mmcv 依赖的过程中会跳过 `opencv-python`。
 
 - 如果编译过程安装依赖库的时间过长，可以指定 pypi 源 `-i https://pypi.tuna.tsinghua.edu.cn/simple`
-:::
+  :::
 
 #### 在 Linux 上编译 mmcv-full
 

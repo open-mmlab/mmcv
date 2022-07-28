@@ -98,28 +98,28 @@ python -c 'import torch;print(torch.__version__);print(torch.version.cuda)'
       }
     </style>
     <div id="select-container">
-        <select 
+        <select
             onmousedown="handleSelectMouseDown(this.id)"
             onblur="handleSelectBlur(this.id)"
-            onchange="changeOS(this.value)" 
+            onchange="changeOS(this.value)"
             id="select-os">
         </select>
-        <select 
+        <select
             onmousedown="handleSelectMouseDown(this.id)"
             onblur="handleSelectBlur(this.id)"
-            onchange="changeCUDA(this.value)" 
+            onchange="changeCUDA(this.value)"
             id="select-cuda">
         </select>
         <select
             onmousedown="handleSelectMouseDown(this.id)"
             onblur="handleSelectBlur(this.id)"
-            onchange="changeTorch(this.value)" 
+            onchange="changeTorch(this.value)"
             id="select-torch">
         </select>
-        <select 
+        <select
             onmousedown="handleSelectMouseDown(this.id)"
             onblur="handleSelectBlur(this.id)"
-            onchange="changeMMCV(this.value)" 
+            onchange="changeMMCV(this.value)"
             id="select-mmcv">
         </select>
     </div>
@@ -149,7 +149,7 @@ python -c 'import torch;print(torch.__version__);print(torch.version.cuda)'
         const dom = document.getElementById(id);
         if (!dom) return;
         const len = dom?.options?.length;
-        if (len >= 9) { 
+        if (len >= 9) {
             dom.size = 10;
             dom.style.zIndex = 100;
         }
