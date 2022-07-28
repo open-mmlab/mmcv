@@ -97,14 +97,14 @@ def _convert_input_type_range(img: np.ndarray) -> np.ndarray:
 
     Returns:
         (ndarray): The converted image with type of np.float32 and range of
-            [0, 1].
+            [0, 255].
     """
     img_type = img.dtype
     img = img.astype(np.float32)
     if img_type == np.float32:
-        pass
+        img *= 255.
     elif img_type == np.uint8:
-        img /= 255.
+        pass
     else:
         raise TypeError('The img type should be np.float32 or np.uint8, '
                         f'but got {img_type}')
