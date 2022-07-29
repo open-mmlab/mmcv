@@ -6,8 +6,8 @@
 
 #### 框架解读
 
-- [MMCV 核心组件分析（一）：整体概述](https://zhuanlan.zhihu.com/p/336081587)
-- [MMCV 核心组件分析（二）：FileHandler](https://zhuanlan.zhihu.com/p/336097883)
+- [MMCV 核心组件分析(一)：整体概述](https://zhuanlan.zhihu.com/p/336081587)
+- [MMCV 核心组件分析(二)：FileHandler](https://zhuanlan.zhihu.com/p/336097883)
 - [MMCV 核心组件分析(三): FileClient](https://zhuanlan.zhihu.com/p/339190576)
 - [MMCV 核心组件分析(四): Config](https://zhuanlan.zhihu.com/p/346203167)
 - [MMCV 核心组件分析(五): Registry](https://zhuanlan.zhihu.com/p/355271993)
