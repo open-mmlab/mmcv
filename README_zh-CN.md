@@ -77,7 +77,7 @@ mim install mmcv-full
 mim install mmcv-full==1.5.0
 ```
 
-如果发现上述的安装过程没有使用 mmcv-full 预编译包安装，则可能是没有对应 PyTorch 或者 CUDA 或者 mmcv-full 版本的预编译包，那么，你可能需要[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html#mmcv-full)。
+如果发现上述的安装过程没有使用 mmcv-full 预编译包安装，则可能是没有对应 PyTorch 或者 CUDA 或者 mmcv-full 版本的预编译包，此时，你可以[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html#mmcv-full)。
 
 更多安装方式请参考[安装文档](https://mmcv.readthedocs.io/zh_CN/latest/get_started/installation.html)。
 
@@ -90,7 +90,7 @@ pip install -U openmim
 mim install mmcv
 ```
 
-## 支持的部分开源项目
+## 支持的开源项目
 
 - [MIM](https://github.com/open-mmlab/mim): MIM 是 OpenMMlab 项目、算法、模型的统一入口
 - [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab 图像分类工具箱

@@ -9,7 +9,7 @@ python -c 'import torch;print(torch.__version__)'
 ```
 
 ```{note}
-- 如需编译 ONNX Runtime 自定义算子，请参考[如何编译ONNX Runtime自定义算子？](https://mmcv.readthedocs.io/zh_CN/latest/deployment/onnxruntime_op.html#id1)
+- 如需编译 ONNX Runtime 自定义算子，请参考[如何编译ONNX Runtime自定义算子](https://mmcv.readthedocs.io/zh_CN/latest/deployment/onnxruntime_op.html#id1)
 - 如需编译 TensorRT 自定义，请参考[如何编译MMCV中的TensorRT插件](https://mmcv.readthedocs.io/zh_CN/latest/deployment/tensorrt_plugin.html#id3)
 ```
 
@@ -23,8 +23,13 @@ git clone https://gitee.com/open-mmlab/mmcv.git
 
 - 如果打算使用 `opencv-python-headless` 而不是 `opencv-python`，例如在一个很小的容器环境或者没有图形用户界面的服务器中，你可以先安装 `opencv-python-headless`，这样在安装 mmcv 依赖的过程中会跳过 `opencv-python`。
 
-- 如果编译过程安装依赖库的时间过长，可以指定 pypi 源 `-i https://pypi.tuna.tsinghua.edu.cn/simple`
-  :::
+- 如果编译过程安装依赖库的时间过长，可以[设置 pypi 源](https://mirrors.tuna.tsinghua.edu.cn/help/pypi/)
+
+```bash
+pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+:::
 
 #### 在 Linux 上编译 mmcv-full
 
@@ -124,15 +129,16 @@ python .dev_scripts/check_installation.py
 
 ##### 依赖项
 
-请首先安装以下的依赖项：
+请先安装以下的依赖项：
 
 - [Git](https://git-scm.com/download/win)：安装期间，请选择 **add git to Path**
 - [Visual Studio Community 2019](https://visualstudio.microsoft.com)：用于编译 C++ 和 CUDA 代码
 - [Miniconda](https://docs.conda.io/en/latest/miniconda.html)：包管理工具
-- [CUDA 10.2](https://developer.nvidia.com/cuda-10.2-download-archive)：如果只需要 CPU 版本可以不安装 CUDA，安装CUDA时，可根据需要进行自定义安装。如果已经安装新版本的显卡驱动，建议取消驱动程序的安装
+- [CUDA 10.2](https://developer.nvidia.com/cuda-10.2-download-archive)：如果只需要 CPU 版本可以不安装 CUDA，安装 CUDA 时，可根据需要进行自定义安装。如果已经安装新版本的显卡驱动，建议取消驱动程序的安装
 
 ```{note}
-您需要知道如何在 Windows 上设置变量环境，尤其是 "PATH" 的设置，以下安装过程都会用到。
+如果不清楚如何安装以上依赖，请参考[Windows 环境从零安装 mmcv-full](https://zhuanlan.zhihu.com/p/434491590)。
+另外，你需要知道如何在 Windows 上设置变量环境，尤其是 "PATH" 的设置，以下安装过程都会用到。
 ```
 
 ##### 设置 Python 环境
@@ -143,45 +149,45 @@ python .dev_scripts/check_installation.py
 
 - 创建一个新的 Conda 环境
 
-```shell
-conda create --name mmcv python=3.7  # 经测试，3.6, 3.7, 3.8 也能通过
-conda activate mmcv  # 确保做任何操作前先激活环境
+```powershell
+(base) PS C:\Users\xxx> conda create --name mmcv python=3.7
+(base) PS C:\Users\xxx> conda activate mmcv  # 确保做任何操作前先激活环境
 ```
 
 - 安装 PyTorch 时，可以根据需要安装支持 CUDA 或不支持 CUDA 的版本
 
-```shell
+```powershell
 # CUDA version
-conda install pytorch torchvision cudatoolkit=10.2 -c pytorch
+(mmcv) PS C:\Users\xxx> conda install pytorch torchvision cudatoolkit=10.2 -c pytorch
 # CPU version
-conda install pytorch torchvision cpuonly -c pytorch
+(mmcv) PS C:\Users\xxx> conda install install pytorch torchvision cpuonly -c pytorch
 ```
 
 - 克隆代码仓库
 
-```shell
-git clone https://github.com/open-mmlab/mmcv.git
-cd mmcv
+```powershell
+(mmcv) PS C:\Users\xxx> git clone https://github.com/open-mmlab/mmcv.git
+(mmcv) PS C:\Users\xxx> cd mmcv
 ```
 
 - 安装 `ninja` 和 `psutil` 以加快编译速度
 
-```bash
-pip install -r requirements/optional.txt
+```powershell
+(mmcv) PS C:\Users\xxx\mmcv> pip install -r requirements/optional.txt
 ```
 
 - 安装 mmcv 依赖
 
-```
-pip install -r requirements/runtime.txt
+```powershell
+(mmcv) PS C:\Users\xxx\mmcv> pip install -r requirements/runtime.txt
 ```
 
 ##### 设置 MSVC 编译器
 
 设置环境变量。添加 `C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\bin\Hostx86\x64` 到 `PATH`，则 `cl.exe` 可以在命令行中运行，如下所示。
 
-```none
-(base) PS C:\Users\xxx> cl
+```powershell
+(mmcv) PS C:\Users\xxx\mmcv> cl
 Microsoft (R) C/C++ Optimizing  Compiler Version 19.27.29111 for x64
 Copyright (C) Microsoft Corporation.   All rights reserved.
 
@@ -208,34 +214,29 @@ mmcv-full 有两个版本：
 
 - 设置环境变量
 
-```shell
-$env:MMCV_WITH_OPS = 1
-$env:MAX_JOBS = 8  # 根据你可用CPU以及内存量进行设置
+```powershell
+(mmcv) PS C:\Users\xxx\mmcv> $env:MMCV_WITH_OPS = 1
 ```
 
 - 编译安装
 
-```shell
-conda activate mmcv  # 激活环境
-cd mmcv  # 改变路径
-python setup.py build_ext  # 如果成功, cl 将被启动用于编译算子
-python setup.py develop  # 安装
-pip list  # 检查是否安装成功
+```powershell
+(mmcv) PS C:\Users\xxx\mmcv> python setup.py build_ext  # 如果成功, cl 将被启动用于编译算子
+(mmcv) PS C:\Users\xxx\mmcv> python setup.py develop  # 安装
 ```
 
 ###### GPU 版本
 
 - 设置环境变量
 
-```shell
-$env:MMCV_WITH_OPS = 1
-$env:MAX_JOBS = 8  # 根据你可用CPU以及内存量进行设置
+```powershell
+(mmcv) PS C:\Users\xxx\mmcv> $env:MMCV_WITH_OPS = 1
 ```
 
 - 检查 `CUDA_PATH` 或者 `CUDA_HOME` 环境变量已经存在在 `envs` 之中
 
-```none
-(base) PS C:\Users\WRH> ls env:
+```powershell
+(mmcv) PS C:\Users\xxx\mmcv> ls env:
 
 Name                           Value
 ----                           -----
@@ -246,44 +247,47 @@ CUDA_PATH_V10_2                C:\Program Files\NVIDIA GPU Computing Toolkit\CUD
 
 如果没有，你可以按照下面的步骤设置
 
-```shell
-$env:CUDA_HOME = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2"
+```powershell
+(mmcv) PS C:\Users\xxx\mmcv> $env:CUDA_HOME = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2"
 # 或者
-$env:CUDA_HOME = $env:CUDA_PATH_V10_2  # CUDA_PATH_V10_2 已经在环境变量中
+(mmcv) PS C:\Users\xxx\mmcv> $env:CUDA_HOME = $env:CUDA_PATH_V10_2  # CUDA_PATH_V10_2 已经在环境变量中
 ```
 
 - 设置 CUDA 的目标架构
 
-```shell
-$env:TORCH_CUDA_ARCH_LIST="6.1" # 支持 GTX 1080
-# 或者用所有支持的版本，但可能会变得很慢
-$env:TORCH_CUDA_ARCH_LIST="3.5 3.7 5.0 5.2 6.0 6.1 7.0 7.5"
+```powershell
+(mmcv) PS C:\Users\xxx\mmcv> $env:TORCH_CUDA_ARCH_LIST="7.5" # 这里需要改成你的显卡对应的目标架构
 ```
 
-```{note}
-我们可以点击[这里](https://developer.nvidia.com/cuda-gpus)查看 GPU 的计算能力
+:::{note}
+可以点击 [cuda-gpus](https://developer.nvidia.com/cuda-gpus) 查看 GPU 的计算能力，也可以通过 CUDA 目录下的 deviceQuery.exe 工具查看
+
+```powershell
+(mmcv) PS C:\Users\xxx\mmcv> &"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2\extras\demo_suite\deviceQuery.exe"
+Device 0: "NVIDIA GeForce GTX 1660 SUPER"
+  CUDA Driver Version / Runtime Version          11.7 / 11.1
+  CUDA Capability Major/Minor version number:    7.5
 ```
+
+上面的 7.5 则表示目标架构
+:::
 
 - 编译安装
 
-```shell
-$env:MMCV_WITH_OPS = 1
-$env:MAX_JOBS = 8 # 根据你可用CPU以及内存量进行设置
-conda activate mmcv # 激活环境
-cd mmcv  # 改变路径
-python setup.py build_ext  # 如果成功, cl 将被启动用于编译算子
-python setup.py develop # 安装
-pip list # 检查是否安装成功
+```powershell
+(mmcv) PS C:\Users\xxx\mmcv> $env:MMCV_WITH_OPS = 1
+(mmcv) PS C:\Users\xxx\mmcv> python setup.py build_ext  # 如果成功, cl 将被启动用于编译算子
+(mmcv) PS C:\Users\xxx\mmcv> python setup.py develop # 安装
 ```
 
 ```{note}
-如果你的 PyTorch 版本是 1.6.0，你可能会遇到一些这个 [issue](https://github.com/pytorch/pytorch/issues/42467) 提到的错误，则可以参考这个 [pull request](https://github.com/pytorch/pytorch/pull/43380/files) 修改 本地环境的 PyTorch 源代码
+如果你的 PyTorch 版本是 1.6.0，你可能会遇到一些 [issue](https://github.com/pytorch/pytorch/issues/42467) 提到的错误，你可以参考这个 [pull request](https://github.com/pytorch/pytorch/pull/43380/files) 修改本地环境的 PyTorch 源代码
 ```
 
 ##### 验证安装
 
-```bash
-python .dev_scripts/check_installation.py
+```powershell
+(mmcv) PS C:\Users\xxx\mmcv> python .dev_scripts/check_installation.py
 ```
 
 如果上述命令没有报错，说明安装成功。如有报错，请参考[问题解决页面](https://mmcv.readthedocs.io/zh_CN/latest/faq.html)查看是否已经有解决方案。
