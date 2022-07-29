@@ -17,7 +17,7 @@ MMCV 有两个版本：
 - 如需编译 TensorRT 自定义，请参考[如何编译MMCV中的TensorRT插件](https://mmcv.readthedocs.io/zh_CN/latest/deployment/tensorrt_plugin.html#id3)
 ```
 
-在安装 mmcv-full 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://github.com/pytorch/pytorch#installation)。可使用以下命令验证
+在安装 mmcv-full 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://pytorch.org/get-started/locally/#start-locally)。可使用以下命令验证
 
 ```bash
 python -c 'import torch;print(torch.__version__)'
@@ -33,6 +33,26 @@ python -c 'import torch;print(torch.__version__)'
 pip install -U openmim
 mim install mmcv-full
 ```
+
+如果发现上述的安装命令没有使用预编译包（以.whl结尾）而是使用源码包（以.tar.gz结尾）安装，则可能是没有对应 PyTorch 或者 CUDA 或者 mmcv-full 版本的预编译包，此时，你可以[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html)。
+
+<details>
+<summary>使用预编译包的安装日志</summary>
+
+Looking in links: https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html<br />
+Collecting mmcv-full<br />
+<b>Downloading https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/mmcv_full-1.6.1-cp38-cp38-manylinux1_x86_64.whl</b>
+
+</details>
+
+<details>
+<summary>使用源码包的安装日志</summary>
+
+Looking in links: https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html<br />
+Collecting mmcv-full==1.6.0<br />
+<b>Downloading mmcv-full-1.6.0.tar.gz</b>
+
+</details>
 
 如需安装指定版本的 mmcv-full，例如安装 1.6.0 版本的 mmcv-full，可使用以下命令
 
@@ -52,8 +72,6 @@ mim install mmcv-full -i https://pypi.tuna.tsinghua.edu.cn/simple
 :::
 
 安装完成后可以运行 [check_installation.py](https://github.com/open-mmlab/mmcv/.dev_scripts/check_installation.py) 脚本检查 mmcv-full 是否安装成功。
-
-如果发现上述的安装命令没有使用 mmcv-full 预编译包安装，则可能是没有对应 PyTorch 或者 CUDA 或者 mmcv-full 版本的预编译包，此时，你可以[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html)。
 
 #### 使用 pip 安装
 
@@ -343,7 +361,7 @@ docker build -t mmcv -f docker/release/Dockerfile \
 
 ### 安装 mmcv
 
-如果你需要使用和 PyTorch 相关的模块，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://github.com/pytorch/pytorch#installation)。
+如果你需要使用和 PyTorch 相关的模块，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://pytorch.org/get-started/locally/#start-locally)。
 
 ```python
 pip install mmcv

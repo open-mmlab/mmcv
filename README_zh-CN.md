@@ -77,7 +77,25 @@ mim install mmcv-full
 mim install mmcv-full==1.5.0
 ```
 
-如果发现上述的安装过程没有使用 mmcv-full 预编译包安装，则可能是没有对应 PyTorch 或者 CUDA 或者 mmcv-full 版本的预编译包，此时，你可以[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html#mmcv-full)。
+如果发现上述的安装命令没有使用预编译包（以.whl结尾）而是使用源码包（以.tar.gz结尾）安装，则可能是没有对应 PyTorch 或者 CUDA 或者 mmcv-full 版本的预编译包，此时，你可以[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html)。
+
+<details>
+<summary>使用预编译包的安装日志</summary>
+
+Looking in links: https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html<br />
+Collecting mmcv-full<br />
+<b>Downloading https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/mmcv_full-1.6.1-cp38-cp38-manylinux1_x86_64.whl</b>
+
+</details>
+
+<details>
+<summary>使用源码包的安装日志</summary>
+
+Looking in links: https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html<br />
+Collecting mmcv-full==1.6.0<br />
+<b>Downloading mmcv-full-1.6.0.tar.gz</b>
+
+</details>
 
 更多安装方式请参考[安装文档](https://mmcv.readthedocs.io/zh_CN/latest/get_started/installation.html)。
 

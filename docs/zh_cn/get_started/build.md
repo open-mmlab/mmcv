@@ -2,7 +2,7 @@
 
 ### 编译 mmcv-full
 
-在编译 mmcv-full 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://github.com/pytorch/pytorch#installation)。可使用以下命令验证
+在编译 mmcv-full 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://pytorch.org/get-started/locally/#start-locally)。可使用以下命令验证
 
 ```bash
 python -c 'import torch;print(torch.__version__)'
@@ -269,7 +269,7 @@ Device 0: "NVIDIA GeForce GTX 1660 SUPER"
   CUDA Capability Major/Minor version number:    7.5
 ```
 
-上面的 7.5 则表示目标架构
+上面的 7.5 则表示目标架构。注意：需把上面命令的 v10.2 换成你的 CUDA 版本。
 :::
 
 - 编译安装
@@ -295,7 +295,7 @@ Device 0: "NVIDIA GeForce GTX 1660 SUPER"
 
 ### 编译 mmcv
 
-如果你需要使用和 PyTorch 相关的模块，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://github.com/pytorch/pytorch#installation)。
+如果你需要使用和 PyTorch 相关的模块，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://pytorch.org/get-started/locally/#start-locally)。
 
 - 克隆代码仓库
 
