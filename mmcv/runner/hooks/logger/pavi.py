@@ -2,6 +2,7 @@
 import json
 import os
 import os.path as osp
+import warnings
 from functools import partial
 from typing import Dict, Optional
 
@@ -37,8 +38,9 @@ class PaviLoggerHook(LoggerHook):
             - overwrite_last_training (bool, optional): Whether to upload data
               to the training with the same name in the same project, rather
               than creating a new one. Defaults to False.
-        add_graph (bool): **Deprecated**. Whether to visual model.
+        add_graph (bool, optional): **Deprecated**. Whether to visual model.
             Default: False.
+        img_key (str, optional): **Deprecated**. Image key. Defaults to None.
         add_last_ckpt (bool): Whether to save checkpoint after run.
             Default: False.
         interval (int): Logging interval (every k iterations). Default: True.
@@ -67,7 +69,8 @@ class PaviLoggerHook(LoggerHook):
 
     def __init__(self,
                  init_kwargs: Optional[Dict] = None,
-                 add_graph: bool = False,
+                 add_graph: Optional[bool] = None,
+                 img_key: Optional[str] = None,
                  add_last_ckpt: bool = False,
                  interval: int = 10,
                  ignore_last: bool = True,
@@ -77,6 +80,7 @@ class PaviLoggerHook(LoggerHook):
                  add_ckpt_kwargs: Optional[Dict] = None) -> None:
         super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.init_kwargs = init_kwargs
+
         add_graph_kwargs = {} if add_graph_kwargs is None else add_graph_kwargs
         self.add_graph = add_graph_kwargs.get('active', False)
         self.add_graph_start = add_graph_kwargs.get('start', 0)
@@ -85,6 +89,18 @@ class PaviLoggerHook(LoggerHook):
         self.opset_version = add_graph_kwargs.get('opset_version', 11)
         self.dummy_forward_kwargs = add_graph_kwargs.get(
             'dummy_forward_kwargs', {})
+        if add_graph is not None:
+            warnings.warn(
+                '"add_graph" is deprecated in `PaviLoggerHook`, please use '
+                'the key "active" of add_graph_kwargs instead',
+                DeprecationWarning)
+            self.add_graph = add_graph
+        if img_key is not None:
+            warnings.warn(
+                '"img_key" is deprecated in `PaviLoggerHook`, please use '
+                'the key "img_key" of add_graph_kwargs instead',
+                DeprecationWarning)
+            self.img_key = img_key
 
         add_ckpt_kwargs = {} if add_ckpt_kwargs is None else add_ckpt_kwargs
         self.add_ckpt = add_ckpt_kwargs.get('active', False)
