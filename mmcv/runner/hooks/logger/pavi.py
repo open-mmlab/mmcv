@@ -37,7 +37,8 @@ class PaviLoggerHook(LoggerHook):
             - overwrite_last_training (bool, optional): Whether to upload data
               to the training with the same name in the same project, rather
               than creating a new one. Defaults to False.
-        add_graph (bool): Whether to visual model. Default: False.
+        add_graph (bool): **Deprecated**. Whether to visual model.
+            Default: False.
         add_last_ckpt (bool): Whether to save checkpoint after run.
             Default: False.
         interval (int): Logging interval (every k iterations). Default: True.
@@ -46,10 +47,22 @@ class PaviLoggerHook(LoggerHook):
         reset_flag (bool): Whether to clear the output buffer after logging.
             Default: False.
         by_epoch (bool): Whether EpochBasedRunner is used. Default: True.
-        img_key (string): Get image data from Dataset. Default: 'img'.
-        opset_version (int): `opset_version` of export onnx. Default: 11.
-        partial_args (dict, optional): Set default parameters other than image
-            for model forward function. Default: {'return_loss': False}
+        add_graph_kwargs (dict, optional): A dict contains the params for
+            adding graph, the keys are as below:
+            - active (bool): Whether to use ``add_graph``. Default: False.
+            - start (int): The epoch or iteration to start. Default: 0.
+            - interval (int): Interval of ``add_graph``. Default: 1.
+            - img_key (str): Get image data from Dataset. Default: 'img'.
+            - opset_version (int): ``opset_version`` of exporting onnx.
+                Default: 11.
+            - dummy_forward_kwargs (dict, optional): Set default parameters to
+                model forward function except image. For example, you can set
+                {'return_loss': False} for mmcls. Default: None.
+        add_ckpt_kwargs (dict, optional): A dict contains the params for
+            adding checkpoint, the keys are as below:
+            - active (bool): Whether to upload checkpoint. Default: False.
+            - start (int): The epoch or iteration to start. Default: 0.
+            - interval (int): Interval of upload checkpoint. Default: 1.
     """
 
     def __init__(self,
@@ -60,16 +73,24 @@ class PaviLoggerHook(LoggerHook):
                  ignore_last: bool = True,
                  reset_flag: bool = False,
                  by_epoch: bool = True,
-                 img_key: str = 'img',
-                 opset_version: int = 11,
-                 partial_args: dict = dict()):
+                 add_graph_kwargs: Optional[Dict] = None,
+                 add_ckpt_kwargs: Optional[Dict] = None) -> None:
         super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.init_kwargs = init_kwargs
-        self.add_graph = add_graph
+        add_graph_kwargs = {} if add_graph_kwargs is None else add_graph_kwargs
+        self.add_graph = add_graph_kwargs.get('active', False)
+        self.add_graph_start = add_graph_kwargs.get('start', 0)
+        self.add_graph_interval = add_graph_kwargs.get('interval', 1)
+        self.img_key = add_graph_kwargs.get('img_key', 'img')
+        self.opset_version = add_graph_kwargs.get('opset_version', 11)
+        self.dummy_forward_kwargs = add_graph_kwargs.get(
+            'dummy_forward_kwargs', {})
+
+        add_ckpt_kwargs = {} if add_ckpt_kwargs is None else add_ckpt_kwargs
+        self.add_ckpt = add_ckpt_kwargs.get('active', False)
         self.add_last_ckpt = add_last_ckpt
-        self.img_key = img_key
-        self.opset_version = opset_version
-        self.partial_args = partial_args
+        self.add_ckpt_start = add_ckpt_kwargs.get('start', 0)
+        self.add_ckpt_interval = add_ckpt_kwargs.get('interval', 1)
 
     @master_only
     def before_run(self, runner) -> None:
@@ -119,43 +140,18 @@ class PaviLoggerHook(LoggerHook):
         else:
             return self.get_iter(runner)
 
-    @master_only
-    def log(self, runner) -> None:
-        tags = self.get_loggable_tags(runner, add_mode=False)
-        if tags:
-            self.writer.add_scalars(
-                self.get_mode(runner), tags, self.get_step(runner))
+    def _add_ckpt(self, runner, ckpt_path: str, step: int) -> None:
 
-    @master_only
-    def after_run(self, runner) -> None:
-        if self.add_last_ckpt:
-            ckpt_path = osp.join(runner.work_dir, 'latest.pth')
-            if osp.islink(ckpt_path):
-                ckpt_path = osp.join(runner.work_dir, os.readlink(ckpt_path))
+        if osp.islink(ckpt_path):
+            ckpt_path = osp.join(runner.work_dir, os.readlink(ckpt_path))
 
-            if osp.isfile(ckpt_path):
-                # runner.epoch += 1 has been done before `after_run`.
-                iteration = runner.epoch if self.by_epoch else runner.iter
-                return self.writer.add_snapshot_file(
-                    tag=self.run_name,
-                    snapshot_file_path=ckpt_path,
-                    iteration=iteration)
+        if osp.isfile(ckpt_path):
+            self.writer.add_snapshot_file(
+                tag=self.run_name,
+                snapshot_file_path=ckpt_path,
+                iteration=step)
 
-        # flush the buffer and send a task ending signal to Pavi
-        self.writer.close()
-
-    @master_only
-    def before_epoch(self, runner) -> None:
-        if self.by_epoch and runner.epoch == 0 and self.add_graph:
-            self.upload_graph(runner)
-
-    @master_only
-    def before_iter(self, runner) -> None:
-        if not self.by_epoch and runner.iter == 0 and self.add_graph:
-            self.upload_graph(runner)
-
-    def upload_graph(self, runner):
-        """Upload the model graph to Pavi to visualize."""
+    def _add_graph(self, runner, step: int) -> None:
         from mmcv.runner.iter_based_runner import IterLoader
         if is_module_wrapper(runner.model):
             _model = runner.model.module
@@ -174,8 +170,92 @@ class PaviLoggerHook(LoggerHook):
             origin_forward = _model.forward
             if hasattr(_model, 'forward_dummy'):
                 _model.forward = _model.forward_dummy
-            if self.partial_args:
-                _model.forward = partial(_model.forward, **self.partial_args)
+            if self.dummy_forward_kwargs:
+                _model.forward = partial(_model.forward,
+                                         **self.dummy_forward_kwargs)
             self.writer.add_graph(
-                _model, img, opset_version=self.opset_version)
+                _model,
+                img,
+                tag=f'{self.run_name}_{step}',
+                opset_version=self.opset_version)
             _model.forward = origin_forward
+
+    @master_only
+    def log(self, runner) -> None:
+        tags = self.get_loggable_tags(runner, add_mode=False)
+        if tags:
+            self.writer.add_scalars(
+                self.get_mode(runner), tags, self.get_step(runner))
+
+    @master_only
+    def after_run(self, runner) -> None:
+
+        if self.add_last_ckpt:
+            # using runner.epoch/iter is ok since the step has been + 1
+            step = runner.epoch if self.by_epoch else runner.iter
+
+            ckpt_path = osp.join(runner.work_dir, 'latest.pth')
+            self._add_ckpt(runner, ckpt_path, step)
+
+        # flush the buffer and send a task ending signal to Pavi
+        self.writer.close()
+
+    @master_only
+    def before_train_epoch(self, runner) -> None:
+        super().before_train_epoch(runner)
+
+        if not self.by_epoch:
+            return None
+
+        step = self.get_epoch(runner)
+        if (self.add_graph and step >= self.add_graph_start
+                and ((step - self.add_graph_start) % self.add_graph_interval
+                     == 0)):  # noqa: E129
+            self._add_graph(runner, step)
+
+    @master_only
+    def before_train_iter(self, runner) -> None:
+        super().before_train_iter(runner)
+
+        if self.by_epoch:
+            return None
+
+        step = self.get_iter(runner)
+        if (self.add_graph and step >= self.add_graph_start
+                and ((step - self.add_graph_start) % self.add_graph_interval
+                     == 0)):  # noqa: E129
+            self._add_graph(runner, step)
+
+    @master_only
+    def after_train_epoch(self, runner) -> None:
+        super().after_train_epoch(runner)
+        # Do not use runner.epoch since it starts from 0.
+        if not self.by_epoch:
+            return None
+
+        step = self.get_epoch(runner)
+
+        if (self.add_ckpt and step >= self.add_ckpt_start
+                and ((step - self.add_ckpt_start) % self.add_ckpt_interval
+                     == 0)):  # noqa: E129
+
+            ckpt_path = osp.join(runner.work_dir, f'epoch_{step}.pth')
+
+            self._add_ckpt(runner, ckpt_path, step)
+
+    @master_only
+    def after_train_iter(self, runner) -> None:
+        super().after_train_iter(runner)
+
+        if self.by_epoch:
+            return None
+
+        step = self.get_iter(runner)
+
+        if (self.add_ckpt and step >= self.add_ckpt_start
+                and ((step - self.add_ckpt_start) % self.add_ckpt_interval
+                     == 0)):  # noqa: E129
+
+            ckpt_path = osp.join(runner.work_dir, f'iter_{step}.pth')
+
+            self._add_ckpt(runner, ckpt_path, step)
