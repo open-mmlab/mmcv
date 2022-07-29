@@ -138,6 +138,17 @@ class PaviLoggerHook(LoggerHook):
                 snapshot_file_path=ckpt_path,
                 iteration=step)
 
+    def _add_graph(self, runner) -> None:
+        if is_module_wrapper(runner.model):
+            _model = runner.model.module
+        else:
+            _model = runner.model
+        device = next(_model.parameters()).device
+        data = next(iter(runner.data_loader))
+        image = data[self.img_key][0:1].to(device)
+        with torch.no_grad():
+            self.writer.add_graph(_model, image)
+
     @master_only
     def log(self, runner) -> None:
         tags = self.get_loggable_tags(runner, add_mode=False)
@@ -159,23 +170,30 @@ class PaviLoggerHook(LoggerHook):
         self.writer.close()
 
     @master_only
-    def before_epoch(self, runner) -> None:
-        super().before_epoch(runner)
+    def before_train_epoch(self, runner) -> None:
+        super().before_train_epoch(runner)
 
-        step = self.get_epoch(runner) if self.by_epoch else self.get_iter(
-            runner)
+        if not self.by_epoch:
+            return None
+
+        step = self.get_epoch(runner)
         if (self.add_graph and step >= self.add_graph_start
                 and ((step - self.add_graph_start) % self.add_graph_interval
                      == 0)):  # noqa: E129
-            if is_module_wrapper(runner.model):
-                _model = runner.model.module
-            else:
-                _model = runner.model
-            device = next(_model.parameters()).device
-            data = next(iter(runner.data_loader))
-            image = data[self.img_key][0:1].to(device)
-            with torch.no_grad():
-                self.writer.add_graph(_model, image)
+            self._add_graph(runner)
+
+    @master_only
+    def before_train_iter(self, runner) -> None:
+        super().before_train_iter(runner)
+
+        if self.by_epoch:
+            return None
+
+        step = self.get_iter(runner)
+        if (self.add_graph and step >= self.add_graph_start
+                and ((step - self.add_graph_start) % self.add_graph_interval
+                     == 0)):  # noqa: E129
+            self._add_graph(runner)
 
     @master_only
     def after_train_epoch(self, runner) -> None:
