@@ -54,8 +54,6 @@ Collecting mmcv-full==1.6.0<br />
 
 </details>
 
-For more installation methods, please refer to the [Installation documentation](https://mmcv.readthedocs.io/en/latest/get_started/installation.html).
-
 To install a specific version of mmcv-full, for example, mmcv-full version 1.6.0, you can use the following command
 
 ```bash
