@@ -37,6 +37,11 @@ You can switch between Chinese and English documents in the lower-left corner of
    deployment/tensorrt_plugin.md
 
 .. toctree::
+   :caption: Switch Language
+
+   switch_language.md
+
+.. toctree::
    :maxdepth: 2
    :caption: Compatibility
 
