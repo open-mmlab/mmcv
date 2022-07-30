@@ -315,8 +315,7 @@ If you do not find a corresponding version in the dropdown box above, you probab
 mmcv-full is only compiled on PyTorch 1.x.0 because the compatibility
 usually holds between 1.x.0 and 1.x.1. If your PyTorch version is 1.x.1, you
 can install mmcv-full compiled with PyTorch 1.x.0 and it usually works well.
-For example, if your PyTorch version is 1.8.1 and CUDA version is 11.1, you
-can use the following command to install mmcv-full.
+For example, if your PyTorch version is 1.8.1, you can feel free to choose 1.8.x.
 :::
 
 :::{note}
@@ -334,7 +333,7 @@ mim install mmcv-full -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 You can run [check_installation.py](https://github.com/open-mmlab/mmcv/.dev_scripts/check_installation.py) to check the installation of mmcv-full after running the installation commands.
 
-#### 使用 docker 镜像
+#### Using mmcv-full with Docker
 
 Build with local repository
 
