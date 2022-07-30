@@ -23,7 +23,7 @@ MMCV 有两个版本：
 python -c 'import torch;print(torch.__version__)'
 ```
 
-如果输出版本信息，则 PyTorch 已安装。
+如果输出版本信息，则表示 PyTorch 已安装。
 
 #### 使用 mim 安装（推荐）
 
@@ -63,7 +63,7 @@ mim install mmcv-full==1.6.0
 :::{note}
 如果你打算使用 `opencv-python-headless` 而不是 `opencv-python`，例如在一个很小的容器环境或者没有图形用户界面的服务器中，你可以先安装 `opencv-python-headless`，这样在安装 mmcv 依赖的过程中会跳过 `opencv-python`。
 
-另外，如果安装依赖库的时间过长，可以指定 pypi 源，例如
+另外，如果安装依赖库的时间过长，可以指定 pypi 源
 
 ```bash
 mim install mmcv-full -i https://pypi.tuna.tsinghua.edu.cn/simple
@@ -286,7 +286,7 @@ python -c 'import torch;print(torch.__version__);print(torch.version.cuda)'
     }
     // 利用xhr获取本地version数据，如果作为html直接浏览的话需要使用本地服务器打开，否则会有跨域问题
     window.onload = function () {
-        const url = "../_static/version.json"
+        const url = "../../en/_static/version.json"
         // 申明一个XMLHttpRequest
         const request = new XMLHttpRequest();
         // 设置请求方法与路径
@@ -316,13 +316,15 @@ PyTorch 版本是 1.8.1，你可以放心选择 1.8.x。
 :::{note}
 如果你打算使用 `opencv-python-headless` 而不是 `opencv-python`，例如在一个很小的容器环境或者没有图形用户界面的服务器中，你可以先安装 `opencv-python-headless`，这样在安装 mmcv 依赖的过程中会跳过 `opencv-python`。
 
-另外，如果安装依赖库的时间过长，可以指定 pypi 源，例如
+另外，如果安装依赖库的时间过长，可以指定 pypi 源
 
 ```bash
 pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 :::
+
+安装完成后可以运行 [check_installation.py](https://github.com/open-mmlab/mmcv/.dev_scripts/check_installation.py) 脚本检查 mmcv-full 是否安装成功。
 
 #### 使用 docker 镜像
 

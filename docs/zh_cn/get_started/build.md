@@ -86,7 +86,7 @@ MMCV_WITH_OPS=1 pip install -e . -v
 python .dev_scripts/check_installation.py
 ```
 
-如果上述命令没有报错，说明安装成功。如有报错，请参考[问题解决页面](https://mmcv.readthedocs.io/zh_CN/latest/faq.html)查看是否已经有解决方案。
+如果上述命令没有报错，说明安装成功。如有报错，请查看[问题解决页面](https://mmcv.readthedocs.io/zh_CN/latest/faq.html)是否已经有解决方案。
 如果没有找到解决方案，欢迎提 [issue](https://github.com/open-mmlab/mmcv/issues)。
 
 #### 在 macOS 上编译 mmcv-full
@@ -118,7 +118,7 @@ CC=clang CXX=clang++ CFLAGS='-stdlib=libc++' MMCV_WITH_OPS=1 pip install -e .
 python .dev_scripts/check_installation.py
 ```
 
-如果上述命令没有报错，说明安装成功。如有报错，请参考[问题解决页面](https://mmcv.readthedocs.io/zh_CN/latest/faq.html#id2)查看是否已经有解决方案。
+如果上述命令没有报错，说明安装成功。如有报错，请查看[问题解决页面](https://mmcv.readthedocs.io/zh_CN/latest/faq.html#id2)是否已经有解决方案。
 如果没有找到解决方案，欢迎提 [issue](https://github.com/open-mmlab/mmcv/issues)。
 
 #### 在 Windows 上编译 mmcv-full
@@ -290,7 +290,7 @@ Device 0: "NVIDIA GeForce GTX 1660 SUPER"
 (mmcv) PS C:\Users\xxx\mmcv> python .dev_scripts/check_installation.py
 ```
 
-如果上述命令没有报错，说明安装成功。如有报错，请参考[问题解决页面](https://mmcv.readthedocs.io/zh_CN/latest/faq.html)查看是否已经有解决方案。
+如果上述命令没有报错，说明安装成功。如有报错，请查看[问题解决页面](https://mmcv.readthedocs.io/zh_CN/latest/faq.html)是否已经有解决方案。
 如果没有找到解决方案，欢迎提 [issue](https://github.com/open-mmlab/mmcv/issues)。
 
 ### 编译 mmcv
