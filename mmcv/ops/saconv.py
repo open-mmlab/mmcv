@@ -2,8 +2,9 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from mmengine.model.utils import constant_init
 
-from mmcv.cnn import CONV_LAYERS, ConvAWS2d, constant_init
+from mmcv.cnn import CONV_LAYERS, ConvAWS2d
 from mmcv.ops.deform_conv import deform_conv2d
 from mmcv.utils import TORCH_VERSION, digit_version
 

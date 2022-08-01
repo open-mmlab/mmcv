@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch.nn as nn
+from mmengine.registry import MODELS, build_model_from_cfg
 
 import mmcv
-from mmcv.cnn import MODELS, build_model_from_cfg
 
 
 def test_build_model_from_cfg():
