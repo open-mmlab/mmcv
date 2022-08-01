@@ -1,16 +1,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmcv.utils import Registry
+from mmengine.registry import MODELS
 
-CONV_LAYERS = Registry('conv layer')
-NORM_LAYERS = Registry('norm layer')
-ACTIVATION_LAYERS = Registry('activation layer')
-PADDING_LAYERS = Registry('padding layer')
-UPSAMPLE_LAYERS = Registry('upsample layer')
-PLUGIN_LAYERS = Registry('plugin layer')
+CONV_LAYERS = MODELS
+NORM_LAYERS = MODELS
+ACTIVATION_LAYERS = MODELS
+PADDING_LAYERS = MODELS
+UPSAMPLE_LAYERS = MODELS
+PLUGIN_LAYERS = MODELS
 
-DROPOUT_LAYERS = Registry('drop out layers')
-POSITIONAL_ENCODING = Registry('position encoding')
-ATTENTION = Registry('attention')
-FEEDFORWARD_NETWORK = Registry('feed-forward Network')
-TRANSFORMER_LAYER = Registry('transformerLayer')
-TRANSFORMER_LAYER_SEQUENCE = Registry('transformer-layers sequence')
+DROPOUT_LAYERS = MODELS
+POSITIONAL_ENCODING = MODELS
+ATTENTION = MODELS
+FEEDFORWARD_NETWORK = MODELS
+TRANSFORMER_LAYER = MODELS
+TRANSFORMER_LAYER_SEQUENCE = MODELS

@@ -2,9 +2,9 @@
 from typing import Union
 
 import torch
+from mmengine.model.utils import constant_init, kaiming_init
 from torch import nn
 
-from ..utils import constant_init, kaiming_init
 from .registry import PLUGIN_LAYERS
 
 

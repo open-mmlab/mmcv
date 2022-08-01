@@ -6,13 +6,13 @@ from typing import Optional, no_type_check
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from mmengine.model import BaseModule
+from mmengine.model.utils import constant_init, xavier_init
 from torch.autograd.function import Function, once_differentiable
 
 import mmcv
 from mmcv import deprecated_api_warning
-from mmcv.cnn import constant_init, xavier_init
 from mmcv.cnn.bricks.registry import ATTENTION
-from mmcv.runner import BaseModule
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(

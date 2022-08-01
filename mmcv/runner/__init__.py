@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .base_module import BaseModule, ModuleDict, ModuleList, Sequential
 from .base_runner import BaseRunner
 from .builder import RUNNERS, build_runner
 from .checkpoint import (CheckpointLoader, _load_checkpoint,
@@ -64,10 +63,10 @@ __all__ = [
     'build_optimizer_constructor', 'IterLoader', 'set_random_seed',
     'auto_fp16', 'force_fp32', 'wrap_fp16_model', 'Fp16OptimizerHook',
     'SyncBuffersHook', 'EMAHook', 'build_runner', 'RUNNERS', 'allreduce_grads',
-    'allreduce_params', 'LossScaler', 'CheckpointLoader', 'BaseModule',
-    '_load_checkpoint_with_prefix', 'EvalHook', 'DistEvalHook', 'Sequential',
-    'ModuleDict', 'ModuleList', 'GradientCumulativeOptimizerHook',
-    'GradientCumulativeFp16OptimizerHook', 'DefaultRunnerConstructor',
-    'SegmindLoggerHook', 'LinearAnnealingMomentumUpdaterHook',
-    'LinearAnnealingLrUpdaterHook', 'ClearMLLoggerHook'
+    'allreduce_params', 'LossScaler', 'CheckpointLoader',
+    '_load_checkpoint_with_prefix', 'EvalHook', 'DistEvalHook',
+    'GradientCumulativeOptimizerHook', 'GradientCumulativeFp16OptimizerHook',
+    'DefaultRunnerConstructor', 'SegmindLoggerHook',
+    'LinearAnnealingMomentumUpdaterHook', 'LinearAnnealingLrUpdaterHook',
+    'ClearMLLoggerHook'
 ]

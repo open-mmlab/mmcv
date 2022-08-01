@@ -4,8 +4,8 @@ from typing import Dict
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from mmengine.model.utils import xavier_init
 
-from ..utils import xavier_init
 from .registry import UPSAMPLE_LAYERS
 
 UPSAMPLE_LAYERS.register_module('nearest', module=nn.Upsample)

@@ -4,11 +4,12 @@ from typing import Tuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from mmengine.model.utils import normal_init, xavier_init
 from torch import Tensor
 from torch.autograd import Function
 from torch.nn.modules.module import Module
 
-from ..cnn import UPSAMPLE_LAYERS, normal_init, xavier_init
+from ..cnn import UPSAMPLE_LAYERS
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', [

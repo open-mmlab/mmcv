@@ -7,10 +7,10 @@ from typing import Sequence
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from mmengine.model import BaseModule, ModuleList, Sequential
 
 from mmcv.cnn import (Linear, build_activation_layer, build_conv_layer,
                       build_norm_layer)
-from mmcv.runner.base_module import BaseModule, ModuleList, Sequential
 from mmcv.utils import (ConfigDict, build_from_cfg, deprecated_api_warning,
                         to_2tuple)
 from .drop import build_dropout
