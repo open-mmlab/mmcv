@@ -1,12 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from importlib import import_module
+
 import numpy as np
 import pytest
 import torch
 import torch.nn as nn
+from mmengine.registry import MODELS
 
-from mmcv.cnn.bricks import (ACTIVATION_LAYERS, CONV_LAYERS, NORM_LAYERS,
-                             PADDING_LAYERS, PLUGIN_LAYERS,
-                             build_activation_layer, build_conv_layer,
+from mmcv.cnn.bricks import (build_activation_layer, build_conv_layer,
                              build_norm_layer, build_padding_layer,
                              build_plugin_layer, build_upsample_layer, is_norm)
 from mmcv.cnn.bricks.norm import infer_abbr as infer_norm_abbr
@@ -63,18 +64,19 @@ def test_build_conv_layer():
     # sparse convs cannot support the case when groups>1
     kwargs.pop('groups')
 
-    for type_name, module in CONV_LAYERS.module_dict.items():
+    for type_name, module in MODELS.module_dict.items():
         cfg = dict(type=type_name)
         # SparseInverseConv2d and SparseInverseConv3d do not have the argument
         # 'dilation'
         if type_name == 'SparseInverseConv2d' or type_name == \
                 'SparseInverseConv3d':
             kwargs.pop('dilation')
-        layer = build_conv_layer(cfg, **kwargs)
-        assert isinstance(layer, module)
-        assert layer.in_channels == kwargs['in_channels']
-        assert layer.out_channels == kwargs['out_channels']
-        kwargs['dilation'] = 2  # recover the key
+        if 'conv' in type_name.lower():
+            layer = build_conv_layer(cfg, **kwargs)
+            assert isinstance(layer, module)
+            assert layer.in_channels == kwargs['in_channels']
+            assert layer.out_channels == kwargs['out_channels']
+            kwargs['dilation'] = 2  # recover the key
 
 
 def test_infer_norm_abbr():
@@ -154,7 +156,9 @@ def test_build_norm_layer():
         'IN2d': 'in',
         'IN3d': 'in',
     }
-    for type_name, module in NORM_LAYERS.module_dict.items():
+    for type_name, module in MODELS.module_dict.items():
+        if type_name not in abbr_mapping:
+            continue
         if type_name == 'MMSyncBN':  # skip MMSyncBN
             continue
         for postfix in ['_test', 1]:
@@ -172,6 +176,21 @@ def test_build_norm_layer():
 
 
 def test_build_activation_layer():
+    all_act_modules = [
+        'ReLU', 'LeakyReLU', 'PReLU', 'RReLU', 'ReLU6', 'ELU', 'Sigmoid',
+        'Tanh'
+    ]
+    custom_act_module = dict()
+    for module_name in ['activation', 'hsigmoid', 'hswish', 'swish']:
+        _act_module = import_module(f'mmcv.cnn.bricks.{module_name}')
+        _act_module = {
+            key: value
+            for key, value in _act_module.__dict__.items()
+            if isinstance(value, type) and issubclass(value, nn.Module)
+        }
+        custom_act_module.update(_act_module)
+    all_act_modules += list(custom_act_module.keys())
+
     with pytest.raises(TypeError):
         # cfg must be a dict
         cfg = 'ReLU'
@@ -188,10 +207,11 @@ def test_build_activation_layer():
         build_activation_layer(cfg)
 
     # test each type of activation layer in activation_cfg
-    for type_name, module in ACTIVATION_LAYERS.module_dict.items():
-        cfg['type'] = type_name
-        layer = build_activation_layer(cfg)
-        assert isinstance(layer, module)
+    for type_name, module in MODELS.module_dict.items():
+        if type_name in all_act_modules:
+            cfg['type'] = type_name
+            layer = build_activation_layer(cfg)
+            assert isinstance(layer, module)
 
     # sanity check for Clamp
     act = build_activation_layer(dict(type='Clamp'))
@@ -207,6 +227,18 @@ def test_build_activation_layer():
 
 
 def test_build_padding_layer():
+    all_pad_modules = ['zero', 'reflect', 'replicate']
+    custom_pad_modules = dict()
+    for module_name in ['padding']:
+        _pad_module = import_module(f'mmcv.cnn.bricks.{module_name}')
+        _pad_module = {
+            key: value
+            for key, value in _pad_module.__dict__.items()
+            if isinstance(value, type) and issubclass(value, nn.Module)
+        }
+        custom_pad_modules.update(_pad_module)
+    all_pad_modules += list(custom_pad_modules)
+
     with pytest.raises(TypeError):
         # cfg must be a dict
         cfg = 'reflect'
@@ -222,10 +254,11 @@ def test_build_padding_layer():
         cfg = dict(type='FancyPad')
         build_padding_layer(cfg)
 
-    for type_name, module in PADDING_LAYERS.module_dict.items():
-        cfg['type'] = type_name
-        layer = build_padding_layer(cfg, 2)
-        assert isinstance(layer, module)
+    for type_name, module in MODELS.module_dict.items():
+        if type_name in custom_pad_modules:
+            cfg['type'] = type_name
+            layer = build_padding_layer(cfg, 2)
+            assert isinstance(layer, module)
 
     input_x = torch.randn(1, 2, 5, 5)
     cfg = dict(type='reflect')
@@ -377,22 +410,21 @@ def test_build_plugin_layer():
         name, layer = build_plugin_layer(
             cfg, postfix=postfix, in_channels=16, ratio=1. / 4)
         assert name == 'context_block' + str(postfix)
-        assert isinstance(layer, PLUGIN_LAYERS.module_dict['ContextBlock'])
+        assert isinstance(layer, MODELS.module_dict['ContextBlock'])
 
     # test GeneralizedAttention
     for postfix in ['', '_test', 1]:
         cfg = dict(type='GeneralizedAttention')
         name, layer = build_plugin_layer(cfg, postfix=postfix, in_channels=16)
         assert name == 'gen_attention_block' + str(postfix)
-        assert isinstance(layer,
-                          PLUGIN_LAYERS.module_dict['GeneralizedAttention'])
+        assert isinstance(layer, MODELS.module_dict['GeneralizedAttention'])
 
     # test NonLocal2d
     for postfix in ['', '_test', 1]:
         cfg = dict(type='NonLocal2d')
         name, layer = build_plugin_layer(cfg, postfix=postfix, in_channels=16)
         assert name == 'nonlocal_block' + str(postfix)
-        assert isinstance(layer, PLUGIN_LAYERS.module_dict['NonLocal2d'])
+        assert isinstance(layer, MODELS.module_dict['NonLocal2d'])
 
     # test ConvModule
     for postfix in ['', '_test', 1]:
@@ -404,4 +436,4 @@ def test_build_plugin_layer():
             out_channels=4,
             kernel_size=3)
         assert name == 'conv_block' + str(postfix)
-        assert isinstance(layer, PLUGIN_LAYERS.module_dict['ConvModule'])
+        assert isinstance(layer, MODELS.module_dict['ConvModule'])

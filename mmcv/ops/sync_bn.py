@@ -4,12 +4,12 @@ from typing import Optional
 import torch
 import torch.distributed as dist
 import torch.nn.functional as F
+from mmengine.registry import MODELS
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.module import Module
 from torch.nn.parameter import Parameter
 
-from mmcv.cnn import NORM_LAYERS
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', [
@@ -159,7 +159,7 @@ class SyncBatchNormFunction(Function):
             None, None, None, None, None
 
 
-@NORM_LAYERS.register_module(name='MMSyncBN')
+@MODELS.register_module(name='MMSyncBN')
 class SyncBatchNorm(Module):
     """Synchronized Batch Normalization.
 

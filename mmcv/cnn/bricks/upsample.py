@@ -5,14 +5,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmengine.model.utils import xavier_init
+from mmengine.registry import MODELS
 
-from .registry import UPSAMPLE_LAYERS
-
-UPSAMPLE_LAYERS.register_module('nearest', module=nn.Upsample)
-UPSAMPLE_LAYERS.register_module('bilinear', module=nn.Upsample)
+MODELS.register_module('nearest', module=nn.Upsample)
+MODELS.register_module('bilinear', module=nn.Upsample)
 
 
-@UPSAMPLE_LAYERS.register_module(name='pixel_shuffle')
+@MODELS.register_module(name='pixel_shuffle')
 class PixelShufflePack(nn.Module):
     """Pixel Shuffle upsample layer.
 
@@ -76,10 +75,10 @@ def build_upsample_layer(cfg: Dict, *args, **kwargs) -> nn.Module:
     cfg_ = cfg.copy()
 
     layer_type = cfg_.pop('type')
-    if layer_type not in UPSAMPLE_LAYERS:
+    if layer_type not in MODELS:
         raise KeyError(f'Unrecognized upsample type {layer_type}')
     else:
-        upsample = UPSAMPLE_LAYERS.get(layer_type)
+        upsample = MODELS.get(layer_type)
 
     if upsample is nn.Upsample:
         cfg_['mode'] = layer_type

@@ -4,13 +4,14 @@ from typing import Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
+from mmengine import print_log
+from mmengine.registry import MODELS
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair, _single
 
 from mmcv.utils import deprecated_api_warning
-from ..cnn import CONV_LAYERS
-from ..utils import ext_loader, print_log
+from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
     '_ext',
@@ -208,7 +209,7 @@ class ModulatedDeformConv2d(nn.Module):
                                        self.deform_groups)
 
 
-@CONV_LAYERS.register_module('DCNv2')
+@MODELS.register_module('DCNv2')
 class ModulatedDeformConv2dPack(ModulatedDeformConv2d):
     """A ModulatedDeformable Conv Encapsulation that acts as normal Conv
     layers.

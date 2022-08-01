@@ -8,11 +8,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 from mmengine.model import BaseModule
 from mmengine.model.utils import constant_init, xavier_init
+from mmengine.registry import MODELS
 from torch.autograd.function import Function, once_differentiable
 
 import mmcv
 from mmcv import deprecated_api_warning
-from mmcv.cnn.bricks.registry import ATTENTION
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
@@ -156,7 +156,7 @@ def multi_scale_deformable_attn_pytorch(
     return output.transpose(1, 2).contiguous()
 
 
-@ATTENTION.register_module()
+@MODELS.register_module()
 class MultiScaleDeformableAttention(BaseModule):
     """An attention module used in Deformable-Detr.
 
