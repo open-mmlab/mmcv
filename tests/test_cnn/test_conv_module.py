@@ -5,12 +5,13 @@ from unittest.mock import patch
 import pytest
 import torch
 import torch.nn as nn
+from mmengine.registry import MODELS
 
-from mmcv.cnn.bricks import CONV_LAYERS, ConvModule, HSigmoid, HSwish
+from mmcv.cnn.bricks import ConvModule, HSigmoid, HSwish
 from mmcv.utils import TORCH_VERSION, digit_version
 
 
-@CONV_LAYERS.register_module()
+@MODELS.register_module()
 class ExampleConv(nn.Module):
 
     def __init__(self,

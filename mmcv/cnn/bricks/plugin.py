@@ -4,8 +4,7 @@ import platform
 from typing import Dict, Tuple, Union
 
 import torch.nn as nn
-
-from .registry import PLUGIN_LAYERS
+from mmengine.registry import MODELS
 
 if platform.system() == 'Windows':
     import regex as re  # type: ignore
@@ -80,10 +79,10 @@ def build_plugin_layer(cfg: Dict,
     cfg_ = cfg.copy()
 
     layer_type = cfg_.pop('type')
-    if layer_type not in PLUGIN_LAYERS:
+    if layer_type not in MODELS:
         raise KeyError(f'Unrecognized plugin type {layer_type}')
 
-    plugin_layer = PLUGIN_LAYERS.get(layer_type)
+    plugin_layer = MODELS.get(layer_type)
     abbr = infer_abbr(plugin_layer)
 
     assert isinstance(postfix, (int, str))

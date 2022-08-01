@@ -3,9 +3,8 @@ from typing import Union
 
 import torch
 from mmengine.model.utils import constant_init, kaiming_init
+from mmengine.registry import MODELS
 from torch import nn
-
-from .registry import PLUGIN_LAYERS
 
 
 def last_zero_init(m: Union[nn.Module, nn.Sequential]) -> None:
@@ -15,7 +14,7 @@ def last_zero_init(m: Union[nn.Module, nn.Sequential]) -> None:
         constant_init(m, val=0)
 
 
-@PLUGIN_LAYERS.register_module()
+@MODELS.register_module()
 class ContextBlock(nn.Module):
     """ContextBlock module in GCNet.
 

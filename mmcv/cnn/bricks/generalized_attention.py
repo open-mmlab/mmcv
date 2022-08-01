@@ -6,11 +6,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmengine.model.utils import kaiming_init
+from mmengine.registry import MODELS
 
-from .registry import PLUGIN_LAYERS
 
-
-@PLUGIN_LAYERS.register_module()
+@MODELS.register_module()
 class GeneralizedAttention(nn.Module):
     """GeneralizedAttention module.
 

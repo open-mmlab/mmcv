@@ -15,10 +15,10 @@ import math
 
 import numpy as np
 import torch
+from mmengine.registry import MODELS
 from torch.nn import init
 from torch.nn.parameter import Parameter
 
-from ..cnn import CONV_LAYERS
 from . import sparse_functional as Fsp
 from . import sparse_ops as ops
 from .sparse_modules import SparseModule
@@ -204,7 +204,7 @@ class SparseConvolution(SparseModule):
         return out_tensor
 
 
-@CONV_LAYERS.register_module()
+@MODELS.register_module()
 class SparseConv2d(SparseConvolution):
 
     def __init__(self,
@@ -230,7 +230,7 @@ class SparseConv2d(SparseConvolution):
             indice_key=indice_key)
 
 
-@CONV_LAYERS.register_module()
+@MODELS.register_module()
 class SparseConv3d(SparseConvolution):
 
     def __init__(self,
@@ -256,7 +256,7 @@ class SparseConv3d(SparseConvolution):
             indice_key=indice_key)
 
 
-@CONV_LAYERS.register_module()
+@MODELS.register_module()
 class SparseConv4d(SparseConvolution):
 
     def __init__(self,
@@ -282,7 +282,7 @@ class SparseConv4d(SparseConvolution):
             indice_key=indice_key)
 
 
-@CONV_LAYERS.register_module()
+@MODELS.register_module()
 class SparseConvTranspose2d(SparseConvolution):
 
     def __init__(self,
@@ -309,7 +309,7 @@ class SparseConvTranspose2d(SparseConvolution):
             indice_key=indice_key)
 
 
-@CONV_LAYERS.register_module()
+@MODELS.register_module()
 class SparseConvTranspose3d(SparseConvolution):
 
     def __init__(self,
@@ -336,7 +336,7 @@ class SparseConvTranspose3d(SparseConvolution):
             indice_key=indice_key)
 
 
-@CONV_LAYERS.register_module()
+@MODELS.register_module()
 class SparseInverseConv2d(SparseConvolution):
 
     def __init__(self,
@@ -355,7 +355,7 @@ class SparseInverseConv2d(SparseConvolution):
             indice_key=indice_key)
 
 
-@CONV_LAYERS.register_module()
+@MODELS.register_module()
 class SparseInverseConv3d(SparseConvolution):
 
     def __init__(self,
@@ -374,7 +374,7 @@ class SparseInverseConv3d(SparseConvolution):
             indice_key=indice_key)
 
 
-@CONV_LAYERS.register_module()
+@MODELS.register_module()
 class SubMConv2d(SparseConvolution):
 
     def __init__(self,
@@ -401,7 +401,7 @@ class SubMConv2d(SparseConvolution):
             indice_key=indice_key)
 
 
-@CONV_LAYERS.register_module()
+@MODELS.register_module()
 class SubMConv3d(SparseConvolution):
 
     def __init__(self,
@@ -428,7 +428,7 @@ class SubMConv3d(SparseConvolution):
             indice_key=indice_key)
 
 
-@CONV_LAYERS.register_module()
+@MODELS.register_module()
 class SubMConv4d(SparseConvolution):
 
     def __init__(self,
