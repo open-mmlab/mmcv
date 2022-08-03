@@ -13,11 +13,19 @@ This folder contains all non-python code for MMCV custom ops. Please follow the 
 │   ├── pytorch_cpp_helper.hpp
 │   ├── pytorch_cuda_helper.hpp
 │   ├── pytorch_device_registry.hpp
-│   └── cuda
-│       ├── common_cuda_helper.hpp
-│       ├── parrots_cudawarpfunction.cuh
-│       ├── ...
-│       └── ops_cuda_kernel.cuh
+│   ├── cuda
+│   │   ├── common_cuda_helper.hpp
+│   │   ├── parrots_cudawarpfunction.cuh
+│   │   ├── ...
+│   │   └── ops_cuda_kernel.cuh
+|   ├── mps
+│   │   ├── MPSLibrary.h
+│   │   ├── ...
+│   │   └── MPSUtils.h
+|   ├── mlu
+│   │   └── ...
+|   └── utils
+│   │   └── ...
 ├── onnxruntime
 │   ├── onnxruntime_register.h
 │   ├── onnxruntime_session_options_config_keys.h
@@ -41,9 +49,15 @@ This folder contains all non-python code for MMCV custom ops. Please follow the 
 │   ├── cuda
 │   │   ├── ...
 │   │   └── ops_cuda.cu
-│   └── cpu
+│   ├── cpu
+│   │   ├── ...
+│   │   └── ops.cpp
+│   ├── mps
+│   │   ├── ...
+│   |   └── op_mps.mm
+│   └── mlu
 │       ├── ...
-│       └── ops.cpp
+│       └── op_mlu.cpp
 └── tensorrt
     ├── trt_cuda_helper.cuh
     ├── trt_plugin_helper.hpp
@@ -63,13 +77,18 @@ This folder contains all non-python code for MMCV custom ops. Please follow the 
 
 - `common`: This directory contains all tools and shared codes.
   - `cuda`: The cuda kernels which can be shared by all backends. **HIP** kernel is also here since they have similar syntax.
-- `onnxruntime`: **ONNX Runtime** support for custom ops.
+  - `mps`: The tools used to support MPS ops. **NOTE** that MPS support is **experimental**.
+  - `mlu`: The MLU kernels used to support [Cambricon](https://www.cambricon.com/) device.
+  - `utils`: The kernels and utils of spconv.
+- `onnxruntime`: **ONNX Runtime** support for custom ops. Has been deprecated, please try the latest custom ops in [MMDeploy](https://github.com/open-mmlab/mmdeploy).
   - `cpu`: CPU implementation of supported ops.
 - `parrots`: **Parrots** is a deep learning frame for model training and inference. Parrots custom ops are placed in this directory.
 - `pytorch`: **PyTorch** custom ops are supported by binding C++ to Python with **pybind11**. The ops implementation and binding codes are placed in this directory.
   - `cuda`: This directory contains cuda kernel launchers, which feed memory pointers of tensor to the cuda kernel in `common/cuda`. The launchers provide c++ interface of cuda implementation of corresponding custom ops.
   - `cpu`: This directory contain cpu implementations of corresponding custom ops.
-- `tensorrt`: **TensorRT** support for custom ops.
+  - `mlu`: This directory contain launchers of each MLU kernels.
+  - `mps`: MPS ops implementation and launchers.
+- `tensorrt`: **TensorRT** support for custom ops. Has been deprecated, please try the latest custom ops in [MMDeploy](https://github.com/open-mmlab/mmdeploy).
   - `plugins`: This directory contains the implementation of the supported custom ops. Some ops might also use shared cuda kernel in `common/cuda`.
 
 ## How to add new PyTorch ops?

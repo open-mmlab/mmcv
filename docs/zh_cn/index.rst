@@ -37,6 +37,11 @@
    deployment/tensorrt_custom_ops.md
 
 .. toctree::
+   :caption: 语言切换
+
+   switch_language.md
+
+.. toctree::
    :maxdepth: 2
    :caption: 兼容性
 
