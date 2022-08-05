@@ -19,6 +19,11 @@ jobs:
         run: |
           pip install pre-commit
           pre-commit install
+      - name: Install private repo
+        run: |
+          eval `ssh-agent -s`
+          ssh-add - <<< '${{ secrets.TEST_SSH_KEY }}'
+          pip install git+ssh://git@github.com:zhouzaida/errorhelper.git#egg=errorhelper
       - name: Linting
         run: pre-commit run --all-files
       - name: Format c/cuda codes with clang-format
