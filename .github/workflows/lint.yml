@@ -23,7 +23,7 @@ jobs:
         run: |
           eval `ssh-agent -s`
           ssh-add - <<< '${{ secrets.TEST_SSH_KEY }}'
-          pip install git+ssh://git@github.com/zhouzaida/errorhelper.git#egg=errorhelper
+          pip install git+ssh://git@github.com/open-mmlab/mmengine.git#egg=mmengine
       - name: Linting
         run: pre-commit run --all-files
       - name: Format c/cuda codes with clang-format
