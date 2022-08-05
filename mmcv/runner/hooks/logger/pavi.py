@@ -4,6 +4,7 @@ import os
 import os.path as osp
 from typing import Dict, Optional
 
+import mmengine
 import torch
 import yaml
 
@@ -96,9 +97,9 @@ class PaviLoggerHook(LoggerHook):
                 config_dict = config_dict.copy()
                 config_dict.setdefault('max_iter', runner.max_iters)
                 # non-serializable values are first converted in
-                # mmcv.dump to json
+                # mmengine.dump to json
                 config_dict = json.loads(
-                    mmcv.dump(config_dict, file_format='json'))
+                    mmengine.dump(config_dict, file_format='json'))
                 session_text = yaml.dump(config_dict)
                 self.init_kwargs.setdefault('session_text', session_text)
         self.writer = SummaryWriter(**self.init_kwargs)

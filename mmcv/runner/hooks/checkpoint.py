@@ -3,7 +3,8 @@ import os.path as osp
 import warnings
 from typing import Optional
 
-from mmcv.fileio import FileClient
+from mmengine.fileio import FileClient
+
 from ..dist_utils import allreduce_params, master_only
 from .hook import HOOKS, Hook
 
@@ -35,7 +36,7 @@ class CheckpointHook(Hook):
         sync_buffer (bool, optional): Whether to synchronize buffers in
             different gpus. Default: False.
         file_client_args (dict, optional): Arguments to instantiate a
-            FileClient. See :class:`mmcv.fileio.FileClient` for details.
+            FileClient. See :class:`mmengine.fileio.FileClient` for details.
             Default: None.
             `New in version 1.3.16.`
 

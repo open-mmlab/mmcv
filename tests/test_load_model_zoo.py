@@ -3,6 +3,7 @@ import os
 import os.path as osp
 from unittest.mock import patch
 
+import mmengine
 import pytest
 import torchvision
 
@@ -30,7 +31,7 @@ def test_default_mmcv_home():
     assert _get_mmcv_home() == os.path.expanduser(
         os.path.join(DEFAULT_CACHE_DIR, 'mmcv'))
     model_urls = get_external_models()
-    assert model_urls == mmcv.load(
+    assert model_urls == mmengine.load(
         osp.join(mmcv.__path__[0], 'model_zoo/open_mmlab.json'))
 
 

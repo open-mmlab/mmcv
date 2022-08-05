@@ -11,9 +11,9 @@ import pytest
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from mmengine.fileio.file_client import PetrelBackend
 from torch.utils.data import DataLoader, Dataset
 
-from mmcv.fileio.file_client import PetrelBackend
 from mmcv.runner import DistEvalHook as BaseDistEvalHook
 from mmcv.runner import EpochBasedRunner
 from mmcv.runner import EvalHook as BaseEvalHook
