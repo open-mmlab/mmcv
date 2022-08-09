@@ -91,7 +91,9 @@ class QueryAndGroup(nn.Module):
         else:
             idx = ball_query(self.min_radius, self.max_radius, self.sample_num,
                              points_xyz, center_xyz)
-
+        batch_size = center_xyz.shape[0]
+        empty_ball_mask = (idx.view(-1, self.sample_num).sum(dim=-1) !=
+                           0).view(batch_size, 1, -1, 1)
         if self.uniform_sample:
             unique_cnt = torch.zeros((idx.shape[0], idx.shape[1]))
             for i_batch in range(idx.shape[0]):
@@ -114,8 +116,11 @@ class QueryAndGroup(nn.Module):
         if self.normalize_xyz:
             grouped_xyz_diff /= self.max_radius
 
+        grouped_xyz_diff = grouped_xyz_diff * empty_ball_mask
+
         if features is not None:
             grouped_features = grouping_operation(features, idx)
+            grouped_features = grouped_features * empty_ball_mask
             if self.use_xyz:
                 # (B, C + 3, npoint, sample_num)
                 new_features = torch.cat([grouped_xyz_diff, grouped_features],
