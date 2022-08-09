@@ -30,6 +30,6 @@ def parse_version_info(version_str: str, length: int = 4) -> tuple:
     return tuple(release)
 
 
-version_info = parse_version_info(__version__)
+version_info = (2, 0, 0, 0, 'rc', 0)
 
 __all__ = ['__version__', 'version_info', 'parse_version_info']
