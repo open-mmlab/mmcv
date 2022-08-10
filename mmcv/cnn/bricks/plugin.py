@@ -81,11 +81,15 @@ def build_plugin_layer(cfg: Dict,
     layer_type = cfg_.pop('type')
     if layer_type not in MODELS:
         raise KeyError(f'Unrecognized plugin type {layer_type}')
-    with MODELS.switch_scope_and_registry(None) as TARGET_MODELS:
-        plugin_layer = TARGET_MODELS.get(layer_type)
+
+    # Switch registry to the target scope. If `plugin_layer` cannot be found
+    # in the registry, fallback to search `plugin_layer` in the
+    # mmengine.MODELS.
+    with MODELS.switch_scope_and_registry(None) as registry:
+        plugin_layer = registry.get(layer_type)
     if plugin_layer is None:
         raise KeyError(f'Cannot find {plugin_layer} in registry under scope '
-                       f'name {TARGET_MODELS}')
+                       f'name {registry}')
     abbr = infer_abbr(plugin_layer)
 
     assert isinstance(postfix, (int, str))

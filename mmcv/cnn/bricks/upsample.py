@@ -76,11 +76,14 @@ def build_upsample_layer(cfg: Dict, *args, **kwargs) -> nn.Module:
 
     layer_type = cfg_.pop('type')
 
-    with MODELS.switch_scope_and_registry(None) as TARGET_MODELS:
-        upsample = TARGET_MODELS.get(layer_type)
+    # Switch registry to the target scope. If `upsample` cannot be found
+    # in the registry, fallback to search `upsample` in the
+    # mmengine.MODELS.
+    with MODELS.switch_scope_and_registry(None) as registry:
+        upsample = registry.get(layer_type)
     if upsample is None:
         raise KeyError(f'Cannot find {upsample} in registry under scope '
-                       f'name {TARGET_MODELS}')
+                       f'name {registry}')
     if upsample is nn.Upsample:
         cfg_['mode'] = layer_type
     layer = upsample(*args, **kwargs, **cfg_)

@@ -100,11 +100,14 @@ def build_norm_layer(cfg: Dict,
     if layer_type not in MODELS:
         raise KeyError(f'Unrecognized norm type {layer_type}')
 
-    with MODELS.switch_scope_and_registry(None) as TARGET_MODELS:
-        norm_layer = TARGET_MODELS.get(layer_type)
+    # Switch registry to the target scope. If `norm_layer` cannot be found
+    # in the registry, fallback to search `norm_layer` in the
+    # mmengine.MODELS.
+    with MODELS.switch_scope_and_registry(None) as registry:
+        norm_layer = registry.get(layer_type)
     if norm_layer is None:
         raise KeyError(f'Cannot find {norm_layer} in registry under scope '
-                       f'name {TARGET_MODELS}')
+                       f'name {registry}')
     abbr = infer_abbr(norm_layer)
 
     assert isinstance(postfix, (int, str))

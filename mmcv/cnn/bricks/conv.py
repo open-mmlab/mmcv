@@ -35,11 +35,15 @@ def build_conv_layer(cfg: Optional[Dict], *args, **kwargs) -> nn.Module:
         cfg_ = cfg.copy()
 
     layer_type = cfg_.pop('type')
-    with MODELS.switch_scope_and_registry(None) as TARGET_MODELS:
-        conv_layer = TARGET_MODELS.get(layer_type)
+
+    # Switch registry to the target scope. If `conv_layer` cannot be found
+    # in the registry, fallback to search `conv_layer` in the
+    # mmengine.MODELS.
+    with MODELS.switch_scope_and_registry(None) as registry:
+        conv_layer = registry.get(layer_type)
     if conv_layer is None:
         raise KeyError(f'Cannot find {conv_layer} in registry under scope '
-                       f'name {TARGET_MODELS}')
+                       f'name {registry}')
     layer = conv_layer(*args, **kwargs, **cfg_)
 
     return layer
