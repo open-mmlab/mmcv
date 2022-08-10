@@ -27,11 +27,11 @@ def build_padding_layer(cfg: Dict, *args, **kwargs) -> nn.Module:
 
     cfg_ = cfg.copy()
     padding_type = cfg_.pop('type')
-    if padding_type not in MODELS:
-        raise KeyError(f'Unrecognized padding type {padding_type}.')
-    else:
-        padding_layer = MODELS.get(padding_type)
-
+    with MODELS.switch_scope_and_registry(None) as TARGET_MODELS:
+        padding_layer = TARGET_MODELS.get(padding_type)
+    if padding_layer is None:
+        raise KeyError(f'Cannot find {padding_layer} in registry under scope '
+                       f'name {TARGET_MODELS}')
     layer = padding_layer(*args, **kwargs, **cfg_)
 
     return layer

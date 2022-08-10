@@ -3,7 +3,6 @@ from typing import Any, Dict, Optional
 
 import torch
 import torch.nn as nn
-from mmengine import build_from_cfg
 from mmengine.registry import MODELS
 
 
@@ -65,4 +64,4 @@ class Dropout(nn.Dropout):
 
 def build_dropout(cfg: Dict, default_args: Optional[Dict] = None) -> Any:
     """Builder for drop out layers."""
-    return build_from_cfg(cfg, MODELS, default_args)
+    return MODELS.build(cfg, default_args=default_args)

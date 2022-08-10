@@ -7,7 +7,7 @@ from typing import Sequence
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmengine import ConfigDict, build_from_cfg
+from mmengine import ConfigDict
 from mmengine.model import BaseModule, ModuleList, Sequential
 from mmengine.registry import MODELS
 
@@ -36,27 +36,27 @@ except ImportError:
 
 def build_positional_encoding(cfg, default_args=None):
     """Builder for Position Encoding."""
-    return build_from_cfg(cfg, MODELS, default_args)
+    return MODELS.build(cfg, default_args=default_args)
 
 
 def build_attention(cfg, default_args=None):
     """Builder for attention."""
-    return build_from_cfg(cfg, MODELS, default_args)
+    return MODELS.build(cfg, default_args=default_args)
 
 
 def build_feedforward_network(cfg, default_args=None):
     """Builder for feed-forward network (FFN)."""
-    return build_from_cfg(cfg, MODELS, default_args)
+    return MODELS.build(cfg, default_args=default_args)
 
 
 def build_transformer_layer(cfg, default_args=None):
     """Builder for transformer layer."""
-    return build_from_cfg(cfg, MODELS, default_args)
+    return MODELS.build(cfg, default_args=default_args)
 
 
 def build_transformer_layer_sequence(cfg, default_args=None):
     """Builder for transformer encoder and transformer decoder."""
-    return build_from_cfg(cfg, MODELS, default_args)
+    return MODELS.build(cfg, default_args=default_args)
 
 
 class AdaptivePadding(nn.Module):

@@ -35,11 +35,11 @@ def build_conv_layer(cfg: Optional[Dict], *args, **kwargs) -> nn.Module:
         cfg_ = cfg.copy()
 
     layer_type = cfg_.pop('type')
-    if layer_type not in MODELS:
-        raise KeyError(f'Unrecognized layer type {layer_type}')
-    else:
-        conv_layer = MODELS.get(layer_type)
-
+    with MODELS.switch_scope_and_registry(None) as TARGET_MODELS:
+        conv_layer = TARGET_MODELS.get(layer_type)
+    if conv_layer is None:
+        raise KeyError(f'Cannot find {conv_layer} in registry under scope '
+                       f'name {TARGET_MODELS}')
     layer = conv_layer(*args, **kwargs, **cfg_)
 
     return layer

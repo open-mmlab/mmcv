@@ -81,8 +81,11 @@ def build_plugin_layer(cfg: Dict,
     layer_type = cfg_.pop('type')
     if layer_type not in MODELS:
         raise KeyError(f'Unrecognized plugin type {layer_type}')
-
-    plugin_layer = MODELS.get(layer_type)
+    with MODELS.switch_scope_and_registry(None) as TARGET_MODELS:
+        plugin_layer = TARGET_MODELS.get(layer_type)
+    if plugin_layer is None:
+        raise KeyError(f'Cannot find {plugin_layer} in registry under scope '
+                       f'name {TARGET_MODELS}')
     abbr = infer_abbr(plugin_layer)
 
     assert isinstance(postfix, (int, str))

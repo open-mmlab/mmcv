@@ -4,7 +4,6 @@ from typing import Dict
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmengine import build_from_cfg
 from mmengine.registry import MODELS
 from mmengine.utils import TORCH_VERSION, digit_version
 
@@ -92,4 +91,4 @@ def build_activation_layer(cfg: Dict) -> nn.Module:
     Returns:
         nn.Module: Created activation layer.
     """
-    return build_from_cfg(cfg, MODELS)
+    return MODELS.build(cfg)

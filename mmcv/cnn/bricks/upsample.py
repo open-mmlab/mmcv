@@ -75,11 +75,12 @@ def build_upsample_layer(cfg: Dict, *args, **kwargs) -> nn.Module:
     cfg_ = cfg.copy()
 
     layer_type = cfg_.pop('type')
-    if layer_type not in MODELS:
-        raise KeyError(f'Unrecognized upsample type {layer_type}')
-    else:
-        upsample = MODELS.get(layer_type)
 
+    with MODELS.switch_scope_and_registry(None) as TARGET_MODELS:
+        upsample = TARGET_MODELS.get(layer_type)
+    if upsample is None:
+        raise KeyError(f'Cannot find {upsample} in registry under scope '
+                       f'name {TARGET_MODELS}')
     if upsample is nn.Upsample:
         cfg_['mode'] = layer_type
     layer = upsample(*args, **kwargs, **cfg_)
