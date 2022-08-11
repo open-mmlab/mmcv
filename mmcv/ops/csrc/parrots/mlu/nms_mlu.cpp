@@ -8,7 +8,7 @@ void nms_parrots(T& ctx, const SSElement& attr,
                  const OperatorBase::in_list_t& ins,
                  OperatorBase::out_list_t& outs) {}
 
-#define USE_CPU_NMS
+// #define USE_CPU_NMS
 
 #ifdef USE_CPU_NMS
 
