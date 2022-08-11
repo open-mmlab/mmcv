@@ -1589,3 +1589,40 @@ Tensor diff_iou_rotated_sort_vertices_forward_impl(Tensor vertices, Tensor mask,
 
 REGISTER_DEVICE_IMPL(diff_iou_rotated_sort_vertices_forward_impl, CUDA,
                      diff_iou_rotated_sort_vertices_forward_cuda);
+
+void ChamferDistanceForwardCUDAKernelLauncher(
+    const Tensor xyz1, const Tensor xyz2, const Tensor dist1,
+    const Tensor dist2, const Tensor idx1, const Tensor idx2);
+
+void ChamferDistanceBackwardCUDAKernelLauncher(
+    const Tensor xyz1, const Tensor xyz2, Tensor idx1, Tensor idx2,
+    Tensor grad_dist1, Tensor grad_dist2, Tensor grad_xyz1, Tensor grad_xyz2);
+
+void chamfer_distance_forward_cuda(const Tensor xyz1, const Tensor xyz2,
+                                   const Tensor dist1, const Tensor dist2,
+                                   const Tensor idx1, const Tensor idx2) {
+  ChamferDistanceForwardCUDAKernelLauncher(xyz1, xyz2, dist1, dist2, idx1,
+                                           idx2);
+};
+
+void chamfer_distance_backward_cuda(const Tensor xyz1, const Tensor xyz2,
+                                    Tensor idx1, Tensor idx2, Tensor graddist1,
+                                    Tensor graddist2, Tensor gradxyz1,
+                                    Tensor gradxyz2) {
+  ChamferDistanceBackwardCUDAKernelLauncher(xyz1, xyz2, idx1, idx2, graddist1,
+                                            graddist2, gradxyz1, gradxyz2);
+};
+
+void chamfer_distance_forward_impl(const Tensor xyz1, const Tensor xyz2,
+                                   const Tensor dist1, const Tensor dist2,
+                                   const Tensor idx1, const Tensor idx2);
+
+void chamfer_distance_backward_impl(const Tensor xyz1, const Tensor xyz2,
+                                    Tensor idx1, Tensor idx2, Tensor graddist1,
+                                    Tensor graddist2, Tensor gradxyz1,
+                                    Tensor gradxyz2);
+
+REGISTER_DEVICE_IMPL(chamfer_distance_forward_impl, CUDA,
+                     chamfer_distance_forward_cuda);
+REGISTER_DEVICE_IMPL(chamfer_distance_backward_impl, CUDA,
+                     chamfer_distance_backward_cuda);
