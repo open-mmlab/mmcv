@@ -56,8 +56,11 @@ class ChamferDistanceFunction(Function):
 
     @staticmethod
     @once_differentiable
-    def backward(ctx, grad_dist1: Tensor,
-                 grad_dist2: Tensor) -> Tuple[Tensor, Tensor]:
+    def backward(ctx,
+                 grad_dist1: Tensor,
+                 grad_dist2: Tensor,
+                 grad_idx1=None,
+                 grad_idx2=None) -> Tuple[Tensor, Tensor]:
         """
 
         Args:
