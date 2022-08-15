@@ -27,7 +27,7 @@
 
 namespace tv {
 
-#ifdef __NVCC__
+#ifdef __CUDACC__
 #define TV_HOST_DEVICE_INLINE __forceinline__ __device__ __host__
 #define TV_DEVICE_INLINE __forceinline__ __device__
 #define TV_HOST_DEVICE __device__ __host__
