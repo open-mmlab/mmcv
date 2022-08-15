@@ -1685,22 +1685,6 @@ void convex_giou_impl(const Tensor pointsets, const Tensor polygons,
 REGISTER_DEVICE_IMPL(convex_iou_impl, CUDA, convex_iou_cuda);
 REGISTER_DEVICE_IMPL(convex_giou_impl, CUDA, convex_giou_cuda);
 
-Tensor DiffIoURotatedSortVerticesCUDAKernelLauncher(Tensor vertices,
-                                                    Tensor mask,
-                                                    Tensor num_valid);
-
-Tensor diff_iou_rotated_sort_vertices_forward_cuda(Tensor vertices, Tensor mask,
-                                                   Tensor num_valid) {
-  return DiffIoURotatedSortVerticesCUDAKernelLauncher(vertices, mask,
-                                                      num_valid);
-}
-
-Tensor diff_iou_rotated_sort_vertices_forward_impl(Tensor vertices, Tensor mask,
-                                                   Tensor num_valid);
-
-REGISTER_DEVICE_IMPL(diff_iou_rotated_sort_vertices_forward_impl, CUDA,
-                     diff_iou_rotated_sort_vertices_forward_cuda);
-
 void ChamferDistanceForwardCUDAKernelLauncher(
     const Tensor xyz1, const Tensor xyz2, const Tensor dist1,
     const Tensor dist2, const Tensor idx1, const Tensor idx2);
