@@ -7,9 +7,10 @@
 using namespace parrots;
 
 #ifdef MMCV_WITH_CUDA
-void chamfer_distance_forward_cuda_parrots(
-    CudaContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
-    OperatorBase::out_list_t& outs) {
+void chamfer_distance_forward_cuda_parrots(CudaContext& ctx,
+                                           const SSElement& attr,
+                                           const OperatorBase::in_list_t& ins,
+                                           OperatorBase::out_list_t& outs) {
   auto xyz1 = buildATensor(ctx, ins[0]);
   auto xyz2 = buildATensor(ctx, ins[1]);
   auto dist1 = buildATensor(ctx, outs[0]);
@@ -19,9 +20,10 @@ void chamfer_distance_forward_cuda_parrots(
   chamfer_distance_forward(xyz1, xyz2, dist1, dist2, idx1, idx2);
 }
 
-void chamfer_distance_backward_cuda_parrots(
-    CudaContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
-    OperatorBase::out_list_t& outs) {
+void chamfer_distance_backward_cuda_parrots(CudaContext& ctx,
+                                            const SSElement& attr,
+                                            const OperatorBase::in_list_t& ins,
+                                            OperatorBase::out_list_t& outs) {
   auto xyz1 = buildATensor(ctx, ins[0]);
   auto xyz2 = buildATensor(ctx, ins[1]);
   auto idx1 = buildATensor(ctx, ins[2]);
