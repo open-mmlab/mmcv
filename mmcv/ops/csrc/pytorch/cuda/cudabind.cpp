@@ -1706,8 +1706,8 @@ void ChamferDistanceForwardCUDAKernelLauncher(
     const Tensor dist2, const Tensor idx1, const Tensor idx2);
 
 void ChamferDistanceBackwardCUDAKernelLauncher(
-    const Tensor xyz1, const Tensor xyz2, Tensor grad_xyz1, Tensor grad_xyz2,
-    Tensor grad_dist1, Tensor grad_dist2, Tensor idx1, Tensor idx2);
+    const Tensor xyz1, const Tensor xyz2, Tensor idx1, Tensor idx2,
+    Tensor grad_dist1, Tensor grad_dist2, Tensor grad_xyz1, Tensor grad_xyz2);
 
 void chamfer_distance_forward_cuda(const Tensor xyz1, const Tensor xyz2,
                                    const Tensor dist1, const Tensor dist2,
@@ -1717,11 +1717,11 @@ void chamfer_distance_forward_cuda(const Tensor xyz1, const Tensor xyz2,
 };
 
 void chamfer_distance_backward_cuda(const Tensor xyz1, const Tensor xyz2,
-                                    Tensor gradxyz1, Tensor gradxyz2,
-                                    Tensor graddist1, Tensor graddist2,
-                                    Tensor idx1, Tensor idx2) {
-  ChamferDistanceBackwardCUDAKernelLauncher(xyz1, xyz2, gradxyz1, gradxyz2,
-                                            graddist1, graddist2, idx1, idx2);
+                                    Tensor idx1, Tensor idx2, Tensor graddist1,
+                                    Tensor graddist2, Tensor gradxyz1,
+                                    Tensor gradxyz2) {
+  ChamferDistanceBackwardCUDAKernelLauncher(xyz1, xyz2, idx1, idx2, graddist1,
+                                            graddist2, gradxyz1, gradxyz2);
 };
 
 void chamfer_distance_forward_impl(const Tensor xyz1, const Tensor xyz2,
@@ -1729,9 +1729,9 @@ void chamfer_distance_forward_impl(const Tensor xyz1, const Tensor xyz2,
                                    const Tensor idx1, const Tensor idx2);
 
 void chamfer_distance_backward_impl(const Tensor xyz1, const Tensor xyz2,
-                                    Tensor gradxyz1, Tensor gradxyz2,
-                                    Tensor graddist1, Tensor graddist2,
-                                    Tensor idx1, Tensor idx2);
+                                    Tensor idx1, Tensor idx2, Tensor graddist1,
+                                    Tensor graddist2, Tensor gradxyz1,
+                                    Tensor gradxyz2);
 
 REGISTER_DEVICE_IMPL(chamfer_distance_forward_impl, CUDA,
                      chamfer_distance_forward_cuda);
