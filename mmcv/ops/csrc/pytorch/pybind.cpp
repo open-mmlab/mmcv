@@ -419,9 +419,9 @@ void chamfer_distance_forward(const Tensor xyz1, const Tensor xyz2,
                               const Tensor idx1, const Tensor idx);
 
 void chamfer_distance_backward(const Tensor xyz1, const Tensor xyz2,
-                               Tensor gradxyz1, Tensor gradxyz2,
-                               Tensor graddist1, Tensor graddist2, Tensor idx1,
-                               Tensor idx2);
+                               Tensor idx1, Tensor idx2, Tensor graddist1,
+                               Tensor graddist2, Tensor gradxyz1,
+                               Tensor gradxyz2);
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
@@ -838,8 +838,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("dist1"), py::arg("dist2"), py::arg("idx1"), py::arg("idx2"));
   m.def("chamfer_distance_backward", &chamfer_distance_backward,
         "chamfer_distance_backward", py::arg("xyz1"), py::arg("xyz2"),
-        py::arg("gradxyz1"), py::arg("gradxyz2"), py::arg("graddist1"),
-        py::arg("graddist2"), py::arg("idx1"), py::arg("idx2"));
+        py::arg("idx1"), py::arg("idx2"), py::arg("graddist1"),
+        py::arg("graddist2"), py::arg("gradxyz1"), py::arg("gradxyz2"));
   m.def("prroi_pool_forward", &prroi_pool_forward, "prroi_pool forward",
         py::arg("input"), py::arg("rois"), py::arg("output"),
         py::arg("pooled_height"), py::arg("pooled_width"),
