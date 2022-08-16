@@ -336,7 +336,7 @@ def imrotate(img: np.ndarray,
         interpolation (str): Same as :func:`resize`.
         auto_bound (bool): Whether to adjust the image size to cover the whole
             rotated image.
-        border_mode (str): Pixel extrapolation method. Default to 'constant'.
+        border_mode (str): Pixel extrapolation method. Defaults to 'constant'.
 
     Returns:
         np.ndarray: The rotated image.
