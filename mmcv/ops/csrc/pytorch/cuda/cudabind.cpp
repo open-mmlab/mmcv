@@ -1706,8 +1706,8 @@ void ChamferDistanceForwardCUDAKernelLauncher(
     const Tensor dist2, const Tensor idx1, const Tensor idx2);
 
 void ChamferDistanceBackwardCUDAKernelLauncher(
-    const Tensor xyz1, const Tensor xyz2, Tensor grad_xyz1, Tensor grad_xyz2,
-    Tensor grad_dist1, Tensor grad_dist2, Tensor idx1, Tensor idx2);
+    const Tensor xyz1, const Tensor xyz2, Tensor idx1, Tensor idx2,
+    Tensor grad_dist1, Tensor grad_dist2, Tensor grad_xyz1, Tensor grad_xyz2);
 
 void chamfer_distance_forward_cuda(const Tensor xyz1, const Tensor xyz2,
                                    const Tensor dist1, const Tensor dist2,
@@ -1717,11 +1717,11 @@ void chamfer_distance_forward_cuda(const Tensor xyz1, const Tensor xyz2,
 };
 
 void chamfer_distance_backward_cuda(const Tensor xyz1, const Tensor xyz2,
-                                    Tensor gradxyz1, Tensor gradxyz2,
-                                    Tensor graddist1, Tensor graddist2,
-                                    Tensor idx1, Tensor idx2) {
-  ChamferDistanceBackwardCUDAKernelLauncher(xyz1, xyz2, gradxyz1, gradxyz2,
-                                            graddist1, graddist2, idx1, idx2);
+                                    Tensor idx1, Tensor idx2, Tensor graddist1,
+                                    Tensor graddist2, Tensor gradxyz1,
+                                    Tensor gradxyz2) {
+  ChamferDistanceBackwardCUDAKernelLauncher(xyz1, xyz2, idx1, idx2, graddist1,
+                                            graddist2, gradxyz1, gradxyz2);
 };
 
 void chamfer_distance_forward_impl(const Tensor xyz1, const Tensor xyz2,
@@ -1729,11 +1729,62 @@ void chamfer_distance_forward_impl(const Tensor xyz1, const Tensor xyz2,
                                    const Tensor idx1, const Tensor idx2);
 
 void chamfer_distance_backward_impl(const Tensor xyz1, const Tensor xyz2,
-                                    Tensor gradxyz1, Tensor gradxyz2,
-                                    Tensor graddist1, Tensor graddist2,
-                                    Tensor idx1, Tensor idx2);
+                                    Tensor idx1, Tensor idx2, Tensor graddist1,
+                                    Tensor graddist2, Tensor gradxyz1,
+                                    Tensor gradxyz2);
 
 REGISTER_DEVICE_IMPL(chamfer_distance_forward_impl, CUDA,
                      chamfer_distance_forward_cuda);
 REGISTER_DEVICE_IMPL(chamfer_distance_backward_impl, CUDA,
                      chamfer_distance_backward_cuda);
+
+void PrROIPoolForwardCUDAKernelLauncher(Tensor input, Tensor rois,
+                                        Tensor output, int pooled_height,
+                                        int pooled_width, float spatial_scale);
+
+void PrROIPoolBackwardCUDAKernelLauncher(Tensor grad_output, Tensor rois,
+                                         Tensor grad_input, int pooled_height,
+                                         int pooled_width, float spatial_scale);
+
+void PrROIPoolCoorBackwardCUDAKernelLauncher(
+    Tensor output, Tensor grad_output, Tensor input, Tensor rois,
+    Tensor grad_rois, int pooled_height, int pooled_width, float spatial_scale);
+
+void prroi_pool_forward_cuda(Tensor input, Tensor rois, Tensor output,
+                             int pooled_height, int pooled_width,
+                             float spatial_scale) {
+  PrROIPoolForwardCUDAKernelLauncher(input, rois, output, pooled_height,
+                                     pooled_width, spatial_scale);
+}
+
+void prroi_pool_backward_cuda(Tensor grad_output, Tensor rois,
+                              Tensor grad_input, int pooled_height,
+                              int pooled_width, float spatial_scale) {
+  PrROIPoolBackwardCUDAKernelLauncher(grad_output, rois, grad_input,
+                                      pooled_height, pooled_width,
+                                      spatial_scale);
+}
+
+void prroi_pool_coor_backward_cuda(Tensor output, Tensor grad_output,
+                                   Tensor input, Tensor rois, Tensor grad_rois,
+                                   int pooled_height, int pooled_width,
+                                   float spatial_scale) {
+  PrROIPoolCoorBackwardCUDAKernelLauncher(output, grad_output, input, rois,
+                                          grad_rois, pooled_height,
+                                          pooled_width, spatial_scale);
+}
+
+void prroi_pool_forward_impl(Tensor input, Tensor rois, Tensor output,
+                             int pooled_height, int pooled_width,
+                             float spatial_scale);
+void prroi_pool_backward_impl(Tensor grad_output, Tensor rois,
+                              Tensor grad_input, int pooled_height,
+                              int pooled_width, float spatial_scale);
+void prroi_pool_coor_backward_impl(Tensor output, Tensor grad_output,
+                                   Tensor input, Tensor rois, Tensor grad_rois,
+                                   int pooled_height, int pooled_width,
+                                   float spatial_scale);
+REGISTER_DEVICE_IMPL(prroi_pool_forward_impl, CUDA, prroi_pool_forward_cuda);
+REGISTER_DEVICE_IMPL(prroi_pool_backward_impl, CUDA, prroi_pool_backward_cuda);
+REGISTER_DEVICE_IMPL(prroi_pool_coor_backward_impl, CUDA,
+                     prroi_pool_coor_backward_cuda);

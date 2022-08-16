@@ -147,24 +147,31 @@ class GradientCumulativeOptimizerHook(OptimizerHook):
                 'GradientCumulativeOptimizerHook may slightly decrease '
                 'performance if the model has BatchNorm layers.')
 
-        residual_iters = runner.max_iters - runner.iter
-
         self.divisible_iters = (
-            residual_iters // self.cumulative_iters * self.cumulative_iters)
-        self.remainder_iters = residual_iters - self.divisible_iters
+            runner.max_iters // self.cumulative_iters * self.cumulative_iters)
+        self.remainder_iters = runner.max_iters - self.divisible_iters
 
         self.initialized = True
+
+    def _get_loss_factor(self, runner):
+        """Get loss division factor for the current iteration."""
+        if runner.iter < runner.max_iters - self.remainder_iters:
+            loss_factor = self.cumulative_iters
+        else:
+            loss_factor = self.remainder_iters
+            runner.logger.warning(
+                f'Loss will be divided by {loss_factor} in the last '
+                f'{self.remainder_iters} iterations because they are not '
+                f'enough for {self.cumulative_iters} cumulative_iters.')
+            assert loss_factor > 0
+
+        return loss_factor
 
     def after_train_iter(self, runner):
         if not self.initialized:
             self._init(runner)
 
-        if runner.iter < self.divisible_iters:
-            loss_factor = self.cumulative_iters
-        else:
-            loss_factor = self.remainder_iters
-        loss = runner.outputs['loss']
-        loss = loss / loss_factor
+        loss = runner.outputs['loss'] / self._get_loss_factor(runner)
         loss.backward()
 
         if (self.every_n_iters(runner, self.cumulative_iters)
@@ -310,13 +317,7 @@ if (TORCH_VERSION != 'parrots'
             if not self.initialized:
                 self._init(runner)
 
-            if runner.iter < self.divisible_iters:
-                loss_factor = self.cumulative_iters
-            else:
-                loss_factor = self.remainder_iters
-            loss = runner.outputs['loss']
-            loss = loss / loss_factor
-
+            loss = runner.outputs['loss'] / self._get_loss_factor(runner)
             self.loss_scaler.scale(loss).backward()
 
             if (self.every_n_iters(runner, self.cumulative_iters)
@@ -504,15 +505,7 @@ else:
             if not self.initialized:
                 self._init(runner)
 
-            if runner.iter < self.divisible_iters:
-                loss_factor = self.cumulative_iters
-            else:
-                loss_factor = self.remainder_iters
-
-            loss = runner.outputs['loss']
-            loss = loss / loss_factor
-
-            # scale the loss value
+            loss = runner.outputs['loss'] / self._get_loss_factor(runner)
             scaled_loss = loss * self.loss_scaler.loss_scale
             scaled_loss.backward()
 
