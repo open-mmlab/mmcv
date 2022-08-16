@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import numbers
 from typing import Optional, Tuple
+import warnings
 
 import cv2
 import numpy as np
@@ -316,10 +317,10 @@ def imrotate(img: np.ndarray,
              angle: float,
              center: Optional[Tuple[float, float]] = None,
              scale: float = 1.0,
-             border_mode: str = 'constant',
              border_value: int = 0,
              interpolation: str = 'bilinear',
-             auto_bound: bool = False) -> np.ndarray:
+             auto_bound: bool = False,
+             border_mode: str = 'constant') -> np.ndarray:
     """Rotate an image.
 
     Args:
@@ -330,16 +331,22 @@ def imrotate(img: np.ndarray,
             the source image. If not specified, the center of the image will be
             used.
         scale (float): Isotropic scale factor.
-        border_mode (str): Default to 'constant'.
         border_value (int): Border value used in case of a constant border.
             Defaults to 0.
         interpolation (str): Same as :func:`resize`.
         auto_bound (bool): Whether to adjust the image size to cover the whole
             rotated image.
+        border_mode (str): Default to 'constant'.
 
     Returns:
         np.ndarray: The rotated image.
     """
+    warnings.warn("We have added an arg 'border_mode' in this func "
+                "and will reorder the args in the future as: "
+                "( ..., scale: float = 1.0, "
+                "border_mode: str = 'constant', "
+                "border_value: int = 0, ... ). "
+                "Please be careful to set position args.")
     if center is not None and auto_bound:
         raise ValueError('`auto_bound` conflicts with `center`')
     h, w = img.shape[:2]
