@@ -336,7 +336,7 @@ def imrotate(img: np.ndarray,
         interpolation (str): Same as :func:`resize`.
         auto_bound (bool): Whether to adjust the image size to cover the whole
             rotated image.
-        border_mode (str): Default to 'constant'.
+        border_mode (str): Pixel extrapolation method. Default to 'constant'.
 
     Returns:
         np.ndarray: The rotated image.
@@ -346,7 +346,7 @@ def imrotate(img: np.ndarray,
                   '( ..., scale: float = 1.0, '
                   "border_mode: str = 'constant', "
                   'border_value: int = 0, ... ). '
-                  'Please be careful to set position args.')
+                  'Please use keyword arguments to call this function.')
     if center is not None and auto_bound:
         raise ValueError('`auto_bound` conflicts with `center`')
     h, w = img.shape[:2]
