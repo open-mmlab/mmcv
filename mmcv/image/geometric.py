@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import numbers
-from typing import Optional, Tuple
 import warnings
+from typing import Optional, Tuple
 
 import cv2
 import numpy as np
@@ -342,11 +342,11 @@ def imrotate(img: np.ndarray,
         np.ndarray: The rotated image.
     """
     warnings.warn("We have added an arg 'border_mode' in this func "
-                "and will reorder the args in the future as: "
-                "( ..., scale: float = 1.0, "
-                "border_mode: str = 'constant', "
-                "border_value: int = 0, ... ). "
-                "Please be careful to set position args.")
+                  'and will reorder the args in the future as: '
+                  '( ..., scale: float = 1.0, '
+                  "border_mode: str = 'constant', "
+                  'border_value: int = 0, ... ). '
+                  'Please be careful to set position args.')
     if center is not None and auto_bound:
         raise ValueError('`auto_bound` conflicts with `center`')
     h, w = img.shape[:2]
