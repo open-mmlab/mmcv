@@ -1,11 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import tempfile
 
+import mmengine
 import pytest
 import torch
 from torch import nn
 
-import mmcv
 from mmcv.cnn.utils.weight_init import update_init_info
 from mmcv.runner import BaseModule, ModuleDict, ModuleList, Sequential
 from mmcv.utils import Registry, build_from_cfg
@@ -135,7 +135,7 @@ def test_initilization_info_logger():
     # assert initialization information has been dumped
     assert os.path.exists(log_file)
 
-    lines = mmcv.list_from_file(log_file)
+    lines = mmengine.list_from_file(log_file)
 
     # check initialization information is right
     for i, line in enumerate(lines):
@@ -210,7 +210,7 @@ def test_initilization_info_logger():
     # assert initialization information has been dumped
     assert os.path.exists(log_file)
 
-    lines = mmcv.list_from_file(log_file)
+    lines = mmengine.list_from_file(log_file)
     # check initialization information is right
     for i, line in enumerate(lines):
         if 'TopLevelModule' in line and 'init_cfg' not in line:

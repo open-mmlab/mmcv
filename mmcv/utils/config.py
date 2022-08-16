@@ -15,6 +15,7 @@ from collections import abc
 from importlib import import_module
 from pathlib import Path
 
+import mmengine
 from addict import Dict
 from yapf.yapflib.yapf_api import FormatCode
 
@@ -217,8 +218,7 @@ class Config:
                 # delete imported module
                 del sys.modules[temp_module_name]
             elif filename.endswith(('.yml', '.yaml', '.json')):
-                import mmcv
-                cfg_dict = mmcv.load(temp_config_file.name)
+                cfg_dict = mmengine.load(temp_config_file.name)
             # close temp file
             temp_config_file.close()
 
@@ -583,20 +583,19 @@ class Config:
             file (str, optional): Path of the output file where the config
                 will be dumped. Defaults to None.
         """
-        import mmcv
         cfg_dict = super().__getattribute__('_cfg_dict').to_dict()
         if file is None:
             if self.filename is None or self.filename.endswith('.py'):
                 return self.pretty_text
             else:
                 file_format = self.filename.split('.')[-1]
-                return mmcv.dump(cfg_dict, file_format=file_format)
+                return mmengine.dump(cfg_dict, file_format=file_format)
         elif file.endswith('.py'):
             with open(file, 'w', encoding='utf-8') as f:
                 f.write(self.pretty_text)
         else:
             file_format = file.split('.')[-1]
-            return mmcv.dump(cfg_dict, file=file, file_format=file_format)
+            return mmengine.dump(cfg_dict, file=file, file_format=file_format)
 
     def merge_from_dict(self, options, allow_list_keys=True):
         """Merge list into cfg_dict.

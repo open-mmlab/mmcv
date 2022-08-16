@@ -18,10 +18,10 @@ from unittest.mock import MagicMock, Mock, call, patch
 import pytest
 import torch
 import torch.nn as nn
+from mmengine.fileio.file_client import PetrelBackend
 from torch.nn.init import constant_
 from torch.utils.data import DataLoader
 
-from mmcv.fileio.file_client import PetrelBackend
 # yapf: disable
 from mmcv.runner import (CheckpointHook, ClearMLLoggerHook, DvcliveLoggerHook,
                          EMAHook, Fp16OptimizerHook,

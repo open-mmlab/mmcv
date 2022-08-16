@@ -12,14 +12,15 @@ from importlib import import_module
 from tempfile import TemporaryDirectory
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
+import mmengine
 import torch
 import torch.nn as nn
 import torchvision
+from mmengine.fileio import FileClient
+from mmengine.fileio import load as load_file
 from torch.optim import Optimizer
 
 import mmcv
-from ..fileio import FileClient
-from ..fileio import load as load_file
 from ..parallel import is_module_wrapper
 from ..utils import digit_version, load_url, mkdir_or_exist
 from .dist_utils import get_dist_info
@@ -136,7 +137,7 @@ def get_torchvision_models():
         # 'resnet50' or 'ResNet50_Weights.IMAGENET1K_V1' in the config.
         json_path = osp.join(mmcv.__path__[0],
                              'model_zoo/torchvision_0.12.json')
-        model_urls = mmcv.load(json_path)
+        model_urls = mmengine.load(json_path)
         for cls_name, cls in torchvision.models.__dict__.items():
             # The name of torchvision model weights classes ends with
             # `_Weights` such as `ResNet18_Weights`. However, some model weight
@@ -409,8 +410,8 @@ def load_from_ceph(filename: str,
             'petrel'. Default: 'petrel'.
 
     .. warning::
-        :class:`mmcv.fileio.file_client.CephBackend` will be deprecated,
-        please use :class:`mmcv.fileio.file_client.PetrelBackend` instead.
+        :class:`mmengine.fileio.file_client.CephBackend` will be deprecated,
+        please use :class:`mmengine.fileio.file_client.PetrelBackend` instead.
 
     Returns:
         dict or OrderedDict: The loaded checkpoint.
@@ -751,7 +752,7 @@ def save_checkpoint(model: torch.nn.Module,
         optimizer (:obj:`Optimizer`, optional): Optimizer to be saved.
         meta (dict, optional): Metadata to be saved in checkpoint.
         file_client_args (dict, optional): Arguments to instantiate a
-            FileClient. See :class:`mmcv.fileio.FileClient` for details.
+            FileClient. See :class:`mmengine.fileio.FileClient` for details.
             Default: None.
             `New in version 1.3.16.`
     """

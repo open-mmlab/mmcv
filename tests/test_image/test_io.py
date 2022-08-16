@@ -7,13 +7,14 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import cv2
+import mmengine
 import numpy as np
 import pytest
 import torch
+from mmengine.fileio.file_client import HTTPBackend, PetrelBackend
 from numpy.testing import assert_allclose, assert_array_equal
 
 import mmcv
-from mmcv.fileio.file_client import HTTPBackend, PetrelBackend
 
 if torch.__version__ == 'parrots':
     pytest.skip('not necessary in parrots test', allow_module_level=True)
@@ -46,7 +47,7 @@ class TestIO:
     @classmethod
     def teardown_class(cls):
         # clean instances avoid to influence other unittest
-        mmcv.FileClient._instances = {}
+        mmengine.FileClient._instances = {}
 
     def assert_img_equal(self, img, ref_img, ratio_thr=0.999):
         assert img.shape == ref_img.shape

@@ -5,10 +5,10 @@ from math import inf
 from typing import Callable, List, Optional
 
 import torch.distributed as dist
+from mmengine.fileio import FileClient
 from torch.nn.modules.batchnorm import _BatchNorm
 from torch.utils.data import DataLoader
 
-from mmcv.fileio import FileClient
 from mmcv.utils import is_seq_of
 from .hook import Hook
 from .logger import LoggerHook
@@ -61,7 +61,7 @@ class EvalHook(Hook):
             level directory of `runner.work_dir`.
             `New in version 1.3.16.`
         file_client_args (dict): Arguments to instantiate a FileClient.
-            See :class:`mmcv.fileio.FileClient` for details. Default: None.
+            See :class:`mmengine.fileio.FileClient` for details. Default: None.
             `New in version 1.3.16.`
         **eval_kwargs: Evaluation arguments fed into the evaluate function of
             the dataset.
@@ -437,7 +437,7 @@ class DistEvalHook(EvalHook):
             the `out_dir` will be the concatenation of `out_dir` and the last
             level directory of `runner.work_dir`.
         file_client_args (dict): Arguments to instantiate a FileClient.
-            See :class:`mmcv.fileio.FileClient` for details. Default: None.
+            See :class:`mmengine.fileio.FileClient` for details. Default: None.
         **eval_kwargs: Evaluation arguments fed into the evaluate function of
             the dataset.
     """
