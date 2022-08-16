@@ -56,7 +56,7 @@ template <>
 __device__ __forceinline__ phalf warpReduceSum(phalf val) {
   for (int offset = WARP_SIZE / 2; offset > 0; offset /= 2)
 #ifdef HIP_DIFF
-    __PHALF(val) += __shfl_down(FULL_MASK, val, offset);
+    __PHALF(val) += __shfl_down(val, offset);
 #else
     __PHALF(val) +=
         __shfl_down_sync(FULL_MASK, static_cast<__half>(__PHALF(val)), offset);

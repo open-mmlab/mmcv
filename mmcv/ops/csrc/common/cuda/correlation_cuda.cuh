@@ -79,7 +79,7 @@ __global__ void correlation_forward_cuda_kernel(
       // accumulate
       for (int offset = 16; offset > 0; offset /= 2)
         #ifdef HIP_DIFF
-          prod_sum += __shfl_down(FULL_MASK, prod_sum, offset);
+          prod_sum += __shfl_down(float(prod_sum), offset);
         #else
           prod_sum += __shfl_down_sync(FULL_MASK, float(prod_sum), offset);
         #endif
