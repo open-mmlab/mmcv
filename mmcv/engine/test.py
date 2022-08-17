@@ -13,10 +13,11 @@ from torch.utils.data import DataLoader
 
 import mmcv
 from mmcv.runner import get_dist_info
+from mmcv.utils import IS_MLU_AVAILABLE
 
 
 def single_gpu_test(model: nn.Module, data_loader: DataLoader) -> list:
-    """Test model with a single gpu.
+    """Test model with a single mlu or gpu.
 
     This method tests model with a single gpu and displays test progress bar.
 
@@ -32,6 +33,13 @@ def single_gpu_test(model: nn.Module, data_loader: DataLoader) -> list:
     dataset = data_loader.dataset
     prog_bar = mmcv.ProgressBar(len(dataset))
     for data in data_loader:
+        if IS_MLU_AVAILABLE:
+            # Copy Tensors in data to mlu
+            data = {
+                idx:
+                data[idx].mlu() if hasattr(data[idx], 'mlu') else data[idx]
+                for idx in data
+            }
         with torch.no_grad():
             result = model(return_loss=False, **data)
         results.extend(result)
@@ -74,6 +82,13 @@ def multi_gpu_test(model: nn.Module,
         prog_bar = mmcv.ProgressBar(len(dataset))
     time.sleep(2)  # This line can prevent deadlock problem in some cases.
     for i, data in enumerate(data_loader):
+        if IS_MLU_AVAILABLE:
+            # Copy Tensors in data to mlu
+            data = {
+                idx:
+                data[idx].mlu() if hasattr(data[idx], 'mlu') else data[idx]
+                for idx in data
+            }
         with torch.no_grad():
             result = model(return_loss=False, **data)
         results.extend(result)
@@ -114,6 +129,7 @@ def collect_results_cpu(result_part: list,
     Returns:
         list: The collected results.
     """
+    default_device = 'mlu' if IS_MLU_AVAILABLE else 'cuda'
     rank, world_size = get_dist_info()
     # create a tmp dir if it is not specified
     if tmpdir is None:
@@ -122,12 +138,14 @@ def collect_results_cpu(result_part: list,
         dir_tensor = torch.full((MAX_LEN, ),
                                 32,
                                 dtype=torch.uint8,
-                                device='cuda')
+                                device=default_device)
         if rank == 0:
             mmcv.mkdir_or_exist('.dist_test')
             tmpdir = tempfile.mkdtemp(dir='.dist_test')
             tmpdir = torch.tensor(
-                bytearray(tmpdir.encode()), dtype=torch.uint8, device='cuda')
+                bytearray(tmpdir.encode()),
+                dtype=torch.uint8,
+                device=default_device)
             dir_tensor[:len(tmpdir)] = tmpdir
         dist.broadcast(dir_tensor, 0)
         tmpdir = dir_tensor.cpu().numpy().tobytes().decode().rstrip()
@@ -176,17 +194,21 @@ def collect_results_gpu(result_part: list, size: int) -> Optional[list]:
     Returns:
         list: The collected results.
     """
+    default_device = 'mlu' if IS_MLU_AVAILABLE else 'cuda'
     rank, world_size = get_dist_info()
     # dump result part to tensor with pickle
     part_tensor = torch.tensor(
-        bytearray(pickle.dumps(result_part)), dtype=torch.uint8, device='cuda')
+        bytearray(pickle.dumps(result_part)),
+        dtype=torch.uint8,
+        device=default_device)
     # gather all result part tensor shape
-    shape_tensor = torch.tensor(part_tensor.shape, device='cuda')
+    shape_tensor = torch.tensor(part_tensor.shape, device=default_device)
     shape_list = [shape_tensor.clone() for _ in range(world_size)]
     dist.all_gather(shape_list, shape_tensor)
     # padding result part tensor to max length
     shape_max = torch.tensor(shape_list).max()
-    part_send = torch.zeros(shape_max, dtype=torch.uint8, device='cuda')
+    part_send = torch.zeros(
+        shape_max, dtype=torch.uint8, device=default_device)
     part_send[:shape_tensor[0]] = part_tensor
     part_recv_list = [
         part_tensor.new_zeros(shape_max) for _ in range(world_size)
