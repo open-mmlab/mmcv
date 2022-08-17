@@ -97,8 +97,6 @@ def build_norm_layer(cfg: Dict,
     cfg_ = cfg.copy()
 
     layer_type = cfg_.pop('type')
-    if layer_type not in MODELS:
-        raise KeyError(f'Unrecognized norm type {layer_type}')
 
     # Switch registry to the target scope. If `norm_layer` cannot be found
     # in the registry, fallback to search `norm_layer` in the

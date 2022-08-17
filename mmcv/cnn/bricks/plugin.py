@@ -79,8 +79,6 @@ def build_plugin_layer(cfg: Dict,
     cfg_ = cfg.copy()
 
     layer_type = cfg_.pop('type')
-    if layer_type not in MODELS:
-        raise KeyError(f'Unrecognized plugin type {layer_type}')
 
     # Switch registry to the target scope. If `plugin_layer` cannot be found
     # in the registry, fallback to search `plugin_layer` in the
