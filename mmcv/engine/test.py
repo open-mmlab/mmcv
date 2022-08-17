@@ -19,7 +19,8 @@ from mmcv.utils import IS_MLU_AVAILABLE
 def single_gpu_test(model: nn.Module, data_loader: DataLoader) -> list:
     """Test model with a single mlu or gpu.
 
-    This method tests model with a single gpu and displays test progress bar.
+    This method tests model with a single device and displays test progress
+    bar.
 
     Args:
         model (nn.Module): Model to be tested.
@@ -56,20 +57,22 @@ def multi_gpu_test(model: nn.Module,
                    data_loader: DataLoader,
                    tmpdir: Optional[str] = None,
                    gpu_collect: bool = False) -> Optional[list]:
-    """Test model with multiple gpus.
+    """Test model with multiple devices (mlus or gpus).
 
-    This method tests model with multiple gpus and collects the results
-    under two different modes: gpu and cpu modes. By setting
-    ``gpu_collect=True``, it encodes results to gpu tensors and use gpu
-    communication for results collection. On cpu mode it saves the results on
-    different gpus to ``tmpdir`` and collects them by the rank 0 worker.
+    This method tests model with multiple devices and collects the results
+    under two different modes: gpu(mlu) and cpu modes. By setting
+    ``gpu_collect=True``, it encodes results to gpu or mlu tensors and use
+    device communication for results collection. On cpu mode it saves the
+    results on different devices to ``tmpdir`` and collects them by the
+    rank 0 worker.
 
     Args:
         model (nn.Module): Model to be tested.
         data_loader (nn.Dataloader): Pytorch data loader.
         tmpdir (str): Path of directory to save the temporary results from
-            different gpus under cpu mode.
-        gpu_collect (bool): Option to use either gpu or cpu to collect results.
+            different devices under cpu mode.
+        gpu_collect (bool): Option to use either device or cpu to collect
+            results.
 
     Returns:
         list: The prediction results.
@@ -114,7 +117,7 @@ def collect_results_cpu(result_part: list,
                         tmpdir: Optional[str] = None) -> Optional[list]:
     """Collect results under cpu mode.
 
-    On cpu mode, this function will save the results on different gpus to
+    On cpu mode, this function will save the results on different devices to
     ``tmpdir`` and collect them by the rank 0 worker.
 
     Args:
@@ -180,10 +183,10 @@ def collect_results_cpu(result_part: list,
 
 
 def collect_results_gpu(result_part: list, size: int) -> Optional[list]:
-    """Collect results under gpu mode.
+    """Collect results under gpu(mlu) mode.
 
-    On gpu mode, this function will encode results to gpu tensors and use gpu
-    communication for results collection.
+    On gpu(mlu) mode, this function will encode results to gpu or mlu tensors
+    and use device communication for results collection.
 
     Args:
         result_part (list): Result list containing result parts
@@ -221,7 +224,7 @@ def collect_results_gpu(result_part: list, size: int) -> Optional[list]:
         for recv, shape in zip(part_recv_list, shape_list):
             part_result = pickle.loads(recv[:shape[0]].cpu().numpy().tobytes())
             # When data is severely insufficient, an empty part_result
-            # on a certain gpu could makes the overall outputs empty.
+            # on a certain device could makes the overall outputs empty.
             if part_result:
                 part_list.append(part_result)
         # sort the results
