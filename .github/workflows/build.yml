@@ -27,43 +27,6 @@ env:
   MMCV_WITH_OPS: 1
 
 jobs:
-  build_without_torch:
-    runs-on: ubuntu-18.04
-    strategy:
-      matrix:
-        python-version: [3.7]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
-      - name: Build and install
-        run: rm -rf .eggs && pip install -e .
-      - name: Validate the installation
-        run: python -c "import mmcv"
-      - name: Run unittests and generate coverage report
-        run: |
-          pip install -r requirements/test.txt
-          pytest tests/ \
-              --ignore=tests/test_runner \
-              --ignore=tests/test_device/test_ipu \
-              --ignore=tests/test_optimizer.py \
-              --ignore=tests/test_cnn \
-              --ignore=tests/test_parallel.py \
-              --ignore=tests/test_ops \
-              --ignore=tests/test_load_model_zoo.py \
-              --ignore=tests/test_utils/test_logging.py \
-              --ignore=tests/test_image/test_io.py \
-              --ignore=tests/test_utils/test_registry.py \
-              --ignore=tests/test_utils/test_parrots_jit.py \
-              --ignore=tests/test_utils/test_trace.py \
-              --ignore=tests/test_utils/test_hub.py \
-              --ignore=tests/test_device \
-              --ignore=tests/test_utils/test_torch_ops.py
-
   build_without_ops:
     runs-on: ubuntu-18.04
     env:
