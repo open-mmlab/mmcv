@@ -1,8 +1,3 @@
-fileio
--------
-.. automodule:: mmcv.fileio
-    :members:
-
 image
 ------
 .. automodule:: mmcv.image

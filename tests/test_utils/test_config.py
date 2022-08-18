@@ -10,8 +10,9 @@ from pathlib import Path
 
 import pytest
 import yaml
+from mmengine import dump, load
 
-from mmcv import Config, ConfigDict, DictAction, dump, load
+from mmcv import Config, ConfigDict, DictAction
 
 data_path = osp.join(osp.dirname(osp.dirname(__file__)), 'data')
 

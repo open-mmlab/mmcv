@@ -6,6 +6,7 @@ import tempfile
 import time
 from typing import Optional
 
+import mmengine
 import torch
 import torch.distributed as dist
 import torch.nn as nn
@@ -135,7 +136,7 @@ def collect_results_cpu(result_part: list,
         mmcv.mkdir_or_exist(tmpdir)
     # dump the part result to the dir
     part_file = osp.join(tmpdir, f'part_{rank}.pkl')  # type: ignore
-    mmcv.dump(result_part, part_file)
+    mmengine.dump(result_part, part_file)
     dist.barrier()
     # collect all parts
     if rank != 0:
@@ -145,7 +146,7 @@ def collect_results_cpu(result_part: list,
         part_list = []
         for i in range(world_size):
             part_file = osp.join(tmpdir, f'part_{i}.pkl')  # type: ignore
-            part_result = mmcv.load(part_file)
+            part_result = mmengine.load(part_file)
             # When data is severely insufficient, an empty part_result
             # on a certain gpu could makes the overall outputs empty.
             if part_result:

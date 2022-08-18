@@ -8,9 +8,9 @@ import pytest
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from mmengine.fileio.file_client import PetrelBackend
 from torch.nn.parallel import DataParallel
 
-from mmcv.fileio.file_client import PetrelBackend
 from mmcv.parallel.registry import MODULE_WRAPPERS
 from mmcv.runner.checkpoint import (_load_checkpoint_with_prefix,
                                     get_state_dict, load_checkpoint,

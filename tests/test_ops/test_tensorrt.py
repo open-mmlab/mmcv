@@ -3,6 +3,7 @@ import os
 from functools import partial
 from typing import Callable
 
+import mmengine
 import numpy as np
 import onnx
 import pytest
@@ -117,7 +118,6 @@ def test_roialign():
 
 def test_nms():
     try:
-        import mmcv
         from mmcv.ops import nms
     except (ImportError, ModuleNotFoundError):
         pytest.skip('test requires compilation')
@@ -125,7 +125,7 @@ def test_nms():
     # trt config
     fp16_mode = False
     max_workspace_size = 1 << 30
-    data = mmcv.load('./tests/data/batched_nms_data.pkl')
+    data = mmengine.load('./tests/data/batched_nms_data.pkl')
     boxes = torch.from_numpy(data['boxes']).cuda()
     scores = torch.from_numpy(data['scores']).cuda()
     nms = partial(
@@ -188,7 +188,6 @@ def test_nms():
 
 def test_batched_nms():
     try:
-        import mmcv
         from mmcv.ops import batched_nms
     except (ImportError, ModuleNotFoundError):
         pytest.skip('test requires compilation')
@@ -197,7 +196,7 @@ def test_batched_nms():
     os.environ['ONNX_BACKEND'] = 'MMCVTensorRT'
     fp16_mode = False
     max_workspace_size = 1 << 30
-    data = mmcv.load('./tests/data/batched_nms_data.pkl')
+    data = mmengine.load('./tests/data/batched_nms_data.pkl')
     nms_cfg = dict(type='nms', iou_threshold=0.7, score_threshold=0.1)
     boxes = torch.from_numpy(data['boxes']).cuda()
     scores = torch.from_numpy(data['scores']).cuda()
