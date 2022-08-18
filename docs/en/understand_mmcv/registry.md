@@ -129,7 +129,7 @@ Basically, there are two ways to build a module from child or sibling registries
    In MMDetection we define:
 
    ```python
-   from mmcv.registry import Registry
+   from mmengine.registry import Registry
    from mmengine.registry import MODELS as MMENGINE_MODELS
    MODELS = Registry('model', parent=MMENGINE_MODELS)
 

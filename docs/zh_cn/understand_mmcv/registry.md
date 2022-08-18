@@ -30,7 +30,7 @@ MMCV 使用 [注册器](https://github.com/open-mmlab/mmcv/blob/master/mmcv/util
 假设我们要实现一系列数据集转换器（Dataset Converter），用于将不同格式的数据转换为标准数据格式。我们先创建一个名为converters的目录作为包，在包中我们创建一个文件来实现构建器（builder），命名为converters/builder.py，如下
 
 ```python
-from mmcv.utils import Registry
+from mmengine.registry import Registry
 # 创建转换器（converter）的注册器（registry）
 CONVERTERS = Registry('converter')
 ```
@@ -139,8 +139,8 @@ CONVERTERS = Registry('converter', build_func=build_converter)
    我们在 MMClassification 中定义：
 
    ```python
-   from mmcv.registry import Registry
-   from mmcv.registry import MODELS as MMENGINE_MODELS
+   from mmengine.registry import Registry
+   from mmengine.registry import MODELS as MMENGINE_MODELS
    MODELS = Registry('model', parent=MMENGINE_MODELS)
 
    @MODELS.register_module()
