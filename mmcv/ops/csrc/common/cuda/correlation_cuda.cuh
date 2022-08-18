@@ -29,7 +29,11 @@ using namespace torch;
 #define TensorAcc5R PackedTensorAccessor32<scalar_t, 5, RestrictPtrTraits>
 #define WITHIN_BOUNDS(x, y, H, W) (x >= 0 && x < H && y >= 0 && y < W)
 
+#ifdef HIP_DIFF
+#define WARP_SIZE 64
+#else
 #define WARP_SIZE 32
+#endif
 #define FULL_MASK 0xffffffff
 
 template <typename scalar_t>
@@ -77,12 +81,12 @@ __global__ void correlation_forward_cuda_kernel(
           }
       }
       // accumulate
-      for (int offset = 16; offset > 0; offset /= 2)
-        #ifdef HIP_DIFF
+      for (int offset = WARP_SIZE / 2; offset > 0; offset /= 2)
+#ifdef HIP_DIFF
           prod_sum += __shfl_down(float(prod_sum), offset);
-        #else
+#else
           prod_sum += __shfl_down_sync(FULL_MASK, float(prod_sum), offset);
-        #endif
+#endif
       if (thread == 0) {
         output[n][ph][pw][h][w] = prod_sum;
       }
