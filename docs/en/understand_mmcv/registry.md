@@ -129,9 +129,9 @@ Basically, there are two ways to build a module from child or sibling registries
    In MMDetection we define:
 
    ```python
-   from mmcv.utils import Registry
-   from mmcv.cnn import MODELS as MMCV_MODELS
-   MODELS = Registry('model', parent=MMCV_MODELS)
+   from mmcv.registry import Registry
+   from mmengine.registry import MODELS as MMENGINE_MODELS
+   MODELS = Registry('model', parent=MMENGINE_MODELS)
 
    @MODELS.register_module()
    class NetA(nn.Module):
@@ -142,9 +142,9 @@ Basically, there are two ways to build a module from child or sibling registries
    In MMClassification we define:
 
    ```python
-   from mmcv.utils import Registry
-   from mmcv.cnn import MODELS as MMCV_MODELS
-   MODELS = Registry('model', parent=MMCV_MODELS)
+   from mmengine.registry import Registry
+   from mmengine.registry import MODELS as MMENGINE_MODELS
+   MODELS = Registry('model', parent=MMENGINE_MODELS)
 
    @MODELS.register_module()
    class NetB(nn.Module):
@@ -173,7 +173,7 @@ Basically, there are two ways to build a module from child or sibling registries
    The shared `MODELS` registry in MMCV is the parent registry for all downstream codebases (root registry):
 
    ```python
-   from mmcv.cnn import MODELS as MMCV_MODELS
-   net_a = MMCV_MODELS.build(cfg=dict(type='mmdet.NetA'))
-   net_b = MMCV_MODELS.build(cfg=dict(type='mmcls.NetB'))
+   from mmengine.registry import MODELS as MMENGINE_MODELS
+   net_a = MMENGINE_MODELS.build(cfg=dict(type='mmdet.NetA'))
+   net_b = MMENGINE_MODELS.build(cfg=dict(type='mmcls.NetB'))
    ```

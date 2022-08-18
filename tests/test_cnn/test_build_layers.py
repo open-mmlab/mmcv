@@ -176,20 +176,16 @@ def test_build_norm_layer():
 
 
 def test_build_activation_layer():
-    all_act_modules = [
+    act_names = [
         'ReLU', 'LeakyReLU', 'PReLU', 'RReLU', 'ReLU6', 'ELU', 'Sigmoid',
         'Tanh'
     ]
-    custom_act_module = dict()
+
     for module_name in ['activation', 'hsigmoid', 'hswish', 'swish']:
-        _act_module = import_module(f'mmcv.cnn.bricks.{module_name}')
-        _act_module = {
-            key: value
-            for key, value in _act_module.__dict__.items()
-            if isinstance(value, type) and issubclass(value, nn.Module)
-        }
-        custom_act_module.update(_act_module)
-    all_act_modules += list(custom_act_module.keys())
+        act_module = import_module(f'mmcv.cnn.bricks.{module_name}')
+        for key, value in act_module.__dict__.items():
+            if isinstance(value, type) and issubclass(value, nn.Module):
+                act_names.append(key)
 
     with pytest.raises(TypeError):
         # cfg must be a dict
@@ -208,7 +204,7 @@ def test_build_activation_layer():
 
     # test each type of activation layer in activation_cfg
     for type_name, module in MODELS.module_dict.items():
-        if type_name in all_act_modules:
+        if type_name in act_names:
             cfg['type'] = type_name
             layer = build_activation_layer(cfg)
             assert isinstance(layer, module)
@@ -227,17 +223,12 @@ def test_build_activation_layer():
 
 
 def test_build_padding_layer():
-    all_pad_modules = ['zero', 'reflect', 'replicate']
-    custom_pad_modules = dict()
+    pad_names = ['zero', 'reflect', 'replicate']
     for module_name in ['padding']:
-        _pad_module = import_module(f'mmcv.cnn.bricks.{module_name}')
-        _pad_module = {
-            key: value
-            for key, value in _pad_module.__dict__.items()
-            if isinstance(value, type) and issubclass(value, nn.Module)
-        }
-        custom_pad_modules.update(_pad_module)
-    all_pad_modules += list(custom_pad_modules)
+        pad_module = import_module(f'mmcv.cnn.bricks.{module_name}')
+        for key, value in pad_module.__dict__.items():
+            if isinstance(value, type) and issubclass(value, nn.Module):
+                pad_names.append(key)
 
     with pytest.raises(TypeError):
         # cfg must be a dict
@@ -255,7 +246,7 @@ def test_build_padding_layer():
         build_padding_layer(cfg)
 
     for type_name, module in MODELS.module_dict.items():
-        if type_name in custom_pad_modules:
+        if type_name in pad_names:
             cfg['type'] = type_name
             layer = build_padding_layer(cfg, 2)
             assert isinstance(layer, module)
