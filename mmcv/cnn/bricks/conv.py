@@ -43,7 +43,7 @@ def build_conv_layer(cfg: Optional[Dict], *args, **kwargs) -> nn.Module:
         conv_layer = registry.get(layer_type)
     if conv_layer is None:
         raise KeyError(f'Cannot find {conv_layer} in registry under scope '
-                       f'name {registry}')
+                       f'name {registry.scope}')
     layer = conv_layer(*args, **kwargs, **cfg_)
 
     return layer

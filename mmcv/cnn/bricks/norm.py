@@ -105,7 +105,7 @@ def build_norm_layer(cfg: Dict,
         norm_layer = registry.get(layer_type)
     if norm_layer is None:
         raise KeyError(f'Cannot find {norm_layer} in registry under scope '
-                       f'name {registry}')
+                       f'name {registry.scope}')
     abbr = infer_abbr(norm_layer)
 
     assert isinstance(postfix, (int, str))

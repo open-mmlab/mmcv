@@ -87,7 +87,7 @@ def build_plugin_layer(cfg: Dict,
         plugin_layer = registry.get(layer_type)
     if plugin_layer is None:
         raise KeyError(f'Cannot find {plugin_layer} in registry under scope '
-                       f'name {registry}')
+                       f'name {registry.scope}')
     abbr = infer_abbr(plugin_layer)
 
     assert isinstance(postfix, (int, str))

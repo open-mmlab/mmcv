@@ -83,7 +83,7 @@ def build_upsample_layer(cfg: Dict, *args, **kwargs) -> nn.Module:
         upsample = registry.get(layer_type)
     if upsample is None:
         raise KeyError(f'Cannot find {upsample} in registry under scope '
-                       f'name {registry}')
+                       f'name {registry.scope}')
     if upsample is nn.Upsample:
         cfg_['mode'] = layer_type
     layer = upsample(*args, **kwargs, **cfg_)
