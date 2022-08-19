@@ -100,7 +100,7 @@ void ROIAlignRotatedForwardMLUKernelLauncher(Tensor input, Tensor rois,
       torch_mlu::cnnl::ops::cnnl_contiguous(input, memory_format);
   at::Tensor output_tmp =
       at::empty({rois_nums, channel, pooled_height, pooled_width},
-      input.options(), memory_format);
+                input.options(), memory_format);
 
   // get compute queue
   auto queue = torch_mlu::getCurQueue();
