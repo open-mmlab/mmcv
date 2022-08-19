@@ -30,7 +30,7 @@ MMCV 使用 [注册器](https://github.com/open-mmlab/mmcv/blob/master/mmcv/util
 假设我们要实现一系列数据集转换器（Dataset Converter），用于将不同格式的数据转换为标准数据格式。我们先创建一个名为converters的目录作为包，在包中我们创建一个文件来实现构建器（builder），命名为converters/builder.py，如下
 
 ```python
-from mmcv.utils import Registry
+from mmengine.registry import Registry
 # 创建转换器（converter）的注册器（registry）
 CONVERTERS = Registry('converter')
 ```
@@ -126,9 +126,9 @@ CONVERTERS = Registry('converter', build_func=build_converter)
    我们在 MMDetection 中定义：
 
    ```python
-   from mmcv.utils import Registry
-   from mmcv.cnn import MODELS as MMCV_MODELS
-   MODELS = Registry('model', parent=MMCV_MODELS)
+   from mmengine.resgitry import Registry
+   from mmengine.resgitry import MODELS as MMENGINE_MODELS
+   MODELS = Registry('model', parent=MMENGINE_MODELS)
 
    @MODELS.register_module()
    class NetA(nn.Module):
@@ -139,9 +139,9 @@ CONVERTERS = Registry('converter', build_func=build_converter)
    我们在 MMClassification 中定义：
 
    ```python
-   from mmcv.utils import Registry
-   from mmcv.cnn import MODELS as MMCV_MODELS
-   MODELS = Registry('model', parent=MMCV_MODELS)
+   from mmengine.registry import Registry
+   from mmengine.registry import MODELS as MMENGINE_MODELS
+   MODELS = Registry('model', parent=MMENGINE_MODELS)
 
    @MODELS.register_module()
    class NetB(nn.Module):
@@ -170,7 +170,7 @@ CONVERTERS = Registry('converter', build_func=build_converter)
    MMCV中的共享`MODELS`注册器是所有下游代码库的父注册器（根注册器）：
 
    ```python
-   from mmcv.cnn import MODELS as MMCV_MODELS
-   net_a = MMCV_MODELS.build(cfg=dict(type='mmdet.NetA'))
-   net_b = MMCV_MODELS.build(cfg=dict(type='mmcls.NetB'))
+   from mmengine.registry import MODELS as MMENGINE_MODELS
+   net_a = MMENGINE_MODELS.build(cfg=dict(type='mmdet.NetA'))
+   net_b = MMENGINE_MODELS.build(cfg=dict(type='mmcls.NetB'))
    ```

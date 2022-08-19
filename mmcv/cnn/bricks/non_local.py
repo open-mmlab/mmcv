@@ -4,10 +4,10 @@ from typing import Dict, Optional
 
 import torch
 import torch.nn as nn
+from mmengine.model.utils import constant_init, normal_init
+from mmengine.registry import MODELS
 
-from ..utils import constant_init, normal_init
 from .conv_module import ConvModule
-from .registry import PLUGIN_LAYERS
 
 
 class _NonLocalNd(nn.Module, metaclass=ABCMeta):
@@ -246,7 +246,7 @@ class NonLocal1d(_NonLocalNd):
                 self.phi = max_pool_layer
 
 
-@PLUGIN_LAYERS.register_module()
+@MODELS.register_module()
 class NonLocal2d(_NonLocalNd):
     """2D Non-local module.
 

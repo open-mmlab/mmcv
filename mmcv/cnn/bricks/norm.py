@@ -3,22 +3,22 @@ import inspect
 from typing import Dict, Tuple, Union
 
 import torch.nn as nn
+from mmengine.registry import MODELS
 
 from mmcv.utils import is_tuple_of
 from mmcv.utils.parrots_wrapper import SyncBatchNorm, _BatchNorm, _InstanceNorm
-from .registry import NORM_LAYERS
 
-NORM_LAYERS.register_module('BN', module=nn.BatchNorm2d)
-NORM_LAYERS.register_module('BN1d', module=nn.BatchNorm1d)
-NORM_LAYERS.register_module('BN2d', module=nn.BatchNorm2d)
-NORM_LAYERS.register_module('BN3d', module=nn.BatchNorm3d)
-NORM_LAYERS.register_module('SyncBN', module=SyncBatchNorm)
-NORM_LAYERS.register_module('GN', module=nn.GroupNorm)
-NORM_LAYERS.register_module('LN', module=nn.LayerNorm)
-NORM_LAYERS.register_module('IN', module=nn.InstanceNorm2d)
-NORM_LAYERS.register_module('IN1d', module=nn.InstanceNorm1d)
-NORM_LAYERS.register_module('IN2d', module=nn.InstanceNorm2d)
-NORM_LAYERS.register_module('IN3d', module=nn.InstanceNorm3d)
+MODELS.register_module('BN', module=nn.BatchNorm2d)
+MODELS.register_module('BN1d', module=nn.BatchNorm1d)
+MODELS.register_module('BN2d', module=nn.BatchNorm2d)
+MODELS.register_module('BN3d', module=nn.BatchNorm3d)
+MODELS.register_module('SyncBN', module=SyncBatchNorm)
+MODELS.register_module('GN', module=nn.GroupNorm)
+MODELS.register_module('LN', module=nn.LayerNorm)
+MODELS.register_module('IN', module=nn.InstanceNorm2d)
+MODELS.register_module('IN1d', module=nn.InstanceNorm1d)
+MODELS.register_module('IN2d', module=nn.InstanceNorm2d)
+MODELS.register_module('IN3d', module=nn.InstanceNorm3d)
 
 
 def infer_abbr(class_type):
@@ -97,10 +97,15 @@ def build_norm_layer(cfg: Dict,
     cfg_ = cfg.copy()
 
     layer_type = cfg_.pop('type')
-    if layer_type not in NORM_LAYERS:
-        raise KeyError(f'Unrecognized norm type {layer_type}')
 
-    norm_layer = NORM_LAYERS.get(layer_type)
+    # Switch registry to the target scope. If `norm_layer` cannot be found
+    # in the registry, fallback to search `norm_layer` in the
+    # mmengine.MODELS.
+    with MODELS.switch_scope_and_registry(None) as registry:
+        norm_layer = registry.get(layer_type)
+    if norm_layer is None:
+        raise KeyError(f'Cannot find {norm_layer} in registry under scope '
+                       f'name {registry.scope}')
     abbr = infer_abbr(norm_layer)
 
     assert isinstance(postfix, (int, str))

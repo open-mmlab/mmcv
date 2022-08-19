@@ -7,15 +7,14 @@ from typing import Sequence
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from mmengine import ConfigDict
+from mmengine.model import BaseModule, ModuleList, Sequential
+from mmengine.registry import MODELS
 
 from mmcv.cnn import (Linear, build_activation_layer, build_conv_layer,
                       build_norm_layer)
-from mmcv.runner.base_module import BaseModule, ModuleList, Sequential
-from mmcv.utils import (ConfigDict, build_from_cfg, deprecated_api_warning,
-                        to_2tuple)
+from mmcv.utils import deprecated_api_warning, to_2tuple
 from .drop import build_dropout
-from .registry import (ATTENTION, FEEDFORWARD_NETWORK, POSITIONAL_ENCODING,
-                       TRANSFORMER_LAYER, TRANSFORMER_LAYER_SEQUENCE)
 
 # Avoid BC-breaking of importing MultiScaleDeformableAttention from this file
 try:
@@ -37,27 +36,27 @@ except ImportError:
 
 def build_positional_encoding(cfg, default_args=None):
     """Builder for Position Encoding."""
-    return build_from_cfg(cfg, POSITIONAL_ENCODING, default_args)
+    return MODELS.build(cfg, default_args=default_args)
 
 
 def build_attention(cfg, default_args=None):
     """Builder for attention."""
-    return build_from_cfg(cfg, ATTENTION, default_args)
+    return MODELS.build(cfg, default_args=default_args)
 
 
 def build_feedforward_network(cfg, default_args=None):
     """Builder for feed-forward network (FFN)."""
-    return build_from_cfg(cfg, FEEDFORWARD_NETWORK, default_args)
+    return MODELS.build(cfg, default_args=default_args)
 
 
 def build_transformer_layer(cfg, default_args=None):
     """Builder for transformer layer."""
-    return build_from_cfg(cfg, TRANSFORMER_LAYER, default_args)
+    return MODELS.build(cfg, default_args=default_args)
 
 
 def build_transformer_layer_sequence(cfg, default_args=None):
     """Builder for transformer encoder and transformer decoder."""
-    return build_from_cfg(cfg, TRANSFORMER_LAYER_SEQUENCE, default_args)
+    return MODELS.build(cfg, default_args=default_args)
 
 
 class AdaptivePadding(nn.Module):
@@ -403,7 +402,7 @@ class PatchMerging(BaseModule):
         return x, output_size
 
 
-@ATTENTION.register_module()
+@MODELS.register_module()
 class MultiheadAttention(BaseModule):
     """A wrapper for ``torch.nn.MultiheadAttention``.
 
@@ -551,7 +550,7 @@ class MultiheadAttention(BaseModule):
         return identity + self.dropout_layer(self.proj_drop(out))
 
 
-@FEEDFORWARD_NETWORK.register_module()
+@MODELS.register_module()
 class FFN(BaseModule):
     """Implements feed-forward networks (FFNs) with identity connection.
 
@@ -628,7 +627,7 @@ class FFN(BaseModule):
         return identity + self.dropout_layer(out)
 
 
-@TRANSFORMER_LAYER.register_module()
+@MODELS.register_module()
 class BaseTransformerLayer(BaseModule):
     """Base `TransformerLayer` for vision transformer.
 
@@ -859,7 +858,7 @@ class BaseTransformerLayer(BaseModule):
         return query
 
 
-@TRANSFORMER_LAYER_SEQUENCE.register_module()
+@MODELS.register_module()
 class TransformerLayerSequence(BaseModule):
     """Base class for TransformerEncoder and TransformerDecoder in vision
     transformer.

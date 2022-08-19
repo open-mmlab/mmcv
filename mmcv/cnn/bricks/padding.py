@@ -2,12 +2,11 @@
 from typing import Dict
 
 import torch.nn as nn
+from mmengine.registry import MODELS
 
-from .registry import PADDING_LAYERS
-
-PADDING_LAYERS.register_module('zero', module=nn.ZeroPad2d)
-PADDING_LAYERS.register_module('reflect', module=nn.ReflectionPad2d)
-PADDING_LAYERS.register_module('replicate', module=nn.ReplicationPad2d)
+MODELS.register_module('zero', module=nn.ZeroPad2d)
+MODELS.register_module('reflect', module=nn.ReflectionPad2d)
+MODELS.register_module('replicate', module=nn.ReplicationPad2d)
 
 
 def build_padding_layer(cfg: Dict, *args, **kwargs) -> nn.Module:
@@ -28,11 +27,15 @@ def build_padding_layer(cfg: Dict, *args, **kwargs) -> nn.Module:
 
     cfg_ = cfg.copy()
     padding_type = cfg_.pop('type')
-    if padding_type not in PADDING_LAYERS:
-        raise KeyError(f'Unrecognized padding type {padding_type}.')
-    else:
-        padding_layer = PADDING_LAYERS.get(padding_type)
 
+    # Switch registry to the target scope. If `padding_layer` cannot be found
+    # in the registry, fallback to search `padding_layer` in the
+    # mmengine.MODELS.
+    with MODELS.switch_scope_and_registry(None) as registry:
+        padding_layer = registry.get(padding_type)
+    if padding_layer is None:
+        raise KeyError(f'Cannot find {padding_layer} in registry under scope '
+                       f'name {registry.scope}')
     layer = padding_layer(*args, **kwargs, **cfg_)
 
     return layer

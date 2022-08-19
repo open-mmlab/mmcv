@@ -1,11 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 import torch.nn as nn
+from mmengine.registry import MODELS
 
-from .registry import ACTIVATION_LAYERS
 
-
-@ACTIVATION_LAYERS.register_module()
+@MODELS.register_module()
 class Swish(nn.Module):
     """Swish Module.
 
