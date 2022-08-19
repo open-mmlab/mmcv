@@ -8,17 +8,6 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
 class TestMaskedConv2d:
 
-    def _test_masked_conv2d(self, device):
-        from mmcv.ops import MaskedConv2d
-        input = torch.randn(1, 3, 16, 16, requires_grad=True, device=device)
-        mask = torch.randn(1, 16, 16, requires_grad=True, device=device)
-        if device == 'cuda':
-            conv = MaskedConv2d(3, 3, 3).cuda()
-        elif device == 'mlu':
-            conv = MaskedConv2d(3, 3, 3).mlu()
-        output = conv(input, mask)
-        assert output is not None
-
     @pytest.mark.parametrize('device', [
         pytest.param(
             'cuda',
@@ -45,10 +34,7 @@ class TestMaskedConv2d:
         mask = torch.tensor(np_mask, dtype=torch.float, device=device)
         weight = torch.tensor(np_weight, dtype=torch.float, device=device)
         bias = torch.tensor(np_bias, dtype=torch.float, device=device)
-        if device == 'cuda':
-            conv = MaskedConv2d(3, 3, 3, 1, 1).cuda()
-        elif device == 'mlu':
-            conv = MaskedConv2d(3, 3, 3, 1, 1).mlu()
+        conv = MaskedConv2d(3, 3, 3, 1, 1).to(device)
         conv.weight = torch.nn.Parameter(weight)
         conv.bias = torch.nn.Parameter(bias)
         output = conv(input, mask)
