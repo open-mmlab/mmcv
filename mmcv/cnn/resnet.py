@@ -6,6 +6,7 @@ import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmengine.model.utils import constant_init, kaiming_init
 from torch import Tensor
+from mmengine.runner import load_checkpoint
 
 
 def conv3x3(in_planes: int,
@@ -270,7 +271,6 @@ class ResNet(nn.Module):
     def init_weights(self, pretrained: Optional[str] = None) -> None:
         if isinstance(pretrained, str):
             logger = logging.getLogger()
-            from ..runner import load_checkpoint
             load_checkpoint(self, pretrained, strict=False, logger=logger)
         elif pretrained is None:
             for m in self.modules():

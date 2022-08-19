@@ -39,7 +39,6 @@ else:
     from .device_type import (IS_IPU_AVAILABLE, IS_MLU_AVAILABLE,
                               IS_MPS_AVAILABLE)
     from .env import collect_env
-    from .hub import load_url
     from .logging import get_logger, print_log
     from .parrots_jit import jit, skip_no_elena
     # yapf: disable
@@ -75,7 +74,7 @@ else:
         'assert_dict_has_keys', 'assert_keys_equal', 'assert_is_norm_layer',
         'assert_params_all_zeros', 'check_python_script',
         'is_method_overridden', 'is_jit_tracing', 'is_rocm_pytorch',
-        '_get_cuda_home', 'load_url', 'has_method', 'IS_CUDA_AVAILABLE',
+        '_get_cuda_home', 'has_method', 'IS_CUDA_AVAILABLE',
         'worker_init_fn', 'IS_MLU_AVAILABLE', 'IS_IPU_AVAILABLE',
         'IS_MPS_AVAILABLE', 'torch_meshgrid'
     ]
