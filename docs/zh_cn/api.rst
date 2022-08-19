@@ -28,16 +28,6 @@ cnn
 .. automodule:: mmcv.cnn
     :members:
 
-runner
-------
-.. automodule:: mmcv.runner
-    :members:
-
-engine
-------
-.. automodule:: mmcv.engine
-    :members:
-
 ops
 ------
 .. automodule:: mmcv.ops
