@@ -4,8 +4,8 @@ from typing import List, Optional, Sequence, Tuple, Union
 
 import torch.nn as nn
 from mmengine.model.utils import constant_init, kaiming_init, normal_init
-from torch import Tensor
 from mmengine.runner import load_checkpoint
+from torch import Tensor
 
 
 def conv3x3(in_planes: int, out_planes: int, dilation: int = 1) -> nn.Module:

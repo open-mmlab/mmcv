@@ -5,8 +5,8 @@ from typing import Optional, Sequence, Tuple, Union
 import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmengine.model.utils import constant_init, kaiming_init
-from torch import Tensor
 from mmengine.runner import load_checkpoint
+from torch import Tensor
 
 
 def conv3x3(in_planes: int,

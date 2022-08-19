@@ -2,9 +2,9 @@
 import logging
 from typing import Optional
 
-from mmengine.runner import load_checkpoint
 import torch
 import torch.nn as nn
+from mmengine.runner import load_checkpoint
 
 
 class AlexNet(nn.Module):
