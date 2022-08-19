@@ -158,8 +158,6 @@ class CARAFEFunction(Function):
     def backward(
             ctx,
             grad_output: Tensor) -> Tuple[Tensor, Tensor, None, None, None]:
-        assert grad_output.is_cuda
-
         features, masks, rfeatures = ctx.saved_tensors
         kernel_size = ctx.kernel_size
         group_size = ctx.group_size
