@@ -53,7 +53,7 @@ We implement common ops used in detection, segmentation, etc.
 | Sparse Convolution           |     | √    |     |     |
 | Synchronized BatchNorm       |     | √    |     |     |
 | ThreeInterpolate             |     | √    |     |     |
-| ThreeNN                      |     | √    |     |     |
+| ThreeNN                      |     | √    | √   |     |
 | TINShift                     |     | √    | √   |     |
 | UpFirDn2d                    |     | √    |     |     |
 | Voxelization                 | √   | √    |     |     |
