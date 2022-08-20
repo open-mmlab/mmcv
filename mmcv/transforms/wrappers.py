@@ -1,11 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
-import mmengine
 
+import mmengine
 import numpy as np
 
-import mmcv
 from .base import BaseTransform
 from .builder import TRANSFORMS
 from .utils import cache_random_params, cache_randomness

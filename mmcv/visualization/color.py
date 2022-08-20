@@ -3,7 +3,6 @@ from enum import Enum
 from typing import Union
 
 import numpy as np
-
 from mmengine.utils import is_str
 
 

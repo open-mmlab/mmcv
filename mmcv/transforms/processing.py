@@ -2,8 +2,8 @@
 import random
 import warnings
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
-import mmengine
 
+import mmengine
 import numpy as np
 
 import mmcv

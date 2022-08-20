@@ -2,6 +2,7 @@
 """This file holding some environment constant for sharing by other files."""
 
 from mmengine.utils import collect_env as mmengine_collect_env
+
 import mmcv
 
 

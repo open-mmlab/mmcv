@@ -3,16 +3,16 @@ import math
 import warnings
 from typing import Optional, no_type_check
 
+import mmengine
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmengine.model import BaseModule
 from mmengine.model.utils import constant_init, xavier_init
 from mmengine.registry import MODELS
+from mmengine.utils import deprecated_api_warning
 from torch.autograd.function import Function, once_differentiable
 
-import mmengine
-from mmengine.utils import deprecated_api_warning
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(

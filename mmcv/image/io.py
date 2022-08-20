@@ -9,7 +9,6 @@ import numpy as np
 from cv2 import (IMREAD_COLOR, IMREAD_GRAYSCALE, IMREAD_IGNORE_ORIENTATION,
                  IMREAD_UNCHANGED)
 from mmengine.fileio import FileClient
-
 from mmengine.utils import is_filepath, is_str
 
 try:

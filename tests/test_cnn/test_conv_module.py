@@ -6,9 +6,9 @@ import pytest
 import torch
 import torch.nn as nn
 from mmengine.registry import MODELS
+from mmengine.utils import TORCH_VERSION, digit_version
 
 from mmcv.cnn.bricks import ConvModule, HSigmoid, HSwish
-from mmengine.utils import TORCH_VERSION, digit_version
 
 
 @MODELS.register_module()

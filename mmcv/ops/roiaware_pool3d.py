@@ -1,11 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Any, Tuple, Union
 
+import mmengine
 import torch
 from torch import nn as nn
 from torch.autograd import Function
 
-import mmcv
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
@@ -86,7 +86,7 @@ class RoIAwarePool3dFunction(Function):
             out_x = out_y = out_z = out_size
         else:
             assert len(out_size) == 3
-            assert mmcv.is_tuple_of(out_size, int)
+            assert mmengine.is_tuple_of(out_size, int)
             out_x, out_y, out_z = out_size
 
         num_rois = rois.shape[0]

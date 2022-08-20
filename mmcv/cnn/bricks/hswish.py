@@ -2,7 +2,6 @@
 import torch
 import torch.nn as nn
 from mmengine.registry import MODELS
-
 from mmengine.utils import TORCH_VERSION, digit_version
 
 

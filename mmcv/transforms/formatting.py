@@ -1,10 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Sequence, Union
 
+import mmengine
 import numpy as np
 import torch
 
-import mmengine
 from .base import BaseTransform
 from .builder import TRANSFORMS
 

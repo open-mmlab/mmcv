@@ -10,10 +10,10 @@ import torch.nn.functional as F
 from mmengine import ConfigDict
 from mmengine.model import BaseModule, ModuleList, Sequential
 from mmengine.registry import MODELS
+from mmengine.utils import deprecated_api_warning, to_2tuple
 
 from mmcv.cnn import (Linear, build_activation_layer, build_conv_layer,
                       build_norm_layer)
-from mmengine.utils import deprecated_api_warning, to_2tuple
 from .drop import build_dropout
 
 # Avoid BC-breaking of importing MultiScaleDeformableAttention from this file

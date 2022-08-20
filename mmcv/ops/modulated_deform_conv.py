@@ -6,11 +6,11 @@ import torch
 import torch.nn as nn
 from mmengine import print_log
 from mmengine.registry import MODELS
+from mmengine.utils import deprecated_api_warning
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair, _single
 
-from mmengine.utils import deprecated_api_warning
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(

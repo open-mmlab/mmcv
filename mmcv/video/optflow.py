@@ -4,10 +4,10 @@ from typing import Tuple, Union
 
 import cv2
 import numpy as np
+from mmengine.utils import is_str
 
 from mmcv.arraymisc import dequantize, quantize
 from mmcv.image import imread, imwrite
-from mmengine.utils import is_str
 
 
 def flowread(flow_or_path: Union[np.ndarray, str],

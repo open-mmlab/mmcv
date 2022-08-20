@@ -1,9 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
+from mmengine.utils import TORCH_VERSION
 
 import mmcv
-from mmengine.utils import TORCH_VERSION
 
 pytest.skip('this test not ready now', allow_module_level=True)
 skip_no_parrots = pytest.mark.skipif(

@@ -4,7 +4,6 @@ import os
 import numpy
 import pytest
 import torch
-
 from mmengine.utils import TORCH_VERSION, digit_version
 
 try:
