@@ -3,7 +3,7 @@ import pytest
 import torch
 
 import mmcv
-from mmcv.utils import TORCH_VERSION
+from mmengine.utils import TORCH_VERSION
 
 pytest.skip('this test not ready now', allow_module_level=True)
 skip_no_parrots = pytest.mark.skipif(

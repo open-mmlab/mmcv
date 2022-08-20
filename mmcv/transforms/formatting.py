@@ -4,7 +4,7 @@ from typing import Sequence, Union
 import numpy as np
 import torch
 
-import mmcv
+import mmengine
 from .base import BaseTransform
 from .builder import TRANSFORMS
 
@@ -29,7 +29,7 @@ def to_tensor(
         return data
     elif isinstance(data, np.ndarray):
         return torch.from_numpy(data)
-    elif isinstance(data, Sequence) and not mmcv.is_str(data):
+    elif isinstance(data, Sequence) and not mmengine.is_str(data):
         return torch.tensor(data)
     elif isinstance(data, int):
         return torch.LongTensor([data])

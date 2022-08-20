@@ -13,7 +13,7 @@ from mmcv.cnn.bricks import (build_activation_layer, build_conv_layer,
 from mmcv.cnn.bricks.norm import infer_abbr as infer_norm_abbr
 from mmcv.cnn.bricks.plugin import infer_abbr as infer_plugin_abbr
 from mmcv.cnn.bricks.upsample import PixelShufflePack
-from mmcv.utils.parrots_wrapper import _BatchNorm
+from mmengine.utils.parrots_wrapper import _BatchNorm
 
 
 def test_build_conv_layer():

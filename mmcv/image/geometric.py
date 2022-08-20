@@ -6,7 +6,7 @@ from typing import Optional, Tuple
 import cv2
 import numpy as np
 
-from ..utils import to_2tuple
+from mmengine.utils import to_2tuple
 from .io import imread_backend
 
 try:

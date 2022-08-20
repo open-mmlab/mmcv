@@ -10,7 +10,7 @@ from cv2 import (IMREAD_COLOR, IMREAD_GRAYSCALE, IMREAD_IGNORE_ORIENTATION,
                  IMREAD_UNCHANGED)
 from mmengine.fileio import FileClient
 
-from mmcv.utils import is_filepath, is_str
+from mmengine.utils import is_filepath, is_str
 
 try:
     from turbojpeg import TJCS_RGB, TJPF_BGR, TJPF_GRAY, TurboJPEG

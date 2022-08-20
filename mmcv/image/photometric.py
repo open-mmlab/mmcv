@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 from PIL import Image, ImageEnhance
 
-from ..utils import is_tuple_of
+from mmengine.utils import is_tuple_of
 from .colorspace import bgr2gray, gray2bgr
 from .io import imread_backend
 

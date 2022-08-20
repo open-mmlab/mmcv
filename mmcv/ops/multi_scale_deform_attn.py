@@ -11,8 +11,8 @@ from mmengine.model.utils import constant_init, xavier_init
 from mmengine.registry import MODELS
 from torch.autograd.function import Function, once_differentiable
 
-import mmcv
-from mmcv import deprecated_api_warning
+import mmengine
+from mmengine.utils import deprecated_api_warning
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
@@ -193,7 +193,7 @@ class MultiScaleDeformableAttention(BaseModule):
                  dropout: float = 0.1,
                  batch_first: bool = False,
                  norm_cfg: Optional[dict] = None,
-                 init_cfg: Optional[mmcv.ConfigDict] = None):
+                 init_cfg: Optional[mmengine.ConfigDict] = None):
         super().__init__(init_cfg)
         if embed_dims % num_heads != 0:
             raise ValueError(f'embed_dims must be divisible by num_heads, '

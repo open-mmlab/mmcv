@@ -13,7 +13,7 @@ from mmengine.registry import MODELS
 
 from mmcv.cnn import (Linear, build_activation_layer, build_conv_layer,
                       build_norm_layer)
-from mmcv.utils import deprecated_api_warning, to_2tuple
+from mmengine.utils import deprecated_api_warning, to_2tuple
 from .drop import build_dropout
 
 # Avoid BC-breaking of importing MultiScaleDeformableAttention from this file

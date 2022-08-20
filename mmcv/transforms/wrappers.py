@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
+import mmengine
 
 import numpy as np
 
@@ -569,7 +570,7 @@ class RandomChoice(BaseTransform):
         super().__init__()
 
         if prob is not None:
-            assert mmcv.is_seq_of(prob, float)
+            assert mmengine.is_seq_of(prob, float)
             assert len(transforms) == len(prob), \
                 '``transforms`` and ``prob`` must have same lengths. ' \
                 f'Got {len(transforms)} vs {len(prob)}.'

@@ -7,7 +7,7 @@ import numpy as np
 
 from mmcv.arraymisc import dequantize, quantize
 from mmcv.image import imread, imwrite
-from mmcv.utils import is_str
+from mmengine.utils import is_str
 
 
 def flowread(flow_or_path: Union[np.ndarray, str],

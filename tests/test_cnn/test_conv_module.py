@@ -8,7 +8,7 @@ import torch.nn as nn
 from mmengine.registry import MODELS
 
 from mmcv.cnn.bricks import ConvModule, HSigmoid, HSwish
-from mmcv.utils import TORCH_VERSION, digit_version
+from mmengine.utils import TORCH_VERSION, digit_version
 
 
 @MODELS.register_module()

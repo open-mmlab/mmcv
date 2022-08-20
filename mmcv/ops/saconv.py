@@ -7,7 +7,7 @@ from mmengine.registry import MODELS
 
 from mmcv.cnn import ConvAWS2d
 from mmcv.ops.deform_conv import deform_conv2d
-from mmcv.utils import TORCH_VERSION, digit_version
+from mmengine.utils import TORCH_VERSION, digit_version
 
 
 @MODELS.register_module(name='SAC')
