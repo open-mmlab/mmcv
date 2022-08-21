@@ -35,6 +35,16 @@
 
 #define CEIL_ALIGN(x, y) (((x) + (y)-1) / (y) * (y))
 
+template <typename scalar_t>
+__mlu_func__ inline scalar_t min(scalar_t a, scalar_t b) {
+  return a < b ? a : b;
+}
+
+template <typename scalar_t>
+__mlu_func__ inline scalar_t max(scalar_t a, scalar_t b) {
+  return a > b ? a : b;
+}
+
 /*!
  * @brief loads data from global DRAM to NRAM with 2D pattern.
  *
