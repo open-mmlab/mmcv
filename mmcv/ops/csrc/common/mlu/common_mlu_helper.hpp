@@ -35,6 +35,16 @@
 
 #define CEIL_ALIGN(x, y) (((x) + (y)-1) / (y) * (y))
 
+template <typename scalar_t>
+__mlu_func__ inline scalar_t min(scalar_t a, scalar_t b) {
+  return a < b ? a : b;
+}
+
+template <typename scalar_t>
+__mlu_func__ inline scalar_t max(scalar_t a, scalar_t b) {
+  return a > b ? a : b;
+}
+
 /*!
  * @brief Converts int32 to float32 data type.
  *
