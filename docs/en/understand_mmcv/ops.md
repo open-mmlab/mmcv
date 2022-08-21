@@ -28,7 +28,7 @@ We implement common ops used in detection, segmentation, etc.
 | GroupPoints                  |     | √    |     |     |
 | Iou3d                        |     | √    |     |     |
 | KNN                          |     | √    |     |     |
-| MaskedConv                   |     | √    |     |     |
+| MaskedConv                   |     | √    | √   |     |
 | MergeCells                   |     | √    |     |     |
 | MinAreaPolygon               |     | √    |     |     |
 | ModulatedDeformConv2d        | √   | √    |     |     |
