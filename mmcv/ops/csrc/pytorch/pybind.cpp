@@ -423,7 +423,11 @@ void chamfer_distance_backward(const Tensor xyz1, const Tensor xyz2,
                                Tensor graddist2, Tensor gradxyz1,
                                Tensor gradxyz2);
 
+void test_add(const Tensor input1, const Tensor input2, Tensor output);
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
+  m.def("test_add", &test_add, "test_add", py::arg("input1"),
+        py::arg("input2"), py::arg("output"));
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
         py::arg("kernel"), py::arg("up_x"), py::arg("up_y"), py::arg("down_x"),
         py::arg("down_y"), py::arg("pad_x0"), py::arg("pad_x1"),
