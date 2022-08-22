@@ -81,11 +81,11 @@ __mlu_func__ void MLUUnion1DeformRoIPoolForward(
     int roi_bin_grid_height =
         (sampling_ratio > 0)
             ? sampling_ratio
-            : static_cast<int>(std::ceilf(roi_height / pooled_height));
+            : static_cast<int>(ceilf(roi_height / pooled_height));
     int roi_bin_grid_width =
         (sampling_ratio > 0)
             ? sampling_ratio
-            : static_cast<int>(std::ceilf(roi_width / pooled_width));
+            : static_cast<int>(ceilf(roi_width / pooled_width));
     if (offset != NULL) {
       const T *offset_cur = offset +
                             out_batch * pooled_width * pooled_height * 2 +
@@ -129,7 +129,7 @@ __mlu_func__ void MLUUnion1DeformRoIPoolForward(
       __bang_write_value((T *)nram_ping, FOURSPLIT * c_slice, (T)0);
       __bang_write_value((T *)nram_pong, FOURSPLIT * c_slice, (T)0);
       const T num_bins =
-          static_cast<T>(std::max(roi_bin_grid_height * roi_bin_grid_width, 1));
+          static_cast<T>(max(roi_bin_grid_height * roi_bin_grid_width, 1));
       const T value_div = 1.0f / num_bins;
       bool is_ping_empty = true;
       for (int iy = 0; iy < roi_bin_grid_height; ++iy) {
@@ -352,11 +352,11 @@ __mlu_func__ void MLUUnion1DeformRoIPoolBackward(
     int roi_bin_grid_height =
         (sampling_ratio > 0)
             ? sampling_ratio
-            : static_cast<int>(std::ceilf(roi_height / pooled_height));
+            : static_cast<int>(ceilf(roi_height / pooled_height));
     int roi_bin_grid_width =
         (sampling_ratio > 0)
             ? sampling_ratio
-            : static_cast<int>(std::ceilf(roi_width / pooled_width));
+            : static_cast<int>(ceilf(roi_width / pooled_width));
     if (offset != NULL) {
       const T *offset_cur = offset +
                             out_batch * pooled_width * pooled_height * 2 +
@@ -433,7 +433,7 @@ __mlu_func__ void MLUUnion1DeformRoIPoolBackward(
         __asm__ volatile("sync;");
       }
       const T num_bins =
-          static_cast<T>(std::max(roi_bin_grid_height * roi_bin_grid_width, 1));
+          static_cast<T>(max(roi_bin_grid_height * roi_bin_grid_width, 1));
       const T value_div = 1.0f / num_bins;
       bool is_ping_empty = true;
       __memcpy(nram_grad_output,
