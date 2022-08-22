@@ -10,7 +10,7 @@ We implement common ops used in detection, segmentation, etc.
 | BBoxOverlaps                 |     | √    | √   | √   |
 | BorderAlign                  |     | √    |     |     |
 | BoxIouRotated                | √   | √    |     |     |
-| CARAFE                       |     | √    |     |     |
+| CARAFE                       |     | √    | √   |     |
 | ChamferDistance              |     | √    |     |     |
 | CrissCrossAttention          |     | √    |     |     |
 | ContourExpand                | √   |      |     |     |
@@ -28,7 +28,7 @@ We implement common ops used in detection, segmentation, etc.
 | GroupPoints                  |     | √    |     |     |
 | Iou3d                        |     | √    |     |     |
 | KNN                          |     | √    |     |     |
-| MaskedConv                   |     | √    |     |     |
+| MaskedConv                   |     | √    | √   |     |
 | MergeCells                   |     | √    |     |     |
 | MinAreaPolygon               |     | √    |     |     |
 | ModulatedDeformConv2d        | √   | √    |     |     |
