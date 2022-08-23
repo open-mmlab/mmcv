@@ -114,18 +114,11 @@ class TestDeformRoIPool:
                 np_input, device=device, dtype=torch.float, requires_grad=True)
             rois = torch.tensor(np_rois, device=device, dtype=torch.float)
             output_c = x.size(1)
-            if device == 'cuda':
-                droipool = DeformRoIPoolPack(
-                    (pool_h, pool_w),
-                    output_c,
-                    spatial_scale=spatial_scale,
-                    sampling_ratio=sampling_ratio).cuda()
-            elif device == 'mlu':
-                droipool = DeformRoIPoolPack(
-                    (pool_h, pool_w),
-                    output_c,
-                    spatial_scale=spatial_scale,
-                    sampling_ratio=sampling_ratio).mlu()
+            droipool = DeformRoIPoolPack(
+                (pool_h, pool_w),
+                output_c,
+                spatial_scale=spatial_scale,
+                sampling_ratio=sampling_ratio).to(device)
 
             output = droipool(x, rois)
             output.backward(torch.ones_like(output))
