@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 
-from .parrots_wrapper import TORCH_VERSION
+from mmengine.utils.parrots_wrapper import TORCH_VERSION
 
 parrots_jit_option = os.getenv('PARROTS_JIT_OPTION')
 

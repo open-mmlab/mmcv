@@ -3,9 +3,10 @@ from typing import Any, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
+from mmengine.utils import is_tuple_of
 from torch.autograd import Function
 
-from ..utils import ext_loader, is_tuple_of
+from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
     '_ext', ['riroi_align_rotated_forward', 'riroi_align_rotated_backward'])

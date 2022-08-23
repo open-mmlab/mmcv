@@ -15,14 +15,11 @@
    :maxdepth: 2
    :caption: 深入理解 MMCV
 
-   understand_mmcv/config.md
-   understand_mmcv/registry.md
    understand_mmcv/data_process.md
    understand_mmcv/data_transform.md
    understand_mmcv/visualization.md
    understand_mmcv/cnn.md
    understand_mmcv/ops.md
-   understand_mmcv/utils.md
 
 .. toctree::
    :maxdepth: 2

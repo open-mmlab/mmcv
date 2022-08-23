@@ -6,9 +6,8 @@ import cv2
 from cv2 import (CAP_PROP_FOURCC, CAP_PROP_FPS, CAP_PROP_FRAME_COUNT,
                  CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH,
                  CAP_PROP_POS_FRAMES, VideoWriter_fourcc)
-
-from mmcv.utils import (check_file_exist, mkdir_or_exist, scandir,
-                        track_progress)
+from mmengine.utils import (check_file_exist, mkdir_or_exist, scandir,
+                            track_progress)
 
 
 class Cache:

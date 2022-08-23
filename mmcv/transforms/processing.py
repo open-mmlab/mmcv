@@ -3,6 +3,7 @@ import random
 import warnings
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
+import mmengine
 import numpy as np
 
 import mmcv
@@ -797,7 +798,7 @@ class MultiScaleFlipAug(BaseTransform):
         if scales is not None:
             self.scales = scales if isinstance(scales, list) else [scales]
             self.scale_key = 'scale'
-            assert mmcv.is_list_of(self.scales, tuple)
+            assert mmengine.is_list_of(self.scales, tuple)
         else:
             # if ``scales`` and ``scale_factor`` both be ``None``
             if scale_factor is None:
@@ -812,7 +813,7 @@ class MultiScaleFlipAug(BaseTransform):
         self.allow_flip = allow_flip
         self.flip_direction = flip_direction if isinstance(
             flip_direction, list) else [flip_direction]
-        assert mmcv.is_list_of(self.flip_direction, str)
+        assert mmengine.is_list_of(self.flip_direction, str)
         if not self.allow_flip and self.flip_direction != ['horizontal']:
             warnings.warn(
                 'flip_direction has no effect when flip is set to False')
@@ -934,7 +935,7 @@ class RandomChoiceResize(BaseTransform):
             self.scales = scales
         else:
             self.scales = [scales]
-        assert mmcv.is_list_of(self.scales, tuple)
+        assert mmengine.is_list_of(self.scales, tuple)
 
         self.resize_cfg = dict(type=resize_type, **resize_kwargs)
         # create a empty Resize object
@@ -950,7 +951,7 @@ class RandomChoiceResize(BaseTransform):
             ``scale_idx`` is the selected index in the given candidates.
         """
 
-        assert mmcv.is_list_of(self.scales, tuple)
+        assert mmengine.is_list_of(self.scales, tuple)
         scale_idx = np.random.randint(len(self.scales))
         scale = self.scales[scale_idx]
         return scale, scale_idx
@@ -1033,7 +1034,7 @@ class RandomFlip(BaseTransform):
             direction: Union[str,
                              Sequence[Optional[str]]] = 'horizontal') -> None:
         if isinstance(prob, list):
-            assert mmcv.is_list_of(prob, float)
+            assert mmengine.is_list_of(prob, float)
             assert 0 <= sum(prob) <= 1
         elif isinstance(prob, float):
             assert 0 <= prob <= 1
@@ -1046,7 +1047,7 @@ class RandomFlip(BaseTransform):
         if isinstance(direction, str):
             assert direction in valid_directions
         elif isinstance(direction, list):
-            assert mmcv.is_list_of(direction, str)
+            assert mmengine.is_list_of(direction, str)
             assert set(direction).issubset(set(valid_directions))
         else:
             raise ValueError(f'direction must be either str or list of str, \
@@ -1308,7 +1309,7 @@ class RandomResize(BaseTransform):
             tuple: The targeted scale of the image to be resized.
         """
 
-        assert mmcv.is_list_of(scales, tuple) and len(scales) == 2
+        assert mmengine.is_list_of(scales, tuple) and len(scales) == 2
         scale_0 = [scales[0][0], scales[1][0]]
         scale_1 = [scales[0][1], scales[1][1]]
         edge_0 = np.random.randint(min(scale_0), max(scale_0) + 1)
@@ -1350,12 +1351,12 @@ class RandomResize(BaseTransform):
             tuple: The targeted scale of the image to be resized.
         """
 
-        if mmcv.is_tuple_of(self.scale, int):
+        if mmengine.is_tuple_of(self.scale, int):
             assert self.ratio_range is not None and len(self.ratio_range) == 2
             scale = self._random_sample_ratio(
                 self.scale,  # type: ignore
                 self.ratio_range)
-        elif mmcv.is_seq_of(self.scale, tuple):
+        elif mmengine.is_seq_of(self.scale, tuple):
             scale = self._random_sample(self.scale)  # type: ignore
         else:
             raise NotImplementedError('Do not support sampling function '

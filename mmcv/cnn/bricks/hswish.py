@@ -2,8 +2,7 @@
 import torch
 import torch.nn as nn
 from mmengine.registry import MODELS
-
-from mmcv.utils import TORCH_VERSION, digit_version
+from mmengine.utils import TORCH_VERSION, digit_version
 
 
 class HSwish(nn.Module):
