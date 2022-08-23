@@ -68,7 +68,7 @@ void DeformRoIPoolForwardMLUKernelLauncher(Tensor input, Tensor rois,
               "D.");
   if (offset.data_ptr() != nullptr) {
     TORCH_CHECK(offset.dim() == 4, "offset should be 4d tensor, got ",
-                input.dim(), "D.");
+                offset.dim(), "D.");
     TORCH_CHECK(
         (offset.size(0) == rois.size(0)), "offset.size(0) = ", offset.size(0),
         "while rois.size(0)) = ", rois.size(0), ". They should be the same.");
@@ -196,6 +196,19 @@ void DeformRoIPoolBackwardMLUKernelLauncher(
   if (offset.data_ptr() != nullptr) {
     TORCH_CHECK(offset.dim() == 4, "offset should be 4d tensor, got ",
                 offset.dim(), "D.");
+    TORCH_CHECK(
+        (offset.size(0) == rois.size(0)), "offset.size(0) = ", offset.size(0),
+        "while rois.size(0)) = ", rois.size(0), ". They should be the same.");
+    TORCH_CHECK((offset.size(1) == 2), "offset.size(1) should be 2, ",
+                "but now offset.size(1) = ", offset.size(1), ".");
+    TORCH_CHECK((offset.size(2) == grad_output.size(2)),
+                "offset.size(2) = ", offset.size(2),
+                "while grad_output.size(2)) = ", grad_output.size(2),
+                ". They should be the same.");
+    TORCH_CHECK((offset.size(3) == grad_output.size(3)),
+                "offset.size(3) = ", offset.size(3),
+                "while grad_output.size(3)) = ", grad_output.size(3),
+                ". They should be the same.");
   }
 
   TORCH_CHECK(spatial_scale > 0 && spatial_scale <= 1,
@@ -219,23 +232,6 @@ void DeformRoIPoolBackwardMLUKernelLauncher(
               "while pooled_width = ", pooled_width,
               ". They should be the same.");
 
-  if (offset.data_ptr() != nullptr) {
-    TORCH_CHECK(offset.dim() == 4, "offset should be 4d tensor, got ",
-                input.dim(), "D.");
-    TORCH_CHECK(
-        (offset.size(0) == rois.size(0)), "offset.size(0) = ", offset.size(0),
-        "while rois.size(0)) = ", rois.size(0), ". They should be the same.");
-    TORCH_CHECK((offset.size(1) == 2), "offset.size(1) should be 2, ",
-                "but now offset.size(1) = ", offset.size(1), ".");
-    TORCH_CHECK((offset.size(2) == grad_output.size(2)),
-                "offset.size(2) = ", offset.size(2),
-                "while grad_output.size(2)) = ", grad_output.size(2),
-                ". They should be the same.");
-    TORCH_CHECK((offset.size(3) == grad_output.size(3)),
-                "offset.size(3) = ", offset.size(3),
-                "while grad_output.size(3)) = ", grad_output.size(3),
-                ". They should be the same.");
-  }
   // compute kernel params
   auto batch = input.size(0);
   auto channels = input.size(1);
