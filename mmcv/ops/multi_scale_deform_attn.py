@@ -7,8 +7,7 @@ import mmengine
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmengine.model import BaseModule
-from mmengine.model.utils import constant_init, xavier_init
+from mmengine.model import BaseModule, constant_init, xavier_init
 from mmengine.registry import MODELS
 from mmengine.utils import deprecated_api_warning
 from torch.autograd.function import Function, once_differentiable

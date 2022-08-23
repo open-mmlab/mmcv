@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
-from mmengine.utils import TORCH_VERSION
+from mmengine.utils.dl_utils import TORCH_VERSION
 
 import mmcv
 

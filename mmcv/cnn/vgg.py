@@ -3,7 +3,7 @@ import logging
 from typing import List, Optional, Sequence, Tuple, Union
 
 import torch.nn as nn
-from mmengine.model.utils import constant_init, kaiming_init, normal_init
+from mmengine.model import constant_init, kaiming_init, normal_init
 from mmengine.runner import load_checkpoint
 from torch import Tensor
 

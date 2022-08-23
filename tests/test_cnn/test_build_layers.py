@@ -6,7 +6,7 @@ import pytest
 import torch
 import torch.nn as nn
 from mmengine.registry import MODELS
-from mmengine.utils.parrots_wrapper import _BatchNorm
+from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
 
 from mmcv.cnn.bricks import (build_activation_layer, build_conv_layer,
                              build_norm_layer, build_padding_layer,

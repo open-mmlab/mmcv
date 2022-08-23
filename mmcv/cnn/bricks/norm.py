@@ -5,8 +5,8 @@ from typing import Dict, Tuple, Union
 import torch.nn as nn
 from mmengine.registry import MODELS
 from mmengine.utils import is_tuple_of
-from mmengine.utils.parrots_wrapper import (SyncBatchNorm, _BatchNorm,
-                                            _InstanceNorm)
+from mmengine.utils.dl_utils.parrots_wrapper import (SyncBatchNorm, _BatchNorm,
+                                                     _InstanceNorm)
 
 MODELS.register_module('BN', module=nn.BatchNorm2d)
 MODELS.register_module('BN1d', module=nn.BatchNorm1d)
