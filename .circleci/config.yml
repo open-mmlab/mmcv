@@ -132,15 +132,6 @@ jobs:
           name: Install psutil
           command: python -m pip install psutil
       - run:
-          name: Download onnxruntime library and install onnxruntime
-          command: |
-            wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
-            tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
-            echo 'export ONNXRUNTIME_DIR=$(pwd)/onnxruntime-linux-x64-1.8.1' >> $BASH_ENV
-            echo 'export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH' >> $BASH_ENV
-            source $BASH_ENV
-            python -m pip install onnxruntime==1.8.1
-      - run:
           name: Build and install
           command: |
             rm -rf .eggs
