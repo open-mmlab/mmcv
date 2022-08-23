@@ -70,7 +70,10 @@ from .tin_shift import TINShift, tin_shift
 from .upfirdn2d import upfirdn2d
 from .voxelize import Voxelization, voxelization
 
+from .test_add import test_add
+
 __all__ = [
+    'test_add',
     'bbox_overlaps', 'CARAFE', 'CARAFENaive', 'CARAFEPack', 'carafe',
     'carafe_naive', 'CornerPool', 'DeformConv2d', 'DeformConv2dPack',
     'deform_conv2d', 'DeformRoIPool', 'DeformRoIPoolPack',
