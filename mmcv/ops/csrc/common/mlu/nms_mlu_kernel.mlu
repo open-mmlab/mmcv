@@ -162,7 +162,7 @@ __mlu_func__ void nms_detection(
 
   // set mask for __bang_collect instruction
   if (input_layout == 0) {
-    __nramset((IN_DT *)x1_mask, total_mask_size, (IN_DT)0);
+    __bang_write_value((IN_DT *)x1_mask, total_mask_size, (IN_DT)0);
     for (int idx = 0; idx < mask_size; idx++) {
       int index = (idx % COORD_DIM) * mask_size + idx;
       x1_mask[index] = (IN_DT)1.0;
@@ -201,7 +201,7 @@ __mlu_func__ void nms_detection(
       } else {
         load_dir = GDRAM2NRAM;
       }
-      __nramset(score, seg_len, (IN_DT)0);
+      __bang_write_value(score, seg_len, (IN_DT)0);
       __memcpy(score, input_score_ptr + input_offset + i * max_seg_pad,
                cpy_len * sizeof(IN_DT), load_dir, cpy_len * sizeof(IN_DT),
                cpy_len * sizeof(IN_DT), 0);
@@ -266,7 +266,7 @@ __mlu_func__ void nms_detection(
       __sync_cluster();
 
       // copy score from sram to nram and find the max
-      __nramset(inter_x1, NMS_SIZE, (IN_DT)0);
+      __bang_write_value(inter_x1, NMS_SIZE, (IN_DT)0);
       __memcpy(inter_x1, sram, core_limit * sizeof(IN_DT), SRAM2NRAM);
       __bang_max(max_box, inter_x1, NMS_SIZE);
       int max_core = 0;
@@ -405,7 +405,7 @@ __mlu_func__ void nms_detection(
         load_dir = GDRAM2NRAM;
       }
 
-      __nramset((float *)score, seg_len, 0.0f);
+      __bang_write_value((float *)score, seg_len, 0.0f);
       int dt_offset = 0;
       if (sizeof(IN_DT) == sizeof(float)) {
         __memcpy(score, input_score_ptr + input_offset + i * max_seg_pad,
@@ -413,7 +413,7 @@ __mlu_func__ void nms_detection(
                  cpy_len * sizeof(IN_DT), 0);
         dt_offset = 0;
       } else if (sizeof(IN_DT) == sizeof(half)) {
-        __nramset(x1, seg_len, half(0));
+        __bang_write_value(x1, seg_len, half(0));
         __memcpy(x1, input_score_ptr + input_offset + i * max_seg_iou_compute,
                  cpy_len * sizeof(IN_DT), load_dir, cpy_len * sizeof(IN_DT),
                  cpy_len * sizeof(IN_DT), 0);
@@ -477,29 +477,35 @@ __mlu_func__ void nms_detection(
       }
       // 1、 compute IOU
       // get the area_I
-      __nramset((float *)inter_y1, seg_len, float(max_box[1]));  // max_x1
+      __bang_write_value((float *)inter_y1, seg_len,
+                         float(max_box[1]));  // max_x1
       __bang_maxequal((float *)inter_x1, (float *)x1, (float *)inter_y1,
-                      seg_len);                                  // inter_x1
-      __nramset((float *)inter_y2, seg_len, float(max_box[3]));  // max_x2
+                      seg_len);  // inter_x1
+      __bang_write_value((float *)inter_y2, seg_len,
+                         float(max_box[3]));  // max_x2
       __bang_minequal((float *)inter_x2, (float *)x2, (float *)inter_y2,
                       seg_len);  // inter_x2
       __bang_sub((float *)inter_x1, (float *)inter_x2, (float *)inter_x1,
                  seg_len);
       if (algo == 1 && offset != 0.0) {
-        __bang_add_const((float *)inter_x1, (float *)inter_x1, offset, seg_len);
+        __bang_add_scalar((float *)inter_x1, (float *)inter_x1, offset,
+                          seg_len);
       }
       __bang_active_relu((float *)inter_x1, (float *)inter_x1,
-                         seg_len);                               // inter_w
-      __nramset((float *)inter_x2, seg_len, float(max_box[2]));  // max_y1
+                         seg_len);  // inter_w
+      __bang_write_value((float *)inter_x2, seg_len,
+                         float(max_box[2]));  // max_y1
       __bang_maxequal((float *)inter_y1, (float *)y1, (float *)inter_x2,
-                      seg_len);                                  // inter_y1
-      __nramset((float *)inter_x2, seg_len, float(max_box[4]));  // max_y2
+                      seg_len);  // inter_y1
+      __bang_write_value((float *)inter_x2, seg_len,
+                         float(max_box[4]));  // max_y2
       __bang_minequal((float *)inter_y2, (float *)y2, (float *)inter_x2,
                       seg_len);  // inter_y2
       __bang_sub((float *)inter_y1, (float *)inter_y2, (float *)inter_y1,
                  seg_len);
       if (algo == 1 && offset != 0.0) {
-        __bang_add_const((float *)inter_y1, (float *)inter_y1, offset, seg_len);
+        __bang_add_scalar((float *)inter_y1, (float *)inter_y1, offset,
+                          seg_len);
       }
       __bang_active_relu((float *)inter_y1, (float *)inter_y1,
                          seg_len);  // inter_h
@@ -509,25 +515,27 @@ __mlu_func__ void nms_detection(
       __bang_sub((float *)inter_y1, (float *)x2, (float *)x1, seg_len);
       __bang_sub((float *)inter_y2, (float *)y2, (float *)y1, seg_len);
       if (algo == 1 && offset != 0.0) {
-        __bang_add_const((float *)inter_y1, (float *)inter_y1, offset, seg_len);
-        __bang_add_const((float *)inter_y2, (float *)inter_y2, offset, seg_len);
+        __bang_add_scalar((float *)inter_y1, (float *)inter_y1, offset,
+                          seg_len);
+        __bang_add_scalar((float *)inter_y2, (float *)inter_y2, offset,
+                          seg_len);
       }
       __bang_mul((float *)inter_x2, (float *)inter_y1, (float *)inter_y2,
                  seg_len);  // area
       // get the area_U: area + max_area - area_I
-      __bang_add_const((float *)inter_x2, (float *)inter_x2, float(max_area),
-                       seg_len);
+      __bang_add_scalar((float *)inter_x2, (float *)inter_x2, float(max_area),
+                        seg_len);
       __bang_sub((float *)inter_x2, (float *)inter_x2, (float *)inter_x1,
                  seg_len);  // area_U
       // 2、 select the box
       // if IOU greater than thres, set the score to zero, abort it: area_U >
       // area_I * (1 / thresh)?
       if (thresh_iou > 0.0) {
-        __bang_mul_const((float *)inter_x1, (float *)inter_x1, div_thresh_iou,
-                         seg_len);
+        __bang_mul_scalar((float *)inter_x1, (float *)inter_x1, div_thresh_iou,
+                          seg_len);
       } else {
-        __bang_mul_const((float *)inter_x2, (float *)inter_x2, thresh_iou,
-                         seg_len);
+        __bang_mul_scalar((float *)inter_x2, (float *)inter_x2, thresh_iou,
+                          seg_len);
       }
       __bang_ge((float *)inter_x1, (float *)inter_x2, (float *)inter_x1,
                 seg_len);
@@ -643,7 +651,8 @@ __mlu_func__ void nms_detection_ux(
     IN_DT *score_data, const IN_DT *boxes_data, const Addr input_ram,
     const int input_layout, const int input_num_boxes, const int input_stride,
     const int max_output_size, const float thresh_iou, const float thresh_score,
-    const float offset, const int output_mode, const int algo) {
+    const float offset, const int output_mode, const int algo,
+    char *cdma_gdram) {
   loop_end_flag[0] = 0;
   IN_DT *sram = (IN_DT *)sram_buffer;
 
@@ -800,6 +809,28 @@ __mlu_func__ void nms_detection_ux(
       __memcpy(sram, max_box, REDUCE_NUM * sizeof(IN_DT), NRAM2SRAM);
     }
     __sync_all();
+#if __BANG_ARCH__ >= 590
+    __memcpy((char *)cdma_gdram + REDUCE_NUM * clusterId * sizeof(IN_DT), sram,
+             REDUCE_NUM * sizeof(IN_DT), SRAM2GDRAM);
+    __sync_all();
+
+    if (clusterId == 0 && coreId == 0) {
+      __bang_write_zero(inter_x1, NMS_SIZE);
+      __memcpy((char *)inter_x1, (char *)cdma_gdram, sizeof(IN_DT), GDRAM2NRAM,
+               sizeof(IN_DT), REDUCE_NUM * sizeof(IN_DT), clusterDim - 1);
+      __bang_max(max_box, inter_x1, NMS_SIZE);
+      int max_cluster = (sizeof(IN_DT) == sizeof(half))
+                            ? ((uint16_t *)max_box)[1]
+                            : ((uint32_t *)max_box)[1];
+      __memcpy((char *)cdma_gdram,
+               (char *)cdma_gdram + max_cluster * REDUCE_NUM * sizeof(IN_DT),
+               REDUCE_NUM * sizeof(IN_DT), GDRAM2GDRAM);
+    }
+    __sync_all();
+
+    __memcpy(max_box, cdma_gdram, REDUCE_NUM * sizeof(IN_DT), GDRAM2NRAM);
+#else
+
     // copy all partial max to the sram of cluster 0
     if (clusterId != 0) {
       __memcpy(sram + REDUCE_NUM * clusterId, sram, REDUCE_NUM * sizeof(IN_DT),
@@ -835,6 +866,7 @@ __mlu_func__ void nms_detection_ux(
 
     // copy the global max box to max_box
     __memcpy(max_box, sram, REDUCE_NUM * sizeof(IN_DT), SRAM2NRAM);
+#endif
     if (algo == 0 || offset == 0.0) {
       max_area = ((float)max_box[3] - (float)max_box[1]) *
                  ((float)max_box[4] - (float)max_box[2]);
@@ -930,7 +962,7 @@ __mlu_func__ void nms_detection_ux(
           (i == repeat_iou_compute) ? remain_iou_compute : max_seg_iou_compute;
 
       /******NMS LOAD START******/
-      __nramset((float *)score, seg_len, 0.0f);
+      __bang_write_value((float *)score, seg_len, 0.0f);
       int dt_offset = 0;
       if (sizeof(IN_DT) == sizeof(float)) {
         __memcpy(score, input_score_ptr + input_offset + i * max_seg_pad,
@@ -938,7 +970,7 @@ __mlu_func__ void nms_detection_ux(
                  cpy_len * sizeof(IN_DT), cpy_len * sizeof(IN_DT), 0);
         dt_offset = 0;
       } else if (sizeof(IN_DT) == sizeof(half)) {
-        __nramset(x1, seg_len, half(0));
+        __bang_write_value(x1, seg_len, half(0));
         __memcpy(x1, input_score_ptr + input_offset + i * max_seg_iou_compute,
                  cpy_len * sizeof(IN_DT), input_load_dir,
                  cpy_len * sizeof(IN_DT), cpy_len * sizeof(IN_DT), 0);
@@ -965,29 +997,35 @@ __mlu_func__ void nms_detection_ux(
       }
       // 1、 compute IOU
       // get the area_I
-      __nramset((float *)inter_y1, seg_len, float(max_box[1]));  // max_x1
+      __bang_write_value((float *)inter_y1, seg_len,
+                         float(max_box[1]));  // max_x1
       __bang_maxequal((float *)inter_x1, (float *)x1, (float *)inter_y1,
-                      seg_len);                                  // inter_x1
-      __nramset((float *)inter_y2, seg_len, float(max_box[3]));  // max_x2
+                      seg_len);  // inter_x1
+      __bang_write_value((float *)inter_y2, seg_len,
+                         float(max_box[3]));  // max_x2
       __bang_minequal((float *)inter_x2, (float *)x2, (float *)inter_y2,
                       seg_len);  // inter_x2
       __bang_sub((float *)inter_x1, (float *)inter_x2, (float *)inter_x1,
                  seg_len);
       if (algo == 1 && offset != 0.0) {
-        __bang_add_const((float *)inter_x1, (float *)inter_x1, offset, seg_len);
+        __bang_add_scalar((float *)inter_x1, (float *)inter_x1, offset,
+                          seg_len);
       }
       __bang_active_relu((float *)inter_x1, (float *)inter_x1,
-                         seg_len);                               // inter_w
-      __nramset((float *)inter_x2, seg_len, float(max_box[2]));  // max_y1
+                         seg_len);  // inter_w
+      __bang_write_value((float *)inter_x2, seg_len,
+                         float(max_box[2]));  // max_y1
       __bang_maxequal((float *)inter_y1, (float *)y1, (float *)inter_x2,
-                      seg_len);                                  // inter_y1
-      __nramset((float *)inter_x2, seg_len, float(max_box[4]));  // max_y2
+                      seg_len);  // inter_y1
+      __bang_write_value((float *)inter_x2, seg_len,
+                         float(max_box[4]));  // max_y2
       __bang_minequal((float *)inter_y2, (float *)y2, (float *)inter_x2,
                       seg_len);  // inter_y2
       __bang_sub((float *)inter_y1, (float *)inter_y2, (float *)inter_y1,
                  seg_len);
       if (algo == 1 && offset != 0.0) {
-        __bang_add_const((float *)inter_y1, (float *)inter_y1, offset, seg_len);
+        __bang_add_scalar((float *)inter_y1, (float *)inter_y1, offset,
+                          seg_len);
       }
       __bang_active_relu((float *)inter_y1, (float *)inter_y1,
                          seg_len);  // inter_h
@@ -997,25 +1035,27 @@ __mlu_func__ void nms_detection_ux(
       __bang_sub((float *)inter_y1, (float *)x2, (float *)x1, seg_len);
       __bang_sub((float *)inter_y2, (float *)y2, (float *)y1, seg_len);
       if (algo == 1 && offset != 0.0) {
-        __bang_add_const((float *)inter_y1, (float *)inter_y1, offset, seg_len);
-        __bang_add_const((float *)inter_y2, (float *)inter_y2, offset, seg_len);
+        __bang_add_scalar((float *)inter_y1, (float *)inter_y1, offset,
+                          seg_len);
+        __bang_add_scalar((float *)inter_y2, (float *)inter_y2, offset,
+                          seg_len);
       }
       __bang_mul((float *)inter_x2, (float *)inter_y1, (float *)inter_y2,
                  seg_len);  // area
       // get the area_U: area + max_area - area_I
-      __bang_add_const((float *)inter_x2, (float *)inter_x2, float(max_area),
-                       seg_len);
+      __bang_add_scalar((float *)inter_x2, (float *)inter_x2, float(max_area),
+                        seg_len);
       __bang_sub((float *)inter_x2, (float *)inter_x2, (float *)inter_x1,
                  seg_len);  // area_U
       // 2、 select the box
       // if IOU greater than thres, set the score to zero, abort it: area_U >
       // area_I * (1 / thresh)?
       if (thresh_iou > 0.0) {
-        __bang_mul_const((float *)inter_x1, (float *)inter_x1, div_thresh_iou,
-                         seg_len);
+        __bang_mul_scalar((float *)inter_x1, (float *)inter_x1, div_thresh_iou,
+                          seg_len);
       } else {
-        __bang_mul_const((float *)inter_x2, (float *)inter_x2, thresh_iou,
-                         seg_len);
+        __bang_mul_scalar((float *)inter_x2, (float *)inter_x2, thresh_iou,
+                          seg_len);
       }
       __bang_ge((float *)inter_x1, (float *)inter_x2, (float *)inter_x1,
                 seg_len);
@@ -1045,6 +1085,7 @@ __mlu_global__ void MLUUionXKernelNMS(
   int32_t *loop_end_flag =
       (int32_t *)((char *)workspace +
                   INFO_NUM * input_num_boxes * input_dwidth);
+  char *cdma_addr = (char *)loop_end_flag + sizeof(int32_t);
   int reduce_sram_size = NFU_ALIGN_SIZE * REDUCE_NUM * input_dwidth;
   int availbale_sram_size = SIZE_SRAM_BUF - reduce_sram_size;
 
@@ -1077,7 +1118,8 @@ __mlu_global__ void MLUUionXKernelNMS(
         nms_detection_ux(loop_end_flag, output_box_num, output_dram, score_data,
                          boxes_data, input_ram, input_layout, input_num_boxes,
                          input_stride, max_output_size, iou_threshold,
-                         confidence_threshold, offset, output_mode, algo);
+                         confidence_threshold, offset, output_mode, algo,
+                         cdma_addr);
         ((uint32_t *)result_num)[0] = output_box_num;
       }; break;
       case CNRT_FLOAT32: {
@@ -1090,7 +1132,8 @@ __mlu_global__ void MLUUionXKernelNMS(
         nms_detection_ux(loop_end_flag, output_box_num, output_dram, score_data,
                          boxes_data, input_ram, input_layout, input_num_boxes,
                          input_stride, max_output_size, iou_threshold,
-                         confidence_threshold, offset, output_mode, algo);
+                         confidence_threshold, offset, output_mode, algo,
+                         cdma_addr);
         ((uint32_t *)result_num)[0] = output_box_num;
       }; break;
     }
@@ -1108,7 +1151,8 @@ __mlu_global__ void MLUUionXKernelNMS(
         nms_detection_ux(loop_end_flag, output_box_num, output_dram, score_data,
                          boxes_data, input_ram, input_layout, input_num_boxes,
                          input_stride, max_output_size, iou_threshold,
-                         confidence_threshold, offset, output_mode, algo);
+                         confidence_threshold, offset, output_mode, algo,
+                         cdma_addr);
         ((uint32_t *)result_num)[0] = output_box_num;
       }; break;
       case CNRT_FLOAT32: {
@@ -1122,7 +1166,8 @@ __mlu_global__ void MLUUionXKernelNMS(
         nms_detection_ux(loop_end_flag, output_box_num, output_dram, score_data,
                          boxes_data, input_ram, input_layout, input_num_boxes,
                          input_stride, max_output_size, iou_threshold,
-                         confidence_threshold, offset, output_mode, algo);
+                         confidence_threshold, offset, output_mode, algo,
+                         cdma_addr);
         ((uint32_t *)result_num)[0] = output_box_num;
       }; break;
     }

@@ -96,6 +96,9 @@ Tensor NMSMLUKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
   } else {
     space_size = input_num_boxes * sizeof(float) * info_num + sizeof(float);
   }
+#if __BANG_ARCH__ > 370
+  space_size += union_number * sizeof(float) * 7;
+#endif
   auto workspace = at::empty(space_size, boxes.options().dtype(at::kByte));
 
   // get compute queue
