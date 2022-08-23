@@ -34,8 +34,8 @@ class ThreeNN(Function):
 
         B, N, _ = target.size()
         m = source.size(1)
-        dist2 = torch.cuda.FloatTensor(B, N, 3)
-        idx = torch.cuda.IntTensor(B, N, 3)
+        dist2 = torch.FloatTensor(B, N, 3).to(target.device)
+        idx = torch.IntTensor(B, N, 3).to(target.device)
 
         ext_module.three_nn_forward(target, source, dist2, idx, b=B, n=N, m=m)
         if torch.__version__ != 'parrots':
