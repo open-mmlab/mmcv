@@ -279,7 +279,7 @@ class ModulatedDeformConv2dPack(ModulatedDeformConv2d):
             print_log(
                 f'ModulatedDeformConvPack {prefix.rstrip(".")} is upgraded to '
                 'version 2.',
-                logger='root')
+                logger='current')
 
         super()._load_from_state_dict(state_dict, prefix, local_metadata,
                                       strict, missing_keys, unexpected_keys,
