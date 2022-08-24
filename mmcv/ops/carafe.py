@@ -4,7 +4,7 @@ from typing import Tuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmengine.model.utils import normal_init, xavier_init
+from mmengine.model import normal_init, xavier_init
 from mmengine.registry import MODELS
 from torch import Tensor
 from torch.autograd import Function

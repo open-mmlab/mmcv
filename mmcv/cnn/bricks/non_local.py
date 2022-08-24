@@ -4,7 +4,7 @@ from typing import Dict, Optional
 
 import torch
 import torch.nn as nn
-from mmengine.model.utils import constant_init, normal_init
+from mmengine.model import constant_init, normal_init
 from mmengine.registry import MODELS
 
 from .conv_module import ConvModule

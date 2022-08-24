@@ -4,7 +4,7 @@ from typing import Dict
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmengine.model.utils import xavier_init
+from mmengine.model import xavier_init
 from mmengine.registry import MODELS
 
 MODELS.register_module('nearest', module=nn.Upsample)
