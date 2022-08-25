@@ -22,7 +22,7 @@ void sigmoid_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
 }
 
 void sigmoid_focal_loss_forward_impl(Tensor input, Tensor target, Tensor weight, 
-                                     Tensor output, float gamma, float alpha)
+                                     Tensor output, float gamma, float alpha);
 
 void sigmoid_focal_loss_backward_npu(Tensor input, Tensor target, Tensor weight, 
                                      Tensor grad_input, float gamma, float alpha) {
@@ -62,7 +62,7 @@ void softmax_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
 }
 
 void softmax_focal_loss_forward_impl(Tensor input, Tensor target, Tensor weight, 
-                                     Tensor grad_input, float gamma, float alpha)
+                                     Tensor grad_input, float gamma, float alpha);
 
 void softmax_focal_loss_backward_npu(Tensor input, Tensor target, Tensor weight, 
                                      Tensor grad_input, float gamma, float alpha) {
