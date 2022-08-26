@@ -56,17 +56,15 @@ void DeformRoIPoolForwardMLUKernelLauncher(Tensor input, Tensor rois,
       "input type should be Float or Half, got ", input.scalar_type());
   TORCH_CHECK(input.scalar_type() == rois.scalar_type(),
               "rois should have the same type as input");
-  if (offset.data_ptr() != nullptr) {
-    TORCH_CHECK(input.scalar_type() == offset.scalar_type(),
-                "offset should have the same type as input");
-  }
 
   // Check shape.
   TORCH_CHECK(input.dim() == 4, "input should be 4d tensor, got ", input.dim(),
               "D.");
   TORCH_CHECK(rois.dim() == 2, "rois should be 2d tensor, got ", rois.dim(),
               "D.");
-  if (offset.data_ptr() != nullptr) {
+  if (offset.defined() && offset.numel() > 0) {
+    TORCH_CHECK(input.scalar_type() == offset.scalar_type(),
+                "offset should have the same type as input");
     TORCH_CHECK(offset.dim() == 4, "offset should be 4d tensor, got ",
                 offset.dim(), "D.");
     TORCH_CHECK(
@@ -120,11 +118,9 @@ void DeformRoIPoolForwardMLUKernelLauncher(Tensor input, Tensor rois,
   TORCH_CHECK(output.numel() < max_input_num,
               "output.numel() should be less than 2147483648, got ",
               output.numel());
-  if (offset.data_ptr() != nullptr) {
-    TORCH_CHECK(offset.numel() < max_input_num,
-                "offset.numel() should be less than 2147483648, got ",
-                offset.numel());
-  }
+  TORCH_CHECK(offset.numel() < max_input_num,
+              "offset.numel() should be less than 2147483648, got ",
+              offset.numel());
 
   auto memory_format =
       torch_mlu::cnnl::ops::get_channels_last_memory_format(input.dim());
@@ -181,10 +177,6 @@ void DeformRoIPoolBackwardMLUKernelLauncher(
               "rois should have the same type as input");
   TORCH_CHECK(input.scalar_type() == grad_input.scalar_type(),
               "grad_input should have the same type as input");
-  if (offset.data_ptr() != nullptr) {
-    TORCH_CHECK(input.scalar_type() == offset.scalar_type(),
-                "offset should have the same type as input");
-  }
 
   // Check shape.
   TORCH_CHECK(grad_output.dim() == 4, "grad_output should be 4d tensor, got ",
@@ -193,7 +185,9 @@ void DeformRoIPoolBackwardMLUKernelLauncher(
               "D.");
   TORCH_CHECK(rois.dim() == 2, "rois should be 2d tensor, got ", rois.dim(),
               "D.");
-  if (offset.data_ptr() != nullptr) {
+  if (offset.defined() && offset.numel() > 0) {
+    TORCH_CHECK(input.scalar_type() == offset.scalar_type(),
+                "offset should have the same type as input");
     TORCH_CHECK(offset.dim() == 4, "offset should be 4d tensor, got ",
                 offset.dim(), "D.");
     TORCH_CHECK(
@@ -259,11 +253,9 @@ void DeformRoIPoolBackwardMLUKernelLauncher(
   TORCH_CHECK(grad_output.numel() < max_input_num,
               "grad_output.numel() should be less than 2147483648, got ",
               grad_output.numel());
-  if (offset.data_ptr() != nullptr) {
-    TORCH_CHECK(offset.numel() < max_input_num,
-                "offset.numel() should be less than 2147483648, got ",
-                offset.numel());
-  }
+  TORCH_CHECK(offset.numel() < max_input_num,
+              "offset.numel() should be less than 2147483648, got ",
+              offset.numel());
 
   auto memory_format =
       torch_mlu::cnnl::ops::get_channels_last_memory_format(grad_output.dim());
