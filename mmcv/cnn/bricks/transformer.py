@@ -7,7 +7,7 @@ from typing import Sequence
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmengine import ConfigDict
+from mmengine.config import ConfigDict
 from mmengine.model import BaseModule, ModuleList, Sequential
 from mmengine.registry import MODELS
 from mmengine.utils import deprecated_api_warning, to_2tuple

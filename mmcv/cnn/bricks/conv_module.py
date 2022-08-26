@@ -4,9 +4,9 @@ from typing import Dict, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
-from mmengine.model.utils import constant_init, kaiming_init
+from mmengine.model import constant_init, kaiming_init
 from mmengine.registry import MODELS
-from mmengine.utils.parrots_wrapper import _BatchNorm, _InstanceNorm
+from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm, _InstanceNorm
 
 from .activation import build_activation_layer
 from .conv import build_conv_layer

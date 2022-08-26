@@ -4,7 +4,7 @@ from typing import Optional, Sequence, Tuple, Union
 
 import torch.nn as nn
 import torch.utils.checkpoint as cp
-from mmengine.model.utils import constant_init, kaiming_init
+from mmengine.model import constant_init, kaiming_init
 from mmengine.runner import load_checkpoint
 from torch import Tensor
 

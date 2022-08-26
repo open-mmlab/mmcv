@@ -2,7 +2,7 @@
 from typing import Union
 
 import torch
-from mmengine.model.utils import constant_init, kaiming_init
+from mmengine.model import constant_init, kaiming_init
 from mmengine.registry import MODELS
 from torch import nn
 

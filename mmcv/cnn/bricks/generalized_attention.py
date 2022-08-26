@@ -5,7 +5,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmengine.model.utils import kaiming_init
+from mmengine.model import kaiming_init
 from mmengine.registry import MODELS
 
 

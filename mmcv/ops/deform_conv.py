@@ -4,7 +4,7 @@ from typing import Optional, Tuple, Union
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmengine import print_log
+from mmengine.logging import print_log
 from mmengine.registry import MODELS
 from mmengine.utils import deprecated_api_warning
 from torch import Tensor
@@ -402,7 +402,7 @@ class DeformConv2dPack(DeformConv2d):
             print_log(
                 f'DeformConv2dPack {prefix.rstrip(".")} is upgraded to '
                 'version 2.',
-                logger='root')
+                logger='current')
 
         super()._load_from_state_dict(state_dict, prefix, local_metadata,
                                       strict, missing_keys, unexpected_keys,
