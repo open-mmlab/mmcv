@@ -22,16 +22,6 @@
    understand_mmcv/ops.md
 
 .. toctree::
-   :maxdepth: 2
-   :caption: 部署
-
-   deployment/onnx.md
-   deployment/onnxruntime_op.md
-   deployment/onnxruntime_custom_ops.md
-   deployment/tensorrt_plugin.md
-   deployment/tensorrt_custom_ops.md
-
-.. toctree::
    :caption: 语言切换
 
    switch_language.md

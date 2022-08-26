@@ -27,8 +27,7 @@ from .furthest_point_sample import (furthest_point_sample,
 from .fused_bias_leakyrelu import FusedBiasLeakyReLU, fused_bias_leakyrelu
 from .gather_points import gather_points
 from .group_points import GroupAll, QueryAndGroup, grouping_operation
-from .info import (get_compiler_version, get_compiling_cuda_version,
-                   get_onnxruntime_op_path)
+from .info import get_compiler_version, get_compiling_cuda_version
 from .iou3d import (boxes_iou3d, boxes_iou_bev, boxes_overlap_bev, nms3d,
                     nms3d_normal, nms_bev, nms_normal_bev)
 from .knn import knn
@@ -76,9 +75,8 @@ __all__ = [
     'deform_conv2d', 'DeformRoIPool', 'DeformRoIPoolPack',
     'ModulatedDeformRoIPoolPack', 'deform_roi_pool', 'SigmoidFocalLoss',
     'SoftmaxFocalLoss', 'sigmoid_focal_loss', 'softmax_focal_loss',
-    'get_compiler_version', 'get_compiling_cuda_version',
-    'get_onnxruntime_op_path', 'MaskedConv2d', 'masked_conv2d',
-    'ModulatedDeformConv2d', 'ModulatedDeformConv2dPack',
+    'get_compiler_version', 'get_compiling_cuda_version', 'MaskedConv2d',
+    'masked_conv2d', 'ModulatedDeformConv2d', 'ModulatedDeformConv2dPack',
     'modulated_deform_conv2d', 'batched_nms', 'nms', 'soft_nms', 'nms_match',
     'RoIAlign', 'roi_align', 'RoIPool', 'roi_pool', 'SyncBatchNorm', 'Conv2d',
     'ConvTranspose2d', 'Linear', 'MaxPool2d', 'CrissCrossAttention', 'PSAMask',

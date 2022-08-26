@@ -177,8 +177,4 @@ b. Install the lite version.
 pip install mmcv
 ```
 
-c. Install full version with custom operators for onnxruntime
-
-- Check [here](https://mmcv.readthedocs.io/en/latest/deployment/onnxruntime_custom_ops.html) for detailed instruction.
-
 If you would like to build MMCV from source, please refer to the [guide](https://mmcv.readthedocs.io/en/latest/get_started/build.html).

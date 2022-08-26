@@ -238,10 +238,6 @@ b. 安装精简版
 pip install mmcv
 ```
 
-c. 安装完整版并且编译 onnxruntime 的自定义算子
-
-- 详细的指南请查看[这里](docs/zh_cn/deployment/onnxruntime_op.md)。
-
 如果想从源码编译 MMCV，请参考[该文档](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html)。
 
 ## FAQ
