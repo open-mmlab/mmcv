@@ -118,7 +118,7 @@ void DeformRoIPoolForwardMLUKernelLauncher(Tensor input, Tensor rois,
   TORCH_CHECK(output.numel() < max_input_num,
               "output.numel() should be less than 2147483648, got ",
               output.numel());
-  TORCH_CHECK(offset.numel() < max_input_num,
+  TORCH_CHECK(!offset.defined() || offset.numel() < max_input_num,
               "offset.numel() should be less than 2147483648, got ",
               offset.numel());
 
@@ -253,7 +253,7 @@ void DeformRoIPoolBackwardMLUKernelLauncher(
   TORCH_CHECK(grad_output.numel() < max_input_num,
               "grad_output.numel() should be less than 2147483648, got ",
               grad_output.numel());
-  TORCH_CHECK(offset.numel() < max_input_num,
+  TORCH_CHECK(!offset.defined() || offset.numel() < max_input_num,
               "offset.numel() should be less than 2147483648, got ",
               offset.numel());
 
