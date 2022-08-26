@@ -17,19 +17,6 @@ ext_module = ext_loader.load_ext('_ext', [
 class SigmoidFocalLossFunction(Function):
 
     @staticmethod
-    def symbolic(g, input: torch.Tensor, target: torch.LongTensor,
-                 gamma: float, alpha: float, weight: torch.Tensor,
-                 reduction: str):
-        return g.op(
-            'mmcv::MMCVSigmoidFocalLoss',
-            input,
-            target,
-            gamma_f=gamma,
-            alpha_f=alpha,
-            weight_f=weight,
-            reduction_s=reduction)
-
-    @staticmethod
     def forward(ctx,
                 input: torch.Tensor,
                 target: Union[torch.LongTensor, torch.cuda.LongTensor],
@@ -120,19 +107,6 @@ class SigmoidFocalLoss(nn.Module):
 
 
 class SoftmaxFocalLossFunction(Function):
-
-    @staticmethod
-    def symbolic(g, input: torch.Tensor, target: torch.LongTensor,
-                 gamma: float, alpha: float, weight: torch.Tensor,
-                 reduction: str):
-        return g.op(
-            'mmcv::MMCVSoftmaxFocalLoss',
-            input,
-            target,
-            gamma_f=gamma,
-            alpha_f=alpha,
-            weight_f=weight,
-            reduction_s=reduction)
 
     @staticmethod
     def forward(ctx,

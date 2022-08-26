@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 from torch import Tensor, nn
-from torch.autograd import Function
 
 _mode_dict = {'top': 0, 'bottom': 1, 'left': 2, 'right': 3}
 
@@ -35,58 +34,6 @@ def _corner_pool(x: Tensor, dim: int, flip: bool) -> Tensor:
     return output
 
 
-class TopPoolFunction(Function):
-
-    @staticmethod
-    def symbolic(g, input: Tensor) -> Tensor:
-        output = g.op(
-            'mmcv::MMCVCornerPool', input, mode_i=int(_mode_dict['top']))
-        return output
-
-    @staticmethod
-    def forward(ctx, input: Tensor) -> Tensor:
-        return _corner_pool(input, 2, True)
-
-
-class BottomPoolFunction(Function):
-
-    @staticmethod
-    def symbolic(g, input: Tensor) -> Tensor:
-        output = g.op(
-            'mmcv::MMCVCornerPool', input, mode_i=int(_mode_dict['bottom']))
-        return output
-
-    @staticmethod
-    def forward(ctx, input: Tensor) -> Tensor:
-        return _corner_pool(input, 2, False)
-
-
-class LeftPoolFunction(Function):
-
-    @staticmethod
-    def symbolic(g, input: Tensor) -> Tensor:
-        output = g.op(
-            'mmcv::MMCVCornerPool', input, mode_i=int(_mode_dict['left']))
-        return output
-
-    @staticmethod
-    def forward(ctx, input: Tensor) -> Tensor:
-        return _corner_pool(input, 3, True)
-
-
-class RightPoolFunction(Function):
-
-    @staticmethod
-    def symbolic(g, input: Tensor) -> Tensor:
-        output = g.op(
-            'mmcv::MMCVCornerPool', input, mode_i=int(_mode_dict['right']))
-        return output
-
-    @staticmethod
-    def forward(ctx, input: Tensor) -> Tensor:
-        return _corner_pool(input, 3, False)
-
-
 class CornerPool(nn.Module):
     """Corner Pooling.
 
@@ -110,13 +57,6 @@ class CornerPool(nn.Module):
         Feature map after pooling.
     """
 
-    pool_functions = {
-        'bottom': BottomPoolFunction,
-        'left': LeftPoolFunction,
-        'right': RightPoolFunction,
-        'top': TopPoolFunction,
-    }
-
     cummax_dim_flip = {
         'bottom': (2, False),
         'left': (3, True),
@@ -126,21 +66,11 @@ class CornerPool(nn.Module):
 
     def __init__(self, mode: str):
         super().__init__()
-        assert mode in self.pool_functions
+        assert mode in self.cummax_dim_flip
         self.mode = mode
-        self.corner_pool: Function = self.pool_functions[mode]
 
     def forward(self, x: Tensor) -> Tensor:
         if torch.__version__ != 'parrots' and torch.__version__ >= '1.5.0':
-            if torch.onnx.is_in_onnx_export():
-                assert torch.__version__ >= '1.7.0', \
-                    'When `cummax` serves as an intermediate component whose '\
-                    'outputs is used as inputs for another modules, it\'s '\
-                    'expected that pytorch version must be >= 1.7.0, '\
-                    'otherwise Error appears like: `RuntimeError: tuple '\
-                    'appears in op that does not forward tuples, unsupported '\
-                    'kind: prim::PythonOp`.'
-
             dim, flip = self.cummax_dim_flip[self.mode]
             if flip:
                 x = x.flip(dim)
@@ -149,8 +79,5 @@ class CornerPool(nn.Module):
                 pool_tensor = pool_tensor.flip(dim)
             return pool_tensor
         else:
-            if torch.onnx.is_in_onnx_export():
-                return self.corner_pool.apply(x)
-            else:
-                dim, flip = self.cummax_dim_flip[self.mode]
-                return _corner_pool(x, dim, flip)
+            dim, flip = self.cummax_dim_flip[self.mode]
+            return _corner_pool(x, dim, flip)

@@ -17,16 +17,18 @@ class DeformRoIPoolFunction(Function):
     @staticmethod
     def symbolic(g, input, rois, offset, output_size, spatial_scale,
                  sampling_ratio, gamma):
+        inputs = [input, rois]
+        if offset is not None:
+            inputs = [input, rois, offset]
         return g.op(
             'mmcv::MMCVDeformRoIPool',
-            input,
-            rois,
-            offset,
+            *inputs,
             pooled_height_i=output_size[0],
             pooled_width_i=output_size[1],
             spatial_scale_f=spatial_scale,
             sampling_ratio_f=sampling_ratio,
-            gamma_f=gamma)
+            gamma_f=gamma,
+        )
 
     @staticmethod
     def forward(ctx,

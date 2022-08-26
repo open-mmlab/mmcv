@@ -17,7 +17,7 @@ ext_module = ext_loader.load_ext(
 class MaskedConv2dFunction(Function):
 
     @staticmethod
-    def symbolic(g, features, mask, weight, bias, padding, stride):
+    def symbolic(g, features, mask, weight, bias, padding, stride=1):
         return g.op(
             'mmcv::MMCVMaskedConv2d',
             features,
