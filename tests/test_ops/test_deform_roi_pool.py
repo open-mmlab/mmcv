@@ -2,7 +2,10 @@
 import os
 
 import numpy as np
+import pytest
 import torch
+
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
 _USING_PARROTS = True
 try:
@@ -93,3 +96,53 @@ class TestDeformRoIPool:
                 gradcheck(droipool, (x, rois), no_grads=[rois])
             else:
                 gradcheck(droipool, (x, rois), eps=1e-2, atol=1e-2)
+
+    def _test_deform_roi_pool_allclose(self, device, dtype=torch.float):
+        from mmcv.ops import DeformRoIPoolPack
+        pool_h = 2
+        pool_w = 2
+        spatial_scale = 1.0
+        sampling_ratio = 2
+
+        for case, output in zip(inputs, outputs):
+            np_input = np.array(case[0])
+            np_rois = np.array(case[1])
+            np_output = np.array(output[0])
+            np_grad = np.array(output[1])
+
+            x = torch.tensor(
+                np_input, device=device, dtype=torch.float, requires_grad=True)
+            rois = torch.tensor(np_rois, device=device, dtype=torch.float)
+            output_c = x.size(1)
+            droipool = DeformRoIPoolPack(
+                (pool_h, pool_w),
+                output_c,
+                spatial_scale=spatial_scale,
+                sampling_ratio=sampling_ratio).to(device)
+
+            output = droipool(x, rois)
+            output.backward(torch.ones_like(output))
+            assert np.allclose(output.data.cpu().numpy(), np_output, 1e-3)
+            assert np.allclose(x.grad.data.cpu().numpy(), np_grad, 1e-3)
+
+    @pytest.mark.parametrize('device', [
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'mlu',
+            marks=pytest.mark.skipif(
+                not IS_MLU_AVAILABLE, reason='requires MLU support'))
+    ])
+    @pytest.mark.parametrize('dtype', [
+        torch.float,
+        pytest.param(
+            torch.double,
+            marks=pytest.mark.skipif(
+                IS_MLU_AVAILABLE,
+                reason='MLU does not support for 64-bit floating point')),
+        torch.half
+    ])
+    def test_deform_roi_pool_allclose(self, device, dtype):
+        self._test_deform_roi_pool_allclose(device, dtype)
