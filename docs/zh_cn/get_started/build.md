@@ -7,6 +7,7 @@
 ```bash
 git clone https://github.com/open-mmlab/mmcv.git
 cd mmcv
+git checkout dev-2.x
 ```
 
 建议安装 `ninja` 以加快编译速度
@@ -89,6 +90,7 @@ CC=clang CXX=clang++ CFLAGS='-stdlib=libc++' MMCV_WITH_OPS=1 pip install -e .
    ```shell
    git clone https://github.com/open-mmlab/mmcv.git
    cd mmcv
+   git checkout dev-2.x
    ```
 
 5. 安装所需 Python 依赖包

@@ -29,4 +29,5 @@ ENV TORCH_CUDA_ARCH_LIST=${CUDA_ARCH}
 RUN git clone https://github.com/open-mmlab/mmcv.git /mmcv
 WORKDIR /mmcv
 RUN git rev-parse --short HEAD
+RUN pip install openmim && mim install mmengine
 RUN pip install --no-cache-dir -e .[all] -v && pip install pre-commit && pre-commit install

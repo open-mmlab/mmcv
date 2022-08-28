@@ -7,6 +7,7 @@ After cloning the repo with
 ```bash
 git clone https://github.com/open-mmlab/mmcv.git
 cd mmcv
+git checkout dev-2.x
 ```
 
 It is recommended to install `ninja` to speed up the compilation
@@ -97,6 +98,7 @@ You should know how to set up environment variables, especially `Path`, on Windo
    ```shell
    git clone https://github.com/open-mmlab/mmcv.git
    cd mmcv
+   git checkout dev-2.x
    ```
 
 5. Install required Python packages

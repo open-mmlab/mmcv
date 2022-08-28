@@ -27,8 +27,7 @@ It provides the following functionalities.
 - Universal IO APIs
 - Image/Video processing
 - Image and annotation visualization
-- Useful utilities (progress bar, timer, ...)
-- PyTorch runner with hooking mechanism
+- Image transformation
 - Various CNN architectures
 - High-quality implementation of common CUDA ops
 
