@@ -188,8 +188,12 @@ jobs:
         run: |
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
+      - name: Add PPA
+        run: |
+          apt-get update && apt-get install -y software-properties-common
+          add-apt-repository -y ppa:deadsnakes/ppa
       - name: Install python-dev
-        run: apt-get update && apt-get install -y python3-dev
+        run: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y python${{matrix.python-version}}-dev
       - name: Install Pillow
         run: python -m pip install Pillow==6.2.2
         if: ${{matrix.torchvision == '0.4.2'}}
