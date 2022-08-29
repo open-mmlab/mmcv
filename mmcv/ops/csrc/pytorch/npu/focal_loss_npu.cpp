@@ -31,15 +31,16 @@ void sigmoid_focal_loss_backward_npu(Tensor input, Tensor target, Tensor weight,
     at::Scalar s = 1;
     OpPreparation::CheckOut(
         {input, target, weight},
-        grad_input,
+        output,
         input);
 
+    at::Tensor terget_y = at_npu::native::NPUNativeFunctions::npu_reshape(target, input.sizes(), true);
     OpCommand cmd;
     cmd.Name("AxpyV2")
         .Input(input)
-        .Input(target)
+        .Input(target_y)
         .Input(s, input.scalar_type())
-        .Output(grad_input)
+        .Output(output)
         .Run();
 }
 
@@ -75,15 +76,19 @@ void softmax_focal_loss_backward_npu(Tensor input, Tensor target, Tensor weight,
     at::Scalar s = 1;
     OpPreparation::CheckOut(
         {input, target, weight},
-        grad_input,
+        output,
         input);
+
+    int64_t  n_class = input.size(0);
+    at::Tensor target_y = at_npu::native::NPUNativeFunctions::one_hot(target, n_class);
+    target_y = at_npu::native::NPUNativeFunctions::npu_dtype_cast(target_y, input.scalar_type());
 
     OpCommand cmd;
     cmd.Name("AxpyV2")
         .Input(input)
         .Input(target)
         .Input(s, input.scalar_type())
-        .Output(grad_input)
+        .Output(output)
         .Run();
 }
 
