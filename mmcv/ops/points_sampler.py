@@ -100,9 +100,9 @@ class PointsSampler(nn.Module):
         Returns:
             torch.Tensor: (B, npoint, sample_num) Indices of sampled points.
         """
-        if points_xyz.dtype == torch.half:
+        if points_xyz is not None and points_xyz.dtype == torch.half:
             points_xyz = points_xyz.to(torch.float32)
-        if features.dtype == torch.half:
+        if features is not None and features.dtype == torch.half:
             features = features.to(torch.float32)
 
         indices = []
