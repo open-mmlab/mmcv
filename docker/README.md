@@ -1,6 +1,6 @@
 # Docker images
 
-There are two `Dockerfile` files to build docker images, one to build an image with the mmcv-full pre-built package and the other with the mmcv development environment.
+There are two `Dockerfile` files to build docker images, one to build an image with the mmcv pre-built package and the other with the mmcv development environment.
 
 ```text
 .
@@ -28,7 +28,7 @@ Or build with remote repository
 docker build -t mmcv https://github.com/open-mmlab/mmcv.git#master:docker/release
 ```
 
-The [Dockerfile](release/Dockerfile) installs latest released version of mmcv-full by default, but you can specify mmcv versions to install expected versions.
+The [Dockerfile](release/Dockerfile) installs latest released version of mmcv by default, but you can specify mmcv versions to install expected versions.
 
 ```bash
 docker image build -t mmcv -f docker/release/Dockerfile --build-arg MMCV=1.5.0 .

@@ -58,7 +58,7 @@ jobs:
           ssh-add - <<< '${{ secrets.TEST_SSH_KEY }}'
           pip install git+ssh://git@github.com/open-mmlab/mmengine.git
       - name: Build and install
-        run: rm -rf .eggs && pip install -e .
+        run: rm -rf .eggs && MMCV_WITH_OPS=1 pip install -e .
       - name: Validate the installation
         run: python -c "import mmcv"
       - name: Run unittests
@@ -103,12 +103,12 @@ jobs:
         run: pip install psutil
       - name: Create sdist and untar
         run: |
-          MMCV_WITH_OPS=1 python setup.py sdist
-          tar zxvf dist/mmcv-full* -C /tmp
+          python setup.py sdist
+          tar zxvf dist/mmcv* -C /tmp
           rm -r mmcv
       - name: Build and install from sdist
         run: |
-          pushd /tmp/mmcv-full*
+          pushd /tmp/mmcv*
           pip install -e .
           popd
       - name: Validate the installation
