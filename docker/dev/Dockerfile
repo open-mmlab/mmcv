@@ -27,5 +27,5 @@ ARG CUDA_ARCH=""
 ENV TORCH_CUDA_ARCH_LIST=${CUDA_ARCH}
 RUN git clone https://github.com/open-mmlab/mmcv.git /mmcv
 WORKDIR /mmcv
-RUN git checkout 1.x && git rev-parse --short HEAD
+RUN git checkout 2.x && git rev-parse --short HEAD
 RUN pip install --no-cache-dir -e .[all] -v && pip install pre-commit && pre-commit install
