@@ -27,7 +27,7 @@ Please replace `{cu_version}` and `{torch_version}` in the url to your desired o
 to install the latest `mmcv` with `CUDA 11.1` and `PyTorch 1.9.0`, use the following command:
 
 ```shell
-pip install mmcv -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html
+pip install 'mmcv>=2.0.0rc1' -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html
 ```
 
 For more details, please refer the the following tables and delete `=={mmcv_version}`.
@@ -162,7 +162,7 @@ mmcv does not provide pre-built packages for `cu102-torch1.11` and `cu92-torch*`
 Another way is to compile locally by running
 
 ```python
-pip install mmcv
+pip install 'mmcv>=2.0.0rc1'
 ```
 
 Note that the local compiling may take up to 10 mins.

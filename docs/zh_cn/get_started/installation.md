@@ -47,11 +47,11 @@ ii. 安装特定的版本
 pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/{cu_version}/{torch_version}/index.html
 ```
 
-首先请参考版本发布信息找到想要安装的版本号，将 `{mmcv_version}` 替换成该版本号，例如 `1.3.9`。
-然后将链接中的 `{cu_version}` 和 `{torch_version}` 根据自身需求替换成实际的版本号，例如想安装和 `CUDA 11.1`、`PyTorch 1.9.0` 兼容的 `mmcv` 1.3.9 版本，使用如下替换过的命令
+首先请参考版本发布信息找到想要安装的版本号，将 `{mmcv_version}` 替换成该版本号，例如 `2.0.0rc1`。
+然后将链接中的 `{cu_version}` 和 `{torch_version}` 根据自身需求替换成实际的版本号，例如想安装和 `CUDA 11.1`、`PyTorch 1.9.0` 兼容的 `mmcv` 2.0.0rc1 版本，使用如下替换过的命令
 
 ```shell
-pip install mmcv==1.3.9 -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html
+pip install mmcv==2.0.0rc1 -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html
 ```
 
 对于更多的 PyTorch 和 CUDA 版本组合，请参考下表：
@@ -158,7 +158,7 @@ mmcv 没有提供 Windows 平台 `cu102-torch1.8.0` 和 `cu92-torch*` 的预编�
 除了使用预编译包之外，另一种方式是在本地进行编译，直接运行下述命令
 
 ```python
-pip install mmcv
+pip install 'mmcv>=2.0.0rc1'
 ```
 
 但注意本地编译可能会耗时 10 分钟以上。
