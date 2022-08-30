@@ -31,7 +31,8 @@ try:
 except ImportError:
     warnings.warn('Fail to import ``MultiScaleDeformableAttention`` from '
                   '``mmcv.ops.multi_scale_deform_attn``, '
-                  'You should install ``mmcv-full`` if you need this module. ')
+                  'You should install ``mmcv`` rather than ``mmcv-lite`` '
+                  'if you need this module. ')
 
 
 def build_positional_encoding(cfg, default_args=None):
