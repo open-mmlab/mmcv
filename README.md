@@ -105,7 +105,7 @@ pip install 'mmcv>=2.0.0rc1' -f https://download.openmmlab.com/mmcv/dist/cu111/t
 **Note**: mmcv is only compiled on PyTorch 1.x.0 because the compatibility usually holds between 1.x.0 and 1.x.1. If your PyTorch version is 1.x.1, you can install mmcv compiled with PyTorch 1.x.0 and it usually works well. For example, if your PyTorch version is 1.8.1 and CUDA version is 11.1, you can use the following command to install mmcv.
 
 ```shell
-pip install mmcv -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.8.0/index.html
+pip install 'mmcv>=2.0.0rc1' -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.8.0/index.html
 ```
 
 For more details, please refer the the following tables and delete `=={mmcv_version}`.
@@ -228,7 +228,7 @@ For more details, please refer the the following tables.
 Another way is to compile locally by running
 
 ```python
-pip install mmcv
+pip install 'mmcv>=2.0.0rc1'
 ```
 
 Note that the local compiling may take up to 10 mins.

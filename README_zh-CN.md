@@ -225,7 +225,7 @@ pip install mmcv==2.0.0rc1 -f https://download.openmmlab.com/mmcv/dist/cu111/tor
 除了使用预编译包之外，另一种方式是在本地进行编译，直接运行下述命令
 
 ```python
-pip install mmcv
+pip install 'mmcv>=2.0.0rc1'
 ```
 
 但注意本地编译可能会耗时 10 分钟以上。
