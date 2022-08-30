@@ -19,7 +19,7 @@
   <div>&nbsp;</div>
 </div>
 
-[![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmcv.readthedocs.io/en/latest/)
+[![docs](https://img.shields.io/badge/docs-2.x-blue)](https://mmcv.readthedocs.io/en/2.x/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mmcv)](https://pypi.org/project/mmcv/)
 [![PyPI](https://img.shields.io/pypi/v/mmcv)](https://pypi.org/project/mmcv)
 [![badge](https://github.com/open-mmlab/mmcv/workflows/build/badge.svg)](https://github.com/open-mmlab/mmcv/actions)
@@ -57,8 +57,7 @@ It provides the following functionalities.
 - Universal IO APIs
 - Image/Video processing
 - Image and annotation visualization
-- Useful utilities (progress bar, timer, ...)
-- PyTorch runner with hooking mechanism
+- Image transformation
 - Various CNN architectures
 - High-quality implementation of common CUDA ops
 
@@ -68,7 +67,7 @@ It supports the following systems.
 - Windows
 - macOS
 
-See the [documentation](http://mmcv.readthedocs.io/en/latest) for more features and usage.
+See the [documentation](http://mmcv.readthedocs.io/en/2.x) for more features and usage.
 
 Note: MMCV requires Python 3.6+.
 
@@ -132,93 +131,103 @@ For more details, please refer the the following tables.
   <tbody>
     <tr>
       <th width="80"> CUDA </th>
+      <th valign="bottom" align="left" width="120">torch 1.12</th>
       <th valign="bottom" align="left" width="120">torch 1.11</th>
       <th valign="bottom" align="left" width="120">torch 1.10</th>
       <th valign="bottom" align="left" width="120">torch 1.9</th>
       <th valign="bottom" align="left" width="120">torch 1.8</th>
       <th valign="bottom" align="left" width="120">torch 1.7</th>
       <th valign="bottom" align="left" width="120">torch 1.6</th>
-      <th valign="bottom" align="left" width="120">torch 1.5</th>
+    </tr>
+    <tr>
+      <td align="left">11.6</td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu116/torch1.12.0/index.html</code></pre> </details></td>
+      <td align="left"></td>
+      <td align="left"></td>
+      <td align="left"></td>
+      <td align="left"></td>
+      <td align="left"></td>
+      <td align="left"></td>
     </tr>
     <tr>
       <td align="left">11.5</td>
-      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu115/torch1.11.0/index.html</code></pre> </details></td>
+      <td align="left"></td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu115/torch1.11.0/index.html</code></pre> </details></td>
       <td align="left"></td>
       <td align="left"></td>
-      <td align="left"> </td>
-      <td align="left"> </td>
-      <td align="left"> </td>
-      <td align="left"> </td>
+      <td align="left"></td>
+      <td align="left"></td>
+      <td align="left"></td>
     </tr>
     <tr>
       <td align="left">11.3</td>
-      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.11.0/index.html</code></pre> </details></td>
-      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.10.0/index.html</code></pre> </details></td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.12.0/index.html</code></pre> </details></td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.11.0/index.html</code></pre> </details></td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.10.0/index.html</code></pre> </details></td>
       <td align="left"></td>
-      <td align="left"></code></pre> </details> </td>
-      <td align="left"> </td>
-      <td align="left"> </td>
-      <td align="left"> </td>
+      <td align="left"></td>
+      <td align="left"></td>
+      <td align="left"></td>
     </tr>
     <tr>
       <td align="left">11.1</td>
-      <td align="left"> </td>
-      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.10.0/index.html</code></pre> </details> </td>
-      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html</code></pre> </details> </td>
-      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.8.0/index.html</code></pre> </details> </td>
-      <td align="left"> </td>
+      <td align="left"></td>
+      <td align="left"></td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.10.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.8.0/index.html</code></pre> </details> </td>
       <td align="left"> </td>
       <td align="left"> </td>
     </tr>
     <tr>
       <td align="left">11.0</td>
-      <td align="left"> </td>
-      <td align="left"> </td>
-      <td align="left"> </td>
-      <td align="left"> </td>
-      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu110/torch1.7.0/index.html</code></pre> </details> </td>
-      <td align="left"> </td>
-      <td align="left"> </td>
+      <td align="left"></td>
+      <td align="left"></td>
+      <td align="left"></td>
+      <td align="left"></td>
+      <td align="left"></td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu110/torch1.7.0/index.html</code></pre> </details> </td>
+      <td align="left"></td>
     </tr>
     <tr>
       <td align="left">10.2</td>
-      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.11.0/index.html</code></pre> </details></td>
-      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.10.0/index.html</code></pre> </details></td>
-      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.9.0/index.html</code></pre> </details> </td>
-      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html</code></pre> </details> </td>
-      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.7.0/index.html</code></pre> </details> </td>
-      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.6.0/index.html</code></pre> </details> </td>
-      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.5.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.12.0/index.html</code></pre> </details></td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.11.0/index.html</code></pre> </details></td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.10.0/index.html</code></pre> </details></td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.9.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.7.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code>pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.6.0/index.html</code></pre> </details> </td>
     </tr>
     <tr>
       <td align="left">10.1</td>
-      <td align="left"> </td>
-      <td align="left"> </td>
-      <td align="left"> </td>
-      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.8.0/index.html</code></pre> </details> </td>
-      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.7.0/index.html</code></pre> </details> </td>
-      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.6.0/index.html</code></pre> </details> </td>
-      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.5.0/index.html</code></pre> </details> </td>
+      <td align="left"></td>
+      <td align="left"></td>
+      <td align="left"></td>
+      <td align="left"></td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.8.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.7.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.6.0/index.html</code></pre> </details> </td>
     </tr>
     <tr>
       <td align="left">9.2</td>
-      <td align="left"> </td>
-      <td align="left"> </td>
-      <td align="left"> </td>
-      <td align="left"> </td>
-      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu92/torch1.7.0/index.html</code></pre> </details> </td>
-      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu92/torch1.6.0/index.html</code></pre> </details> </td>
-      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu92/torch1.5.0/index.html</code></pre> </details> </td>
+      <td align="left"></td>
+      <td align="left"></td>
+      <td align="left"></td>
+      <td align="left"></td>
+      <td align="left"></td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu92/torch1.7.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cu92/torch1.6.0/index.html</code></pre> </details> </td>
     </tr>
     <tr>
       <td align="left">cpu</td>
-      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.11.0/index.html</code></pre> </details></td>
-      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.10.0/index.html</code></pre> </details> </td>
-      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.9.0/index.html</code></pre> </details> </td>
-      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.8.0/index.html</code></pre> </details> </td>
-      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.7.0/index.html</code></pre> </details> </td>
-      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.6.0/index.html</code></pre> </details> </td>
-      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.5.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.12.0/index.html</code></pre> </details></td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.11.0/index.html</code></pre> </details></td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.10.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.9.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.8.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.7.0/index.html</code></pre> </details> </td>
+      <td align="left"><details><summary> install </summary><pre><code> pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.6.0/index.html</code></pre> </details> </td>
     </tr>
   </tbody>
 </table>
@@ -239,12 +248,12 @@ b. Install the lite version.
 pip install mmcv-lite
 ```
 
-If you would like to build MMCV from source, please refer to the [guide](https://mmcv.readthedocs.io/en/latest/get_started/build.html).
+If you would like to build MMCV from source, please refer to the [guide](https://mmcv.readthedocs.io/en/2.x/get_started/build.html).
 
 ## FAQ
 
 If you face some installation issues, CUDA related issues or RuntimeErrors,
-you may first refer to this [Frequently Asked Questions](https://mmcv.readthedocs.io/en/latest/faq.html).
+you may first refer to this [Frequently Asked Questions](https://mmcv.readthedocs.io/en/2.x/faq.html).
 
 ## Citation
 

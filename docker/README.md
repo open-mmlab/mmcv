@@ -31,7 +31,7 @@ docker build -t mmcv https://github.com/open-mmlab/mmcv.git#master:docker/releas
 The [Dockerfile](release/Dockerfile) installs latest released version of mmcv by default, but you can specify mmcv versions to install expected versions.
 
 ```bash
-docker image build -t mmcv -f docker/release/Dockerfile --build-arg MMCV=1.5.0 .
+docker image build -t mmcv -f docker/release/Dockerfile --build-arg MMCV=2.0.0rc1 .
 ```
 
 If you also want to use other versions of PyTorch and CUDA, you can also pass them when building docker images.
@@ -43,7 +43,7 @@ docker build -t mmcv -f docker/release/Dockerfile \
     --build-arg PYTORCH=1.9.0 \
     --build-arg CUDA=11.1 \
     --build-arg CUDNN=8 \
-    --build-arg MMCV=1.5.0 .
+    --build-arg MMCV=2.0.0rc1 .
 ```
 
 More available versions of PyTorch and CUDA can be found at [dockerhub/pytorch](https://hub.docker.com/r/pytorch/pytorch/tags).
