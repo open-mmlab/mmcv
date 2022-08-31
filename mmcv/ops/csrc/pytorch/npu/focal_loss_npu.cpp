@@ -71,7 +71,7 @@ void softmax_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
 void softmax_focal_loss_forward_impl(Tensor input, Tensor target, Tensor weight, 
                                      Tensor grad_input, float gamma, float alpha);
 
-void softmax_focal_loss_backward_npu(Tensor input, Tensor target, Tensor weight, 
+void softmax_focal_loss_backward_npu(Tensor input, Tensor target, Tensor weight, Tensor buff,
                                      Tensor grad_input, float gamma, float alpha) {
     at::Scalar s = 1;
     OpPreparation::CheckOut(
@@ -92,7 +92,7 @@ void softmax_focal_loss_backward_npu(Tensor input, Tensor target, Tensor weight,
         .Run();
 }
 
-void softmax_focal_loss_backward_impl(Tensor input, Tensor target, Tensor weight, 
+void softmax_focal_loss_backward_impl(Tensor input, Tensor target, Tensor weight, Tensor buff,
                                       Tensor grad_input, float gamma, float alpha);
 
 
