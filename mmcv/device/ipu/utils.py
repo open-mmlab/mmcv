@@ -56,9 +56,7 @@ def cfg2options(cfg):
     # TODO configure these codes
     ipu_options['training']._Popart.set('disableGradAccumulationTensorStreams',
                                         True)
-    ipu_options['training']._Popart.set(
-        'accumulateOuterFragmentSettings.schedule',
-        int(popart.AccumulateOuterFragmentSchedule.OverlapMemoryOptimized))
+
     ipu_options['training'].Precision.enableStochasticRounding(True)
 
     return ipu_options
@@ -93,6 +91,14 @@ def _cast_to_options(cfg):
         partials_type = cfg.pop('partialsType')
         options.Precision.setPartialsType(getattr(
             torch, partials_type))  # half or float
+
+    if cfg.pop('max_grad_norm', False):
+        options._Popart.set('decomposeGradSum', True)
+        options._Popart.set('autoRecomputation', 3)
+    else:
+        options._Popart.set(
+            'accumulateOuterFragmentSettings.schedule',
+            int(popart.AccumulateOuterFragmentSchedule.OverlapMemoryOptimized))
 
     _options_assigner(cfg, options)
     return options
@@ -242,3 +248,52 @@ def build_from_cfg_with_wrapper(cfg,
     except Exception as e:
         # Normal TypeError does not print class name.
         raise type(e)(f'{wrapped_obj_cls.__name__}: {e}')
+
+
+class IPUBatchNorm2d(torch.nn.BatchNorm2d):
+
+    def forward(self, input):
+        input = input.to(self.weight.dtype)
+        if self.training:
+            result = super().forward(input)
+        else:
+            if self.track_running_stats:
+                norm = 1 / torch.sqrt(self.running_var + self.eps)
+                norm = norm.detach().to(self.weight.dtype)
+                k = norm * self.weight
+                k = k.unsqueeze(0).unsqueeze(-1).unsqueeze(-1)
+                b = (-self.running_mean) * norm * self.weight + self.bias
+                b = b.unsqueeze(0).unsqueeze(-1).unsqueeze(-1)
+                result = input * k + b
+            else:
+                raise RuntimeError('use torch.nn.batchnorm')
+        result = result.half()
+        return result
+
+
+def bn_to_ipu_bn(bn):
+    num_features = bn.num_features
+    eps = bn.eps
+    momentum = bn.momentum
+    affine = bn.affine
+    track_running_stats = bn.track_running_stats
+    args = [num_features, eps, momentum, affine, track_running_stats]
+    dtype = bn.weight.dtype
+    ipu_bn = IPUBatchNorm2d(*args, dtype=dtype)
+    ipu_bn.weight = torch.nn.Parameter(bn.weight.data.clone())
+    ipu_bn.bias = torch.nn.Parameter(bn.bias.data.clone())
+    # ipu_bn.weight = bn.weight
+    # ipu_bn.bias = bn.bias
+    ipu_bn.running_mean = bn.running_mean
+    ipu_bn.running_var = bn.running_var
+    return ipu_bn
+
+
+def replace_bn(module):
+    for _name, _module in module.named_children():
+        # not works for the subclass of nn.BatchNorm2d
+        if type(_module) is nn.BatchNorm2d:
+            ipu_bn = bn_to_ipu_bn(_module)
+            module.__setattr__(_name, ipu_bn)
+        else:
+            replace_bn(_module)

@@ -59,9 +59,11 @@ class HierarchicalDataManager:
                     'original hierarchical data is not torch.tensor'
                 self._hierarchical_data = data
             else:
+                data = self.unbundle(data)
                 self.update_hierarchical_data(data)
         else:
-            self._hierarchical_data = data
+            self._hierarchical_data = self.deep_copy(data)
+            self._hierarchical_data = self.unbundle(self._hierarchical_data)
 
     @property
     def hierarchical_data(self):
@@ -88,9 +90,23 @@ class HierarchicalDataManager:
         if dataB is HierarchicalDataNone:
             dataB = self.hierarchical_data
 
-        # Update with a da ta with the same structure
+        # Update with a data with the same structure
         # but different values(tensors and basic python data types)
-        if isinstance(dataA, (tuple, list)):
+        if isinstance(dataA, tuple):
+            # dataA = list(dataA)
+            for idx, node in enumerate(dataA):
+                new_address = ''
+                if not self.quick_mode:
+                    new_address = address + f'[{str(idx)}]'
+                    assert isinstance(node, type(dataB[idx])),\
+                        f'data structure changed: {new_address}'
+                if isinstance(node, torch.Tensor):
+                    dataB[idx] = node
+                else:
+                    self.update_hierarchical_data(
+                        node, dataB[idx], strict, address=new_address)
+            # dataA = tuple(dataA)
+        elif isinstance(dataA, list):
             for idx, node in enumerate(dataA):
                 new_address = ''
                 if not self.quick_mode:
@@ -127,11 +143,9 @@ class HierarchicalDataManager:
                             f'find a non-torch.Tensor data({type(dataA)}) '
                             f'changed, and the address is {address}')
         elif isinstance(dataA, DataContainer):
-            if not self.quick_mode:
-                assert isinstance(dataB, DataContainer)
-                new_address = address + '.data'
-                self.update_hierarchical_data(
-                    dataA.data, dataB.data, False, address=new_address)
+            new_address = address + '.data[0]'
+            self.update_hierarchical_data(
+                dataA.data[0], dataB, False, address=new_address)
         else:
             raise NotImplementedError(
                 f'not supported datatype:{type(dataA)}, address is {address}')
@@ -206,7 +220,7 @@ class HierarchicalDataManager:
         elif isinstance(data, self.atomic_types):
             pass
         elif isinstance(data, DataContainer):
-            self._set_tensors(data.data, tensors)
+            self._set_tensors(data.data[0], tensors)
         else:
             raise NotImplementedError(f'not supported datatype:{type(data)}')
 
@@ -241,3 +255,39 @@ class HierarchicalDataManager:
             self._clean_tensors(data.data)
         else:
             raise NotImplementedError(f'not supported datatype:{type(data)}')
+
+    def deep_copy(self, data):
+        # Deep copy dictionary, list, tuple and
+        # get the data out of DataContainer
+        if isinstance(data, list):
+            result = [self.deep_copy(v) for v in data]
+        elif isinstance(data, dict):
+            result = {}
+            for k, v in data.items():
+                result[k] = self.deep_copy(v)
+        elif isinstance(data, tuple):
+            result = [self.deep_copy(v) for v in data]
+        elif isinstance(data, DataContainer):
+            result = self.deep_copy(data.data)[0]
+        else:
+            result = data
+        return result
+
+    def unbundle(self, data):
+        if isinstance(data, tuple):
+            data = list(data)
+            for idx in range(len(data)):
+                if isinstance(data[idx], DataContainer):
+                    data[idx] = data[idx].data[0]
+                data[idx] = self.unbundle(data[idx])
+        elif isinstance(data, list):
+            for idx in range(len(data)):
+                if isinstance(data[idx], DataContainer):
+                    data[idx] = data[idx].data[0]
+                data[idx] = self.unbundle(data[idx])
+        elif isinstance(data, dict):
+            for k, v in data.items():
+                if isinstance(v, DataContainer):
+                    data[k] = v.data[0]
+                data[k] = self.unbundle(data[k])
+        return data
