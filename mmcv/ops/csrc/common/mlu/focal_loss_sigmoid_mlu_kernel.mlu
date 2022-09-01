@@ -72,7 +72,7 @@ __mlu_func__ void compute(T *input, const int32_t *target, const T *weight,
 
   // 0. alpha_t * p_t^r = alpha * (1 - p) ^ gamma  if t == c_i
   //                    = (1 - alpha) * p ^ gamma  if t != c_i
-  __nramset((T *)output, deal_num, (T)(1 - alpha));
+  __bang_write_value((T *)output, deal_num, (T)(1 - alpha));
   __bang_active_sigmoid((T *)compute_b, (T *)input, deal_num);
   for (int32_t i = 0; i < n_seg; ++i) {
     const int32_t t = *((uint32_t *)target + i);
@@ -86,25 +86,25 @@ __mlu_func__ void compute(T *input, const int32_t *target, const T *weight,
   if (sizeof(T) == sizeof(half)) {
     __bang_half2float((float *)compute_a, (half *)compute_b, deal_num);
     __bang_active_loghp((float *)compute_a, (float *)compute_a, deal_num);
-    __bang_mul_const((float *)compute_a, (float *)compute_a, (float)gamma,
-                     deal_num);
+    __bang_mul_scalar((float *)compute_a, (float *)compute_a, (float)gamma,
+                      deal_num);
     __bang_active_exphp((float *)compute_a, (float *)compute_a, deal_num);
     __bang_float2half_rd((half *)compute_a, (float *)compute_a, deal_num);
   } else {
     __bang_active_loghp((T *)compute_a, (T *)compute_b, deal_num);
-    __bang_mul_const((T *)compute_a, (T *)compute_a, (T)gamma, deal_num);
+    __bang_mul_scalar((T *)compute_a, (T *)compute_a, (T)gamma, deal_num);
     __bang_active_exphp((T *)compute_a, (T *)compute_a, deal_num);
   }
   __bang_mul((T *)output, (T *)compute_a, (T *)output, deal_num);
 
   // 1. max = max(0, -x)  if t == c_i
   //        = max(0, x)   if t != c_i
-  __nramset((T *)compute_b, deal_num, (T)0);
+  __bang_write_value((T *)compute_b, deal_num, (T)0);
   __bang_maxequal((T *)compute_b, (T *)compute_b, (T *)input, deal_num);
 
   // 2. -log(p_t) = ln(e^(-max)+ e^(-max-x) + max   if t == c_i
   //              = ln(e^(-max)+ e^(-max+x) + max   if t != c_i
-  __bang_mul_const((T *)compute_a, (T *)compute_b, (T)-1.0, deal_num);
+  __bang_mul_scalar((T *)compute_a, (T *)compute_b, (T)-1.0, deal_num);
   __bang_add((T *)input, (T *)compute_a, (T *)input, deal_num);
 
   __bang_active_exphp((T *)compute_a, (T *)compute_a, deal_num);
@@ -122,8 +122,8 @@ __mlu_func__ void compute(T *input, const int32_t *target, const T *weight,
       int32_t t = *((int32_t *)target + i);
       if (t >= 0 && t < c) {
         t = partition_nc ? 0 : t;
-        __bang_mul_const((T *)output + i * c_num, (T *)output + i * c_num,
-                         *((T *)weight + t), c_num);
+        __bang_mul_scalar((T *)output + i * c_num, (T *)output + i * c_num,
+                          *((T *)weight + t), c_num);
       }
     }
   }
@@ -348,7 +348,8 @@ __mlu_func__ void focalLossSigmoidForwardBlock(
     const int32_t split_pipeline_size =
         PAD_UP(c_num * n_seg * sizeof(T), NFU_ALIGN_SIZE);
     const int32_t compute_size = 2 * split_pipeline_size;
-    const int32_t pingpong_offset = (MAX_NRAM_SIZE - weight_size - compute_size) / 2;
+    const int32_t pingpong_offset =
+        (MAX_NRAM_SIZE - weight_size - compute_size) / 2;
 
     char *nram_weight = (char *)nram_buffer;
     char *nram_compute_a = nram_weight + has_weight * c_align_size;
@@ -371,7 +372,8 @@ __mlu_func__ void focalLossSigmoidForwardBlock(
     const int32_t c_seg = split_pipeline_size / sizeof(T);
     const int32_t n_seg = 1;
     const int32_t compute_size = 2 * split_pipeline_size;
-    const int32_t pingpong_offset = (MAX_NRAM_SIZE - weight_size - compute_size) / 2;
+    const int32_t pingpong_offset =
+        (MAX_NRAM_SIZE - weight_size - compute_size) / 2;
     const int32_t pingpong_weight_offset = weight_size / 2;
 
     char *nram_weight = (char *)nram_buffer;
@@ -455,9 +457,9 @@ __mlu_func__ void loadInput(char *nram_input, char *nram_target,
 template <typename T>
 __mlu_func__ void sigmoid(T *dst_data, const T *src_data,
                           const int32_t elem_count) {
-  __bang_mul_const(dst_data, (T *)src_data, T(-1), elem_count);
+  __bang_mul_scalar(dst_data, (T *)src_data, T(-1), elem_count);
   __bang_active_exphp(dst_data, dst_data, elem_count);
-  __bang_add_const(dst_data, dst_data, T(1), elem_count);
+  __bang_add_scalar(dst_data, dst_data, T(1), elem_count);
   __bang_active_reciphp(dst_data, dst_data, elem_count);
 }
 
@@ -488,13 +490,13 @@ __mlu_func__ void coreCompute(char *nram_input, const T *nram_weight,
   }
 
   // 0. alpha_t = alpha - 1
-  __nramset((float *)nram_alpha_t, compute_num, (float)(alpha - 1.0));
+  __bang_write_value((float *)nram_alpha_t, compute_num, (float)(alpha - 1.0));
 
   // 1. pt = 1 - sigmoid(x)
   sigmoid((float *)nram_pt, (float *)nram_input, compute_num);
-  __bang_mul_const((float *)nram_pt, (float *)nram_pt, (float)(-1),
-                   compute_num);
-  __bang_add_const((float *)nram_pt, (float *)nram_pt, (float)1, compute_num);
+  __bang_mul_scalar((float *)nram_pt, (float *)nram_pt, (float)(-1),
+                    compute_num);
+  __bang_add_scalar((float *)nram_pt, (float *)nram_pt, (float)1, compute_num);
 
   // 2. pt      = target[n] == c ? sigmoid(x) : 1 - sigmoid(x)
   //    alpha_t = target[n] == c ? alpha      : alpha - 1
@@ -518,10 +520,10 @@ __mlu_func__ void coreCompute(char *nram_input, const T *nram_weight,
   }
 
   // 3. temp = -alpha_t * e^(gamma * log(max(1 - pt, FLT_MIN))
-  __bang_mul_const((float *)nram_temp, (float *)nram_pt, (float)(-1),
-                   compute_num);
-  __bang_add_const((float *)nram_temp, (float *)nram_temp, (float)(1),
-                   compute_num);
+  __bang_mul_scalar((float *)nram_temp, (float *)nram_pt, (float)(-1),
+                    compute_num);
+  __bang_add_scalar((float *)nram_temp, (float *)nram_temp, (float)(1),
+                    compute_num);
   __bang_cycle_maxequal((float *)nram_temp, (float *)nram_temp,
                         (float *)nram_flt_min, compute_num, nfu_align_num);
   __bang_active_loghp((float *)nram_temp, (float *)nram_temp, compute_num);
@@ -530,8 +532,8 @@ __mlu_func__ void coreCompute(char *nram_input, const T *nram_weight,
   __bang_active_exphp((float *)nram_temp, (float *)nram_temp, compute_num);
   __bang_mul((float *)nram_temp, (float *)nram_temp, (float *)nram_alpha_t,
              compute_num);
-  __bang_mul_const((float *)nram_temp, (float *)nram_temp, (float)(-1),
-                   compute_num);
+  __bang_mul_scalar((float *)nram_temp, (float *)nram_temp, (float)(-1),
+                    compute_num);
 
   // 4. output = 1 - pt - gamma * pt * log(max(pt, FLT_MIN))
   __bang_cycle_maxequal((float *)nram_output, (float *)nram_pt,
@@ -543,10 +545,10 @@ __mlu_func__ void coreCompute(char *nram_input, const T *nram_weight,
                    (float *)nram_gamma, compute_num, nfu_align_num);
   __bang_add((float *)nram_output, (float *)nram_output, (float *)nram_pt,
              compute_num);
-  __bang_mul_const((float *)nram_output, (float *)nram_output, (float)(-1),
-                   compute_num);
-  __bang_add_const((float *)nram_output, (float *)nram_output, (float)(1),
-                   compute_num);
+  __bang_mul_scalar((float *)nram_output, (float *)nram_output, (float)(-1),
+                    compute_num);
+  __bang_add_scalar((float *)nram_output, (float *)nram_output, (float)(1),
+                    compute_num);
 
   // 5. output = output * temp
   __bang_mul((float *)nram_output, (float *)nram_output, (float *)nram_temp,
@@ -567,8 +569,8 @@ __mlu_func__ void coreCompute(char *nram_input, const T *nram_weight,
       int32_t align_c = PAD_UP(total_c, c_align_num);
       int32_t target_value = ((int32_t *)nram_target)[n];
       T weight_value = nram_weight[target_value];
-      __bang_mul_const((T *)nram_output + n * align_c,
-                       (T *)nram_output + n * align_c, weight_value, align_c);
+      __bang_mul_scalar((T *)nram_output + n * align_c,
+                        (T *)nram_output + n * align_c, weight_value, align_c);
     }
   }
 }
@@ -675,8 +677,8 @@ __mlu_func__ void focalLossSigmoidBackwardBlock(
   }
 
   // nram set gamma and FLT_MIN
-  __nramset(nram_gamma, nfu_align_num, gamma);
-  __nramset(nram_flt_min, nfu_align_num, FLT_MIN);
+  __bang_write_value(nram_gamma, nfu_align_num, gamma);
+  __bang_write_value(nram_flt_min, nfu_align_num, FLT_MIN);
 
   /*
    * Pipeline: The pipeline is processed in three stages: Load, Compute, Store.

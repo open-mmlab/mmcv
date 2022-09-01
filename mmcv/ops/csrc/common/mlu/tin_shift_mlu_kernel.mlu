@@ -26,7 +26,7 @@ __mlu_func__ void mluMultiKernelTinShift(
     int t_shift = shifts[n_index * group_size + group_id];
     int index = cur_channel_index % channel_size * hw_size +
                 n_index * time_size * channel_size * hw_size;
-    __nramset(data_nram, MAX_NRAM_SIZE, (char)0);
+    __bang_write_value(data_nram, MAX_NRAM_SIZE, (char)0);
     __asm__ volatile("sync;");
     if (abs(t_shift) >= time_size) {
       __memcpy(output + index, data_nram, hw_size * sizeof(T), NRAM2GDRAM,
@@ -109,7 +109,7 @@ __mlu_func__ void mluMultiKernelTinShiftSplitSequence(
     int next_sequence_index =
         index / hw_size / channel_size % time_size + segmentime_size;
     int cur_sequence_index = index / hw_size / channel_size % time_size;
-    __nramset(data_nram, MAX_NRAM_SIZE, (char)0);
+    __bang_write_value(data_nram, MAX_NRAM_SIZE, (char)0);
     __asm__ volatile("sync;");
     if (max_number_hw_per_core == 0) {
       mluHwSplit(input, t_shift, time_size, hw_size, channel_size, index,
