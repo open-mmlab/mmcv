@@ -36,15 +36,15 @@ def test_roipoint(device, dtype):
                         dtype=dtype).to(device)
 
     roipoint_pool3d = RoIPointPool3d(num_sampled_points=4)
-    pooled_features, pooled_empty_flag = roipoint_pool3d(points, feats, rois)
-    expected_pooled_features = torch.tensor(
+    roi_feat, empty_flag = roipoint_pool3d(points, feats, rois)
+    expected_roi_feat = torch.tensor(
         [[[[1, 2, 3.3, 1, 2, 3.3], [1.2, 2.5, 3, 1.2, 2.5, 3],
            [0.8, 2.1, 3.5, 0.8, 2.1, 3.5], [1.6, 2.6, 3.6, 1.6, 2.6, 3.6]],
           [[-9.2, 21, 18.2, -9.2, 21, 18.2], [-9.2, 21, 18.2, -9.2, 21, 18.2],
            [-9.2, 21, 18.2, -9.2, 21, 18.2], [-9.2, 21, 18.2, -9.2, 21, 18.2]]]
          ],
         dtype=dtype).to(device)
-    expected_pooled_empty_flag = torch.tensor([[0, 0]]).int().to(device)
+    expected_empty_flag = torch.tensor([[0, 0]]).int().to(device)
 
-    assert torch.allclose(pooled_features, expected_pooled_features)
-    assert torch.allclose(pooled_empty_flag, expected_pooled_empty_flag)
+    assert torch.allclose(roi_feat, expected_roi_feat)
+    assert torch.allclose(empty_flag, expected_empty_flag)
