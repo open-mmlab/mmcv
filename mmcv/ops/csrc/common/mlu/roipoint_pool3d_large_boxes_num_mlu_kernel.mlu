@@ -10,7 +10,6 @@
  *************************************************************************/
 
 #include "common_mlu_helper.hpp"
-#include "roipoint_pool3d_utils.hpp"
 
 /*************************************************************************
  *
@@ -138,7 +137,7 @@ __mlu_func__ void computeStoreRoipointPool3d(char *boxes3d,
     return;
   }
   int sampled_pts_num_rem = sampled_pts_num - *cnt;
-  int segnum = MIN(select_num, sampled_pts_num_rem) - 1;
+  int segnum = min((int)select_num, sampled_pts_num_rem) - 1;
 
   // copy x to pooled_features_gdram
   // The result of __bang_select is composed of three parts:
@@ -243,7 +242,7 @@ __mlu_func__ void computeStoreLastBlockRoipointPool3d(char *boxes3d,
 
   if (select_num > 0) {
     int sampled_pts_num_rem = sampled_pts_num - *cnt;
-    int segnum = MIN(select_num, sampled_pts_num_rem) - 1;
+    int segnum = min((int)select_num, sampled_pts_num_rem) - 1;
 
     // copy x to pooled_features_gdram
     // The result of __bang_select is composed of three parts:

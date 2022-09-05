@@ -11,7 +11,6 @@
  *************************************************************************/
 #include "pytorch_device_registry.hpp"
 #include "pytorch_mlu_helper.hpp"
-#include "roipoint_pool3d_utils.hpp"
 
 void KernelRoiPointPool3dForward(cnrtDim3_t k_dim,
                                  cnrtFunctionType_t k_type,
