@@ -420,28 +420,7 @@ setup(
     description='OpenMMLab Computer Vision Foundation',
     keywords='computer vision',
     packages=find_packages(),
-    package_data = {   
-        'mmcv': [
-            'model_zoo/*.json',
-            'ops/csrc/common/cuda/*.cuh',
-            'ops/csrc/common/hip/*.cuh',
-            'ops/csrc/common/cuda/*.hpp',
-            'ops/csrc/common/hip/*.hpp',
-            'ops/csrc/common/*.hpp',
-            'ops/csrc/pytorch/*.cpp',
-            'ops/csrc/pytorch/cuda/*.cu',
-            'ops/csrc/pytorch/hip/*.hip',
-            'ops/csrc/pytorch/cuda/*.cpp',
-            'ops/csrc/pytorch/hip/*.cpp',
-            'ops/csrc/pytorch/cpu/*.cpp',
-            'ops/csrc/parrots/*.h',
-            'ops/csrc/parrots/*.cpp',
-            'ops/csrc/pytorch/mps/*.mm',
-            'mmcv/ops/csrc/common/mps/*.h',
-            'mmcv/ops/csrc/common/mps/*.mm'
-        ]
-    },
-
+    include_package_data=True,
     classifiers=[
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: Apache Software License',
