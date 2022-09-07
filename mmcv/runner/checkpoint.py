@@ -139,8 +139,7 @@ def get_torchvision_models():
         model_urls = mmcv.load(json_path)
         if digit_version(torchvision.__version__) < digit_version('0.14.0a0'):
             weights_list = [
-                cls
-                for cls_name, cls in torchvision.models.__dict__.items()
+                cls for cls_name, cls in torchvision.models.__dict__.items()
                 if cls_name.endswith('_Weights')
             ]
         else:
