@@ -38,9 +38,7 @@ __mlu_func__ void pvUnlock() {
 }
 
 template <typename T>
-static __mlu_func__ void computeReluN(T *nram_dst,
-                                      T *nram_src,
-                                      void *nram_tmp,
+static __mlu_func__ void computeReluN(T *nram_dst, T *nram_src, void *nram_tmp,
                                       const int deal_num,
                                       const T threshold = 0) {
   if (threshold < 0) {
@@ -56,16 +54,19 @@ static __mlu_func__ void computeReluN(T *nram_dst,
     T *nram_zero = nram_aux_b + align_num;
     __bang_write_value(nram_aux_b, align_num, threshold);
     __bang_write_zero(nram_zero, align_num);
-    __bang_cycle_lt((T *)nram_aux_a, nram_src, (T *)nram_aux_b, deal_num, align_num);
+    __bang_cycle_lt((T *)nram_aux_a, nram_src, (T *)nram_aux_b, deal_num,
+                    align_num);
     __bang_mul(nram_dst, nram_src, (T *)nram_aux_a, deal_num);
-    __bang_cycle_eq((T *)nram_aux_a, (T *)nram_aux_a, (T *)nram_zero, deal_num, align_num);
-    __bang_cycle_mul((T *)nram_aux_a, (T *)nram_aux_a, (T *)nram_aux_b, deal_num, align_num);
+    __bang_cycle_eq((T *)nram_aux_a, (T *)nram_aux_a, (T *)nram_zero, deal_num,
+                    align_num);
+    __bang_cycle_mul((T *)nram_aux_a, (T *)nram_aux_a, (T *)nram_aux_b,
+                     deal_num, align_num);
     __bang_add(nram_dst, nram_dst, (T *)nram_aux_a, deal_num);
-    __bang_cycle_gt((T *)nram_aux_a, nram_dst, (T *)nram_zero, deal_num, align_num);
+    __bang_cycle_gt((T *)nram_aux_a, nram_dst, (T *)nram_zero, deal_num,
+                    align_num);
     __bang_mul(nram_dst, nram_dst, (T *)nram_aux_a, deal_num);
 #endif
-  }
-  else {
+  } else {
 #if __BANG_ARCH__ >= 300
     __bang_relu(nram_dst, nram_src, deal_num);
 #else
