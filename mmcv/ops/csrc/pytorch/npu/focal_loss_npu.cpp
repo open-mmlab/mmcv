@@ -80,7 +80,7 @@ void softmax_focal_loss_backward_npu(Tensor input, Tensor target, Tensor weight,
     int64_t weight_size = weight.size(0);
     at::Tensor weight_y = at::ones_like(input);
     if(weight_size > 0) {
-        weight_y = aat_npu::native::NPUNativeFunctions::npu_broadcast(weight, input.sizes());
+        weight_y = at_npu::native::NPUNativeFunctions::npu_broadcast(weight, input.sizes());
     }
     
     OpCommand cmd;
