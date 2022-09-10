@@ -237,7 +237,7 @@ For more details, please refer the the following tables.
 Another way is to compile locally by running
 
 ```python
-pip install 'mmcv>=2.0.0rc1'
+pip install "mmcv>=2.0.0rc1"
 ```
 
 Note that the local compiling may take up to 10 mins.
