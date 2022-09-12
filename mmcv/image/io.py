@@ -7,7 +7,6 @@ from typing import Optional, Union
 
 import cv2
 import numpy as np
-import PIL.Image
 from cv2 import (IMREAD_COLOR, IMREAD_GRAYSCALE, IMREAD_IGNORE_ORIENTATION,
                  IMREAD_UNCHANGED)
 
@@ -86,7 +85,7 @@ def _jpegflag(flag: str = 'color', channel_order: str = 'bgr'):
         raise ValueError('flag must be "color" or "grayscale"')
 
 
-def _pillow2array(img: PIL.Image.Image,
+def _pillow2array(img,
                   flag: str = 'color',
                   channel_order: str = 'bgr') -> np.ndarray:
     """Convert a pillow image to numpy array.
