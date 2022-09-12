@@ -48,7 +48,7 @@ jobs:
           command: pip install -r requirements/test.txt
       - run:
           name: Run unit tests
-          command: pytest tests/test_image tests/test_transforms tests/test_video tests/test_arraymisc.py tests/test_visualization.py tests/test_utils/test_env.py
+          command: pytest tests/test_image tests/test_transforms tests/test_video tests/test_arraymisc.py tests/test_visualization.py tests/test_utils/test_env.py --ignore=tests/test_image/test_io.py
   build_without_ops:
     parameters:
       # The python version must match available image tags in
