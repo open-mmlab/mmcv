@@ -34,6 +34,11 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install Libraries
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y ninja-build libglib2.0-0 libsm6 libxrender-dev libxext6 libgl1-mesa-glx libjpeg-dev zlib1g-dev libtinfo-dev libncurses5 ffmpeg libturbojpeg
+      - run:
           name: Upgrade pip
           command: |
             pip install pip --upgrade
