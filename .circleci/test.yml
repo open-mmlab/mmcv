@@ -201,11 +201,11 @@ workflows:
               ignore:
                 - 2.x
       - build_without_torch:
-          name: build without torch
+          name: build_without_torch
           requires:
             - lint
       - build_without_ops:
-          name: build without ops
+          name: build_without_ops
           torch: 1.6.0
           torchvision: 0.7.0
           requires:
