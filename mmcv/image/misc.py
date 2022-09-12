@@ -11,7 +11,7 @@ except ImportError:
     torch = None
 
 
-def tensor2imgs(tensor: torch.Tensor,
+def tensor2imgs(tensor,
                 mean: Optional[tuple] = None,
                 std: Optional[tuple] = None,
                 to_rgb: bool = True) -> list:
