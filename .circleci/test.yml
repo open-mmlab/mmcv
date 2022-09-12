@@ -105,9 +105,8 @@ jobs:
           name: Install PyTorch
           command: pip install torch==<< parameters.torch >>+cpu torchvision==<< parameters.torchvision >>+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - run:
-          # pstuil is an optional package to detect the number of CPU for compiling mmcv
-          name: Install ninja and psutil to speed the compilation
-          command: pip install ninja psutil
+          name: Install ninja to speed the compilation
+          command: pip install ninja
       - run:
           name: Create sdist and untar
           command: |
