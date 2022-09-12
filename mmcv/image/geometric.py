@@ -15,8 +15,10 @@ except ImportError:
     Image = None
 
 
-def _scale_size(size: Tuple[int, int], scale: Union[float, int,
-                                                    tuple]) -> Tuple[int, int]:
+def _scale_size(
+    size: Tuple[int, int],
+    scale: Union[float, int, tuple],
+) -> Tuple[int, int]:
     """Rescale a size by a ratio.
 
     Args:
