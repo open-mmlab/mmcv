@@ -46,10 +46,17 @@
    community/pr.md
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: API 文档
 
-   api.rst
+   mmcv.image <api/image>
+   mmcv.video <api/video>
+   mmcv.visualization <api/visualization>
+   mmcv.cnn <api/cnn>
+   mmcv.ops <api/ops>
+   mmcv.transforms <api/transforms>
+   mmcv.arraymisc <api/arraymisc>
+   mmcv.utils <api/utils>
 
 
 Indices and tables
