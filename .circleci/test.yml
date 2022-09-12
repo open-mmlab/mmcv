@@ -21,61 +21,82 @@ jobs:
       - run:
           name: Linting
           command: pre-commit run --all-files
-
-  # build_without_torch:
-  #   parameters:
-  #     # The python version must match available image tags in
-  #     # https://circleci.com/developer/images/image/cimg/python
-  #     python:
-  #       type: string
-  #       default: "3.7.4"
-  #   docker:
-  #     - image: cimg/python:<< parameters.python >>
-  #   resource_class: large
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: Upgrade pip
-  #         command: |
-  #           pip install pip --upgrade
-  #           pip --version
-  #     - run:
-  #         name: Build MMEngine from source
-  #         command: pip install -e . -v
-  #     - run:
-  #         name: Install unit tests dependencies
-  #         command: pip install -r requirements/tests.txt
-  #     - run:
-  #         name: Run unit tests
-  #         command: pytest tests/test_config tests/test_registry tests/test_fileio tests/test_logging tests/test_utils --ignore=tests/test_utils/test_dl_utils
-
-  # build_without_ops:
-  #   parameters:
-  #     # The python version must match available image tags in
-  #     # https://circleci.com/developer/images/image/cimg/python
-  #     python:
-  #       type: string
-  #       default: "3.7.4"
-  #   docker:
-  #     - image: cimg/python:<< parameters.python >>
-  #   resource_class: large
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: Upgrade pip
-  #         command: |
-  #           pip install pip --upgrade
-  #           pip --version
-  #     - run:
-  #         name: Build MMEngine from source
-  #         command: pip install -e . -v
-  #     - run:
-  #         name: Install unit tests dependencies
-  #         command: pip install -r requirements/test.txt
-  #     - run:
-  #         name: Run unit tests
-  #         command: pytest tests/test_config tests/test_registry tests/test_fileio tests/test_logging tests/test_utils --ignore=tests/test_utils/test_dl_utils
-
+  build_without_torch:
+    parameters:
+      # The python version must match available image tags in
+      # https://circleci.com/developer/images/image/cimg/python
+      python:
+        type: string
+        default: "3.7.4"
+    docker:
+      - image: cimg/python:<< parameters.python >>
+    resource_class: large
+    steps:
+      - checkout
+      - run:
+          name: Upgrade pip
+          command: |
+            pip install pip --upgrade
+            pip --version
+      - run:
+          name: Build MMCV from source
+          command: pip install -e . -v
+          environment:
+            MMCV_WITH_OPS: 0
+      - run:
+          name: Install unit tests dependencies
+          command: pip install -r requirements/test.txt
+      - run:
+          name: Run unit tests
+          command: pytest tests/image tests/test_transforms tests/test_video tests/test_arraymisc.py tests/test_visualization.py tests/test_uitls/test_env.py
+  build_without_ops:
+    parameters:
+      # The python version must match available image tags in
+      # https://circleci.com/developer/images/image/cimg/python
+      python:
+        type: string
+        default: "3.7.4"
+      torch:
+        type: string
+      torchvision:
+        type: string
+    docker:
+      - image: cimg/python:<< parameters.python >>
+    resource_class: large
+    steps:
+      - checkout
+      - run:
+          name: Install Libraries
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y ninja-build libglib2.0-0 libsm6 libxrender-dev libxext6 libgl1-mesa-glx libjpeg-dev zlib1g-dev libtinfo-dev libncurses5 ffmpeg libturbojpeg
+      - run:
+          name: Configure Python & pip
+          command: |
+            pip install --upgrade pip
+            pip install wheel
+      - run:
+          name: Install PyTorch
+          command: pip install torch==<< parameters.torch >>+cpu torchvision==<< parameters.torchvision >>+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - run:
+          name: Create sdist and untar
+          command: |
+            sed -i "s/os.getenv('MMCV_WITH_OPS', '1')/os.getenv('MMCV_WITH_OPS', '0')/g" setup.py
+            python setup.py sdist
+            tar zxvf dist/mmcv* -C /tmp
+            rm -r mmcv
+      - run:
+          name: Build and install from sdist
+          command: |
+            pushd /tmp/mmcv*
+            pip install -e . -v
+            popd
+      - run:
+          name: Install unit tests dependencies
+          command: pip install -r requirements/test.txt
+      - run:
+          name: Run unit tests
+          command: pytest tests --ignore=tests/test_ops
   build_cpu:
     parameters:
       # The python version must match available image tags in
@@ -158,7 +179,6 @@ jobs:
       - run:
           name: Run unittests
           command: docker exec mmcv python -m pytest tests/
-
 workflows:
   pr_stage_lint:
     when: << pipeline.parameters.lint_only >>
@@ -168,7 +188,7 @@ workflows:
           filters:
             branches:
               ignore:
-                - main
+                - 2.x
   pr_stage_test:
     when:
       not:
@@ -179,18 +199,24 @@ workflows:
           filters:
             branches:
               ignore:
-                - main
-      # - build_without_torch:
-      #     name: build without torch
-      #     requires:
-      #       - lint
+                - 2.x
+      - build_without_torch:
+          name: build without torch
+          requires:
+            - lint
+      - build_without_ops:
+          name: build without ops
+          torch: 1.6.0
+          torchvision: 0.7.0
+          requires:
+            - build_without_torch
       - build_cpu:
           name: minimum_version_cpu
           torch: 1.6.0
           torchvision: 0.7.0
           python: 3.6.9  # The lowest python 3.6.x version available on CircleCI images
           requires:
-            - lint
+            - build_without_ops
       - build_cpu:
           name: maximum_version_cpu
           torch: 1.12.1
@@ -210,18 +236,18 @@ workflows:
           cuda: "10.2"
           requires:
             - hold
-  # merge_stage_test:
-  #   when:
-  #     not:
-  #       << pipeline.parameters.lint_only >>
-  #   jobs:
-  #     - build_cuda:
-  #         name: minimum_version_gpu
-  #         torch: 1.6.0
-  #         # Use double quotation mark to explicitly specify its type
-  #         # as string instead of number
-  #         cuda: "10.1"
-  #         filters:
-  #           branches:
-  #             only:
-  #               - main
+  merge_stage_test:
+    when:
+      not:
+        << pipeline.parameters.lint_only >>
+    jobs:
+      - build_cuda:
+          name: minimum_version_gpu
+          torch: 1.6.0
+          # Use double quotation mark to explicitly specify its type
+          # as string instead of number
+          cuda: "10.1"
+          filters:
+            branches:
+              only:
+                - 2.x
