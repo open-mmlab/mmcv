@@ -84,6 +84,9 @@ jobs:
           name: Install PyTorch
           command: pip install torch==<< parameters.torch >>+cpu torchvision==<< parameters.torchvision >>+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - run:
+          name: Install MMEngine from main branch
+          command: pip install git+ssh://git@github.com/open-mmlab/mmengine.git@main
+      - run:
           name: Create sdist and untar
           command: |
             sed -i "s/os.getenv('MMCV_WITH_OPS', '1')/os.getenv('MMCV_WITH_OPS', '0')/g" setup.py
@@ -131,6 +134,9 @@ jobs:
           name: Install PyTorch
           command: pip install torch==<< parameters.torch >>+cpu torchvision==<< parameters.torchvision >>+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - run:
+          name: Install MMEngine from main branch
+          command: pip install git+ssh://git@github.com/open-mmlab/mmengine.git@main
+      - run:
           name: Install ninja to speed the compilation
           command: pip install ninja
       - run:
@@ -175,6 +181,9 @@ jobs:
           command: |
             docker build .circleci/docker -t mmcv:gpu --build-arg PYTORCH=<< parameters.torch >> --build-arg CUDA=<< parameters.cuda >> --build-arg CUDNN=<< parameters.cudnn >>
             docker run --gpus all -t -d -v /home/circleci/project:/mmcv -w /mmcv --name mmcv mmcv:gpu
+      - run:
+          name: Install MMEngine from main branch
+          command: docker exec mmcv pip install git+ssh://git@github.com/open-mmlab/mmengine.git@main
       - run:
           name: Build MMCV from source
           command: docker exec mmcv pip install -e . -v
