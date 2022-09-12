@@ -53,12 +53,8 @@ Build Function
    build_padding_layer
    build_plugin_layer
    build_upsample_layer
-   conv_ws_2d
-   is_norm
-   make_res_layer
-   make_vgg_layer
 
-Utils
+Miscellaneous
 ----------------
 
 .. autosummary::
@@ -66,4 +62,8 @@ Utils
    :nosignatures:
 
    fuse_conv_bn
+   conv_ws_2d
+   is_norm
+   make_res_layer
+   make_vgg_layer
    get_model_complexity_info

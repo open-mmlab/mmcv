@@ -494,6 +494,7 @@ def impad(img,
             areas when padding_mode is 'constant'. Default: 0.
         padding_mode (str): Type of padding. Should be: constant, edge,
             reflect or symmetric. Default: constant.
+
             - constant: pads with a constant value, this value is specified
               with pad_val.
             - edge: pads with the last value at the edge of the image.
