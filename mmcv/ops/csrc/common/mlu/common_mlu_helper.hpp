@@ -35,6 +35,158 @@
 
 #define CEIL_ALIGN(x, y) (((x) + (y)-1) / (y) * (y))
 
+template <typename scalar_t>
+__mlu_func__ inline scalar_t min(scalar_t a, scalar_t b) {
+  return a < b ? a : b;
+}
+
+template <typename scalar_t>
+__mlu_func__ inline scalar_t max(scalar_t a, scalar_t b) {
+  return a > b ? a : b;
+}
+
+/*!
+ * @brief loads data from global DRAM to NRAM with 2D pattern.
+ *
+ * @param[out] dst
+ *   Pointer to NRAM that stores dst data.
+ * @param[in] src
+ *   Pointer to global DRAM that stores src data.
+ * @param[in] size
+ *   The byte size of segment in the lower dimension.
+ * @param[in] dst_str
+ *   The data stride in bytes between segments in the lower dimension of dst.
+ * @param[in] src_str
+ *   The data stride in bytes between segments in the lower dimension of src.
+ * @param[in] seg_num
+ *   The total count of data segments in the lower dimension.
+ */
+template <typename T>
+__mlu_func__ void loadStr2D(T *dst, T *src, const int size, const int dst_str,
+                            const int src_str, const int seg_num) {
+  if (dst_str == src_str && size == src_str) {
+    __memcpy(dst, src, src_str * seg_num * sizeof(T), GDRAM2NRAM);
+  } else if ((size == src_str || src_str <= dst_str) &&
+             src_str * sizeof(T) <= 512) {
+    // gather data less than 512Bytes to improve IO efficiency
+    T *tmp = (T *)dst + (dst_str - src_str) * seg_num;
+    __memcpy(tmp, src, (src_str * (seg_num - 1) + size) * sizeof(T),
+             GDRAM2NRAM);
+    if (dst_str != src_str) {
+      __memcpy(dst, tmp, size * sizeof(T), NRAM2NRAM, dst_str * sizeof(T),
+               src_str * sizeof(T), seg_num - 1);
+    }
+  } else {
+    __memcpy(dst, src, size * sizeof(T), GDRAM2NRAM, dst_str * sizeof(T),
+             src_str * sizeof(T), seg_num - 1);
+  }
+}
+
+/*!
+ * @brief loads data from global DRAM to NRAM with 3D pattern.
+ *
+ * @param[out] dst
+ *   Pointer to NRAM that stores dst data.
+ * @param[in] src
+ *   Pointer to global DRAM that stores src data.
+ * @param[in] size
+ *   The byte size of segment in the lowest dimension.
+ * @param[in] seg_num_in
+ *   The total count of data segments in the lowest dimension.
+ * @param[in] seg_num_out
+ *   The total count of data segments in the middle dimension.
+ * @param[in] dst_str_in
+ *   The data stride in bytes between segments in the lowest dimension of dst.
+ * @param[in] dst_str_out
+ *   The data stride in bytes between segments in the middle dimension of dst.
+ * @param[in] src_str_in
+ *   The data stride in bytes between segments in the lowest dimension of src.
+ * @param[in] src_str_out
+ *   The data stride in bytes between segments in the middle dimension of src.
+ */
+template <typename T>
+__mlu_func__ void loadStr3D(T *dst, T *src, const int size,
+                            const int seg_num_in, const int seg_num_out,
+                            const int dst_str_in, const int dst_str_out,
+                            const int src_str_in, const int src_str_out) {
+  T *tmp_dst = dst;
+  T *tmp_src = src;
+
+  for (int i = 0; i < seg_num_out; ++i) {
+    loadStr2D(tmp_dst, tmp_src, size, dst_str_in, src_str_in, seg_num_in);
+    tmp_src += src_str_out;
+    tmp_dst += dst_str_out;
+  }
+}
+
+/*!
+ * @brief stores data from NRAM to global DRAM with 2D pattern.
+ *
+ * @param[out] dst
+ *   Pointer to global DRAM that stores dst data.
+ * @param[in] src
+ *   Pointer to NRAM that stores src data.
+ * @param[in] size
+ *   The byte size of segment in the lower dimension.
+ * @param[in] dst_str
+ *   The data stride in bytes between segments in the lower dimension of dst.
+ * @param[in] src_str
+ *   The data stride in bytes between segments in the lower dimension of src.
+ * @param[in] seg_num
+ *   The total count of data segments in the lower dimension.
+ */
+template <typename T>
+__mlu_func__ void storeStr2D(T *dst, T *src, const int size, const int seg_num,
+                             const int dst_str, const int src_str) {
+  if ((size == dst_str && dst_str <= src_str) && dst_str * sizeof(T) <= 512) {
+    // gather data less than 512Bytes to improve IO efficiency
+    if (dst_str != src_str) {
+      __memcpy(src, src, size * sizeof(T), NRAM2NRAM, dst_str * sizeof(T),
+               src_str * sizeof(T), seg_num - 1);
+    }
+    __memcpy(dst, src, size * seg_num * sizeof(T), NRAM2GDRAM);
+  } else {
+    __memcpy(dst, src, size * sizeof(T), NRAM2GDRAM, dst_str * sizeof(T),
+             src_str * sizeof(T), seg_num - 1);
+  }
+}
+
+/*!
+ * @brief stores data from NRAM to global DRAM with 3D pattern.
+ *
+ * @param[out] dst
+ *   Pointer to global DRAM that stores dst data.
+ * @param[in] src
+ *   Pointer to NRAM that stores src data.
+ * @param[in] size
+ *   The byte size of segment in the lowest dimension.
+ * @param[in] seg_num_in
+ *   The total count of data segments in the lowest dimension.
+ * @param[in] seg_num_out
+ *   The total count of data segments in the middle dimension.
+ * @param[in] dst_str_in
+ *   The data stride in bytes between segments in the lowest dimension of dst.
+ * @param[in] dst_str_out
+ *   The data stride in bytes between segments in the middle dimension of dst.
+ * @param[in] src_str_in
+ *   The data stride in bytes between segments in the lowest dimension of src.
+ * @param[in] src_str_out
+ *   The data stride in bytes between segments in the middle dimension of src.
+ */
+template <typename T>
+__mlu_func__ void storeStr3D(T *dst, T *src, const int size,
+                             const int seg_num_in, const int seg_num_out,
+                             const int dst_str_in, const int dst_str_out,
+                             const int src_str_in, const int src_str_out) {
+  T *tmp_dst = dst;
+  T *tmp_src = src;
+  for (int i = 0; i < seg_num_out; ++i) {
+    storeStr2D(tmp_dst, tmp_src, size, seg_num_in, dst_str_in, src_str_in);
+    tmp_src += src_str_out;
+    tmp_dst += dst_str_out;
+  }
+}
+
 /*!
  * @brief Converts int32 to float32 data type.
  *

@@ -274,7 +274,7 @@ def imwrite(img: np.ndarray,
             file_path: str,
             params: Optional[list] = None,
             auto_mkdir: Optional[bool] = None,
-            file_client_args: Union[dict] = None) -> bool:
+            file_client_args: Optional[dict] = None) -> bool:
     """Write image to file.
 
     Note:
