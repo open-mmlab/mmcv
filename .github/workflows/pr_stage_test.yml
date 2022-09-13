@@ -65,8 +65,6 @@ jobs:
     runs-on: ubuntu-18.04
     container:
       image: pytorch/pytorch:1.8.1-cuda10.2-cudnn7-devel
-    env:
-      MKL_THREADING_LAYER: GNU
     strategy:
       matrix:
         python-version: [3.7]
