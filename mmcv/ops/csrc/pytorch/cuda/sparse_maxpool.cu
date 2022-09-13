@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <ATen/ATen.h>
+#include "../spconv_utils.h"
 #include <utils/spconv/spconv/maxpool.h>
 #include <utils/spconv/spconv/mp_helper.h>
 #include <utils/spconv/tensorview/helper_launch.h>
@@ -23,7 +24,6 @@
 #include <type_traits>
 #include <utils/spconv/tensorview/helper_kernel.cuh>
 
-#include "../spconv_utils.h"
 #include "pytorch_cuda_helper.hpp"
 
 template <typename scalar_t, typename Index, int NumTLP, int NumILP>

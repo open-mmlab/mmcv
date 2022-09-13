@@ -252,7 +252,8 @@ class Resize(BaseTransform):
             results['scale'] = self.scale
         else:
             img_shape = results['img'].shape[:2]
-            results['scale'] = _scale_size(img_shape[::-1], self.scale_factor)
+            results['scale'] = _scale_size(img_shape[::-1],
+                                           self.scale_factor)  # type: ignore
         self._resize_img(results)
         self._resize_bboxes(results)
         self._resize_seg(results)
@@ -499,7 +500,7 @@ class CenterCrop(BaseTransform):
         """
         if results.get('img', None) is not None:
             img = mmcv.imcrop(results['img'], bboxes=bboxes)
-            img_shape = img.shape[:2]
+            img_shape = img.shape[:2]  # type: ignore
             results['img'] = img
             results['img_shape'] = img_shape
             results['pad_shape'] = img_shape
