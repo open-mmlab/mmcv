@@ -124,7 +124,7 @@ jobs:
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unittests
-        run: pytest tests --ignore=tests/test_ops
+        run: pytest tests --ignore=tests/test_ops --ignore tests/test_image/test_io.py
   build_windows:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -151,7 +151,7 @@ jobs:
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unittests
-        run: pytest tests/
+        run: pytest tests/ --ignore tests/test_image/test_io.py
   build_macos:
     runs-on: macos-latest
     strategy:
