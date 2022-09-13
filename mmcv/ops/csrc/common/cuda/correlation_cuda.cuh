@@ -83,9 +83,9 @@ __global__ void correlation_forward_cuda_kernel(
       // accumulate
       for (int offset = WARP_SIZE / 2; offset > 0; offset /= 2)
 #ifdef HIP_DIFF
-          prod_sum += __shfl_down(float(prod_sum), offset);
+        prod_sum += __shfl_down(float(prod_sum), offset);
 #else
-          prod_sum += __shfl_down_sync(FULL_MASK, float(prod_sum), offset);
+        prod_sum += __shfl_down_sync(FULL_MASK, float(prod_sum), offset);
 #endif
       if (thread == 0) {
         output[n][ph][pw][h][w] = prod_sum;
