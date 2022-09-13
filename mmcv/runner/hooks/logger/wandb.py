@@ -43,10 +43,15 @@ class WandbLoggerHook(LoggerHook):
             ``out_suffix`` will be uploaded to wandb.
             Default: ('.log.json', '.log', '.py').
             `New in version 1.4.3.`
-        define_metric_cfg (dict):
-            A dict of metrics and summary for wandb.define_metric.
-            Example. dict(bbox_mAP='max')
-            Default: None
+        define_metric_cfg (dict, optional): A dict of metrics and summaries for
+            wandb.define_metric. The key is metric and the value is summary.
+            For example, if setting
+            ``define_metric_cfg={'coco/bbox_mAP': 'max'}``, the maximum value
+            of``coco/bbox_mAP`` will be logged on wandb UI. See
+            `wandb docs <https://docs.wandb.ai/ref/python/run#define_metric>`_
+            for details.
+            Default: None.
+            `New in version 1.6.2.`
 
     .. _wandb:
         https://docs.wandb.ai
@@ -92,7 +97,7 @@ class WandbLoggerHook(LoggerHook):
         if self.define_metric_cfg is not None:
             for metric, summary in self.define_metric_cfg.items():
                 self.wandb.define_metric(  # type: ignore
-                    f'val/{metric}', summary=summary)
+                    metric, summary=summary)
 
     @master_only
     def log(self, runner) -> None:

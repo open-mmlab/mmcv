@@ -1606,7 +1606,8 @@ def test_segmind_hook():
 def test_wandb_hook():
     sys.modules['wandb'] = MagicMock()
     runner = _build_demo_runner()
-    hook = WandbLoggerHook(log_artifact=True)
+    hook = WandbLoggerHook(
+        log_artifact=True, define_metric_cfg={'val/loss': 'min'})
     loader = DataLoader(torch.ones((5, 2)))
 
     runner.register_hook(hook)
