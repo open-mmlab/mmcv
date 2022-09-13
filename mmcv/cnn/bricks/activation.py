@@ -14,6 +14,9 @@ for module in [
 ]:
     MODELS.register_module(module=module)
 
+if digit_version(torch.__version__) >= digit_version('1.7.0'):
+    MODELS.register_module(module=nn.SiLU)
+
 
 @MODELS.register_module(name='Clip')
 @MODELS.register_module()
