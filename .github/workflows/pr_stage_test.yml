@@ -83,7 +83,7 @@ jobs:
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
       - name: Install system dependencies
-        run: apt-get update && apt-get install -y ffmpeg libturbojpeg
+        run: apt-get update && apt-get install -y git ffmpeg libturbojpeg
       - name: Install MMEngine from main branch
         run: pip install git+https://github.com/open-mmlab/mmengine.git@main
       - name: Install ninja to speed the compilation
