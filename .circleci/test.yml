@@ -44,6 +44,9 @@ jobs:
             pip install pip --upgrade
             pip --version
       - run:
+          name: Install MMEngine from main branch
+          command: pip install git+https://github.com/open-mmlab/mmengine.git@main
+      - run:
           name: Build MMCV from source
           command: pip install -e . -v
           environment:
@@ -85,7 +88,7 @@ jobs:
           command: pip install torch==<< parameters.torch >>+cpu torchvision==<< parameters.torchvision >>+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - run:
           name: Install MMEngine from main branch
-          command: pip install git+ssh://git@github.com/open-mmlab/mmengine.git@main
+          command: pip install git+https://github.com/open-mmlab/mmengine.git@main
       - run:
           name: Create sdist and untar
           command: |
@@ -135,7 +138,7 @@ jobs:
           command: pip install torch==<< parameters.torch >>+cpu torchvision==<< parameters.torchvision >>+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - run:
           name: Install MMEngine from main branch
-          command: pip install git+ssh://git@github.com/open-mmlab/mmengine.git@main
+          command: pip install git+https://github.com/open-mmlab/mmengine.git@main
       - run:
           name: Install ninja to speed the compilation
           command: pip install ninja
@@ -183,7 +186,7 @@ jobs:
             docker run --gpus all -t -d -v /home/circleci/project:/mmcv -w /mmcv --name mmcv mmcv:gpu
       - run:
           name: Install MMEngine from main branch
-          command: docker exec mmcv pip install git+ssh://git@github.com/open-mmlab/mmengine.git@main
+          command: docker exec mmcv pip install git+https://github.com/open-mmlab/mmengine.git@main
       - run:
           name: Build MMCV from source
           command: docker exec mmcv pip install -e . -v
