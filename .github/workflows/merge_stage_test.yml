@@ -14,7 +14,7 @@ on:
       - ".pre-commit-config.yaml"
       - ".pre-commit-config-zh-cn.yaml"
     branches:
-      - master
+      - 2.x
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
