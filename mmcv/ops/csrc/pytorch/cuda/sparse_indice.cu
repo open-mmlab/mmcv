@@ -13,7 +13,10 @@
 // limitations under the License.
 
 #include <ATen/ATen.h>
+// clang-format off
+// TODO: make spconv_utils.h order agnostic
 #include "../spconv_utils.h"
+// clang-format on
 #include <utils/spconv/spconv/indice.h>
 #include <utils/spconv/spconv/mp_helper.h>
 #include <utils/spconv/tensorview/helper_launch.h>
