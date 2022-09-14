@@ -3,7 +3,7 @@ import pytest
 import torch
 
 from mmcv.device._functions import Scatter, scatter
-from mmcv.utils import IS_MLU_AVAILABLE, IS_MPS_AVAILABLE
+from mmcv.utils import IS_MLU_AVAILABLE, IS_MPS_AVAILABLE, IS_NPU_AVAILABLE
 
 
 def test_scatter():
@@ -27,6 +27,17 @@ def test_scatter():
         outputs = scatter(input=inputs, devices=[0])
         for input, output in zip(inputs, outputs):
             assert torch.allclose(input.to('mlu'), output)
+
+    # if the device is NPU, copy the input from CPU to NPU
+    if IS_NPU_AVAILABLE:
+        input = torch.zeros([1, 3, 3, 3])
+        output = scatter(input=input, devices=[0])
+        assert torch.allclose(input.to('npu'), output)
+
+        inputs = [torch.zeros([1, 3, 3, 3]), torch.zeros([1, 4, 4, 4])]
+        outputs = scatter(input=inputs, devices=[0])
+        for input, output in zip(inputs, outputs):
+            assert torch.allclose(input.to('npu'), output)
 
     # if the device is MPS, copy the input from CPU to MPS
     if IS_MPS_AVAILABLE:
