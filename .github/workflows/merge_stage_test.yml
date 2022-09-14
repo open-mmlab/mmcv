@@ -92,8 +92,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
-      - name: Install dependencies for compiling onnx if pre-built package are not available
-        run: pip install protobuf && sudo apt-get -y install libprotobuf-dev protobuf-compiler cmake
       - name: Upgrade pip
         run: pip install pip --upgrade
       - name: Install PyTorch
