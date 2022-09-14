@@ -186,7 +186,7 @@ jobs:
             docker run --gpus all -t -d -v /home/circleci/project:/mmcv -w /mmcv --name mmcv mmcv:gpu
       - run:
           name: Install git
-          command: docker exec mmcv apt-get update && apt-get install git -y
+          command: docker exec mmcv sudo apt-get update && sudo apt-get install git -y
       - run:
           name: Install MMEngine from main branch
           command: docker exec mmcv pip install git+https://github.com/open-mmlab/mmengine.git@main
