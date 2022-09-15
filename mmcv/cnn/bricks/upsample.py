@@ -4,15 +4,14 @@ from typing import Dict
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from mmengine.model import xavier_init
+from mmengine.registry import MODELS
 
-from ..utils import xavier_init
-from .registry import UPSAMPLE_LAYERS
-
-UPSAMPLE_LAYERS.register_module('nearest', module=nn.Upsample)
-UPSAMPLE_LAYERS.register_module('bilinear', module=nn.Upsample)
+MODELS.register_module('nearest', module=nn.Upsample)
+MODELS.register_module('bilinear', module=nn.Upsample)
 
 
-@UPSAMPLE_LAYERS.register_module(name='pixel_shuffle')
+@MODELS.register_module(name='pixel_shuffle')
 class PixelShufflePack(nn.Module):
     """Pixel Shuffle upsample layer.
 
@@ -76,11 +75,15 @@ def build_upsample_layer(cfg: Dict, *args, **kwargs) -> nn.Module:
     cfg_ = cfg.copy()
 
     layer_type = cfg_.pop('type')
-    if layer_type not in UPSAMPLE_LAYERS:
-        raise KeyError(f'Unrecognized upsample type {layer_type}')
-    else:
-        upsample = UPSAMPLE_LAYERS.get(layer_type)
 
+    # Switch registry to the target scope. If `upsample` cannot be found
+    # in the registry, fallback to search `upsample` in the
+    # mmengine.MODELS.
+    with MODELS.switch_scope_and_registry(None) as registry:
+        upsample = registry.get(layer_type)
+    if upsample is None:
+        raise KeyError(f'Cannot find {upsample} in registry under scope '
+                       f'name {registry.scope}')
     if upsample is nn.Upsample:
         cfg_['mode'] = layer_type
     layer = upsample(*args, **kwargs, **cfg_)

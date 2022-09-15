@@ -3,10 +3,11 @@ from typing import Any, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
+from mmengine.utils import deprecated_api_warning
 from torch.autograd import Function
 from torch.nn.modules.utils import _pair
 
-from ..utils import deprecated_api_warning, ext_loader
+from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
     '_ext', ['roi_align_rotated_forward', 'roi_align_rotated_backward'])

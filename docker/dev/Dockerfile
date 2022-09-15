@@ -19,14 +19,13 @@ RUN apt-get install -y ffmpeg libturbojpeg \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# build mmcv-full from source with develop mode
+# build mmcv from source with develop mode
 ARG HTTPS_PROXY=""
 ENV https_proxy=${HTTPS_PROXY}
 ENV FORCE_CUDA="1"
-ENV MMCV_WITH_OPS="1"
 ARG CUDA_ARCH=""
 ENV TORCH_CUDA_ARCH_LIST=${CUDA_ARCH}
 RUN git clone https://github.com/open-mmlab/mmcv.git /mmcv
 WORKDIR /mmcv
-RUN git rev-parse --short HEAD
+RUN git checkout 2.x && git rev-parse --short HEAD
 RUN pip install --no-cache-dir -e .[all] -v && pip install pre-commit && pre-commit install

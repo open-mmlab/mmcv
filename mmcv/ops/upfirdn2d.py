@@ -98,10 +98,10 @@
 from typing import Any, List, Tuple, Union
 
 import torch
+from mmengine.utils import to_2tuple
 from torch.autograd import Function
 from torch.nn import functional as F
 
-from mmcv.utils import to_2tuple
 from ..utils import ext_loader
 
 upfirdn2d_ext = ext_loader.load_ext('_ext', ['upfirdn2d'])

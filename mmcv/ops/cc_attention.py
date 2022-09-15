@@ -2,8 +2,9 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from mmengine.registry import MODELS
 
-from mmcv.cnn import PLUGIN_LAYERS, Scale
+from mmcv.cnn import Scale
 
 
 def NEG_INF_DIAG(n: int, device: torch.device) -> torch.Tensor:
@@ -15,7 +16,7 @@ def NEG_INF_DIAG(n: int, device: torch.device) -> torch.Tensor:
     return torch.diag(torch.tensor(float('-inf')).to(device).repeat(n), 0)
 
 
-@PLUGIN_LAYERS.register_module()
+@MODELS.register_module()
 class CrissCrossAttention(nn.Module):
     """Criss-Cross Attention Module.
 

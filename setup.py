@@ -2,7 +2,6 @@ import glob
 import os
 import platform
 import re
-import warnings
 from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import find_packages, setup
 
@@ -138,66 +137,7 @@ except ImportError:
 def get_extensions():
     extensions = []
 
-    if os.getenv('MMCV_WITH_TRT', '0') != '0':
-
-        # Following strings of text style are from colorama package
-        bright_style, reset_style = '\x1b[1m', '\x1b[0m'
-        red_text, blue_text = '\x1b[31m', '\x1b[34m'
-        white_background = '\x1b[107m'
-
-        msg = white_background + bright_style + red_text
-        msg += 'DeprecationWarning: ' + \
-            'Custom TensorRT Ops will be deprecated in future. '
-        msg += blue_text + \
-            'Welcome to use the unified model deployment toolbox '
-        msg += 'MMDeploy: https://github.com/open-mmlab/mmdeploy'
-        msg += reset_style
-        warnings.warn(msg)
-
-        ext_name = 'mmcv._ext_trt'
-        from torch.utils.cpp_extension import include_paths, library_paths
-        library_dirs = []
-        libraries = []
-        include_dirs = []
-        tensorrt_path = os.getenv('TENSORRT_DIR', '0')
-        tensorrt_lib_path = glob.glob(
-            os.path.join(tensorrt_path, 'targets', '*', 'lib'))[0]
-        library_dirs += [tensorrt_lib_path]
-        libraries += ['nvinfer', 'nvparsers', 'nvinfer_plugin']
-        libraries += ['cudart']
-        define_macros = []
-        extra_compile_args = {'cxx': []}
-
-        include_path = os.path.abspath('./mmcv/ops/csrc/common/cuda')
-        include_trt_path = os.path.abspath('./mmcv/ops/csrc/tensorrt')
-        include_dirs.append(include_path)
-        include_dirs.append(include_trt_path)
-        include_dirs.append(os.path.join(tensorrt_path, 'include'))
-        include_dirs += include_paths(cuda=True)
-
-        op_files = glob.glob('./mmcv/ops/csrc/tensorrt/plugins/*')
-        define_macros += [('MMCV_WITH_CUDA', None)]
-        define_macros += [('MMCV_WITH_TRT', None)]
-        cuda_args = os.getenv('MMCV_CUDA_ARGS')
-        extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
-        # prevent cub/thrust conflict with other python library
-        # More context See issues #1454
-        extra_compile_args['nvcc'] += ['-Xcompiler=-fno-gnu-unique']
-        library_dirs += library_paths(cuda=True)
-
-        from setuptools import Extension
-        ext_ops = Extension(
-            name=ext_name,
-            sources=op_files,
-            include_dirs=include_dirs,
-            define_macros=define_macros,
-            extra_compile_args=extra_compile_args,
-            language='c++',
-            library_dirs=library_dirs,
-            libraries=libraries)
-        extensions.append(ext_ops)
-
-    if os.getenv('MMCV_WITH_OPS', '0') == '0':
+    if os.getenv('MMCV_WITH_OPS', '1') == '0':
         return extensions
 
     if EXT_TYPE == 'parrots':
@@ -305,6 +245,30 @@ def get_extensions():
             extension = MLUExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/mlu'))
+        elif (hasattr(torch.backends, 'mps')
+              and torch.backends.mps.is_available()) or os.getenv(
+                  'FORCE_MPS', '0') == '1':
+            # objc compiler support
+            from distutils.unixccompiler import UnixCCompiler
+            if '.mm' not in UnixCCompiler.src_extensions:
+                UnixCCompiler.src_extensions.append('.mm')
+                UnixCCompiler.language_map['.mm'] = 'objc'
+
+            define_macros += [('MMCV_WITH_MPS', None)]
+            extra_compile_args = {}
+            extra_compile_args['cxx'] = ['-Wall', '-std=c++17']
+            extra_compile_args['cxx'] += [
+                '-framework', 'Metal', '-framework', 'Foundation'
+            ]
+            extra_compile_args['cxx'] += ['-ObjC++']
+            # src
+            op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/common/mps/*.mm') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/mps/*.mm')
+            extension = CppExtension
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/mps'))
         else:
             print(f'Compiling {ext_name} only with CPU')
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
@@ -329,68 +293,11 @@ def get_extensions():
             define_macros=define_macros,
             extra_compile_args=extra_compile_args)
         extensions.append(ext_ops)
-
-    if EXT_TYPE == 'pytorch' and os.getenv('MMCV_WITH_ORT', '0') != '0':
-
-        # Following strings of text style are from colorama package
-        bright_style, reset_style = '\x1b[1m', '\x1b[0m'
-        red_text, blue_text = '\x1b[31m', '\x1b[34m'
-        white_background = '\x1b[107m'
-
-        msg = white_background + bright_style + red_text
-        msg += 'DeprecationWarning: ' + \
-            'Custom ONNXRuntime Ops will be deprecated in future. '
-        msg += blue_text + \
-            'Welcome to use the unified model deployment toolbox '
-        msg += 'MMDeploy: https://github.com/open-mmlab/mmdeploy'
-        msg += reset_style
-        warnings.warn(msg)
-        ext_name = 'mmcv._ext_ort'
-        import onnxruntime
-        from torch.utils.cpp_extension import include_paths, library_paths
-        library_dirs = []
-        libraries = []
-        include_dirs = []
-        ort_path = os.getenv('ONNXRUNTIME_DIR', '0')
-        library_dirs += [os.path.join(ort_path, 'lib')]
-        libraries.append('onnxruntime')
-        define_macros = []
-        extra_compile_args = {'cxx': []}
-
-        include_path = os.path.abspath('./mmcv/ops/csrc/onnxruntime')
-        include_dirs.append(include_path)
-        include_dirs.append(os.path.join(ort_path, 'include'))
-
-        op_files = glob.glob('./mmcv/ops/csrc/onnxruntime/cpu/*')
-        if onnxruntime.get_device() == 'GPU' or os.getenv('FORCE_CUDA',
-                                                          '0') == '1':
-            define_macros += [('MMCV_WITH_CUDA', None)]
-            cuda_args = os.getenv('MMCV_CUDA_ARGS')
-            extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
-            op_files += glob.glob('./mmcv/ops/csrc/onnxruntime/gpu/*')
-            include_dirs += include_paths(cuda=True)
-            library_dirs += library_paths(cuda=True)
-        else:
-            include_dirs += include_paths(cuda=False)
-            library_dirs += library_paths(cuda=False)
-
-        from setuptools import Extension
-        ext_ops = Extension(
-            name=ext_name,
-            sources=op_files,
-            include_dirs=include_dirs,
-            define_macros=define_macros,
-            extra_compile_args=extra_compile_args,
-            language='c++',
-            library_dirs=library_dirs,
-            libraries=libraries)
-        extensions.append(ext_ops)
-
     return extensions
 
 
 setup(
-    name='mmcv' if os.getenv('MMCV_WITH_OPS', '0') == '0' else 'mmcv-full',
+    name='mmcv' if os.getenv('MMCV_WITH_OPS', '1') == '1' else 'mmcv-lite',
     version=get_version(),
     description='OpenMMLab Computer Vision Foundation',
     keywords='computer vision',

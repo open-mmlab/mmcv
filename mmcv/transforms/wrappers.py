@@ -2,9 +2,9 @@
 
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
+import mmengine
 import numpy as np
 
-import mmcv
 from .base import BaseTransform
 from .builder import TRANSFORMS
 from .utils import cache_random_params, cache_randomness
@@ -569,7 +569,7 @@ class RandomChoice(BaseTransform):
         super().__init__()
 
         if prob is not None:
-            assert mmcv.is_seq_of(prob, float)
+            assert mmengine.is_seq_of(prob, float)
             assert len(transforms) == len(prob), \
                 '``transforms`` and ``prob`` must have same lengths. ' \
                 f'Got {len(transforms)} vs {len(prob)}.'

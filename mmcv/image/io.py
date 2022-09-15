@@ -8,9 +8,8 @@ import cv2
 import numpy as np
 from cv2 import (IMREAD_COLOR, IMREAD_GRAYSCALE, IMREAD_IGNORE_ORIENTATION,
                  IMREAD_UNCHANGED)
-
-from mmcv.fileio import FileClient
-from mmcv.utils import is_filepath, is_str
+from mmengine.fileio import FileClient
+from mmengine.utils import is_filepath, is_str
 
 try:
     from turbojpeg import TJCS_RGB, TJPF_BGR, TJPF_GRAY, TurboJPEG
@@ -167,7 +166,7 @@ def imread(img_or_path,
             If backend is None, the global imread_backend specified by
             ``mmcv.use_backend()`` will be used. Default: None.
         file_client_args (dict | None): Arguments to instantiate a
-            FileClient. See :class:`mmcv.fileio.FileClient` for details.
+            FileClient. See :class:`mmengine.fileio.FileClient` for details.
             Default: None.
 
     Returns:
@@ -283,7 +282,7 @@ def imwrite(img,
         auto_mkdir (bool): If the parent folder of `file_path` does not exist,
             whether to create it automatically. It will be deprecated.
         file_client_args (dict | None): Arguments to instantiate a
-            FileClient. See :class:`mmcv.fileio.FileClient` for details.
+            FileClient. See :class:`mmengine.fileio.FileClient` for details.
             Default: None.
 
     Returns:

@@ -1,8 +1,10 @@
 coverage
 lmdb
-onnx==1.7.0; python_version < '3.10'
-onnxoptimizer; python_version < '3.10'
-onnxruntime>=1.8.0; python_version < '3.10'
+onnx<1.12.0; python_version < '3.7'
+onnx>=1.12.0; python_version >= '3.7'
+onnxoptimizer<0.3.0; python_version < '3.7'
+onnxoptimizer>=0.3.0; python_version >= '3.7'
+onnxruntime>=1.8.0
 protobuf~=3.19.0
 pytest
 PyTurboJPEG

@@ -1,6 +1,5 @@
 # Modified from https://github.com/facebookresearch/detectron2/tree/master/projects/PointRend  # noqa
 
-from os import path as osp
 from typing import Tuple, Union
 
 import torch
@@ -87,13 +86,6 @@ def bilinear_grid_sample(im: Tensor,
     Id = torch.gather(im_padded, 2, x1_y1)
 
     return (Ia * wa + Ib * wb + Ic * wc + Id * wd).reshape(n, c, gh, gw)
-
-
-def is_in_onnx_export_without_custom_ops() -> bool:
-    from mmcv.ops import get_onnxruntime_op_path
-    ort_custom_op_path = get_onnxruntime_op_path()
-    return torch.onnx.is_in_onnx_export(
-    ) and not osp.exists(ort_custom_op_path)
 
 
 def normalize(grid: Tensor) -> Tensor:
@@ -280,7 +272,7 @@ def point_sample(input: Tensor,
     if points.dim() == 3:
         add_dim = True
         points = points.unsqueeze(2)
-    if is_in_onnx_export_without_custom_ops():
+    if torch.onnx.is_in_onnx_export():
         # If custom ops for onnx runtime not compiled use python
         # implementation of grid_sample function to make onnx graph
         # with supported nodes

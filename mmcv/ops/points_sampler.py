@@ -4,7 +4,6 @@ import torch
 from torch import Tensor
 from torch import nn as nn
 
-from mmcv.runner import force_fp32
 from .furthest_point_sample import (furthest_point_sample,
                                     furthest_point_sample_with_dist)
 
@@ -91,7 +90,6 @@ class PointsSampler(nn.Module):
             self.samplers.append(get_sampler_cls(fps_mod)())
         self.fp16_enabled = False
 
-    @force_fp32()
     def forward(self, points_xyz: Tensor, features: Tensor) -> Tensor:
         """
         Args:
@@ -102,6 +100,11 @@ class PointsSampler(nn.Module):
         Returns:
             torch.Tensor: (B, npoint, sample_num) Indices of sampled points.
         """
+        if points_xyz.dtype == torch.half:
+            points_xyz = points_xyz.to(torch.float32)
+        if features is not None and features.dtype == torch.half:
+            features = features.to(torch.float32)
+
         indices = []
         last_fps_end_index = 0
         for fps_sample_range, sampler, npoint in zip(

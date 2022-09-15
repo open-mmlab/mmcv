@@ -1,11 +1,10 @@
-import os
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
+from mmengine.utils import deprecated_api_warning
 from torch import Tensor
 
-from mmcv.utils import deprecated_api_warning
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
@@ -37,49 +36,34 @@ class NMSop(torch.autograd.Function):
     @staticmethod
     def symbolic(g, bboxes, scores, iou_threshold, offset, score_threshold,
                  max_num):
-        from ..onnx import is_custom_op_loaded
-        has_custom_op = is_custom_op_loaded()
-        # TensorRT nms plugin is aligned with original nms in ONNXRuntime
-        is_trt_backend = os.environ.get('ONNX_BACKEND') == 'MMCVTensorRT'
-        if has_custom_op and (not is_trt_backend):
-            return g.op(
-                'mmcv::NonMaxSuppression',
-                bboxes,
-                scores,
-                iou_threshold_f=float(iou_threshold),
-                offset_i=int(offset))
+        from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
+
+        from ..onnx.onnx_utils.symbolic_helper import _size_helper
+
+        boxes = unsqueeze(g, bboxes, 0)
+        scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
+
+        if max_num > 0:
+            max_num = g.op(
+                'Constant', value_t=torch.tensor(max_num, dtype=torch.long))
         else:
-            from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
-
-            from ..onnx.onnx_utils.symbolic_helper import _size_helper
-
-            boxes = unsqueeze(g, bboxes, 0)
-            scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
-
-            if max_num > 0:
-                max_num = g.op(
-                    'Constant',
-                    value_t=torch.tensor(max_num, dtype=torch.long))
-            else:
-                dim = g.op('Constant', value_t=torch.tensor(0))
-                max_num = _size_helper(g, bboxes, dim)
-            max_output_per_class = max_num
-            iou_threshold = g.op(
-                'Constant',
-                value_t=torch.tensor([iou_threshold], dtype=torch.float))
-            score_threshold = g.op(
-                'Constant',
-                value_t=torch.tensor([score_threshold], dtype=torch.float))
-            nms_out = g.op('NonMaxSuppression', boxes, scores,
-                           max_output_per_class, iou_threshold,
-                           score_threshold)
-            return squeeze(
-                g,
-                select(
-                    g, nms_out, 1,
-                    g.op(
-                        'Constant',
-                        value_t=torch.tensor([2], dtype=torch.long))), 1)
+            dim = g.op('Constant', value_t=torch.tensor(0))
+            max_num = _size_helper(g, bboxes, dim)
+        max_output_per_class = max_num
+        iou_threshold = g.op(
+            'Constant',
+            value_t=torch.tensor([iou_threshold], dtype=torch.float))
+        score_threshold = g.op(
+            'Constant',
+            value_t=torch.tensor([score_threshold], dtype=torch.float))
+        nms_out = g.op('NonMaxSuppression', boxes, scores,
+                       max_output_per_class, iou_threshold, score_threshold)
+        return squeeze(
+            g,
+            select(
+                g, nms_out, 1,
+                g.op('Constant', value_t=torch.tensor([2], dtype=torch.long))),
+            1)
 
 
 class SoftNMSop(torch.autograd.Function):

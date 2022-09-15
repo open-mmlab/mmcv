@@ -15,26 +15,21 @@ You can switch between Chinese and English documents in the lower-left corner of
    :maxdepth: 2
    :caption: Understand MMCV
 
-   understand_mmcv/config.md
-   understand_mmcv/registry.md
-   understand_mmcv/runner.md
-   understand_mmcv/io.md
    understand_mmcv/data_process.md
    understand_mmcv/visualization.md
    understand_mmcv/cnn.md
    understand_mmcv/ops.md
-   understand_mmcv/utils.md
 
 .. toctree::
    :maxdepth: 2
    :caption: Deployment
 
    deployment/mmcv_ops_definition.md
-   deployment/onnx.md
-   deployment/onnxruntime_custom_ops.md
-   deployment/onnxruntime_op.md
-   deployment/tensorrt_custom_ops.md
-   deployment/tensorrt_plugin.md
+
+.. toctree::
+   :caption: Switch Language
+
+   switch_language.md
 
 .. toctree::
    :maxdepth: 2

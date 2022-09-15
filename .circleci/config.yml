@@ -1,179 +1,32 @@
 version: 2.1
-jobs:
-  lint:
-    docker:
-      - image: cimg/python:3.7.4
-    steps:
-      - checkout
-      - run:
-          name: Install pre-commit hook
-          command: |
-            pip install pre-commit
-            pre-commit install
-      - run:
-          name: Linting
-          command: pre-commit run --all-files
 
-  build_cpu:
-    parameters:
-      # The python version must match available image tags in
-      # https://circleci.com/developer/images/image/cimg/python
-      python:
-        type: string
-        default: "3.7.0"
-      torch:
-        type: string
-      torchvision:
-        type: string
-    machine:
-      image: ubuntu-2004:202010-01
-    resource_class: large
-    steps:
-      - checkout
-      - run:
-          name: Install system dependencies
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y ffmpeg libturbojpeg ninja-build
-            ffmpeg -version
-      - run:
-          # https://github.com/pytorch/vision/issues/2921
-          name: Install dependency of torchvision when using pyenv
-          command: sudo apt-get install -y liblzma-dev
-      - run:
-          # python3.7 should be re-installed due to the issue https://github.com/pytorch/vision/issues/2921
-          name: Select Python
-          command: |
-            pyenv uninstall -f << parameters.python >>
-            pyenv install << parameters.python >>
-            pyenv global << parameters.python >>
-      - run:
-          name: Upgrade pip
-          command: |
-            python -m pip install pip --upgrade
-      - run:
-          name: Install PyTorch
-          command: python -m pip install torch==<< parameters.torch >>+cpu torchvision==<< parameters.torchvision >>+cpu -f https://download.pytorch.org/whl/torch_stable.html
-      - run:
-          name: Install MMEngine
-          command: pip install git+ssh://git@github.com/open-mmlab/mmengine.git
-      - run:
-          name: Install psutil
-          command: python -m pip install psutil
-      - run:
-          name: Build and install
-          command: |
-            rm -rf .eggs
-            python setup.py check -m -s
-            python -m pip install -e .
-          no_output_timeout: 20m
-          environment:
-            MMCV_WITH_OPS: 1
-      - run:
-          name: Install dependencies of unit test
-          command: |
-            python -m pip install -r requirements/test.txt
-      - run:
-          name: Run unittests and generate coverage report
-          command: |
-            python -m coverage run --branch --source mmcv -m pytest tests/
-            python -m coverage xml
-            python -m coverage report -m
+# this allows you to use CircleCI's dynamic configuration feature
+setup: true
 
-  build_cu102:
-    machine:
-      image: ubuntu-1604-cuda-10.1:201909-23  # the actual version of cuda is 10.2
-    resource_class: gpu.nvidia.small
-    steps:
-      - checkout
-      - run:
-          name: Set CUDA environment
-          command: |
-            echo 'export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH' >> $BASH_ENV
-            echo 'export PATH=/usr/local/cuda/bin:$PATH' >> $BASH_ENV
-            echo 'export CUDA_HOME=/usr/local/cuda' >> $BASH_ENV
-            source $BASH_ENV
-            nvidia-smi
-            nvcc --version
-            gcc --version
-      - run:
-          name: Install system dependencies
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y libturbojpeg ninja-build
-            # the default version of ffmpeg is 2.8.7, which should be upgraded to 4+
-            sudo add-apt-repository -y ppa:jonathonf/ffmpeg-4
-            sudo apt-get update
-            sudo apt-get install -y ffmpeg
-            ffmpeg -version
-            sudo add-apt-repository --remove ppa:jonathonf/ffmpeg-4 -y
-      - run:
-          # https://github.com/pytorch/vision/issues/2921
-          name: Install dependency of torchvision when using pyenv
-          command: sudo apt-get install -y liblzma-dev
-      - run:
-          # python3.7 should be re-installed due to the issue https://github.com/pytorch/vision/issues/2921
-          name: Select python3.7
-          command: |
-            pyenv uninstall -f 3.7.0
-            pyenv install 3.7.0
-            pyenv global 3.7.0
-      - run:
-          name: Upgrade pip
-          command: |
-            python -m pip install pip --upgrade
-      - run:
-          name: Install PyTorch
-          command: python -m pip install torch==1.8.1+cu102 torchvision==0.9.1+cu102 -f https://download.pytorch.org/whl/torch_stable.html
-      - run:
-          name: Install MMEngine
-          command: pip install git+ssh://git@github.com/open-mmlab/mmengine.git
-      - run:
-          name: Install psutil
-          command: python -m pip install psutil
-      - run:
-          name: Download onnxruntime library and install onnxruntime
-          command: |
-            wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
-            tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
-            echo 'export ONNXRUNTIME_DIR=$(pwd)/onnxruntime-linux-x64-1.8.1' >> $BASH_ENV
-            echo 'export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH' >> $BASH_ENV
-            source $BASH_ENV
-            python -m pip install onnxruntime==1.8.1
-      - run:
-          name: Build and install
-          command: |
-            rm -rf .eggs
-            python setup.py check -m -s
-            python -m pip install -e .
-          environment:
-            MMCV_WITH_OPS: 1
-            MMCV_WITH_ORT: 1
-      - run:
-          name: Install dependencies for unit test
-          command: |
-            python -m pip install -r requirements/test.txt
-      - run:
-          name: Run unittests and generate coverage report
-          command: |
-            python -m coverage run --branch --source mmcv -m pytest tests/
-            python -m coverage xml
-            python -m coverage report -m
+# the path-filtering orb is required to continue a pipeline based on
+# the path of an updated fileset
+orbs:
+  path-filtering: circleci/path-filtering@0.1.2
+
 workflows:
-  unit_tests:
+  # the always-run workflow is always triggered, regardless of the pipeline parameters.
+  always-run:
     jobs:
-      - lint
-      - build_cpu:
-          name: build_py3.8_pt1.9_cpu
-          torch: 1.9.0
-          torchvision: 0.10.0
-          python: "3.8.0"
-          requires:
-            - lint
-      - hold:
-          type: approval # <<< This key-value pair will set your workflow to a status of "On Hold"
-          requires:
-            - build_py3.8_pt1.9_cpu
-      - build_cu102:
-          requires:
-            - hold
+      # the path-filtering/filter job determines which pipeline
+      # parameters to update.
+      - path-filtering/filter:
+          name: check-updated-files
+          # 3-column, whitespace-delimited mapping. One mapping per
+          # line:
+          # <regex path-to-test> <parameter-to-set> <value-of-pipeline-parameter>
+          mapping: |
+            mmcv/.* lint_only false
+            requirements/.* lint_only false
+            tests/.* lint_only false
+            .circleci/.* lint_only false
+          base-revision: 2.x
+          # this is the path of the configuration we should trigger once
+          # path filtering and pipeline parameter value updates are
+          # complete. In this case, we are using the parent dynamic
+          # configuration itself.
+          config-path: .circleci/test.yml

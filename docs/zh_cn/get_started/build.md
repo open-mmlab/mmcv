@@ -7,6 +7,7 @@
 ```bash
 git clone https://github.com/open-mmlab/mmcv.git
 cd mmcv
+git checkout 2.x
 ```
 
 建议安装 `ninja` 以加快编译速度
@@ -18,13 +19,13 @@ pip install -r requirements/optional.txt
 你可以安装 lite 版本
 
 ```bash
-pip install -e .
+MMCV_WITH_OPS=0 pip install -e .
 ```
 
 也可以安装 full 版本
 
 ```bash
-MMCV_WITH_OPS=1 pip install -e .
+pip install -e .
 ```
 
 如果是在 macOS 上编译，则需要在安装命令前添加一些环境变量
@@ -36,7 +37,7 @@ CC=clang CXX=clang++ CFLAGS='-stdlib=libc++'
 例如
 
 ```bash
-CC=clang CXX=clang++ CFLAGS='-stdlib=libc++' MMCV_WITH_OPS=1 pip install -e .
+CC=clang CXX=clang++ CFLAGS='-stdlib=libc++' pip install -e .
 ```
 
 ```{note}
@@ -146,6 +147,8 @@ MMCV 有三种安装的模式：
 conda activate mmcv
 # 切换到 mmcv 根目录
 cd mmcv
+# 切换到 2.x 分支
+git checkout 2.x
 # 安装
 python setup.py develop
 # 检查是否安装成功
@@ -168,6 +171,7 @@ pip list
    ```shell
    conda activate mmcv  # 激活环境
    cd mmcv  # 改变路径
+   git checkout 2.x  # 切换到 2.x 分支
    python setup.py build_ext  # 如果成功, cl 将被启动用于编译算子
    python setup.py develop  # 安装
    pip list  # 检查是否安装成功
@@ -223,6 +227,7 @@ pip list
    $env:MAX_JOBS = 8 # 根据你可用CPU以及内存量进行设置
    conda activate mmcv # 激活环境
    cd mmcv  # 改变路径
+   git checkout 2.x  # 切换到 2.x 分支
    python setup.py build_ext  # 如果成功, cl 将被启动用于编译算子
    python setup.py develop # 安装
    pip list # 检查是否安装成功

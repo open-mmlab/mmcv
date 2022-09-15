@@ -33,8 +33,8 @@ void ChamferDistanceForwardCUDAKernelLauncher(
 }
 
 void ChamferDistanceBackwardCUDAKernelLauncher(
-    const Tensor xyz1, const Tensor xyz2, Tensor grad_xyz1, Tensor grad_xyz2,
-    Tensor grad_dist1, Tensor grad_dist2, Tensor idx1, Tensor idx2) {
+    const Tensor xyz1, const Tensor xyz2, Tensor idx1, Tensor idx2,
+    Tensor grad_dist1, Tensor grad_dist2, Tensor grad_xyz1, Tensor grad_xyz2) {
   int batch_size = xyz1.size(0);
   int n = xyz1.size(1);
   int m = xyz2.size(1);

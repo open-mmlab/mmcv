@@ -4,13 +4,14 @@ from typing import Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
+from mmengine.logging import print_log
+from mmengine.registry import MODELS
+from mmengine.utils import deprecated_api_warning
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair, _single
 
-from mmcv.utils import deprecated_api_warning
-from ..cnn import CONV_LAYERS
-from ..utils import ext_loader, print_log
+from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
     '_ext',
@@ -68,6 +69,7 @@ class ModulatedDeformConv2dFunction(Function):
         input = input.type_as(offset)
         weight = weight.type_as(input)
         bias = bias.type_as(input)  # type: ignore
+        mask = mask.type_as(input)
         ctx.save_for_backward(input, offset, mask, weight, bias)
         output = input.new_empty(
             ModulatedDeformConv2dFunction._output_size(ctx, input, weight))
@@ -208,7 +210,7 @@ class ModulatedDeformConv2d(nn.Module):
                                        self.deform_groups)
 
 
-@CONV_LAYERS.register_module('DCNv2')
+@MODELS.register_module('DCNv2')
 class ModulatedDeformConv2dPack(ModulatedDeformConv2d):
     """A ModulatedDeformable Conv Encapsulation that acts as normal Conv
     layers.
@@ -278,7 +280,7 @@ class ModulatedDeformConv2dPack(ModulatedDeformConv2d):
             print_log(
                 f'ModulatedDeformConvPack {prefix.rstrip(".")} is upgraded to '
                 'version 2.',
-                logger='root')
+                logger='current')
 
         super()._load_from_state_dict(state_dict, prefix, local_metadata,
                                       strict, missing_keys, unexpected_keys,

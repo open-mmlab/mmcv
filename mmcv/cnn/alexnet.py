@@ -4,6 +4,7 @@ from typing import Optional
 
 import torch
 import torch.nn as nn
+from mmengine.runner import load_checkpoint
 
 
 class AlexNet(nn.Module):
@@ -45,7 +46,6 @@ class AlexNet(nn.Module):
     def init_weights(self, pretrained: Optional[str] = None) -> None:
         if isinstance(pretrained, str):
             logger = logging.getLogger()
-            from ..runner import load_checkpoint
             load_checkpoint(self, pretrained, strict=False, logger=logger)
         elif pretrained is None:
             # use default initializer

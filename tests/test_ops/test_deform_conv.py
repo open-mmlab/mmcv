@@ -2,8 +2,8 @@
 import numpy as np
 import pytest
 import torch
-
-from mmcv.utils import TORCH_VERSION, digit_version
+from mmengine.utils import digit_version
+from mmengine.utils.dl_utils import TORCH_VERSION
 
 try:
     # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast

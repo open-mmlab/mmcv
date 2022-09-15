@@ -4,11 +4,12 @@ from typing import Tuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from mmengine.model import normal_init, xavier_init
+from mmengine.registry import MODELS
 from torch import Tensor
 from torch.autograd import Function
 from torch.nn.modules.module import Module
 
-from ..cnn import UPSAMPLE_LAYERS, normal_init, xavier_init
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', [
@@ -158,8 +159,6 @@ class CARAFEFunction(Function):
     def backward(
             ctx,
             grad_output: Tensor) -> Tuple[Tensor, Tensor, None, None, None]:
-        assert grad_output.is_cuda
-
         features, masks, rfeatures = ctx.saved_tensors
         kernel_size = ctx.kernel_size
         group_size = ctx.group_size
@@ -219,7 +218,7 @@ class CARAFE(Module):
                       self.scale_factor)
 
 
-@UPSAMPLE_LAYERS.register_module(name='carafe')
+@MODELS.register_module(name='carafe')
 class CARAFEPack(nn.Module):
     """A unified package of CARAFE upsampler that contains: 1) channel
     compressor 2) content encoder 3) CARAFE op.

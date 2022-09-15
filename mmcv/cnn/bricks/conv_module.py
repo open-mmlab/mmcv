@@ -4,17 +4,17 @@ from typing import Dict, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
+from mmengine.model import constant_init, kaiming_init
+from mmengine.registry import MODELS
+from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm, _InstanceNorm
 
-from mmcv.utils import _BatchNorm, _InstanceNorm
-from ..utils import constant_init, kaiming_init
 from .activation import build_activation_layer
 from .conv import build_conv_layer
 from .norm import build_norm_layer
 from .padding import build_padding_layer
-from .registry import PLUGIN_LAYERS
 
 
-@PLUGIN_LAYERS.register_module()
+@MODELS.register_module()
 class ConvModule(nn.Module):
     """A conv block that bundles conv/norm/activation layers.
 

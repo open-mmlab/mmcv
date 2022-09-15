@@ -27,8 +27,7 @@ from .furthest_point_sample import (furthest_point_sample,
 from .fused_bias_leakyrelu import FusedBiasLeakyReLU, fused_bias_leakyrelu
 from .gather_points import gather_points
 from .group_points import GroupAll, QueryAndGroup, grouping_operation
-from .info import (get_compiler_version, get_compiling_cuda_version,
-                   get_onnxruntime_op_path)
+from .info import get_compiler_version, get_compiling_cuda_version
 from .iou3d import (boxes_iou3d, boxes_iou_bev, boxes_overlap_bev, nms3d,
                     nms3d_normal, nms_bev, nms_normal_bev)
 from .knn import knn
@@ -46,6 +45,7 @@ from .points_in_boxes import (points_in_boxes_all, points_in_boxes_cpu,
                               points_in_boxes_part)
 from .points_in_polygons import points_in_polygons
 from .points_sampler import PointsSampler
+from .prroi_pool import PrRoIPool, prroi_pool
 from .psa_mask import PSAMask
 from .riroi_align_rotated import RiRoIAlignRotated, riroi_align_rotated
 from .roi_align import RoIAlign, roi_align
@@ -75,9 +75,8 @@ __all__ = [
     'deform_conv2d', 'DeformRoIPool', 'DeformRoIPoolPack',
     'ModulatedDeformRoIPoolPack', 'deform_roi_pool', 'SigmoidFocalLoss',
     'SoftmaxFocalLoss', 'sigmoid_focal_loss', 'softmax_focal_loss',
-    'get_compiler_version', 'get_compiling_cuda_version',
-    'get_onnxruntime_op_path', 'MaskedConv2d', 'masked_conv2d',
-    'ModulatedDeformConv2d', 'ModulatedDeformConv2dPack',
+    'get_compiler_version', 'get_compiling_cuda_version', 'MaskedConv2d',
+    'masked_conv2d', 'ModulatedDeformConv2d', 'ModulatedDeformConv2dPack',
     'modulated_deform_conv2d', 'batched_nms', 'nms', 'soft_nms', 'nms_match',
     'RoIAlign', 'roi_align', 'RoIPool', 'roi_pool', 'SyncBatchNorm', 'Conv2d',
     'ConvTranspose2d', 'Linear', 'MaxPool2d', 'CrissCrossAttention', 'PSAMask',
@@ -100,5 +99,6 @@ __all__ = [
     'SparseConvTensor', 'scatter_nd', 'points_in_boxes_part',
     'points_in_boxes_cpu', 'points_in_boxes_all', 'points_in_polygons',
     'min_area_polygons', 'active_rotated_filter', 'convex_iou', 'convex_giou',
-    'diff_iou_rotated_2d', 'diff_iou_rotated_3d', 'chamfer_distance'
+    'diff_iou_rotated_2d', 'diff_iou_rotated_3d', 'chamfer_distance',
+    'PrRoIPool', 'prroi_pool'
 ]

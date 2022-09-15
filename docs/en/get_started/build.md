@@ -7,6 +7,7 @@ After cloning the repo with
 ```bash
 git clone https://github.com/open-mmlab/mmcv.git
 cd mmcv
+git checkout 2.x
 ```
 
 It is recommended to install `ninja` to speed up the compilation
@@ -20,13 +21,13 @@ You can either
 - install the lite version
 
   ```bash
-  pip install -e .
+  MMCV_WITH_OPS=0 pip install -e .
   ```
 
 - install the full version
 
   ```bash
-  MMCV_WITH_OPS=1 pip install -e .
+  pip install -e .
   ```
 
 If you are on macOS, add the following environment variables before the installing command.
@@ -38,7 +39,7 @@ CC=clang CXX=clang++ CFLAGS='-stdlib=libc++'
 e.g.,
 
 ```bash
-CC=clang CXX=clang++ CFLAGS='-stdlib=libc++' MMCV_WITH_OPS=1 pip install -e .
+CC=clang CXX=clang++ CFLAGS='-stdlib=libc++' pip install -e .
 ```
 
 ```{note}
@@ -97,12 +98,13 @@ You should know how to set up environment variables, especially `Path`, on Windo
    ```shell
    git clone https://github.com/open-mmlab/mmcv.git
    cd mmcv
+   git checkout 2.x
    ```
 
 5. Install required Python packages
 
    ```shell
-   pip3 install -r requirements/runtime.txt
+   pip install -r requirements/runtime.txt
    ```
 
 6. It is recommended to install `ninja` to speed up the compilation
@@ -154,6 +156,7 @@ After finishing above common steps, launch Anaconda shell from Start menu and is
 conda activate mmcv
 # change directory
 cd mmcv
+git checkout 2.x
 # install
 python setup.py develop
 # check
@@ -178,6 +181,7 @@ pip list
    conda activate mmcv
    # change directory
    cd mmcv
+   git checkout 2.x
    # build
    python setup.py build_ext # if success, cl will be launched to compile ops
    # install
@@ -234,6 +238,7 @@ Check your the compute capability of your GPU from [here](https://developer.nvid
    conda activate mmcv
    # change directory
    cd mmcv
+   git checkout 2.x
    # build
    python setup.py build_ext # if success, cl will be launched to compile ops
    # install
