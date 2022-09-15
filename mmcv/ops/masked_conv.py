@@ -53,7 +53,7 @@ class MaskedConv2dFunction(Function):
         out_w = int(
             math.floor(
                 torch.true_divide((features.size(3) + 2 * pad_w -
-                                   (kernel_h - 1) - 1), stride_w) + 1))
+                                   (kernel_w - 1) - 1), stride_w) + 1))
         mask_inds = torch.nonzero(mask[0] > 0, as_tuple=False)
         output = features.new_zeros(batch_size, out_channel, out_h, out_w)
         if mask_inds.numel() > 0:
