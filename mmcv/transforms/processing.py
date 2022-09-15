@@ -909,7 +909,7 @@ class TestTimeAug(BaseTransform):
             data_samples=[...]
         )
 
-    Where the length of ``inputs`` and ``data_samples`` are both 4.
+    The length of ``inputs`` and ``data_samples`` are both 4.
 
     Required Keys:
 
