@@ -280,7 +280,7 @@ def get_extensions():
         if is_rocm_pytorch or torch.cuda.is_available() or os.getenv(
                 'FORCE_CUDA', '0') == '1':
             if is_rocm_pytorch:
-                define_macros += [('HIP_DIFF', None)]
+                define_macros += [('MMCV_WITH_HIP', None)]
             define_macros += [('MMCV_WITH_CUDA', None)]
             cuda_args = os.getenv('MMCV_CUDA_ARGS')
             extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
@@ -289,6 +289,7 @@ def get_extensions():
                 glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cpp')
             extension = CUDAExtension
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/pytorch'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
         elif (hasattr(torch, 'is_mlu_available') and
@@ -329,6 +330,32 @@ def get_extensions():
             extension = CppExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/mps'))
+        elif (os.getenv('FORCE_NPU', '0') == '1'):
+            print(f'Compiling {ext_name} only with CPU and NPU')
+            try:
+                has_npu = torch.npu.is_available()
+                print('find torch version 1.5 with npu adapter and device: ', has_npu)
+                extension = CppExtension
+            except:
+                try:
+                    import torch_npu
+                    from torch_npu.utils.cpp_extension import NpuExtension          
+                    has_npu = torch_npu.npu.is_available()
+                    print('find torch npu adapter and device: ', has_npu)
+                    define_macros += [('MMCV_WITH_NPU', None)]
+                    extension = NpuExtension
+                except:
+                    print('can not find torch npu adapter and device')
+                    return extensions    
+            
+            # src
+            op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/common/npu/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/npu/*.cpp')
+            
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/npu'))
         else:
             print(f'Compiling {ext_name} only with CPU')
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
