@@ -29,7 +29,7 @@ You can either
   MMCV_WITH_OPS=1 pip install -e .
   ```
 
-If you are on macOS, add the following environment variables before the installing command.
+If you are on macOS, add the following environment variables before the installing command. Meanwhile, please make sure you are using `PyTorch Nightly` as well.
 
 ```bash
 CC=clang CXX=clang++ CFLAGS='-stdlib=libc++'

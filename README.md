@@ -84,6 +84,7 @@ There are two versions of MMCV:
 a. Install the full version.
 
 Before installing mmcv-full, make sure that PyTorch has been successfully installed following the [official guide](https://pytorch.org/).
+(For M1 MacOS users, please make sure you are using `PyTorch Nightly`.)
 
 We provide pre-built mmcv packages (recommended) with different PyTorch and CUDA versions to simplify the building for **Linux and Windows systems**. In addition, you can run [check_installation.py](.dev_scripts/check_installation.py) to check the installation of mmcv-full after running the installation commands.
 
