@@ -11,7 +11,7 @@ MMCV 有两个版本：
 
 a. 安装完整版
 
-在安装 mmcv 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 PyTorch 官方[文档](https://pytorch.org/)。
+在安装 mmcv 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 PyTorch 官方[文档](https://pytorch.org/)。对于M1芯片用户，请确保当前你正在使用 `PyTorch Nightly`。
 
 我们提供了 **Linux 和 Windows 平台** PyTorch 和 CUDA 版本组合的 mmcv 预编译包，可以大大简化用户安装编译过程。强烈推荐通过预编译包来安装。另外，安装完成后可以运行 [check_installation.py](https://github.com/open-mmlab/mmcv/blob/2.x/.dev_scripts/check_installation.py) 脚本检查 mmcv 是否安装成功。
 

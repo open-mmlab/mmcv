@@ -30,7 +30,7 @@ You can either
   pip install -e .
   ```
 
-If you are on macOS, add the following environment variables before the installing command.
+If you are on macOS, add the following environment variables before the installing command. Meanwhile, please make sure you are using `PyTorch Nightly` for M1 MacOS.
 
 ```bash
 CC=clang CXX=clang++ CFLAGS='-stdlib=libc++'
