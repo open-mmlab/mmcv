@@ -142,7 +142,12 @@ class SoftmaxFocalLossFunction(Function):
                 weight: Optional[torch.Tensor] = None,
                 reduction='mean') -> torch.Tensor:
 
+<<<<<<< HEAD
         assert target.dtype == torch.long
+=======
+        assert isinstance(
+            target, (torch.Tensor, torch.LongTensor, torch.cuda.LongTensor))
+>>>>>>> 716b3b3 (add npu extension and focal loss adapter)
         assert input.dim() == 2
         assert target.dim() == 1
         assert input.size(0) == target.size(0)
