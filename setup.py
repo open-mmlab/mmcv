@@ -334,19 +334,19 @@ def get_extensions():
             print(f'Compiling {ext_name} only with CPU and NPU')
             try:
                 has_npu = torch.npu.is_available()
-                print('find torch version 1.5 with npu adapter and device: ', has_npu)
+                print('torch_npu version1.5 is available. ', has_npu)
                 extension = CppExtension
             except:
                 try:
                     import torch_npu
                     from torch_npu.utils.cpp_extension import NpuExtension          
                     has_npu = torch_npu.npu.is_available()
-                    print('find torch npu adapter and device: ', has_npu)
+                    print('torch_npu version1.8 is available.: ', has_npu)
                     define_macros += [('MMCV_WITH_NPU', None)]
                     extension = NpuExtension
                 except:
-                    print('can not find torch npu adapter and device')
-                    return extensions    
+                    print('can not find any torch_npu')
+                    return extensions
             
             # src
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
