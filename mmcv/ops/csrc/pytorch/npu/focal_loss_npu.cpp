@@ -119,7 +119,6 @@ void softmax_focal_loss_backward_npu(Tensor input, Tensor target, Tensor weight,
 void softmax_focal_loss_backward_impl(Tensor input, Tensor target, Tensor weight, Tensor buff,
                                       Tensor grad_input, float gamma, float alpha);
 
-
 REGISTER_NPU_IMPL(sigmoid_focal_loss_forward_impl, sigmoid_focal_loss_forward_npu);
 
 REGISTER_NPU_IMPL(sigmoid_focal_loss_backward_impl, sigmoid_focal_loss_backward_npu);
