@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 from torch.nn.parameter import Parameter
 
-from mmcv.utils import TORCH_VERSION, digit_version
+from mmcv.utils import IS_NPU_AVAILABLE, TORCH_VERSION, digit_version
 from .dist_utils import allreduce_grads as _allreduce_grads
 
 try:
@@ -18,7 +18,10 @@ try:
     # and used; otherwise, auto fp16 will adopt mmcv's implementation.
     # Note that when PyTorch >= 1.6.0, we still cast tensor types to fp16
     # manually, so the behavior may not be consistent with real amp.
-    from torch.cuda.amp import autocast
+    if IS_NPU_AVAILABLE:
+        from torch.npu.amp import autocast
+    else:
+        from torch.cuda.amp import autocast
 except ImportError:
     pass
 
