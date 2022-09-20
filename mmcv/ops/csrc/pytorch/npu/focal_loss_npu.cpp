@@ -5,7 +5,7 @@ using namespace NPU_NAME_SPACE;
 using namespace std;
 
 
-void sigmoid_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight, 
+void sigmoid_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
                                     Tensor output, float gamma, float alpha) {
 
     at::Tensor target_y = at::reshape(target, input.sizes());
@@ -30,10 +30,10 @@ void sigmoid_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
         .Run();
 }
 
-void sigmoid_focal_loss_forward_impl(Tensor input, Tensor target, Tensor weight, 
+void sigmoid_focal_loss_forward_impl(Tensor input, Tensor target, Tensor weight,
                                      Tensor output, float gamma, float alpha);
 
-void sigmoid_focal_loss_backward_npu(Tensor input, Tensor target, Tensor weight, 
+void sigmoid_focal_loss_backward_npu(Tensor input, Tensor target, Tensor weight,
                                      Tensor grad_input, float gamma, float alpha) {
 
     at::Tensor target_y = at::reshape(target, input.sizes());
@@ -58,10 +58,10 @@ void sigmoid_focal_loss_backward_npu(Tensor input, Tensor target, Tensor weight,
         .Run();
 }
 
-void sigmoid_focal_loss_backward_impl(Tensor input, Tensor target, Tensor weight, 
+void sigmoid_focal_loss_backward_impl(Tensor input, Tensor target, Tensor weight,
                                       Tensor grad_input, float gamma, float alpha);
 
-void softmax_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight, 
+void softmax_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
                                     Tensor output, float gamma, float alpha) {
 
     int64_t n_class = input.size(1);
@@ -73,7 +73,7 @@ void softmax_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
     if(weight_size > 0) {
         weight_y = at_npu::native::NPUNativeFunctions::npu_broadcast(weight, input.sizes());
     }
-    
+
     OpCommand cmd;
     cmd.Name("SoftmaxFocalLoss")
         .Input(input)
@@ -87,7 +87,7 @@ void softmax_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
         .Run();
 }
 
-void softmax_focal_loss_forward_impl(Tensor input, Tensor target, Tensor weight, 
+void softmax_focal_loss_forward_impl(Tensor input, Tensor target, Tensor weight,
                                      Tensor grad_input, float gamma, float alpha);
 
 void softmax_focal_loss_backward_npu(Tensor input, Tensor target, Tensor weight, Tensor buff,
@@ -102,7 +102,7 @@ void softmax_focal_loss_backward_npu(Tensor input, Tensor target, Tensor weight,
     if(weight_size > 0) {
         weight_y = at_npu::native::NPUNativeFunctions::npu_broadcast(weight, input.sizes());
     }
-    
+
     OpCommand cmd;
     cmd.Name("SoftmaxFocalLossGrad")
         .Input(input)
