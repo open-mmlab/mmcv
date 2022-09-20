@@ -30,6 +30,7 @@
 #define CHECK_NPU(x) \
   TORCH_CHECK(x.device().type() == at::kXLA, #x " must be a NPU tensor")
 #else
+
 // for torch 1.5.0 adapter only
 #include <torch/csrc/ATen/native/npu/utils/OpAdapter.h>
 #include <torch/csrc/ATen/native/npu/utils/CalcuOpUtil.h>
