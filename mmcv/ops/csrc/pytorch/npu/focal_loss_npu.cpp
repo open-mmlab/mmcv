@@ -4,7 +4,6 @@
 using namespace NPU_NAME_SPACE;
 using namespace std;
 
-
 void sigmoid_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
                                     Tensor output, float gamma, float alpha) {
 
