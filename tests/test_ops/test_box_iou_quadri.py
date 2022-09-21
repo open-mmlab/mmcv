@@ -46,7 +46,7 @@ class TestBoxIoUQuadri:
                                 [7.0, 6.0, 7.0, 8.0, 9.0, 8.0, 9.0, 6.0]],
                                dtype=np.float32)
         np_expect_ious = np.asarray(
-            [[0.0714, 1.2222, 0.0000], [0.1570, 0.5000, 0.0000],
+            [[0.0714, 1.0000, 0.0000], [0.0000, 0.5000, 0.0000],
              [0.0000, 0.0000, 0.5000]],
             dtype=np.float32)
         np_expect_ious_aligned = np.asarray([0.0714, 0.5000, 0.5000],
@@ -101,7 +101,7 @@ class TestBoxIoUQuadri:
                                 [7.0, 6.0, 7.0, 8.0, 9.0, 8.0, 9.0, 6.0]],
                                dtype=np.float32)
         np_expect_ious = np.asarray(
-            [[0.1111, 0.9167, 0.0000], [0.5429, 1.0000, 0.0000],
+            [[0.1111, 1.0000, 0.0000], [0.0000, 1.0000, 0.0000],
              [0.0000, 0.0000, 1.0000]],
             dtype=np.float32)
         np_expect_ious_aligned = np.asarray([0.1111, 1.0000, 1.0000],

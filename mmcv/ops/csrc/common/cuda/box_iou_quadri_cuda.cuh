@@ -45,9 +45,9 @@ __global__ void box_iou_quadri_cuda_kernel(
       block_boxes2[2] = dev_boxes2[base2 + 2];
       block_boxes2[3] = dev_boxes2[base2 + 3];
       block_boxes2[4] = dev_boxes2[base2 + 4];
-      block_boxes2[5] = dev_boxes2[base1 + 5];
-      block_boxes2[6] = dev_boxes2[base1 + 6];
-      block_boxes2[7] = dev_boxes2[base1 + 7];
+      block_boxes2[5] = dev_boxes2[base2 + 5];
+      block_boxes2[6] = dev_boxes2[base2 + 6];
+      block_boxes2[7] = dev_boxes2[base2 + 7];
 
       dev_ious[index] =
           single_box_iou_quadri<T>(block_boxes1, block_boxes2, mode_flag);
@@ -78,9 +78,9 @@ __global__ void box_iou_quadri_cuda_kernel(
       block_boxes2[2] = dev_boxes2[base2 + 2];
       block_boxes2[3] = dev_boxes2[base2 + 3];
       block_boxes2[4] = dev_boxes2[base2 + 4];
-      block_boxes2[5] = dev_boxes2[base1 + 5];
-      block_boxes2[6] = dev_boxes2[base1 + 6];
-      block_boxes2[7] = dev_boxes2[base1 + 7];
+      block_boxes2[5] = dev_boxes2[base2 + 5];
+      block_boxes2[6] = dev_boxes2[base2 + 6];
+      block_boxes2[7] = dev_boxes2[base2 + 7];
 
       dev_ious[index] =
           single_box_iou_quadri<T>(block_boxes1, block_boxes2, mode_flag);
