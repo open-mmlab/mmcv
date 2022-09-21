@@ -7,10 +7,10 @@ ext_module = ext_loader.load_ext('_ext', ['box_iou_quadri'])
 
 
 def box_iou_quadri(bboxes1: torch.Tensor,
-                    bboxes2: torch.Tensor,
-                    mode: str = 'iou',
-                    aligned: bool = False,
-                    clockwise: bool = True) -> torch.Tensor:
+                   bboxes2: torch.Tensor,
+                   mode: str = 'iou',
+                   aligned: bool = False,
+                   clockwise: bool = True) -> torch.Tensor:
     """Return intersection-over-union (Jaccard index) of boxes.
 
     Both sets of boxes are expected to be in
@@ -22,11 +22,11 @@ def box_iou_quadri(bboxes1: torch.Tensor,
 
     Args:
         boxes1 (torch.Tensor): quadrilateral bboxes 1. It has shape (N, 8),
-            indicating (x1, y1, ..., x4, y4) for each row. Note that theta is in
-            radian.
+            indicating (x1, y1, ..., x4, y4) for each row. Note that theta is
+            in radian.
         boxes2 (torch.Tensor): quadrilateral bboxes 2. It has shape (M, 8),
-            indicating (x1, y1, ..., x4, y4) for each row. Note that theta is in
-            radian.
+            indicating (x1, y1, ..., x4, y4) for each row. Note that theta is
+            in radian.
         mode (str): "iou" (intersection over union) or iof (intersection over
             foreground).
 

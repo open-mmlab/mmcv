@@ -3,7 +3,7 @@
 #include "pytorch_cuda_helper.hpp"
 
 void box_iou_quadri_cuda(const Tensor boxes1, const Tensor boxes2, Tensor ious,
-                          const int mode_flag, const bool aligned) {
+                         const int mode_flag, const bool aligned) {
   using scalar_t = float;
   AT_ASSERTM(boxes1.is_cuda(), "boxes1 must be a CUDA tensor");
   AT_ASSERTM(boxes2.is_cuda(), "boxes2 must be a CUDA tensor");

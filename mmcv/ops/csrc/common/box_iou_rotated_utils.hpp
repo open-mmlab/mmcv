@@ -319,8 +319,8 @@ HOST_DEVICE_INLINE T rotated_boxes_intersection(const RotatedBox<T>& box1,
 }
 
 template <typename T>
-HOST_DEVICE_INLINE T quadri_boxes_intersection(const Point<T>& pts1,
-                                               const Point<T>& pts2) {
+HOST_DEVICE_INLINE T quadri_boxes_intersection(const Point<T> (&pts1)[4],
+                                               const Point<T> (&pts2)[4]) {
   // There are up to 4 x 4 + 4 + 4 = 24 intersections (including dups) returned
   // from rotated_rect_intersection_pts
   Point<T> intersectPts[24], orderedPts[24];
@@ -381,6 +381,7 @@ HOST_DEVICE_INLINE T single_box_iou_quadri(T const* const pts1_raw,
                                            const int mode_flag) {
   // shift center to the middle point to achieve higher precision in result
   Point<T> pts1[4], pts2[4];
+
   auto center_shift_x =
       (pts1_raw[0] + pts2_raw[0] + pts1_raw[2] + pts2_raw[2] + pts1_raw[4] +
        pts2_raw[4] + pts1_raw[6] + pts2_raw[6]) /
@@ -389,25 +390,25 @@ HOST_DEVICE_INLINE T single_box_iou_quadri(T const* const pts1_raw,
       (pts1_raw[1] + pts2_raw[1] + pts1_raw[3] + pts2_raw[3] + pts1_raw[5] +
        pts2_raw[5] + pts1_raw[7] + pts2_raw[7]) /
       8.0;
-  pts1[0].x = box1_raw[0] - center_shift_x;
-  pts1[0].y = box1_raw[1] - center_shift_y;
-  pts1[1].x = box1_raw[2] - center_shift_x;
-  pts1[1].y = box1_raw[3] - center_shift_y;
-  pts1[2].x = box1_raw[4] - center_shift_x;
-  pts1[2].y = box1_raw[5] - center_shift_y;
-  pts1[3].x = box1_raw[6] - center_shift_x;
-  pts1[3].y = box1_raw[7] - center_shift_y;
-  pts2[0].x = box1_raw[0] - center_shift_x;
-  pts2[0].y = box1_raw[1] - center_shift_y;
-  pts2[1].x = box1_raw[2] - center_shift_x;
-  pts2[1].y = box1_raw[3] - center_shift_y;
-  pts2[2].x = box1_raw[4] - center_shift_x;
-  pts2[2].y = box1_raw[5] - center_shift_y;
-  pts2[3].x = box1_raw[6] - center_shift_x;
-  pts2[3].y = box1_raw[7] - center_shift_y;
+  pts1[0].x = pts1_raw[0] - center_shift_x;
+  pts1[0].y = pts1_raw[1] - center_shift_y;
+  pts1[1].x = pts1_raw[2] - center_shift_x;
+  pts1[1].y = pts1_raw[3] - center_shift_y;
+  pts1[2].x = pts1_raw[4] - center_shift_x;
+  pts1[2].y = pts1_raw[5] - center_shift_y;
+  pts1[3].x = pts1_raw[6] - center_shift_x;
+  pts1[3].y = pts1_raw[7] - center_shift_y;
+  pts2[0].x = pts2_raw[0] - center_shift_x;
+  pts2[0].y = pts2_raw[1] - center_shift_y;
+  pts2[1].x = pts2_raw[2] - center_shift_x;
+  pts2[1].y = pts2_raw[3] - center_shift_y;
+  pts2[2].x = pts2_raw[4] - center_shift_x;
+  pts2[2].y = pts2_raw[5] - center_shift_y;
+  pts2[3].x = pts2_raw[6] - center_shift_x;
+  pts2[3].y = pts2_raw[7] - center_shift_y;
 
-  const T area1 = quadri_box_area(pts1);
-  const T area2 = quadri_box_area(pts2);
+  const T area1 = quadri_box_area<T>(pts1);
+  const T area2 = quadri_box_area<T>(pts2);
   if (area1 < 1e-14 || area2 < 1e-14) {
     return 0.f;
   }
