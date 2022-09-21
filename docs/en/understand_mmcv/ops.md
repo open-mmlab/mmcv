@@ -10,6 +10,7 @@ We implement common ops used in detection, segmentation, etc.
 | BBoxOverlaps                 |     | √    | √   | √   |
 | BorderAlign                  |     | √    |     |     |
 | BoxIouRotated                | √   | √    |     |     |
+| BoxIouQuadri                 | √   | √    |     |     |
 | CARAFE                       |     | √    | √   |     |
 | ChamferDistance              |     | √    |     |     |
 | CrissCrossAttention          |     | √    |     |     |

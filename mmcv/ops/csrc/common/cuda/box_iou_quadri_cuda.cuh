@@ -48,7 +48,7 @@ __global__ void box_iou_quadri_cuda_kernel(
       block_boxes2[5] = dev_boxes2[base1 + 5];
       block_boxes2[6] = dev_boxes2[base1 + 6];
       block_boxes2[7] = dev_boxes2[base1 + 7];
-    
+
       dev_ious[index] =
           single_box_iou_quadri<T>(block_boxes1, block_boxes2, mode_flag);
     }
