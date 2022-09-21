@@ -38,7 +38,7 @@ from .modulated_deform_conv import (ModulatedDeformConv2d,
                                     ModulatedDeformConv2dPack,
                                     modulated_deform_conv2d)
 from .multi_scale_deform_attn import MultiScaleDeformableAttention
-from .nms import batched_nms, nms, nms_match, nms_rotated, soft_nms
+from .nms import batched_nms, nms, nms_match, nms_quadri, nms_rotated, soft_nms
 from .pixel_group import pixel_group
 from .point_sample import (SimpleRoIAlign, point_sample,
                            rel_roi_point_to_rel_img_point)
@@ -90,7 +90,7 @@ __all__ = [
     'pixel_group', 'QueryAndGroup', 'GroupAll', 'grouping_operation',
     'contour_expand', 'three_nn', 'three_interpolate',
     'MultiScaleDeformableAttention', 'BorderAlign', 'border_align',
-    'gather_points', 'furthest_point_sample',
+    'gather_points', 'furthest_point_sample', 'nms_quadri',
     'furthest_point_sample_with_dist', 'PointsSampler', 'Correlation',
     'boxes_iou3d', 'boxes_iou_bev', 'boxes_overlap_bev', 'nms_bev',
     'nms_normal_bev', 'nms3d', 'nms3d_normal', 'Voxelization', 'voxelization',

@@ -36,6 +36,7 @@ We implement common ops used in detection, segmentation, etc.
 | MultiScaleDeformableAttn     |     | √    |     |     |
 | NMS                          | √   | √    | √   |     |
 | NMSRotated                   | √   | √    |     |     |
+| NMSQuadri                    | √   | √    |     |     |
 | PixelGroup                   | √   |      |     |     |
 | PointsInBoxes                | √   | √    |     |     |
 | PointsInPolygons             |     | √    |     |     |
