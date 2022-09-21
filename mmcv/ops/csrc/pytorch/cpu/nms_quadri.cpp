@@ -4,7 +4,7 @@
 
 template <typename scalar_t>
 Tensor nms_quadri_cpu_kernel(const Tensor dets, const Tensor scores,
-                              const float iou_threshold) {
+                             const float iou_threshold) {
   // nms_quadri_cpu_kernel is modified from torchvision's nms_cpu_kernel,
   // however, the code in this function is much shorter because
   // we delegate the IoU computation for quadri boxes to
@@ -55,7 +55,7 @@ Tensor nms_quadri_cpu_kernel(const Tensor dets, const Tensor scores,
 }
 
 Tensor nms_quadri_cpu(const Tensor dets, const Tensor scores,
-                       const float iou_threshold) {
+                      const float iou_threshold) {
   auto result = at::empty({0}, dets.options());
   AT_DISPATCH_FLOATING_TYPES(dets.scalar_type(), "nms_quadri", [&] {
     result = nms_quadri_cpu_kernel<scalar_t>(dets, scores, iou_threshold);

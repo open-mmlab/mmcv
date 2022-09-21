@@ -3,8 +3,8 @@
 #include "pytorch_cuda_helper.hpp"
 
 Tensor nms_quadri_cuda(const Tensor dets, const Tensor scores,
-                        const Tensor order_t, const Tensor dets_sorted,
-                        float iou_threshold, const int multi_label) {
+                       const Tensor order_t, const Tensor dets_sorted,
+                       float iou_threshold, const int multi_label) {
   // using scalar_t = float;
   AT_ASSERTM(dets.is_cuda(), "dets must be a CUDA tensor");
   AT_ASSERTM(scores.is_cuda(), "scores must be a CUDA tensor");

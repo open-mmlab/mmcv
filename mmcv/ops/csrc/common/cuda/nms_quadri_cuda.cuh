@@ -19,11 +19,10 @@ int const threadsPerBlock = sizeof(unsigned long long) * 8;
 
 template <typename T>
 __global__ void nms_quadri_cuda_kernel(const int n_boxes,
-                                        const float iou_threshold,
-                                        const T* dev_boxes,
-                                        unsigned long long* dev_mask,
-                                        const int multi_label) {
-
+                                       const float iou_threshold,
+                                       const T* dev_boxes,
+                                       unsigned long long* dev_mask,
+                                       const int multi_label) {
   if (multi_label == 1) {
     const int row_start = blockIdx.y;
     const int col_start = blockIdx.x;
