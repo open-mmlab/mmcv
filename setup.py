@@ -333,27 +333,17 @@ def get_extensions():
         elif (os.getenv('FORCE_NPU', '0') == '1'):
             print(f'Compiling {ext_name} only with CPU and NPU')
             try:
-                has_npu = torch.npu.is_available()
-                print('torch_npu version 1.5 is available. ', has_npu)
-                extension = CppExtension
+                from torch_npu.utils.cpp_extension import NpuExtension
+                define_macros += [('MMCV_WITH_NPU', None)]
+                extension = NpuExtension
             except Exception:
-                try:
-                    import torch_npu
-                    from torch_npu.utils.cpp_extension import NpuExtension
-                    has_npu = torch_npu.npu.is_available()
-                    print('torch_npu version 1.8 is available.: ', has_npu)
-                    define_macros += [('MMCV_WITH_NPU', None)]
-                    extension = NpuExtension
-                except Exception:
-                    print('can not find any torch_npu')
-                    return extensions
-
+                print('can not find any torch_npu')
+                return extensions
             # src
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/common/npu/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/npu/*.cpp')
-
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/npu'))
         else:

@@ -21,23 +21,15 @@
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"
 
-#ifdef MMCV_WITH_NPU
 #include <torch_npu/csrc/framework/utils/CalcuOpUtil.h>
 #include <torch_npu/csrc/framework/utils/OpAdapter.h>
 #include <torch_npu/csrc/aten/NPUNativeFunctions.h>
+
 #define NPU_NAME_SPACE at_npu::native
+
 #define REGISTER_NPU_IMPL(key, value) REGISTER_DEVICE_IMPL(key, XLA, value)
+
 #define CHECK_NPU(x) \
   TORCH_CHECK(x.device().type() == at::kXLA, #x " must be a NPU tensor")
-#else
-
-// for torch 1.5.0 adapter only
-#include <torch/csrc/ATen/native/npu/utils/OpAdapter.h>
-#include <torch/csrc/ATen/native/npu/utils/CalcuOpUtil.h>
-#define NPU_NAME_SPACE at::native::npu
-#define REGISTER_NPU_IMPL(key, value) REGISTER_DEVICE_IMPL(key, NPU, value);
-#define CHECK_NPU(x) \
-  TORCH_CHECK(x.device().type() == at::kNPU, #x " must be a NPU tensor")
-#endif
 
 #endif  // PYTORCH_NPU_HELPER_HPP_
