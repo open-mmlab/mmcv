@@ -7,7 +7,6 @@ void sigmoid_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
   at::Tensor target_y = at::reshape(target, input.sizes());
   target_y =
       at_npu::native::NPUNativeFunctions::npu_dtype_cast(target_y, at::kInt);
-  at::Tensor grad_up = at::ones_like(input);
   int64_t weight_size = weight.size(0);
   at::Tensor weight_y = at::ones_like(input);
   if (weight_size > 0) {
@@ -18,9 +17,8 @@ void sigmoid_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
   cmd.Name("SigmoidFocalLoss")
       .Input(input)
       .Input(target_y)
-      .Input(grad_up)
       .Input(weight_y)
-      .Output(grad_input)
+      .Output(output)
       .Attr("gamma", gamma)
       .Attr("alpha", alpha)
       .Attr("reduction", "none")
@@ -67,7 +65,6 @@ void softmax_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
       at_npu::native::NPUNativeFunctions::one_hot(target, n_class);
   target_y =
       at_npu::native::NPUNativeFunctions::npu_dtype_cast(target_y, at::kInt);
-  at::Tensor grad_up = at::ones_like(input);
   int64_t weight_size = weight.size(0);
   at::Tensor weight_y = at::ones_like(input);
   if (weight_size > 0) {
@@ -78,9 +75,8 @@ void softmax_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
   cmd.Name("SoftmaxFocalLoss")
       .Input(input)
       .Input(target_y)
-      .Input(grad_up)
       .Input(weight_y)
-      .Output(grad_input)
+      .Output(output)
       .Attr("gamma", gamma)
       .Attr("alpha", alpha)
       .Attr("reduction", "none")
