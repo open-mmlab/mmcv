@@ -12,6 +12,4 @@ def test_silu():
     # test output shape
     assert output.shape == expected_output.shape
     # test output value
-    print(output)
-    print(expected_output)
     assert torch.allclose(output, expected_output)
