@@ -32,11 +32,12 @@ class PrRoIPoolFunction(Function):
                 rois: torch.Tensor,
                 output_size: Tuple,
                 spatial_scale: float = 1.0) -> torch.Tensor:
-        if 'FloatTensor' not in features.type(
-        ) or 'FloatTensor' not in rois.type():
-            raise ValueError(
-                'Precise RoI Pooling only takes float input, got '
-                f'{features.type()} for features and {rois.type()} for rois.')
+        if torch.__version__ != 'parrots':
+            if 'FloatTensor' not in features.type(
+            ) or 'FloatTensor' not in rois.type():
+                raise ValueError(
+                    'Precise RoI Pooling only takes float input, got '
+                    f'{features.type()} for features and {rois.type()} for rois.')
 
         pooled_height = int(output_size[0])
         pooled_width = int(output_size[1])
@@ -49,7 +50,13 @@ class PrRoIPoolFunction(Function):
         output = features.new_zeros(output_shape)
         params = (pooled_height, pooled_width, spatial_scale)
 
-        ext_module.prroi_pool_forward(features, rois, output, *params)
+        ext_module.prroi_pool_forward(
+            features,
+            rois,
+            output,
+            pooled_height=params[0],
+            pooled_width=params[1],
+            spatial_scale=params[2])
         ctx.params = params
         # everything here is contiguous.
         ctx.save_for_backward(features, rois, output)
@@ -67,12 +74,24 @@ class PrRoIPoolFunction(Function):
 
         if features.requires_grad:
             grad_output = grad_output.contiguous()
-            ext_module.prroi_pool_backward(grad_output, rois, grad_input,
-                                           *ctx.params)
+            ext_module.prroi_pool_backward(
+                grad_output,
+                rois,
+                grad_input,
+                pooled_height=ctx.params[0],
+                pooled_width=ctx.params[1],
+                spatial_scale=ctx.params[2])
         if rois.requires_grad:
             grad_output = grad_output.contiguous()
-            ext_module.prroi_pool_coor_backward(output, grad_output, features,
-                                                rois, grad_coor, *ctx.params)
+            ext_module.prroi_pool_coor_backward(
+                output,
+                grad_output,
+                features,
+                rois,
+                grad_coor,
+                pooled_height=ctx.params[0],
+                pooled_width=ctx.params[1],
+                spatial_scale=ctx.params[2])
 
         return grad_input, grad_coor, None, None, None
 
