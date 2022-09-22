@@ -9,8 +9,7 @@ ext_module = ext_loader.load_ext('_ext', ['box_iou_quadri'])
 def box_iou_quadri(bboxes1: torch.Tensor,
                    bboxes2: torch.Tensor,
                    mode: str = 'iou',
-                   aligned: bool = False,
-                   clockwise: bool = True) -> torch.Tensor:
+                   aligned: bool = False) -> torch.Tensor:
     """Return intersection-over-union (Jaccard index) of boxes.
 
     Both sets of boxes are expected to be in
@@ -43,11 +42,6 @@ def box_iou_quadri(bboxes1: torch.Tensor,
         ious = bboxes1.new_zeros(rows)
     else:
         ious = bboxes1.new_zeros(rows * cols)
-    if not clockwise:
-        flip_mat = bboxes1.new_ones(bboxes1.shape[-1])
-        flip_mat[-1] = -1
-        bboxes1 = bboxes1 * flip_mat
-        bboxes2 = bboxes2 * flip_mat
     bboxes1 = bboxes1.contiguous()
     bboxes2 = bboxes2.contiguous()
     ext_module.box_iou_quadri(
