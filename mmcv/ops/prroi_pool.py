@@ -37,7 +37,8 @@ class PrRoIPoolFunction(Function):
             ) or 'FloatTensor' not in rois.type():
                 raise ValueError(
                     'Precise RoI Pooling only takes float input, got '
-                    f'{features.type()} for features and {rois.type()} for rois.')
+                    f'{features.type()} for features and'
+                    f'{rois.type()} for rois.')
 
         pooled_height = int(output_size[0])
         pooled_width = int(output_size[1])
