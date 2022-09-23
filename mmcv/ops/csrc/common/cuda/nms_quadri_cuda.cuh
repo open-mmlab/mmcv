@@ -127,7 +127,7 @@ __global__ void nms_quadri_cuda_kernel(const int n_boxes,
         // Instead of devIoU used by original horizontal nms, here
         // we use the single_box_iou_quadri function from
         // box_iou_rotated_utils.h
-        if (single_box_iou_rotated<T>(cur_box, block_boxes + i * 8, 0) >
+        if (single_box_iou_quadri<T>(cur_box, block_boxes + i * 8, 0) >
             iou_threshold) {
           t |= 1ULL << i;
         }
