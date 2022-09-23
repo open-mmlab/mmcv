@@ -9,7 +9,8 @@ using namespace parrots;
 
 #ifdef MMCV_WITH_CUDA
 void prroi_pool_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-    const OperatorBase::in_list_t& ins, OperatorBase::out_list_t& outs) {
+                                     const OperatorBase::in_list_t& ins,
+                                     OperatorBase::out_list_t& outs) {
   int pooled_height;
   int pooled_width;
   float spatial_scale;
@@ -19,15 +20,16 @@ void prroi_pool_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
       .get<float>("spatial_scale", spatial_scale)
       .done();
 
-  auto input = buildATensor(ctx, ins[0]);
-  auto rois = buildATensor(ctx, ins[1]);
+  const auto& input = buildATensor(ctx, ins[0]);
+  const auto& rois = buildATensor(ctx, ins[1]);
   auto output = buildATensor(ctx, outs[0]);
   prroi_pool_forward(input, rois, output, pooled_height, pooled_width,
                      spatial_scale);
 }
 
 void prroi_pool_backward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
-    const OperatorBase::in_list_t& ins, OperatorBase::out_list_t& outs) {
+                                      const OperatorBase::in_list_t& ins,
+                                      OperatorBase::out_list_t& outs) {
   int pooled_height;
   int pooled_width;
   float spatial_scale;
@@ -37,16 +39,17 @@ void prroi_pool_backward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
       .get<float>("spatial_scale", spatial_scale)
       .done();
 
-  auto grad_output = buildATensor(ctx, ins[0]);
-  auto rois = buildATensor(ctx, ins[1]);
+  const auto& grad_output = buildATensor(ctx, ins[0]);
+  const auto& rois = buildATensor(ctx, ins[1]);
   auto grad_input = buildATensor(ctx, outs[0]);
   prroi_pool_backward(grad_output, rois, grad_input, pooled_height,
                       pooled_width, spatial_scale);
 }
 
-void prroi_pool_coor_backward_cuda_parrots(
-    CudaContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
-    OperatorBase::out_list_t& outs) {
+void prroi_pool_coor_backward_cuda_parrots(CudaContext& ctx,
+                                           const SSElement& attr,
+                                           const OperatorBase::in_list_t& ins,
+                                           OperatorBase::out_list_t& outs) {
   int pooled_height;
   int pooled_width;
   float spatial_scale;
@@ -56,10 +59,10 @@ void prroi_pool_coor_backward_cuda_parrots(
       .get<float>("spatial_scale", spatial_scale)
       .done();
 
-  auto output = buildATensor(ctx, ins[0]);
-  auto grad_output = buildATensor(ctx, ins[1]);
-  auto input = buildATensor(ctx, ins[2]);
-  auto rois = buildATensor(ctx, ins[3]);
+  const auto& output = buildATensor(ctx, ins[0]);
+  const auto& grad_output = buildATensor(ctx, ins[1]);
+  const auto& input = buildATensor(ctx, ins[2]);
+  const auto& rois = buildATensor(ctx, ins[3]);
   auto grad_rois = buildATensor(ctx, outs[0]);
   prroi_pool_coor_backward(output, grad_output, input, rois, grad_rois,
                            pooled_height, pooled_width, spatial_scale);
@@ -91,5 +94,4 @@ PARROTS_EXTENSION_REGISTER(prroi_pool_coor_backward)
     .output(1)
     .apply(prroi_pool_coor_backward_cuda_parrots)
     .done();
-
 #endif
