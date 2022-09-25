@@ -29,7 +29,7 @@ Some ops have different implementations on different devices. Lots of macros and
   }
 ```
 
-Registry and dispatcher are added to manage these implementations.
+**Registry** and **Dispatcher** are added to manage these implementations.
 
 ```c++
 

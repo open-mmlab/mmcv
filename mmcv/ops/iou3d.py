@@ -163,10 +163,10 @@ def nms_bev(boxes: Tensor,
             post_max_size: Optional[int] = None) -> Tensor:
     """NMS function GPU implementation (for BEV boxes).
 
-    The overlap of two
-    boxes for IoU calculation is defined as the exact overlapping area of the
-    two boxes. In this function, one can also set ``pre_max_size`` and
-    ``post_max_size``.
+    The overlap of two boxes for IoU calculation is defined as the exact
+    overlapping area of the two boxes. In this function, one can also
+    set ``pre_max_size`` and ``post_max_size``.
+
     Args:
         boxes (torch.Tensor): Input boxes with the shape of (N, 5)
             ([x1, y1, x2, y2, ry]).
@@ -176,6 +176,7 @@ def nms_bev(boxes: Tensor,
             Default: None.
         post_max_size (int, optional): Max size of boxes after NMS.
             Default: None.
+
     Returns:
         torch.Tensor: Indexes after NMS.
     """
@@ -203,14 +204,15 @@ def nms_bev(boxes: Tensor,
 def nms_normal_bev(boxes: Tensor, scores: Tensor, thresh: float) -> Tensor:
     """Normal NMS function GPU implementation (for BEV boxes).
 
-    The overlap of
-    two boxes for IoU calculation is defined as the exact overlapping area of
-    the two boxes WITH their yaw angle set to 0.
+    The overlap of two boxes for IoU calculation is defined as the exact
+    overlapping area of the two boxes WITH their yaw angle set to 0.
+
     Args:
         boxes (torch.Tensor): Input boxes with shape (N, 5)
             ([x1, y1, x2, y2, ry]).
         scores (torch.Tensor): Scores of predicted boxes with shape (N,).
         thresh (float): Overlap threshold of NMS.
+
     Returns:
         torch.Tensor: Remaining indices with scores in descending order.
     """

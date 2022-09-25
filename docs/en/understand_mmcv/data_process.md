@@ -2,7 +2,7 @@
 
 ### Image
 
-This module provides some image processing methods, which requires `opencv` to be installed.
+This module provides some image processing methods, which requires `opencv`.
 
 #### Read/Write/Show
 
@@ -29,7 +29,6 @@ To show an image file or a loaded image
 
 ```python
 mmcv.imshow('tests/data/color.jpg')
-# this is equivalent to
 
 for i in range(10):
     img = np.random.randint(256, size=(100, 100, 3), dtype=np.uint8)
@@ -56,9 +55,7 @@ img3 = mmcv.bgr2hsv(img)
 
 #### Resize
 
-There are three resize methods. All `imresize_*` methods have an argument `return_scale`,
-if this argument is `False`, then the return value is merely the resized image, otherwise
-is a tuple `(resized_img, scale)`.
+There are three resize methods. All `imresize_*` methods have an `return_scale` argument. If this argument is `False`, the return value is only the resized image, otherwise it is a tuple `(resized_img, scale)`.
 
 ```python
 # resize to a given size
@@ -77,11 +74,8 @@ mmcv.imrescale(img, (1000, 800))
 
 #### Rotate
 
-To rotate an image by some angle, use `imrotate`. The center can be specified,
-which is the center of original image by default. There are two modes of rotating,
-one is to keep the image size unchanged so that some parts of the image will be
-cropped after rotating, the other is to extend the image size to fit the rotated
-image.
+To rotate an image by a certain angle, use `imrotate`. The center of the rotation needs to be specified, the default value is the center of original image. 
+There are two rotation methods, one keeps the image size unchanged so some parts of the original image will be cropped after rotation, and the other is to extend the image size to keep the content of the original image.
 
 ```python
 img = mmcv.imread('tests/data/color.jpg')
@@ -118,7 +112,7 @@ mmcv.imflip(img, direction='vertical')
 
 #### Crop
 
-`imcrop` can crop the image with one or some regions, represented as (x1, y1, x2, y2).
+`imcrop` crops the image with one or some regions. Each region is represented by the upper left and lower right coordinates, represented as (x1, y1, x2, y2).
 
 ```python
 import mmcv
@@ -140,7 +134,7 @@ patches = mmcv.imcrop(img, bboxes, scale=1.2)
 
 #### Padding
 
-There are two methods `impad` and `impad_to_multiple` to pad an image to the
+There are two methods, `impad` and `impad_to_multiple`, to pad an image to the
 specific size with given values.
 
 ```python
@@ -165,7 +159,7 @@ img_ = mmcv.impad_to_multiple(img, 32)
 
 ### Video
 
-This module provides the following functionalities.
+This module provides the following functionalities:
 
 - A `VideoReader` class with friendly apis to read and convert videos.
 - Some methods for editing (cut, concat, resize) videos.

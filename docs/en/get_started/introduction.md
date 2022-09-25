@@ -22,12 +22,12 @@ research projects as below:
 - [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMLab image and video generative models toolbox.
 - [MMDeploy](https://github.com/open-mmlab/mmdeploy): OpenMMLab model deployment framework.
 
-It provides the following functionalities.
+It provides the following functionalities:
 
 - Universal IO APIs
 - Image/Video processing
 - Image and annotation visualization
-- Image transformation
+- Useful developing tools (such as timer, etc)
 - Various CNN architectures
 - High-quality implementation of common CUDA ops
 

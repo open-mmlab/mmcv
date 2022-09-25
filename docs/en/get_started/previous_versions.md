@@ -1,4 +1,4 @@
-## OTHER VERSIONS OF PYTORCH BUILT FOR MMCV-FULL
+## BUILD MMCV_FULL ON OTHER VERSIONS OF PYTORCH
 
 We no longer provide `mmcv-full` packages compiled under lower versions of `PyTorch`, but for your convenience, you can find them below.
 

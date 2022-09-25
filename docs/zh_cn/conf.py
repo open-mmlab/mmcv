@@ -47,6 +47,8 @@ release = __version__
 
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx.ext.autosectionlabel',
@@ -56,6 +58,14 @@ extensions = [
 ]  # yapf: disable
 
 myst_heading_anchors = 4
+
+# Configuration for intersphinx
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'numpy': ('https://numpy.org/doc/stable', None),
+    'torch': ('https://pytorch.org/docs/stable/', None),
+    'mmengine': ('https://mmengine.readthedocs.io/en/latest', None),
+}
 
 autodoc_mock_imports = ['mmcv._ext', 'mmcv.utils.ext_loader', 'torchvision']
 autosectionlabel_prefix_document = True

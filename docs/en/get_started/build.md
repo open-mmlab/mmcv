@@ -2,7 +2,7 @@
 
 ### Build on Linux or macOS
 
-After cloning the repo with
+Clone the repo with
 
 ```bash
 git clone https://github.com/open-mmlab/mmcv.git
@@ -24,7 +24,7 @@ You can either
   MMCV_WITH_OPS=0 pip install -e .
   ```
 
-- install the full version
+- or install the full version
 
   ```bash
   pip install -e .

@@ -4,10 +4,8 @@ We provide some building bricks for CNNs, including layer building, module bundl
 
 ### Layer building
 
-We may need to try different layers of the same type when running experiments,
-but do not want to modify the code from time to time.
-Here we provide some layer building methods to construct layers from a dict,
-which can be written in configs or specified via command line arguments.
+When running an experiment, we may want to try layers of the same type but with different configurations, but we don't want to change the code every time. 
+So, we provide some layer construction methods, which can build layers from dictionaries. It can be configured in configuration files or specified through command line parameters.
 
 #### Usage
 
@@ -20,11 +18,11 @@ cfg = dict(type='Conv3d')
 layer = build_conv_layer(cfg, in_channels=3, out_channels=8, kernel_size=3)
 ```
 
-- `build_conv_layer`: Supported types are Conv1d, Conv2d, Conv3d, Conv (alias for Conv2d).
-- `build_norm_layer`: Supported types are BN1d, BN2d, BN3d, BN (alias for BN2d), SyncBN, GN, LN, IN1d, IN2d, IN3d, IN (alias for IN2d).
-- `build_activation_layer`: Supported types are ReLU, LeakyReLU, PReLU, RReLU, ReLU6, ELU, Sigmoid, Tanh, GELU.
-- `build_upsample_layer`: Supported types are nearest, bilinear, deconv, pixel_shuffle.
-- `build_padding_layer`: Supported types are zero, reflect, replicate.
+- `build_conv_layer`: Supports `Conv1d`, `Conv2d`, `Conv3d`, and `Conv` (alias for `Conv2d`).
+- `build_norm_layer`: Supports `BN1d`, `BN2d`, `BN3d`, `BN` (alias for `BN2d`), `SyncBN`, `GN`, `LN`, `IN1d`, `IN2d`, `IN3d`, and `IN` (alias for `IN2d`).
+- `build_activation_layer`: Supports `ReLU`, `LeakyReLU`, `PReLU`, `RReLU`, `ReLU6`, `ELU`, `Sigmoid`, `Tanh`, and `GELU`.
+- `build_upsample_layer`: Supports `nearest`, `bilinear`, `deconv`, and `pixel_shuffle`.
+- `build_padding_layer`: Supports `zero`, `reflect`, and `replicate`.
 
 #### Extension
 
@@ -106,15 +104,15 @@ An example json file could be like:
 
 The default links of the pre-trained models hosted on OpenMMLab AWS could be found [here](https://github.com/open-mmlab/mmcv/blob/master/mmcv/model_zoo/open_mmlab.json).
 
-You may override default links by putting `open-mmlab.json` under `MMCV_HOME`. If `MMCV_HOME` is not find in the environment, `~/.cache/mmcv` will be used by default. You may `export MMCV_HOME=/your/path` to use your own path.
+You may override default links by putting `open-mmlab.json` under `MMCV_HOME`. If `MMCV_HOME` is not found in your environment, `~/.cache/mmcv` will be used by default. You may use your own path with `export MMCV_HOME=/your/path`.
 
-The external json files will be merged into default one. If the same key presents in both external json and default json, the external one will be used.
+The external json files will be merged into the default one. If the same key presents in both the external json and the default json, the external one will be used.
 
 #### Load Checkpoint
 
-The following types are supported for `filename` argument of `mmcv.load_checkpoint()`.
+The following types are supported for `filename` of `mmcv.load_checkpoint()`.
 
 - filepath: The filepath of the checkpoint.
-- `http://xxx` and `https://xxx`: The link to download the checkpoint. The `SHA256` postfix should be contained in the filename.
-- `torchvision://xxx`: The model links in `torchvision.models`.Please refer to [torchvision](https://pytorch.org/docs/stable/torchvision/models.html) for details.
-- `open-mmlab://xxx`: The model links or filepath provided in default and additional json files.
+- `http://xxx` and `https://xxx`: The link to download the checkpoint. The `SHA256` postfix must be contained.
+- `torchvision://xxx`: Model links in `torchvision.models`.Please refer to [torchvision](https://pytorch.org/docs/stable/torchvision/models.html) for details.
+- `open-mmlab://xxx`: Model links or filepath provided in the default and additional json files.
