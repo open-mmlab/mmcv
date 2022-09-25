@@ -38,8 +38,6 @@ You can switch between Chinese and English documents in the lower-left corner of
    compatibility.md
 
 .. toctree::
-   :maxdepth: 2
-   :caption: FAQ
 
    faq.md
 

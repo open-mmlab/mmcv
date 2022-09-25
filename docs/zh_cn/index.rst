@@ -33,8 +33,6 @@
    compatibility.md
 
 .. toctree::
-   :maxdepth: 2
-   :caption: 常见问题
 
    faq.md
 
