@@ -38,8 +38,6 @@ You can switch between Chinese and English documents in the lower-left corner of
    compatibility.md
 
 .. toctree::
-   :maxdepth: 2
-   :caption: FAQ
 
    faq.md
 
@@ -51,10 +49,17 @@ You can switch between Chinese and English documents in the lower-left corner of
    community/pr.md
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: API Reference
 
-   api.rst
+   mmcv.image <api/image>
+   mmcv.video <api/video>
+   mmcv.visualization <api/visualization>
+   mmcv.cnn <api/cnn>
+   mmcv.ops <api/ops>
+   mmcv.transforms <api/transforms>
+   mmcv.arraymisc <api/arraymisc>
+   mmcv.utils <api/utils>
 
 Indices and tables
 ==================
