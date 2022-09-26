@@ -273,6 +273,7 @@ HOST_DEVICE_INLINE int convex_hull_graham(const Point<T> (&p)[24],
 template <typename T>
 HOST_DEVICE_INLINE T quadri_box_area(const Point<T> (&q)[4]) {
   T area = 0;
+#pragma unroll
   for (int i = 1; i < 3; i++) {
     area += fabs(cross_2d<T>(q[i] - q[0], q[i + 1] - q[0]));
   }
