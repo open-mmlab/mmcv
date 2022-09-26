@@ -27,7 +27,7 @@ else:
 
         def forward(self, inputs) -> torch.Tensor:
             if self.inplace:
-                return inputs.scatter_(torch.sigmoid(inputs))
+                return inputs.mul_(torch.sigmoid(inputs))
             else:
                 return inputs * torch.sigmoid(inputs)
 
