@@ -17,7 +17,6 @@ torch::Tensor IndiceMaxpoolForwardCUDAKernelLauncher(torch::Tensor features,
   auto options =
       torch::TensorOptions().dtype(features.dtype()).device(features.device());
   torch::Tensor output = torch::zeros({numAct, numInPlanes}, options);
-  double totalTime = 0;
   for (int i = 0; i < kernelVolume; ++i) {
     auto nHot = indicePairNumCpu.data_ptr<int>()[i];
     if (nHot <= 0) {
