@@ -21,11 +21,15 @@ else:
     class SiLU(nn.Module):
         """Sigmoid Weighted Liner Unit."""
 
-        def __init__(self, inplace=True):
+        def __init__(self, inplace=False):
             super().__init__()
+            self.inplace = inplace
 
         def forward(self, inputs) -> torch.Tensor:
-            return inputs * torch.sigmoid(inputs)
+            if self.inplace:
+                return inputs.scatter_(torch.sigmoid(inputs))
+            else:
+                return inputs * torch.sigmoid(inputs)
 
     ACTIVATION_LAYERS.register_module(module=SiLU, name='SiLU')
 
