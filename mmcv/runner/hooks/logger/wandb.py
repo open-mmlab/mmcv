@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
+import warnings
 from typing import Dict, Optional, Union
 
 from mmcv.utils import scandir
@@ -45,6 +46,8 @@ class WandbLoggerHook(LoggerHook):
             `New in version 1.4.3.`
         define_metric_cfg (dict, optional): A dict of metrics and summaries for
             wandb.define_metric. The key is metric and the value is summary.
+            The summary should be in ["min", "max", "mean" ,"best", "last",
+             "none"].
             For example, if setting
             ``define_metric_cfg={'coco/bbox_mAP': 'max'}``, the maximum value
             of``coco/bbox_mAP`` will be logged on wandb UI. See
@@ -94,8 +97,13 @@ class WandbLoggerHook(LoggerHook):
             self.wandb.init(**self.init_kwargs)  # type: ignore
         else:
             self.wandb.init()  # type: ignore
+        summary_choice = ['min', 'max', 'mean', 'best', 'last', 'none']
         if self.define_metric_cfg is not None:
             for metric, summary in self.define_metric_cfg.items():
+                if summary not in summary_choice:
+                    warnings.warn(
+                        f'summary should be in {summary_choice}. '
+                        f'metric={metric}, summary={summary} will be skipped.')
                 self.wandb.define_metric(  # type: ignore
                     metric, summary=summary)
 
