@@ -25,3 +25,4 @@ def test_silu():
     # test output value
     assert torch.allclose(output, expected_output)
     assert torch.allclose(input, expected_output)
+    assert input is output
