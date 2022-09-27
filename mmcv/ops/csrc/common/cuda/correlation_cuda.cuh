@@ -64,11 +64,11 @@ __global__ void correlation_forward_cuda_kernel(
       for (int i = 0; i < kH; ++i) {
         int i1 = start_i + i * dilationH;
         int i2 = i1 + ph_dilated;
-        if WITHIN_BOUNDS (i1, i2, iH, iH) {
+        if (WITHIN_BOUNDS(i1, i2, iH, iH)) {
           for (int j = 0; j < kW; ++j) {
             int j1 = start_j + j * dilationW;
             int j2 = j1 + pw_dilated;
-            if WITHIN_BOUNDS (j1, j2, iW, iW) {
+            if (WITHIN_BOUNDS(j1, j2, iW, iW)) {
               for (int c = thread; c < C; c += WARP_SIZE) {
                 scalar_t v1 = rInput1[n][i1][j1][c];
                 scalar_t v2 = rInput2[n][i2][j2][c];
