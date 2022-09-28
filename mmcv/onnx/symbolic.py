@@ -7,7 +7,6 @@ import numpy as np
 import torch
 from torch.nn.modules.utils import _pair, _single, _triple
 from torch.onnx.symbolic_helper import parse_args
-from torch.onnx.symbolic_registry import register_op
 
 from .onnx_utils import symbolic_helper as sym_help
 
@@ -480,30 +479,41 @@ def register_extra_symbolics(opset=11):
     msg += reset_style
     warnings.warn(msg)
 
-    register_op('one_hot', one_hot, '', opset)
-    register_op('im2col', im2col, '', opset)
-    register_op('topk', topk, '', opset)
-    register_op('softmax', softmax, '', opset)
-    register_op('constant_pad_nd', constant_pad_nd, '', opset)
-    register_op('reflection_pad1d', reflection_pad1d, '', opset)
-    register_op('reflection_pad2d', reflection_pad2d, '', opset)
-    register_op('reflection_pad3d', reflection_pad3d, '', opset)
-    register_op('avg_pool1d', avg_pool1d, '', opset)
-    register_op('avg_pool2d', avg_pool2d, '', opset)
-    register_op('avg_pool3d', avg_pool3d, '', opset)
-    register_op('adaptive_avg_pool1d', adaptive_avg_pool1d, '', opset)
-    register_op('adaptive_avg_pool2d', adaptive_avg_pool2d, '', opset)
-    register_op('adaptive_avg_pool3d', adaptive_avg_pool3d, '', opset)
-    register_op('masked_select', masked_select, '', opset)
-    register_op('upsample_nearest1d', upsample_nearest1d, '', opset)
-    register_op('upsample_nearest2d', upsample_nearest2d, '', opset)
-    register_op('upsample_nearest3d', upsample_nearest3d, '', opset)
-    register_op('upsample_linear1d', upsample_linear1d, '', opset)
-    register_op('upsample_bilinear2d', upsample_bilinear2d, '', opset)
-    register_op('upsample_trilinear3d', upsample_trilinear3d, '', opset)
-    register_op('upsample_bicubic2d', upsample_bicubic2d, '', opset)
-    register_op('new_full', new_full, '', opset)
-    register_op('grid_sampler', grid_sampler, '', opset)
-    register_op('cummax', cummax, '', opset)
-    register_op('cummin', cummin, '', opset)
-    register_op('roll', roll, '', opset)
+    from torch.onnx import register_custom_op_symbolic
+    register_custom_op_symbolic('::one_hot', one_hot, opset)
+    register_custom_op_symbolic('::im2col', im2col, opset)
+    register_custom_op_symbolic('::topk', topk, opset)
+    register_custom_op_symbolic('::softmax', softmax, opset)
+    register_custom_op_symbolic('::constant_pad_nd', constant_pad_nd, opset)
+    register_custom_op_symbolic('::reflection_pad1d', reflection_pad1d, opset)
+    register_custom_op_symbolic('::reflection_pad2d', reflection_pad2d, opset)
+    register_custom_op_symbolic('::reflection_pad3d', reflection_pad3d, opset)
+    register_custom_op_symbolic('::avg_pool1d', avg_pool1d, opset)
+    register_custom_op_symbolic('::avg_pool2d', avg_pool2d, opset)
+    register_custom_op_symbolic('::avg_pool3d', avg_pool3d, opset)
+    register_custom_op_symbolic('::adaptive_avg_pool1d', adaptive_avg_pool1d,
+                                opset)
+    register_custom_op_symbolic('::adaptive_avg_pool2d', adaptive_avg_pool2d,
+                                opset)
+    register_custom_op_symbolic('::adaptive_avg_pool3d', adaptive_avg_pool3d,
+                                opset)
+    register_custom_op_symbolic('::masked_select', masked_select, opset)
+    register_custom_op_symbolic('::upsample_nearest1d', upsample_nearest1d,
+                                opset)
+    register_custom_op_symbolic('::upsample_nearest2d', upsample_nearest2d,
+                                opset)
+    register_custom_op_symbolic('::upsample_nearest3d', upsample_nearest3d,
+                                opset)
+    register_custom_op_symbolic('::upsample_linear1d', upsample_linear1d,
+                                opset)
+    register_custom_op_symbolic('::upsample_bilinear2d', upsample_bilinear2d,
+                                opset)
+    register_custom_op_symbolic('::upsample_trilinear3d', upsample_trilinear3d,
+                                opset)
+    register_custom_op_symbolic('::upsample_bicubic2d', upsample_bicubic2d,
+                                opset)
+    register_custom_op_symbolic('::new_full', new_full, opset)
+    register_custom_op_symbolic('::grid_sampler', grid_sampler, opset)
+    register_custom_op_symbolic('::cummax', cummax, opset)
+    register_custom_op_symbolic('::cummin', cummin, opset)
+    register_custom_op_symbolic('::roll', roll, opset)
