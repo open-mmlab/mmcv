@@ -33,38 +33,6 @@ class NMSop(torch.autograd.Function):
             inds = valid_inds[inds]
         return inds
 
-    @staticmethod
-    def symbolic(g, bboxes, scores, iou_threshold, offset, score_threshold,
-                 max_num):
-        from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
-
-        from ..onnx.onnx_utils.symbolic_helper import _size_helper
-
-        boxes = unsqueeze(g, bboxes, 0)
-        scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
-
-        if max_num > 0:
-            max_num = g.op(
-                'Constant', value_t=torch.tensor(max_num, dtype=torch.long))
-        else:
-            dim = g.op('Constant', value_t=torch.tensor(0))
-            max_num = _size_helper(g, bboxes, dim)
-        max_output_per_class = max_num
-        iou_threshold = g.op(
-            'Constant',
-            value_t=torch.tensor([iou_threshold], dtype=torch.float))
-        score_threshold = g.op(
-            'Constant',
-            value_t=torch.tensor([score_threshold], dtype=torch.float))
-        nms_out = g.op('NonMaxSuppression', boxes, scores,
-                       max_output_per_class, iou_threshold, score_threshold)
-        return squeeze(
-            g,
-            select(
-                g, nms_out, 1,
-                g.op('Constant', value_t=torch.tensor([2], dtype=torch.long))),
-            1)
-
 
 class SoftNMSop(torch.autograd.Function):
 
@@ -330,7 +298,7 @@ def batched_nms(boxes: Tensor,
 
     split_thr = nms_cfg_.pop('split_thr', 10000)
     # Won't split to multiple nms nodes when exporting to onnx
-    if boxes_for_nms.shape[0] < split_thr or torch.onnx.is_in_onnx_export():
+    if boxes_for_nms.shape[0] < split_thr:
         dets, keep = nms_op(boxes_for_nms, scores, **nms_cfg_)
         boxes = boxes[keep]
 

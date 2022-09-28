@@ -67,6 +67,8 @@ class TestMdconv:
                               1e-2)
         assert numpy.allclose(dcn.weight.grad.cpu().detach().numpy(),
                               dcn_w_grad, 1e-2)
+        print(dcn.conv_offset.weight.grad.cpu().detach().numpy())
+        print(dcn_offset_w_grad)
         assert numpy.allclose(
             dcn.conv_offset.weight.grad.cpu().detach().numpy(),
             dcn_offset_w_grad, 1e-2)
