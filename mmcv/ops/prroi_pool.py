@@ -8,6 +8,7 @@ from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
 from ..utils import ext_loader
+from ..utils import TORCH_VERSION
 
 ext_module = ext_loader.load_ext(
     '_ext',
@@ -32,7 +33,13 @@ class PrRoIPoolFunction(Function):
                 rois: torch.Tensor,
                 output_size: Tuple,
                 spatial_scale: float = 1.0) -> torch.Tensor:
-        if torch.__version__ != 'parrots':
+        if TORCH_VERSION == 'parrots':
+            if features.type() != torch.float or rois.type() != torch.float:
+                raise ValueError(
+                    'Precise RoI Pooling only takes float input, got '
+                    f'{features.type()} for features and'
+                    f'{rois.type()} for rois.')
+        else :
             if 'FloatTensor' not in features.type(
             ) or 'FloatTensor' not in rois.type():
                 raise ValueError(
@@ -73,7 +80,7 @@ class PrRoIPoolFunction(Function):
         grad_input = grad_output.new_zeros(*features.shape)
         grad_coor = grad_output.new_zeros(*rois.shape)
 
-        if features.requires_grad or torch.__version__ == 'parrots':
+        if features.requires_grad or TORCH_VERSION == 'parrots':
             grad_output = grad_output.contiguous()
             ext_module.prroi_pool_backward(
                 grad_output,
@@ -82,7 +89,7 @@ class PrRoIPoolFunction(Function):
                 pooled_height=ctx.params[0],
                 pooled_width=ctx.params[1],
                 spatial_scale=ctx.params[2])
-        if rois.requires_grad or torch.__version__ == 'parrots':
+        if rois.requires_grad or TORCH_VERSION == 'parrots':
             grad_output = grad_output.contiguous()
             ext_module.prroi_pool_coor_backward(
                 output,
