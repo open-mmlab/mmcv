@@ -5,8 +5,8 @@ import sys
 
 import torch
 
+from mmcv.device.scatter_gather import scatter_kwargs
 from mmcv.parallel import MMDataParallel
-from .scatter_gather import scatter_kwargs
 
 
 def _check_balance(*args, **kwargs):
@@ -19,7 +19,7 @@ def _check_balance(*args, **kwargs):
 # _check_balance function in DataParallel to make initialization pass.
 for m in sys.modules:
     if m.startswith('torch') or 'mmcv' in m:
-        if getattr(sys.modules[m], '_check_balance', None) is not None:
+        if hasattr(sys.modules[m], '_check_balance'):
             setattr(sys.modules[m], '_check_balance', _check_balance)
 
 
