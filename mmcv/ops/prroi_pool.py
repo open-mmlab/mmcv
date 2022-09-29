@@ -39,7 +39,7 @@ class PrRoIPoolFunction(Function):
                     'Precise RoI Pooling only takes float input, got '
                     f'{features.type()} for features and'
                     f'{rois.type()} for rois.')
-        else :
+        else:
             if 'FloatTensor' not in features.type(
             ) or 'FloatTensor' not in rois.type():
                 raise ValueError(
