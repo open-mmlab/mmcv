@@ -1,8 +1,8 @@
 # Copyright Huawei Technologies Co., Ltd. All rights reserved.
 # Copyright (c) OpenMMLab. All rights reserved.
 
+from mmcv.device.scatter_gather import scatter_kwargs
 from mmcv.parallel import MMDistributedDataParallel
-from .scatter_gather import scatter_kwargs
 
 
 class NPUDistributedDataParallel(MMDistributedDataParallel):
