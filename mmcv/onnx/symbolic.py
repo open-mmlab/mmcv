@@ -6,6 +6,7 @@ import warnings
 import numpy as np
 import torch
 from torch.nn.modules.utils import _pair, _single, _triple
+from torch.onnx import register_custom_op_symbolic
 from torch.onnx.symbolic_helper import parse_args
 
 from .onnx_utils import symbolic_helper as sym_help
@@ -479,7 +480,6 @@ def register_extra_symbolics(opset=11):
     msg += reset_style
     warnings.warn(msg)
 
-    from torch.onnx import register_custom_op_symbolic
     register_custom_op_symbolic('::one_hot', one_hot, opset)
     register_custom_op_symbolic('::im2col', im2col, opset)
     register_custom_op_symbolic('::topk', topk, opset)
