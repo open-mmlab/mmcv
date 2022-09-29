@@ -337,8 +337,7 @@ def get_extensions():
                 define_macros += [('MMCV_WITH_NPU', None)]
                 extension = NpuExtension
             except Exception:
-                print('can not find any torch_npu')
-                return extensions
+                raise ImportError('can not find any torch_npu')
             # src
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
