@@ -7,8 +7,7 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
-from ..utils import ext_loader
-from ..utils import TORCH_VERSION
+from ..utils import TORCH_VERSION, ext_loader
 
 ext_module = ext_loader.load_ext(
     '_ext',
