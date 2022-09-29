@@ -86,7 +86,7 @@ def nms3d(boxes: Tensor, scores: Tensor, iou_threshold: float) -> Tensor:
     num_out = boxes.new_zeros(size=(), dtype=torch.long)
     ext_module.iou3d_nms3d_forward(
         boxes, keep, num_out, nms_overlap_thresh=iou_threshold)
-    keep = order[keep[:num_out].cuda(boxes.device)].contiguous()
+    keep = order[keep[:num_out].to(boxes.device)].contiguous()
     return keep
 
 
@@ -113,7 +113,7 @@ def nms3d_normal(boxes: Tensor, scores: Tensor,
     num_out = boxes.new_zeros(size=(), dtype=torch.long)
     ext_module.iou3d_nms3d_normal_forward(
         boxes, keep, num_out, nms_overlap_thresh=iou_threshold)
-    return order[keep[:num_out].cuda(boxes.device)].contiguous()
+    return order[keep[:num_out].to(boxes.device)].contiguous()
 
 
 def _xyxyr2xywhr(boxes: Tensor) -> Tensor:
