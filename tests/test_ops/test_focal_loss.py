@@ -150,7 +150,7 @@ class Testfocalloss:
         pytest.param(
             'npu',
             marks=pytest.mark.skipif(
-                not IS_CUDA_AVAILABLE, reason='requires NPU support')),
+                not IS_NPU_AVAILABLE, reason='requires NPU support')),
         pytest.param(
             'cuda',
             marks=pytest.mark.skipif(
