@@ -21,11 +21,11 @@ class NPUDistributedDataParallel(MMDistributedDataParallel):
         return scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
 
     def forward(self, *inputs, **kwargs):
-        # Due to the different writing methods of the model repo 
-        # of openmmlab 1.x, the forward of DDP will be directly 
-        # invoked in some scenarios, resulting in input not being 
+        # Due to the different writing methods of the model repo
+        # of openmmlab 1.x, the forward of DDP will be directly
+        # invoked in some scenarios, resulting in input not being
         # moved to the device side in the npu scenario.
-        # We rewrote Forward to manually handle the input to the 
+        # We rewrote Forward to manually handle the input to the
         # device side to avoid some device misalignment errors
         if self.device_ids:
             inputs, kwargs = self.scatter(inputs, kwargs, self.device_ids)
