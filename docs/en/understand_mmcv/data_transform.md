@@ -37,7 +37,7 @@ All data transformation classes must inherit `BaseTransform` and implement the `
 
 ## Data pipeline
 
-As mentioned above, the input and output of all data transformations are a dictionary, and according to the [Convention on Datasets] (TODO) in OpenMMLab, the basic information of each sample in the dataset is a dictionary. This way, we can connect all data transformation operations end to end and combine them into a data pipeline. This pipeline inputs the information dictionary of the samples in the data set and outputs the information dictionary after a series of processing.
+As mentioned above, the input and output of all data transformations are a dictionary, and according to the \[Convention on Datasets\] (TODO) in OpenMMLab, the basic information of each sample in the dataset is a dictionary. This way, we can connect all data transformation operations end to end and combine them into a data pipeline. This pipeline inputs the information dictionary of the samples in the data set and outputs the information dictionary after a series of processing.
 
 Taking the classification task as an example, we show a typical data pipeline in the figure below. For each sample, the information stored in the data set is a dictionary, as shown on the far left in the figure. After each data transformation operation represented by the blue block, a new field (marked in green) will be added to the data dictionary or update an existing field (marked in orange).
 
@@ -71,27 +71,26 @@ The commonly used data transformation classes can be roughly divided into data l
 
 To support the loading of large-scale datasets, data is usually not loaded when `Dataset` is initialized. Only the corresponding path is loaded. Therefore, it is necessary to load specific data in the data pipeline.
 
-
-|            Class            |                   Feature                      |
+|            Class            |                    Feature                     |
 | :-------------------------: | :--------------------------------------------: |
-| [`LoadImageFromFile`](TODO) |             Load from file path                |
+| [`LoadImageFromFile`](TODO) |              Load from file path               |
 |  [`LoadAnnotations`](TODO)  | Load and organize the annotations (bbox, etc.) |
 
 ### Data preprocessing and enhancement
 
 Data preprocessing and augmentation usually involve transforming the image itself, such as cropping, padding, scaling, etc.
 
-|              Class               |                         Feature                        |
+|              Class               |                        Feature                         |
 | :------------------------------: | :----------------------------------------------------: |
-|          [`Pad`](TODO)           |                         Padding                        |
-|       [`CenterCrop`](TODO)       |                       Center crop                      |
-|       [`Normalize`](TODO)        |                   Image normalization                  |
-|         [`Resize`](TODO)         |             Resize to specified size or ratio          |
-|      [`RandomResize`](TODO)      |   Scale the image randomly within the specified range  |
+|          [`Pad`](TODO)           |                        Padding                         |
+|       [`CenterCrop`](TODO)       |                      Center crop                       |
+|       [`Normalize`](TODO)        |                  Image normalization                   |
+|         [`Resize`](TODO)         |           Resize to specified size or ratio            |
+|      [`RandomResize`](TODO)      |  Scale the image randomly within the specified range   |
 | [`RandomMultiscaleResize`](TODO) | Scale the image to a random size from multiple options |
-|    [`RandomGrayscale`](TODO)     |                     Random greyscale                   |
-|       [`RandomFlip`](TODO)       |                       Random flip                      |
-|   [`MultiScaleFlipAug`](TODO)    |     Support scaling and flipping during the testing    |
+|    [`RandomGrayscale`](TODO)     |                    Random greyscale                    |
+|       [`RandomFlip`](TODO)       |                      Random flip                       |
+|   [`MultiScaleFlipAug`](TODO)    |    Support scaling and flipping during the testing     |
 
 ### Data formatting
 
@@ -298,7 +297,7 @@ class MyRandomFlip(BaseTransform):
         self.prob = prob
         self.direction = direction
 
-    @cache_randomness  # label the output of the method as a sharable random variable
+    @cache_randomness  # label the output of the method as a shareable random variable
     def do_flip(self):
         flip = True if random.random() > self.prob else False
         return flip
