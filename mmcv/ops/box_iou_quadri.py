@@ -20,12 +20,10 @@ def box_iou_quadri(bboxes1: torch.Tensor,
     bboxes1 and bboxes2.
 
     Args:
-        boxes1 (torch.Tensor): quadrilateral bboxes 1. It has shape (N, 8),
-            indicating (x1, y1, ..., x4, y4) for each row. Note that theta is
-            in radian.
-        boxes2 (torch.Tensor): quadrilateral bboxes 2. It has shape (M, 8),
-            indicating (x1, y1, ..., x4, y4) for each row. Note that theta is
-            in radian.
+        bboxes1 (torch.Tensor): quadrilateral bboxes 1. It has shape (N, 8),
+            indicating (x1, y1, ..., x4, y4) for each row.
+        bboxes2 (torch.Tensor): quadrilateral bboxes 2. It has shape (M, 8),
+            indicating (x1, y1, ..., x4, y4) for each row.
         mode (str): "iou" (intersection over union) or iof (intersection over
             foreground).
 
