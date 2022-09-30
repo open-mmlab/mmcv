@@ -38,3 +38,16 @@ def is_mps_available() -> bool:
 
 
 IS_MPS_AVAILABLE = is_mps_available()
+
+
+def is_npu_available() -> bool:
+    """Return True if npu devices exist."""
+    try:
+        import torch
+        import torch_npu
+        return (hasattr(torch, 'npu') and torch_npu.npu.is_available())
+    except Exception:
+        return False
+
+
+IS_NPU_AVAILABLE = is_npu_available()
