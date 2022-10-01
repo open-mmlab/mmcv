@@ -54,7 +54,7 @@ class TestProgressBar:
         reset_string_io(out)
         prog_bar.update()
         assert out.getvalue() == f'\r[{">" * 2 + " " * 18}] 1/10, 1.0 ' \
-                                 'task/s, elapsed: 0:00:01s, ETA: 0:00:09'
+                                 'task/s, elapsed: 0:00:01, ETA: 0:00:09'
 
     def test_adaptive_length(self):
         with patch.dict('os.environ', {'COLUMNS': '80'}):
@@ -69,7 +69,7 @@ class TestProgressBar:
             os.environ['COLUMNS'] = '30'
             reset_string_io(out)
             prog_bar.update()
-            assert len(out.getvalue()) == 48
+            assert len(out.getvalue()) == 54
 
             os.environ['COLUMNS'] = '60'
             reset_string_io(out)
