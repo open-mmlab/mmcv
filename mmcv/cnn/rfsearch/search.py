@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
 import os
-from typing import Dict
+from typing import Dict, Optional
 
 import torch  # noqa
 import torch.nn as nn
@@ -24,13 +24,15 @@ logger.setLevel(logging.ERROR)
 class RFSearchHook(Hook):
     """Rcecptive field search via dilation rates.
         Paper: RF-Next: Efficient Receptive Field
-            Search for Convolutional Neural Networks
+            Search for Convolutional Neural Networks, TPAMI2022 (CVPR2021)
+            https://arxiv.org/abs/2206.06637
 
     Args:
         mode (str, optional):
-                search/fixed_single_branch/fixed_multi_branch.
+                mode can be set to the following types:
+                 search/fixed_single_branch/fixed_multi_branch.
         config (Dict, optional): config dict of search.
-        rfstructure_file (Optional[str], optional):
+        rfstructure_file (str, optional):
                 searched recptive fields of the model.
     """
 
@@ -133,13 +135,13 @@ class RFSearchHook(Hook):
                    model: nn.Module,
                    config: Dict,
                    search_op: str = 'Conv2d',
-                   init_rates: int = None):
+                   init_rates: Optional[int] = None):
         """wrap model to support searchable conv op.
 
         Args:
             model (nn.Module): pytorch model
             config (Dict): search config file
-            search_op (str, optional):
+            search_op (str):
                 the module that uses RF search. Defaults to 'Conv2d'.
             init_rates (int, optional):
                 Set to other initial dilation rates. Defaults to None.
@@ -179,11 +181,11 @@ class RFSearchHook(Hook):
         Args:
             model (nn.Module): pytorch model
             config (Dict): config file
-            search_op (str, optional):
+            search_op (str):
                 the module that uses RF search. Defaults to 'Conv2d'.
             init_rates (int, optional):
                 Set to other initial dilation rates. Defaults to None.
-            prefix (str, optional):
+            prefix (str):
                 prefix for function recursion. Defaults to ''.
         """
         op = 'torch.nn.' + search_op
