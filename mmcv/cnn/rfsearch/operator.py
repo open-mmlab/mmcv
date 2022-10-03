@@ -34,11 +34,6 @@ class ConvRFSearchOp(BaseModule):
         Args:
             w (nn.Parameter): unnormed weights
 
-        Raises:
-            NotImplementedError:
-                support norm type: absavg
-                (proposed in rf-next paper)
-
         Returns:
             nn.Parameters: normed weights
         """
@@ -56,18 +51,18 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
     Args:
         op_layer (nn.Module): pytorch module, e,g, Conv2d
         init_dilation (int, optional): init dilation rate. Defaults to None.
-        global_config (Dict, optional): config dict. Defaults to None.
-        S (int, optional): number of branch. Defaults to 3.
+        global_config (dict): config dict. Defaults to None.
+        s (int, optional): number of branch. Defaults to 3.
     """
 
     def __init__(self,
                  op_layer: nn.Module,
                  init_dilation: int = None,
                  global_config: Dict = {},
-                 S: int = 3):
+                 s: int = 3):
         super().__init__(op_layer, global_config)
-        assert S in [2, 3]
-        self.S = S
+        assert s in [2, 3]
+        self.s = s
         if init_dilation is None:
             init_dilation = op_layer.dilation[0]
         self.rates = expands_rate(init_dilation, global_config)
@@ -78,7 +73,7 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
             logger.info('Expand to dilation %d %d' %
                         (self.rates[0], self.rates[1]))
         else:
-            if self.S == 2:
+            if self.s == 2:
                 self.rates = [self.rates[0], self.rates[2]]
                 logger.info('Expand to dilation %d %d' %
                             (self.rates[0], self.rates[1]))
@@ -160,7 +155,7 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
             logger.info('Expand to dilation %d %d' %
                         (self.rates[0], self.rates[1]))
         else:
-            if self.S == 2:
+            if self.s == 2:
                 self.rates = [self.rates[0], self.rates[2]]
                 logger.info('Expand to dilation %d %d' %
                             (self.rates[0], self.rates[1]))

@@ -48,7 +48,7 @@ class RFSearchHook(Hook):
             rfstructure = mmcv.load(rfstructure_file)['structure']
             self.config['structure'] = rfstructure
         self.mode = mode
-        self.S = self.config['search']['S']
+        self.s = self.config['search']['S']
 
     def model_init(self, model: nn.Module):
         """init model with search ability.
@@ -152,7 +152,7 @@ class RFSearchHook(Hook):
                 if (1 < module.kernel_size[0]
                         and 0 != module.kernel_size[0] % 2):
                     moduleWrap = eval(search_op + 'RFSearchOp')(
-                        module, init_rates, config['search'], self.S)
+                        module, init_rates, config['search'], self.s)
                     moduleWrap = moduleWrap.cuda()
                     logger.info('Wrap model %s to %s.' %
                                 (str(module), str(moduleWrap)))
