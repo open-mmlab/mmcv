@@ -22,7 +22,10 @@ class DvcliveLoggerHook(LoggerHook):
         reset_flag (bool): Whether to clear the output buffer after logging.
             Default: False.
         by_epoch (bool): Whether EpochBasedRunner is used. Default: True.
-        kwargs: Arguments for instantiating `Live`_.
+        dvclive (Live): Default None. An instance of the `Live`_ logger to use
+            instead of initializing a new one internally.
+        kwargs: Arguments for instantiating `Live`_ (ignored if `dvclive` is
+            provided).
 
     .. _dvclive:
         https://dvc.org/doc/dvclive
@@ -37,18 +40,19 @@ class DvcliveLoggerHook(LoggerHook):
                  ignore_last: bool = True,
                  reset_flag: bool = False,
                  by_epoch: bool = True,
+                 dvclive=None,
                  **kwargs):
         super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.model_file = model_file
-        self.import_dvclive(**kwargs)
+        self._import_dvclive(dvclive, **kwargs)
 
-    def import_dvclive(self, **kwargs) -> None:
+    def _import_dvclive(self, dvclive=None, **kwargs) -> None:
         try:
             from dvclive import Live
         except ImportError:
             raise ImportError(
                 'Please run "pip install dvclive" to install dvclive')
-        self.dvclive = Live(**kwargs)
+        self.dvclive = dvclive if dvclive is not None else Live(**kwargs)
 
     @master_only
     def log(self, runner) -> None:

@@ -1665,7 +1665,6 @@ def test_dvclive_hook_model_file(tmp_path):
     hook = DvcliveLoggerHook(model_file=osp.join(runner.work_dir, 'model.pth'))
     runner.register_hook(hook)
 
-    loader = torch.utils.data.DataLoader(torch.ones((5, 2)))
     loader = DataLoader(torch.ones((5, 2)))
 
     runner.run([loader, loader], [('train', 1), ('val', 1)])
@@ -1673,6 +1672,16 @@ def test_dvclive_hook_model_file(tmp_path):
     assert osp.exists(osp.join(runner.work_dir, 'model.pth'))
 
     shutil.rmtree(runner.work_dir)
+
+
+def test_dvclive_hook_pass_logger(tmp_path):
+    sys.modules['dvclive'] = MagicMock()
+    from dvclive import Live
+    logger = Live()
+
+    sys.modules['dvclive'] = MagicMock()
+    assert DvcliveLoggerHook().dvclive is not logger
+    assert DvcliveLoggerHook(dvclive=logger).dvclive is logger
 
 
 def test_clearml_hook():
