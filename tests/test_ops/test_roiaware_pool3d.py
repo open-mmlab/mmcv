@@ -112,7 +112,6 @@ def test_points_in_boxes_cpu():
 @pytest.mark.skipif(
     not torch.cuda.is_available(), reason='requires CUDA support')
 def test_points_in_boxes_all():
-
     boxes = torch.tensor(
         [[[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 0.3],
           [-10.0, 23.0, 16.0, 10, 20, 20, 0.5]]],

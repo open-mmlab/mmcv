@@ -66,7 +66,6 @@ def test_cast_tensor_type():
 
 
 def test_auto_fp16():
-
     with pytest.raises(TypeError):
         # ExampleObject is not a subclass of nn.Module
 
@@ -192,7 +191,6 @@ def test_auto_fp16():
 
 
 def test_force_fp32():
-
     with pytest.raises(TypeError):
         # ExampleObject is not a subclass of nn.Module
 
