@@ -14,7 +14,6 @@ from mmcv.runner import ModuleList
 
 
 def test_adaptive_padding():
-
     for padding in ('same', 'corner'):
         kernel_size = 16
         stride = 16
@@ -320,7 +319,6 @@ def test_patch_embed():
 
 
 def test_patch_merging():
-
     # Test the model with int padding
     in_c = 3
     out_c = 4

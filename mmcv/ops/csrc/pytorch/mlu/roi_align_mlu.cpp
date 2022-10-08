@@ -45,7 +45,7 @@ void ROIAlignForwardMLUKernelLauncher(Tensor input, Tensor rois, Tensor output,
               input.dim(), "D");
   TORCH_CHECK(rois.dim() == 2, "rois should be a 2d tensor, got ", rois.dim(),
               "D");
-  TORCH_CHECK(pool_mode == 1, "pool_mode only suppurts 'avg' currently");
+  TORCH_CHECK(pool_mode == 1, "pool_mode only supports 'avg' currently");
 
   auto memory_format =
       torch_mlu::cnnl::ops::get_channels_last_memory_format(input.dim());
@@ -121,7 +121,7 @@ void ROIAlignBackwardMLUKernelLauncher(Tensor grad, Tensor rois,
               "D");
   TORCH_CHECK(rois.dim() == 2, "rois should be a 2d tensor, got ", rois.dim(),
               "D");
-  TORCH_CHECK(pool_mode == 1, "pool_mode only suppurts 'avg' currently");
+  TORCH_CHECK(pool_mode == 1, "pool_mode only supports 'avg' currently");
 
   int batch_size = grad_input.size(0);
   int channels = grad_input.size(1);

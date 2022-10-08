@@ -58,7 +58,6 @@ class ToyModel(nn.Module):
 
 @skip_no_ipu
 def test_ipu_hook_wrapper(tmp_path):
-
     model = ToyModel()
     dummy_input = {
         'data': {
