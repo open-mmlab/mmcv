@@ -92,17 +92,25 @@ void softmax_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
     weight_y = at_npu::native::NPUNativeFunctions::npu_broadcast(weight,
                                                                  input.sizes());
   }
+  at::Tensor op_output = at::ones_like(input);
   OpCommand cmd;
   string reduction = "none";
   cmd.Name("SoftmaxFocalLoss")
       .Input(input)
       .Input(target_y)
       .Input(weight_y)
-      .Output(output)
+      .Output(op_output)
       .Attr("gamma", gamma)
       .Attr("alpha", alpha)
       .Attr("reduction", reduction)
       .Run();
+  int64_t n_batch = input.size(0);
+  c10::SmallVector<int64_t, 2> offsets = {0,0};
+  c10::SmallVector<int64_t, 2> sizes = {n_batch,1};
+  at::IntArrayRef offset = at::IntArrayRef(offsets);
+  at::IntArrayRef size = at::IntArrayRef(sizes);
+  at_npu::native::NPUNativeFunctions::npu_slice_out(op_output, offset,
+                                                    size, output);
 }
 
 void softmax_focal_loss_forward_impl(Tensor input, Tensor target, Tensor weight,
@@ -124,7 +132,6 @@ void softmax_focal_loss_backward_npu(Tensor input, Tensor target, Tensor weight,
     weight_y = at_npu::native::NPUNativeFunctions::npu_broadcast(weight,
                                                                  input.sizes());
   }
-
   OpCommand cmd;
   string reduction = "none";
   cmd.Name("SoftmaxFocalLossGrad")
