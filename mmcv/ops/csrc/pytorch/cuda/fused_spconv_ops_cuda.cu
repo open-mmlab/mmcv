@@ -40,9 +40,6 @@ torch::Tensor FusedIndiceConvBatchnormCUDAKernelLauncher(
                // add.
     torch::mm_out(output, features, filters[indicePairMaxOffset]);
   }
-  double totalGatherTime = 0;
-  double totalGEMMTime = 0;
-  double totalSAddTime = 0;
   for (int i = 0; i < kernelVolume; ++i) {
     auto nHot = indicePairNumCpu.data_ptr<int>()[i];
     if (nHot <= 0 || (subM && i == indicePairMaxOffset)) {
