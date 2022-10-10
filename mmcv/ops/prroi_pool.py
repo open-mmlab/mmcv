@@ -32,19 +32,11 @@ class PrRoIPoolFunction(Function):
                 rois: torch.Tensor,
                 output_size: Tuple,
                 spatial_scale: float = 1.0) -> torch.Tensor:
-        if TORCH_VERSION == 'parrots':
-            if features.type() != torch.float or rois.type() != torch.float:
-                raise ValueError(
-                    'Precise RoI Pooling only takes float input, got '
-                    f'{features.type()} for features and'
-                    f'{rois.type()} for rois.')
-        else:
-            if 'FloatTensor' not in features.type(
-            ) or 'FloatTensor' not in rois.type():
-                raise ValueError(
-                    'Precise RoI Pooling only takes float input, got '
-                    f'{features.type()} for features and'
-                    f'{rois.type()} for rois.')
+        if features.dtype() != torch.float or rois.dtype() != torch.float:
+            raise ValueError(
+                'Precise RoI Pooling only takes float input, got '
+                f'{features.dtype()} for features and'
+                f'{rois.dtype()} for rois.')
 
         pooled_height = int(output_size[0])
         pooled_width = int(output_size[1])
