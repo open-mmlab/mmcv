@@ -116,7 +116,7 @@ class CorrelationFunction(Function):
 
 
 class Correlation(nn.Module):
-    r"""Correlation operator
+    r"""Correlation operator.
 
     This correlation operator works for optical flow correlation computation.
 

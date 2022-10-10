@@ -173,7 +173,6 @@ def test_cast_to_options():
 
 @skip_no_ipu
 def test_model_sharding():
-
     model = ToyModel()
     split_edges = [dict(layer_to_call='666', ipu_id=0)]
 

@@ -15,7 +15,23 @@ for module in [
     ACTIVATION_LAYERS.register_module(module=module)
 
 if digit_version(torch.__version__) >= digit_version('1.7.0'):
-    ACTIVATION_LAYERS.register_module(module=nn.SiLU)
+    ACTIVATION_LAYERS.register_module(module=nn.SiLU, name='SiLU')
+else:
+
+    class SiLU(nn.Module):
+        """Sigmoid Weighted Liner Unit."""
+
+        def __init__(self, inplace=False):
+            super().__init__()
+            self.inplace = inplace
+
+        def forward(self, inputs) -> torch.Tensor:
+            if self.inplace:
+                return inputs.mul_(torch.sigmoid(inputs))
+            else:
+                return inputs * torch.sigmoid(inputs)
+
+    ACTIVATION_LAYERS.register_module(module=SiLU, name='SiLU')
 
 
 @ACTIVATION_LAYERS.register_module(name='Clip')

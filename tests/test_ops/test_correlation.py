@@ -13,7 +13,6 @@ gt_input1_grad = [[[[1., 2., 3.], [3., 1., 2.], [8., 5., 2.]]]]
 
 
 def assert_equal_tensor(tensor_a, tensor_b):
-
     assert tensor_a.eq(tensor_b).all()
 
 

@@ -13,7 +13,7 @@ from torch import distributed as dist
 from torch._utils import (_flatten_dense_tensors, _take_tensors,
                           _unflatten_dense_tensors)
 
-from mmcv.utils import IS_MLU_AVAILABLE
+from mmcv.utils import IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
 
 
 def _find_free_port() -> str:
@@ -55,6 +55,14 @@ def _init_dist_pytorch(backend: str, **kwargs) -> None:
         torch.mlu.set_device(rank)
         dist.init_process_group(
             backend='cncl',
+            rank=rank,
+            world_size=int(os.environ['WORLD_SIZE']),
+            **kwargs)
+    elif IS_NPU_AVAILABLE:
+        import torch_npu  # noqa: F401
+        torch.npu.set_device(rank)
+        dist.init_process_group(
+            backend='hccl',
             rank=rank,
             world_size=int(os.environ['WORLD_SIZE']),
             **kwargs)

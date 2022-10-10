@@ -9,7 +9,8 @@ import torch.nn as nn
 from torch import Tensor
 from torch.nn.utils import clip_grad
 
-from mmcv.utils import TORCH_VERSION, _BatchNorm, digit_version
+from mmcv.utils import (IS_NPU_AVAILABLE, TORCH_VERSION, _BatchNorm,
+                        digit_version)
 from ..dist_utils import allreduce_grads
 from ..fp16_utils import LossScaler, wrap_fp16_model
 from .hook import HOOKS, Hook
@@ -17,7 +18,10 @@ from .hook import HOOKS, Hook
 try:
     # If PyTorch version >= 1.6.0, torch.cuda.amp.GradScaler would be imported
     # and used; otherwise, auto fp16 will adopt mmcv's implementation.
-    from torch.cuda.amp import GradScaler
+    if IS_NPU_AVAILABLE:
+        from torch.npu.amp import GradScaler
+    else:
+        from torch.cuda.amp import GradScaler
 except ImportError:
     pass
 
