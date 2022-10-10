@@ -88,14 +88,14 @@ __mlu_func__ void bboxOverlapsWorkflow(
 
       // right - left + offset ---> left
       __bang_sub(vec_left, vec_right, vec_left, batches_stride);
-      __bang_add_const(vec_left, vec_left, (T)offset, batches_stride);
+      __bang_add_scalar(vec_left, vec_left, (T)offset, batches_stride);
 
       // bottom - top + offset ---> right
       __bang_sub(vec_right, vec_bottom, vec_top, batches_stride);
-      __bang_add_const(vec_right, vec_right, (T)offset, batches_stride);
+      __bang_add_scalar(vec_right, vec_right, (T)offset, batches_stride);
 
       // zero vector ---> bottom
-      __nramset(vec_bottom, batches_stride, 0.f);
+      __bang_write_value(vec_bottom, batches_stride, 0.f);
 
       // width --> vec_left
       __bang_maxequal(vec_left, vec_bottom, vec_left, batches_stride);
@@ -107,11 +107,11 @@ __mlu_func__ void bboxOverlapsWorkflow(
       // get the b1_area
       // (b1_x2 - b1_x1 + offset)  --->  vec_top
       __bang_sub(vec_top, vec_b1_x2, vec_b1_x1, batches_stride);
-      __bang_add_const(vec_top, vec_top, (T)offset, batches_stride);
+      __bang_add_scalar(vec_top, vec_top, (T)offset, batches_stride);
 
       // (b1_y2 - b1_y1 + offset)  --->  vec_bottom
       __bang_sub(vec_bottom, vec_b1_y2, vec_b1_y1, batches_stride);
-      __bang_add_const(vec_bottom, vec_bottom, (T)offset, batches_stride);
+      __bang_add_scalar(vec_bottom, vec_bottom, (T)offset, batches_stride);
 
       // b1_area = (b1_x2 - b1_x1 + offset) * (b1_y2 - b1_y1 + offset)
       // --->  vec_top;
@@ -121,11 +121,11 @@ __mlu_func__ void bboxOverlapsWorkflow(
       // get the b2_area
       // (b2_x2 - b2_x1 + offset)  --->  b2_x1
       __bang_sub(vec_b2_x1, vec_b2_x2, vec_b2_x1, batches_stride);
-      __bang_add_const(vec_b2_x1, vec_b2_x1, (T)offset, batches_stride);
+      __bang_add_scalar(vec_b2_x1, vec_b2_x1, (T)offset, batches_stride);
 
       // (b2_y2 - b2_y1 + offset)  --->  b2_y1
       __bang_sub(vec_b2_y1, vec_b2_y2, vec_b2_y1, batches_stride);
-      __bang_add_const(vec_b2_y1, vec_b2_y1, (T)offset, batches_stride);
+      __bang_add_scalar(vec_b2_y1, vec_b2_y1, (T)offset, batches_stride);
 
       // b2_area = (b2_x2 - b2_x1 + offset) * (b2_y2 - b2_y1 + offset)
       // --->  b2_x1;
@@ -137,7 +137,7 @@ __mlu_func__ void bboxOverlapsWorkflow(
       T *inter_s = height;
 
       // offset vector ---> vec_b2_y1
-      __nramset(vec_b2_y1, batches_stride, T(offset));
+      __bang_write_value(vec_b2_y1, batches_stride, T(offset));
       T *vec_offset = vec_b2_y1;
 
       if (mode == 0) {
@@ -164,10 +164,10 @@ __mlu_func__ void bboxOverlapsWorkflow(
       int32_t base1 = b1 * COORD_NUM;
 
       // set bbox1 and bbox2 to nram
-      __nramset(vec_b1_x1, batches_stride, bbox1[base1]);
-      __nramset(vec_b1_y1, batches_stride, bbox1[base1 + 1]);
-      __nramset(vec_b1_x2, batches_stride, bbox1[base1 + 2]);
-      __nramset(vec_b1_y2, batches_stride, bbox1[base1 + 3]);
+      __bang_write_value(vec_b1_x1, batches_stride, bbox1[base1]);
+      __bang_write_value(vec_b1_y1, batches_stride, bbox1[base1 + 1]);
+      __bang_write_value(vec_b1_x2, batches_stride, bbox1[base1 + 2]);
+      __bang_write_value(vec_b1_y2, batches_stride, bbox1[base1 + 3]);
 
       for (int32_t j = 0; j < num_loop_cpy; j++) {
         int32_t index2 = j * batches_stride;
@@ -195,13 +195,13 @@ __mlu_func__ void bboxOverlapsWorkflow(
 
         // right - left + offset ---> left
         __bang_sub(vec_left, vec_right, vec_left, batches_stride);
-        __bang_add_const(vec_left, vec_left, (T)offset, batches_stride);
+        __bang_add_scalar(vec_left, vec_left, (T)offset, batches_stride);
         // bottom - top + offset ---> right
         __bang_sub(vec_right, vec_bottom, vec_top, batches_stride);
-        __bang_add_const(vec_right, vec_right, (T)offset, batches_stride);
+        __bang_add_scalar(vec_right, vec_right, (T)offset, batches_stride);
 
         // zero vector ---> bottom
-        __nramset(vec_bottom, batches_stride, (T)0);
+        __bang_write_value(vec_bottom, batches_stride, (T)0);
 
         // width --> vec_left
         __bang_maxequal(vec_left, vec_bottom, vec_left, batches_stride);
@@ -213,10 +213,10 @@ __mlu_func__ void bboxOverlapsWorkflow(
         // get the b1_area
         // (b1_x2 - b1_x1 + offset)  --->  vec_top
         __bang_sub(vec_top, vec_b1_x2, vec_b1_x1, batches_stride);
-        __bang_add_const(vec_top, vec_top, (T)offset, batches_stride);
+        __bang_add_scalar(vec_top, vec_top, (T)offset, batches_stride);
         // (b1_y2 - b1_y1 + offset)  --->  vec_bottom
         __bang_sub(vec_bottom, vec_b1_y2, vec_b1_y1, batches_stride);
-        __bang_add_const(vec_bottom, vec_bottom, (T)offset, batches_stride);
+        __bang_add_scalar(vec_bottom, vec_bottom, (T)offset, batches_stride);
         // b1_area = (b1_x2 - b1_x1 + offset) * (b1_y2 - b1_y1 + offset)
         // --->  vec_top;
         __bang_mul(vec_top, vec_top, vec_bottom, batches_stride);
@@ -225,10 +225,10 @@ __mlu_func__ void bboxOverlapsWorkflow(
         // get the b2_area
         // (b2_x2 - b2_x1 + offset)  --->  b2_x1
         __bang_sub(vec_b2_x1, vec_b2_x2, vec_b2_x1, batches_stride);
-        __bang_add_const(vec_b2_x1, vec_b2_x1, (T)offset, batches_stride);
+        __bang_add_scalar(vec_b2_x1, vec_b2_x1, (T)offset, batches_stride);
         // (b2_y2 - b2_y1 + offset)  --->  b2_y1
         __bang_sub(vec_b2_y1, vec_b2_y2, vec_b2_y1, batches_stride);
-        __bang_add_const(vec_b2_y1, vec_b2_y1, (T)offset, batches_stride);
+        __bang_add_scalar(vec_b2_y1, vec_b2_y1, (T)offset, batches_stride);
         // b2_area = (b2_x2 - b2_x1 + offset) * (b2_y2 - b2_y1 + offset)
         // --->  b2_x1;
         __bang_mul(vec_b2_x1, vec_b2_x1, vec_b2_y1, batches_stride);
@@ -239,7 +239,7 @@ __mlu_func__ void bboxOverlapsWorkflow(
         T *inter_s = height;
 
         // offset vector ---> vec_b2_y1
-        __nramset(vec_b2_y1, batches_stride, T(offset));
+        __bang_write_value(vec_b2_y1, batches_stride, T(offset));
         T *vec_offset = vec_b2_y1;
 
         if (mode == 0) {

@@ -53,9 +53,8 @@ __mlu_func__ void loadDataFromDramToNram(T *dst, const T *src,
   int w_seg = position.w_end - position.w_start;
   int size = h_seg * w_seg * shape_full.c;
 
-  __memcpy(dst,
-           src + position.n_start * n_offset + position.h_start * h_offset +
-               position.w_start * w_offset,
+  __memcpy(dst, src + position.n_start * n_offset +
+                    position.h_start * h_offset + position.w_start * w_offset,
            size * sizeof(T), GDRAM2NRAM, size * sizeof(T), n_offset * sizeof(T),
            n_seg - 1);
 }
@@ -89,7 +88,7 @@ __mlu_func__ void psamaskCollectForward(
   int elem_count =
       CEIL_ALIGN(shape_seg.n * shape_seg.h * shape_seg.w * y_full.c,
                  NFU_ALIGN_SIZE / sizeof(T));
-  __nramset(y_nram, elem_count, (T)0);
+  __bang_write_value(y_nram, elem_count, (T)0);
 
   int y_n_offset = shape_seg.h * shape_seg.w * shape_seg.c;
   int y_h_offset = shape_seg.w * shape_seg.c;
@@ -155,7 +154,7 @@ __mlu_func__ void psamaskDistributeForward(
       CEIL_ALIGN(shape_seg.h * shape_seg.w, COMPUTE_COUNT_ALIGN / sizeof(T));
   int elem_count =
       CEIL_ALIGN(shape_seg.n * align_c * align_hw, NFU_ALIGN_SIZE / sizeof(T));
-  __nramset(y_nram_temp, elem_count, (T)0);
+  __bang_write_value(y_nram_temp, elem_count, (T)0);
 
   int y_n_offset = align_hw * align_c;
   int y_h_offset = shape_seg.w * align_c;
@@ -242,7 +241,7 @@ __mlu_func__ void psamaskCollectBackward(
   int elem_count =
       CEIL_ALIGN(shape_seg.n * shape_seg.h * shape_seg.w * shape_seg.c,
                  NFU_ALIGN_SIZE / sizeof(T));
-  __nramset(dx_nram, elem_count, (T)0);
+  __bang_write_value(dx_nram, elem_count, (T)0);
 
   int dy_n_offset = shape_seg.h * shape_seg.w * dy_full.c;
   int dy_h_offset = shape_seg.w * dy_full.c;
@@ -331,7 +330,8 @@ __mlu_func__ void psamaskDistributeBackward(
   // fill zeros to dx
   T *dx_nram = dy_nram + shape_seg.n * align_hw * align_c;
   int dx_size = shape_seg.n * shape_seg.h * shape_seg.w * dx_full.c;
-  __nramset(dx_nram, CEIL_ALIGN(dx_size, NFU_ALIGN_SIZE / sizeof(T)), (T)0);
+  __bang_write_value(dx_nram, CEIL_ALIGN(dx_size, NFU_ALIGN_SIZE / sizeof(T)),
+                     (T)0);
 
   int dy_n_offset_seg = align_hw * align_c;
   int dy_h_offset_seg = shape_seg.w * align_c;
