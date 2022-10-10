@@ -63,7 +63,7 @@ void IoU3DNMS3DForwardCUDAKernelLauncher(const Tensor boxes, Tensor& keep,
       boxes_num);
 
   auto keep_data = keep_t.nonzero().index({Slice(), 0});
-  keep_num.copy_(keep_t.count_nonzero());
+  keep_num.fill_(at::Scalar(keep_data.size(0)));
   keep.index_put_({Slice(0, keep_data.size(0))}, keep_data);
   AT_CUDA_CHECK(cudaGetLastError());
 }
@@ -98,7 +98,7 @@ void IoU3DNMS3DNormalForwardCUDAKernelLauncher(const Tensor boxes, Tensor& keep,
       boxes_num);
 
   auto keep_data = keep_t.nonzero().index({Slice(), 0});
-  keep_num.copy_(keep_t.count_nonzero());
+  keep_num.fill_(at::Scalar(keep_data.size(0)));
   keep.index_put_({Slice(0, keep_data.size(0))}, keep_data);
   AT_CUDA_CHECK(cudaGetLastError());
 }
