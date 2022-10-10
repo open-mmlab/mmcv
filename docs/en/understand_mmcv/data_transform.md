@@ -1,6 +1,6 @@
 # Data Transformation
 
-In the OpenMMLab algorithm library, dataset construction and data preparation are decoupled. Usually, the construction of the data set only parses the dataset and records the basic information of each sample. The data preparation is through a series of data transformations, data loading, preprocessing, formatting, and other operations are performed according to the basic information of the sample.
+In the OpenMMLab algorithm library, dataset construction and data preparation are decoupled. Usually, the construction of the data set only parses the dataset and records the basic information of each sample. The data preparation is a series of data transformations, data loading, preprocessing, formatting, and other operations are performed according to the basic information of the sample.
 
 ## Design of data transformation
 
@@ -67,7 +67,7 @@ dataset = dict(
 
 The commonly used data transformation classes can be roughly divided into data loading, data preprocessing and enhancement, and data formatting. In MMCV, we provide some commonly used classes as follows:
 
-### data loading
+### Data loading
 
 To support the loading of large-scale datasets, data is usually not loaded when `Dataset` is initialized. Only the corresponding path is loaded. Therefore, it is necessary to load specific data in the data pipeline.
 
@@ -85,7 +85,7 @@ Data preprocessing and augmentation usually involve transforming the image itsel
 |          [`Pad`](TODO)           |                        Padding                         |
 |       [`CenterCrop`](TODO)       |                      Center crop                       |
 |       [`Normalize`](TODO)        |                  Image normalization                   |
-|         [`Resize`](TODO)         |           Resize to specified size or ratio            |
+|         [`Resize`](TODO)         |         Resize to the specified size or ratio          |
 |      [`RandomResize`](TODO)      |  Scale the image randomly within the specified range   |
 | [`RandomMultiscaleResize`](TODO) | Scale the image to a random size from multiple options |
 |    [`RandomGrayscale`](TODO)     |                    Random greyscale                    |
@@ -101,7 +101,7 @@ Data formatting operations are typed conversions performed on the data.
 |   [`ToTensor`](TODO)    | Convert the specified data to `torch.Tensor` |
 | [`ImageToTensor`](TODO) |     Convert the image to `torch.Tensor`      |
 
-## Custom data transformation class
+## Customizing data transformation classes
 
 To implement a new data transformation class, you must extend `BaseTransform` and implement the `transform` method. Here, we use a simple flip transform (`MyFlip`) as an example:
 
@@ -122,7 +122,7 @@ class MyFlip(BaseTransform):
         return results
 ```
 
-Now, we can instantiate a `MyFlip` as a callable object to handle our data dictionary.
+Now, we can instantiate `MyFlip` as a callable object to handle our data dictionary.
 
 ```python
 import numpy as np
@@ -133,7 +133,7 @@ data_dict = transform(data_dict)
 processed_img = data_dict['img']
 ```
 
-Alternatively, use the `MyFlip` transform in the `pipeline` of the config file.
+Alternatively, use `MyFlip` transform in the `pipeline` of the config file.
 
 ```python
 pipeline = [
