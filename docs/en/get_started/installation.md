@@ -11,7 +11,7 @@ Do not install both versions in the same environment, otherwise you may encounte
 
 a. Install the full version.
 
-Before installing mmcv, make sure that PyTorch has been successfully installed following the [official guide](https://pytorch.org/). For M1 MacOS users, please make sure you are using `PyTorch Nightly`.
+Before installing mmcv, make sure that PyTorch has been successfully installed following the [official guide](https://pytorch.org/). For macOS M1 users, please make sure you are using `PyTorch Nightly`.
 
 We provide pre-built mmcv packages (recommended) with different PyTorch and CUDA versions to simplify the building for **Linux and Windows systems**. In addition, you can run [check_installation.py](https://github.com/open-mmlab/mmcv/blob/2.x/.dev_scripts/check_installation.py) to check the installation of mmcv after running the installation commands.
 

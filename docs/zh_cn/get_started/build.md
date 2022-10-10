@@ -28,7 +28,7 @@ MMCV_WITH_OPS=0 pip install -e .
 pip install -e .
 ```
 
-如果是在 macOS 上编译，则需要在安装命令前添加一些环境变量，同时对于M1芯片用户，请确保当前使用的是 `PyTorch Nightly`
+如果是在 macOS 上编译，则需要在安装命令前添加一些环境变量，同时对于使用 macOS M1 的用户，请确保你的 PyTorch 是  `Nightly` 版本。
 
 ```bash
 CC=clang CXX=clang++ CFLAGS='-stdlib=libc++'
