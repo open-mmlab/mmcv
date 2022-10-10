@@ -135,7 +135,7 @@ bboxes = np.array([[10, 10, 100, 120], [0, 0, 50, 50]])
 patches = mmcv.imcrop(img, bboxes)
 
 # crop two regions, and rescale the patches by 1.2x
-patches = mmcv.imcrop(img, bboxes, scale_ratio=1.2)
+patches = mmcv.imcrop(img, bboxes, scale=1.2)
 ```
 
 #### Padding
@@ -150,14 +150,14 @@ img = mmcv.imread('tests/data/color.jpg')
 img_ = mmcv.impad(img, shape=(1000, 1200), pad_val=0)
 
 # pad the image to (1000, 1200) with different values for three channels.
-img_ = mmcv.impad(img, shape=(1000, 1200), pad_val=[100, 50, 200])
+img_ = mmcv.impad(img, shape=(1000, 1200), pad_val=(100, 50, 200))
 
 # pad the image on left, right, top, bottom borders with all zeros
 img_ = mmcv.impad(img, padding=(10, 20, 30, 40), pad_val=0)
 
 # pad the image on left, right, top, bottom borders with different values
 # for three channels.
-img_ = mmcv.impad(img, padding=(10, 20, 30, 40), pad_val=[100, 50, 200])
+img_ = mmcv.impad(img, padding=(10, 20, 30, 40), pad_val=(100, 50, 200))
 
 # pad an image so that each edge is a multiple of some value.
 img_ = mmcv.impad_to_multiple(img, 32)

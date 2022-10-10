@@ -53,10 +53,9 @@ class SparseModule(nn.Module):
 
 
 class SparseSequential(SparseModule):
-    r"""A sequential container.
-    Modules will be added to it in the order they are passed in the
-    constructor.
-    Alternatively, an ordered dict of modules can also be passed in.
+    r"""A sequential container. Modules will be added to it in the order they
+    are passed in the constructor. Alternatively, an ordered dict of modules
+    can also be passed in.
 
     To make it easier to understand, given is a small example::
 

@@ -366,7 +366,6 @@ def test_merge_delete():
 
 
 def test_merge_intermediate_variable():
-
     cfg_file = osp.join(data_path, 'config/i_child.py')
     cfg = Config.fromfile(cfg_file)
     # cfg.field

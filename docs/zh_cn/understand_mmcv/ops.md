@@ -18,7 +18,7 @@ MMCV 提供了检测、分割等任务中常用的算子
 | CornerPool                   |     | √    |     |     |
 | Correlation                  |     | √    |     |     |
 | Deformable Convolution v1/v2 | √   | √    |     |     |
-| Deformable RoIPool           |     | √    |     |     |
+| Deformable RoIPool           |     | √    | √   |     |
 | DiffIoURotated               |     | √    |     |     |
 | DynamicScatter               |     | √    |     |     |
 | FurthestPointSample          |     | √    |     |     |
@@ -40,7 +40,7 @@ MMCV 提供了检测、分割等任务中常用的算子
 | PointsInPolygons             |     | √    |     |     |
 | PSAMask                      | √   | √    | √   |     |
 | RotatedFeatureAlign          | √   | √    |     |     |
-| RoIPointPool3d               |     | √    |     |     |
+| RoIPointPool3d               |     | √    | √   |     |
 | RoIPool                      |     | √    | √   |     |
 | RoIAlignRotated              | √   | √    | √   |     |
 | RiRoIAlignRotated            |     | √    |     |     |
@@ -53,7 +53,7 @@ MMCV 提供了检测、分割等任务中常用的算子
 | Sparse Convolution           |     | √    |     |     |
 | Synchronized BatchNorm       |     | √    |     |     |
 | ThreeInterpolate             |     | √    |     |     |
-| ThreeNN                      |     | √    |     |     |
+| ThreeNN                      |     | √    | √   |     |
 | TINShift                     |     | √    | √   |     |
 | UpFirDn2d                    |     | √    |     |     |
 | Voxelization                 | √   | √    |     |     |
