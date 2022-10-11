@@ -178,7 +178,7 @@ With `KeyMapper`, we don't need to consider various possible input field names i
 
 `RandomChoice` is used to randomly apply a combination of data transformations from a series of combinations of data transformations. With this wrapper, we can easily implement some data augmentation functions, such as AutoAugment.
 
-If used with the registrar and configuration file, you can use `RandomChoice` as the following example in the `pipeline` of the dataset in the configuration file:
+In configuration file, you can use `RandomChoice` as follows:
 
 ```python
 pipeline = [
