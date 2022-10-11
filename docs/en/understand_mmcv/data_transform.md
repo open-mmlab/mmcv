@@ -1,6 +1,6 @@
 # Data Transformation
 
-In the OpenMMLab algorithm library, dataset construction and data preparation are decoupled. Usually, the construction of the data set only parses the dataset and records the basic information of each sample. The data preparation is a series of data transformations, data loading, preprocessing, formatting, and other operations are performed according to the basic information of the sample.
+In the OpenMMLab algorithm library, dataset construction and data preparation are decoupled. Usually, the construction of the dataset only parses the dataset and records the basic information of each sample, while the data preparation is a series of data transformations including data loading, preprocessing, formatting, and other operations performed according to the basic information of the sample.
 
 ## Design of data transformation
 
