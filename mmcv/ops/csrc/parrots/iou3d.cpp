@@ -19,16 +19,16 @@ void iou3d_boxes_overlap_bev_forward_impl(const int num_a, const Tensor boxes_a,
                        num_b, boxes_b, ans_overlap);
 }
 
-void iou3d_nms3d_forward_impl(const Tensor boxes, unsigned long long *mask,
-                              int boxes_num, float nms_overlap_thresh) {
-  DISPATCH_DEVICE_IMPL(iou3d_nms3d_forward_impl, boxes, mask, boxes_num,
+void iou3d_nms3d_forward_impl(const Tensor boxes, Tensor &keep,
+                              Tensor &keep_num, float nms_overlap_thresh) {
+  DISPATCH_DEVICE_IMPL(iou3d_nms3d_forward_impl, boxes, keep, keep_num,
                        nms_overlap_thresh);
 }
 
-void iou3d_nms3d_normal_forward_impl(const Tensor boxes,
-                                     unsigned long long *mask, int boxes_num,
+void iou3d_nms3d_normal_forward_impl(const Tensor boxes, Tensor &keep,
+                                     Tensor &keep_num,
                                      float nms_overlap_thresh) {
-  DISPATCH_DEVICE_IMPL(iou3d_nms3d_normal_forward_impl, boxes, mask, boxes_num,
+  DISPATCH_DEVICE_IMPL(iou3d_nms3d_normal_forward_impl, boxes, keep, keep_num,
                        nms_overlap_thresh);
 }
 
@@ -51,41 +51,7 @@ void iou3d_nms3d_forward(Tensor boxes, Tensor keep, Tensor keep_num,
   CHECK_CONTIGUOUS(boxes);
   CHECK_CONTIGUOUS(keep);
 
-  int boxes_num = boxes.size(0);
-  int64_t *keep_data = keep.data_ptr<int64_t>();
-  int64_t *keep_num_data = keep_num.data_ptr<int64_t>();
-
-  const int col_blocks =
-      (boxes_num + THREADS_PER_BLOCK_NMS - 1) / THREADS_PER_BLOCK_NMS;
-
-  Tensor mask =
-      at::empty({boxes_num, col_blocks}, boxes.options().dtype(at::kLong));
-  unsigned long long *mask_data =
-      (unsigned long long *)mask.data_ptr<int64_t>();
-  iou3d_nms3d_forward_impl(boxes, mask_data, boxes_num, nms_overlap_thresh);
-
-  at::Tensor mask_cpu = mask.to(at::kCPU);
-  unsigned long long *mask_host =
-      (unsigned long long *)mask_cpu.data_ptr<int64_t>();
-
-  std::vector<unsigned long long> remv_cpu(col_blocks);
-  memset(&remv_cpu[0], 0, sizeof(unsigned long long) * col_blocks);
-
-  int num_to_keep = 0;
-
-  for (int i = 0; i < boxes_num; i++) {
-    int nblock = i / THREADS_PER_BLOCK_NMS;
-    int inblock = i % THREADS_PER_BLOCK_NMS;
-
-    if (!(remv_cpu[nblock] & (1ULL << inblock))) {
-      keep_data[num_to_keep++] = i;
-      unsigned long long *p = &mask_host[0] + i * col_blocks;
-      for (int j = nblock; j < col_blocks; j++) {
-        remv_cpu[j] |= p[j];
-      }
-    }
-    *keep_num_data = num_to_keep;
-  }
+  iou3d_nms3d_forward_impl(boxes, keep, keep_num, nms_overlap_thresh);
 }
 
 void iou3d_nms3d_normal_forward(Tensor boxes, Tensor keep, Tensor keep_num,
@@ -96,40 +62,5 @@ void iou3d_nms3d_normal_forward(Tensor boxes, Tensor keep, Tensor keep_num,
   CHECK_CONTIGUOUS(boxes);
   CHECK_CONTIGUOUS(keep);
 
-  int boxes_num = boxes.size(0);
-  int64_t *keep_data = keep.data_ptr<int64_t>();
-  int64_t *keep_num_data = keep_num.data_ptr<int64_t>();
-
-  const int col_blocks =
-      (boxes_num + THREADS_PER_BLOCK_NMS - 1) / THREADS_PER_BLOCK_NMS;
-
-  Tensor mask =
-      at::empty({boxes_num, col_blocks}, boxes.options().dtype(at::kLong));
-  unsigned long long *mask_data =
-      (unsigned long long *)mask.data_ptr<int64_t>();
-  iou3d_nms3d_normal_forward_impl(boxes, mask_data, boxes_num,
-                                  nms_overlap_thresh);
-
-  at::Tensor mask_cpu = mask.to(at::kCPU);
-  unsigned long long *mask_host =
-      (unsigned long long *)mask_cpu.data_ptr<int64_t>();
-
-  std::vector<unsigned long long> remv_cpu(col_blocks);
-  memset(&remv_cpu[0], 0, sizeof(unsigned long long) * col_blocks);
-  int num_to_keep = 0;
-
-  for (int i = 0; i < boxes_num; i++) {
-    int nblock = i / THREADS_PER_BLOCK_NMS;
-    int inblock = i % THREADS_PER_BLOCK_NMS;
-
-    if (!(remv_cpu[nblock] & (1ULL << inblock))) {
-      keep_data[num_to_keep++] = i;
-      unsigned long long *p = &mask_host[0] + i * col_blocks;
-      for (int j = nblock; j < col_blocks; j++) {
-        remv_cpu[j] |= p[j];
-      }
-    }
-  }
-
-  *keep_num_data = num_to_keep;
+  iou3d_nms3d_normal_forward_impl(boxes, keep, keep_num, nms_overlap_thresh);
 }
