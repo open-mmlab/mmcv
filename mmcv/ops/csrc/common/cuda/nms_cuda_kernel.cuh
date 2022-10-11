@@ -27,9 +27,9 @@ __device__ inline bool devIoU(float const *const a, float const *const b,
   return interS > threshold * (Sa + Sb - interS);
 }
 
-__global__ void nms_cuda(const int n_boxes, const float iou_threshold,
-                         const int offset, const float *dev_boxes,
-                         unsigned long long *dev_mask) {
+__global__ static void nms_cuda(const int n_boxes, const float iou_threshold,
+                                const int offset, const float *dev_boxes,
+                                unsigned long long *dev_mask) {
   int blocks = (n_boxes + threadsPerBlock - 1) / threadsPerBlock;
   CUDA_2D_KERNEL_BLOCK_LOOP(col_start, blocks, row_start, blocks) {
     const int tid = threadIdx.x;
@@ -73,9 +73,9 @@ __global__ void nms_cuda(const int n_boxes, const float iou_threshold,
   }
 }
 
-__global__ void gather_keep_from_mask(bool *keep,
-                                      const unsigned long long *dev_mask,
-                                      const int n_boxes) {
+__global__ static void gather_keep_from_mask(bool *keep,
+                                             const unsigned long long *dev_mask,
+                                             const int n_boxes) {
   const int col_blocks = (n_boxes + threadsPerBlock - 1) / threadsPerBlock;
   const int tid = threadIdx.x;
 
