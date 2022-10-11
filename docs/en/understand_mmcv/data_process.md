@@ -118,7 +118,7 @@ mmcv.imflip(img, direction='vertical')
 
 #### Crop
 
-`imcrop` can crop the image with one or some regions, Each region is represented by the upper left and lower right coordinates as (x1, y1, x2, y2).
+`imcrop` can crop the image with one or more regions. Each region is represented by the upper left and lower right coordinates as (x1, y1, x2, y2).
 
 ```python
 import mmcv
