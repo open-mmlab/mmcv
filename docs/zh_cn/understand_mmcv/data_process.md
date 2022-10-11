@@ -259,7 +259,7 @@ mmcv.flowshow(flow)
 ```python
 img1 = mmcv.imread('img1.jpg')
 flow = mmcv.flowread('flow.flo')
-warpped_img2 = mmcv.flow_warp(img1, flow)
+warped_img2 = mmcv.flow_warp(img1, flow)
 ```
 
 img1 (左) and img2 (右)
@@ -272,4 +272,4 @@ img1 (左) and img2 (右)
 
 变换后的图像和真实图像的差异
 
-![warpped image](../../en/_static/flow_warp_diff.png)
+![warped image](../../en/_static/flow_warp_diff.png)

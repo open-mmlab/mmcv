@@ -265,12 +265,12 @@ mmcv.flowshow(flow)
 
 ![progress](../_static/flow_visualization.png)
 
-3. Flow warpping
+3. Flow warping
 
 ```python
 img1 = mmcv.imread('img1.jpg')
 flow = mmcv.flowread('flow.flo')
-warpped_img2 = mmcv.flow_warp(img1, flow)
+warped_img2 = mmcv.flow_warp(img1, flow)
 ```
 
 img1 (left) and img2 (right)
@@ -281,6 +281,6 @@ optical flow (img2 -> img1)
 
 ![optical flow](../_static/flow_img2toimg1.png)
 
-warpped image and difference with ground truth
+warped image and difference with ground truth
 
-![warpped image](../_static/flow_warp_diff.png)
+![warped image](../_static/flow_warp_diff.png)
