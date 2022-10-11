@@ -283,7 +283,7 @@ Usually, a data transformation class only reads the target of an operation from 
 
 #### Decorator `cache_randomness`
 
-In `TransformBroadcaster`, we provide the `share_random_params` option to support sharing random states across multiple data transformations. For example, in a super-resolution task, we want to apply random transformations **synchronously** to the low-resolution image and the original image. If we use this function in a custom data transformation class, we need to mark which random variables support sharing in the class. This can be achieved with the decorator `cache_randomness`.
+In `TransformBroadcaster`, we provide the `share_random_params` option to support sharing random states across multiple data transformations. For example, in a super-resolution task, we want to apply **the same** random transformations **simultaneously** to the low-resolution image and the original image. If we use this function in a custom data transformation class, we need to mark which random variables support sharing in the class. This can be achieved with the decorator `cache_randomness`.
 
 Taking `MyFlip` from the above example, we want to perform flipping randomly with a certain probability:
 
