@@ -65,7 +65,7 @@ dataset = dict(
 
 ## Common data transformation classes
 
-The commonly used data transformation classes can be roughly divided into data loading, data preprocessing and enhancement, and data formatting. In MMCV, we provide some commonly used classes as follows:
+The commonly used data transformation classes can be roughly divided into data loading, data preprocessing and augmentation, and data formatting. In MMCV, we provide some commonly used classes as follows:
 
 ### Data loading
 
