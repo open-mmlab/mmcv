@@ -4,7 +4,7 @@ In the OpenMMLab algorithm library, dataset construction and data preparation ar
 
 ## Design of data transformation
 
-In MMCV, we use various callable data transformation classes to manipulate data. These data transformation classes can accept several configuration parameters for the instantiation and then process the input data dictionary by calling. All data transformation methods accept a dictionary as the input and output the processed data as a dictionary as well. A simple example is as follows:
+In MMCV, we use various callable data transformation classes to manipulate data. These data transformation classes can accept several configuration parameters for the instantiation and then process the input data dictionary by `__call__` method. All data transformation methods accept a dictionary as the input and produce the output as a dictionary as well. A simple example is as follows:
 
 ```python
 >>> import numpy as np
