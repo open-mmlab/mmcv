@@ -153,7 +153,7 @@ Transform wrappers are a special class of data transformations. They do not oper
 
 `KeyMapper` is used to map fields in the data dictionary. For example, usually image processing transforms get their values from the `"img"` field in the data dictionary. But sometimes we want these transforms to handle images in other fields in the data dictionary, such as the `"gt_img"` field.
 
-If used with the registrar and configuration file, use the field map wrapper in the `pipeline` of the dataset in the configuration file as follows:
+When used with registry and configuration file, the field map wrapper should be used as follows:
 
 ```python
 pipeline = [
