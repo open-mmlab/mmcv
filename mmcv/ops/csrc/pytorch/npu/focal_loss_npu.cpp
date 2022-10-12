@@ -6,7 +6,7 @@ using namespace std;
 void sigmoid_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
                                     Tensor output, float gamma, float alpha) {
   int64_t n_class = input.size(1);
-  at::Tensor target_y = = at::ones_like(input);
+  at::Tensor target_y = at::ones_like(input);
   if(n_class == 1) {
     target_y = at::reshape(target, input.sizes());
     target_y = at::mul(target_y, -1.0);
@@ -43,7 +43,7 @@ void sigmoid_focal_loss_backward_npu(Tensor input, Tensor target, Tensor weight,
                                      Tensor grad_input, float gamma,
                                      float alpha) {
   int64_t n_class = input.size(1);
-  at::Tensor target_y = = at::ones_like(input);
+  at::Tensor target_y = at::ones_like(input);
   if(n_class == 1) {
     target_y = at::reshape(target, input.sizes());
   }
