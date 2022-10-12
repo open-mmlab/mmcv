@@ -929,10 +929,17 @@ class TestTimeAug(BaseTransform):
     """
 
     def __init__(self, transforms: list):
-        for idx, transform_list in enumerate(transforms):
-            if not isinstance(transform_list, list):
-                transform_list = [transform_list]
-            transforms[idx] = list(map(TRANSFORMS.build, transform_list))
+        for i, transform_list in enumerate(transforms):
+            for j, transform in enumerate(transform_list):
+                if isinstance(transform, dict):
+                    transform_list[j] = TRANSFORMS.build(transform)
+                elif callable(transform):
+                    continue
+                else:
+                    raise TypeError(
+                        'transform must be callable or a dict, but got'
+                        f' {type(transform)}')
+            transforms[i] = transform_list
 
         self.subroutines = [
             Compose(subroutine) for subroutine in product(*transforms)
