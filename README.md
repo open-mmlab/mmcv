@@ -247,6 +247,39 @@ c. Install full version with custom operators for onnxruntime
 
 If you would like to build MMCV from source, please refer to the [guide](https://mmcv.readthedocs.io/en/latest/get_started/build.html).
 
+## NPU build and Installation
+
+You may want to run mmcv on your npu device, then you can build and install mmcv-npu by the following steps.
+
+a. Install the **ascend-toolkit**
+
+```python
+ Ascend-cann-toolkit_{version}_linux-{arch}.run
+```
+
+- You can download the ascend-toolkit package in https://www.hiascend.com/software/cann/community. Choose the **"Ascend-cann-toolkit\_{xxx.xxx}.run"** which fits your develop environment.
+- In order to install **CANN** quickly, you can refer to the documents in https://www.hiascend.com/document/detail/zh/canncommercial/51RC2/envdeployment/instg/instg_000052.html
+
+b. Install the **toch_npu**
+
+- As the dispatch mechanism is based on torch, you have to install torch-npu before running your mmcv.ops on npu device.
+- you can download the torch_npu code from https://gitee.com/ascend/pytorch, and install torch-npu as the steps in README.
+- torch-npu depends on ascend-toolkit. So you have to install the ascend-toolkit, and set the ascend environment.
+- ```python
+  source /usr/local/Ascend/ascned-toolkit/set_env.sh
+  ```
+
+c. build and install mmcv-npu
+
+- ```bash
+  MMCV_WITH_OPS=1 FORCE_NPU=1 python setup.py build_ext
+  MMCV_WITH_OPS=1 FORCE_NPU=1 python setup.py develop
+  ```
+- or
+- ```bash
+  MMCV_WITH_OPS=1 FORCE_NPU=1 python setup.py install
+  ```
+
 ## FAQ
 
 If you face some installation issues, CUDA related issues or RuntimeErrors,
