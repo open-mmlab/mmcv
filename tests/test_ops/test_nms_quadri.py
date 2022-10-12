@@ -86,7 +86,7 @@ class TestNMSQuadri:
             marks=pytest.mark.skipif(
                 not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
     ])
-    def test_nms_quadri(self):
+    def test_nms_quadri(self, device):
         from mmcv.ops import nms_quadri
         np_boxes = np.array([[1.0, 1.0, 3.0, 4.0, 4.0, 4.0, 4.0, 1.0, 0.7],
                              [2.0, 2.0, 3.0, 4.0, 4.0, 2.0, 3.0, 1.0, 0.8],
@@ -100,7 +100,7 @@ class TestNMSQuadri:
                                   dtype=np.float32)
         np_expect_keep_inds = np.array([3, 1, 2], dtype=np.int64)
 
-        boxes = torch.from_numpy(np_boxes).cuda()
+        boxes = torch.from_numpy(np_boxes).to(device)
 
         dets, keep_inds = nms_quadri(boxes[:, :8], boxes[:, -1], 0.3)
         assert np.allclose(dets.cpu().numpy()[:, :8], np_expect_dets)
@@ -158,7 +158,7 @@ class TestNMSQuadri:
             marks=pytest.mark.skipif(
                 not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
     ])
-    def test_batched_nms(self):
+    def test_batched_nms(self, device):
         # test batched_nms with nms_quadri
         from mmcv.ops import batched_nms
 
@@ -186,9 +186,9 @@ class TestNMSQuadri:
 
         # test class_agnostic is True
         boxes, keep = batched_nms(
-            torch.from_numpy(np_boxes[:, :8]).cuda(),
-            torch.from_numpy(np_boxes[:, -1]).cuda(),
-            torch.from_numpy(np_labels).cuda(),
+            torch.from_numpy(np_boxes[:, :8]).to(device),
+            torch.from_numpy(np_boxes[:, -1]).to(device),
+            torch.from_numpy(np_labels).to(device),
             nms_cfg,
             class_agnostic=True)
         assert np.allclose(boxes.cpu().numpy()[:, :8], np_expect_agnostic_dets)
@@ -196,9 +196,9 @@ class TestNMSQuadri:
 
         # test class_agnostic is False
         boxes, keep = batched_nms(
-            torch.from_numpy(np_boxes[:, :8]).cuda(),
-            torch.from_numpy(np_boxes[:, -1]).cuda(),
-            torch.from_numpy(np_labels).cuda(),
+            torch.from_numpy(np_boxes[:, :8]).to(device),
+            torch.from_numpy(np_boxes[:, -1]).to(device),
+            torch.from_numpy(np_labels).to(device),
             nms_cfg,
             class_agnostic=False)
         assert np.allclose(boxes.cpu().numpy()[:, :8], np_expect_dets)
