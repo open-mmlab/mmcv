@@ -29,9 +29,13 @@ class TestNMSQuadri:
         assert np.allclose(dets.numpy()[:, :8], np_expect_dets)
         assert np.allclose(keep_inds.numpy(), np_expect_keep_inds)
 
-    @pytest.mark.skipif(
-        not torch.cuda.is_available(), reason='requires CUDA support')
-    def test_ml_nms_quadri(self):
+    @pytest.mark.parametrize('device', [
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    ])
+    def test_ml_nms_quadri(self, device):
         from mmcv.ops import nms_quadri
         np_boxes = np.array([[1.0, 1.0, 3.0, 4.0, 4.0, 4.0, 4.0, 1.0, 0.7],
                              [2.0, 2.0, 3.0, 4.0, 4.0, 2.0, 3.0, 1.0, 0.8],
@@ -46,8 +50,8 @@ class TestNMSQuadri:
                                   dtype=np.float32)
         np_expect_keep_inds = np.array([3, 1, 2], dtype=np.int64)
 
-        boxes = torch.from_numpy(np_boxes).cuda()
-        labels = torch.from_numpy(np_labels).cuda()
+        boxes = torch.from_numpy(np_boxes).to(device)
+        labels = torch.from_numpy(np_labels).to(device)
 
         dets, keep_inds = nms_quadri(boxes[:, :8], boxes[:, -1], 0.3, labels)
 
