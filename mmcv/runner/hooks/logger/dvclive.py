@@ -22,8 +22,8 @@ class DvcliveLoggerHook(LoggerHook):
         reset_flag (bool): Whether to clear the output buffer after logging.
             Default: False.
         by_epoch (bool): Whether EpochBasedRunner is used. Default: True.
-        dvclive (Live): Default None. An instance of the `Live`_ logger to use
-            instead of initializing a new one internally.
+        dvclive (Live, optional): An instance of the `Live`_ logger to use
+            instead of initializing a new one internally. Defaults to None. 
         kwargs: Arguments for instantiating `Live`_ (ignored if `dvclive` is
             provided).
 
