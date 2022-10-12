@@ -489,9 +489,9 @@ def nms_quadri(dets: Tensor,
 
     multi_label = labels is not None
     if multi_label:
-        dets_wl = torch.cat((dets, labels.unsqueeze(1)), 1)  # type: ignore
+        dets_with_lables = torch.cat((dets, labels.unsqueeze(1)), 1)  # type: ignore
     else:
-        dets_wl = dets
+        dets_with_lables = dets
     _, order = scores.sort(0, descending=True)
     dets_sorted = dets_wl.index_select(0, order)
 
