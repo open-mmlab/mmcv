@@ -2,6 +2,7 @@
 import copy
 import random
 import warnings
+from itertools import product
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import mmengine
@@ -928,12 +929,14 @@ class TestTimeAug(BaseTransform):
     """
 
     def __init__(self, transforms: list):
-        self.transforms = []
-        for _sub_transform_list in transforms:
-            sub_transform_list = []
-            for transform in _sub_transform_list:
-                sub_transform_list.append(TRANSFORMS.build(transform))
-            self.transforms.append(sub_transform_list)
+        for idx, transform_list in enumerate(transforms):
+            if not isinstance(transform_list, list):
+                transform_list = [transform_list]
+            transforms[idx] = list(map(TRANSFORMS.build, transform_list))
+
+        self.subroutines = [
+            Compose(subroutine) for subroutine in product(*transforms)
+        ]
 
     def transform(self, results: dict) -> dict:
         """Apply all transforms defined in :attr:`transforms` to the results.
@@ -959,25 +962,29 @@ class TestTimeAug(BaseTransform):
             dict: The augmented data, where each value is wrapped
             into a list.
         """
-        results = [results]  # type: ignore
-        for item in self.transforms:
-            output = []
-            for transform in item:
-                for result in results:
-                    output.append(transform(result.copy()))
-            results = copy.deepcopy(output)  # type: ignore
+        results_list = []  # type: ignore
+        for subroutine in self.subroutines:
+            result = subroutine(copy.deepcopy(results))
+            assert isinstance(result, dict), (
+                f'Data processed by {subroutine} must return a dict, but got '
+                f'{result}')
+            assert result is not None, (
+                f'Data processed by {subroutine} in `TestTimeAug` should not '
+                'be None! Please check your validation dataset and the '
+                f'transforms in {subroutine}')
+            results_list.append(result)
 
         aug_data_dict = {
-            key: [item[key] for item in results]
-            for key in results[0]
+            key: [item[key] for item in results_list]  # type: ignore
+            for key in results_list[0]  # type: ignore
         }
         return aug_data_dict
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
         repr_str += 'transforms=\n'
-        for transform in self.transforms:
-            repr_str += f'{repr(transform)}\n'
+        for subroutine in self.subroutines:
+            repr_str += f'{repr(subroutine)}\n'
         return repr_str
 
 

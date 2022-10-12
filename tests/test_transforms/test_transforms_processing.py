@@ -905,7 +905,7 @@ class TestRandomResize:
 class TestTestTimeAug:
 
     def test_init(self):
-        transforms = [[
+        subroutines = [[
             dict(type='Resize', scale=(1333, 800), keep_ratio=True),
             dict(type='Resize', scale=(1333, 800), keep_ratio=True)
         ], [
@@ -913,18 +913,16 @@ class TestTestTimeAug:
             dict(type='RandomFlip', prob=0.)
         ], [dict(type='Normalize', mean=(0, 0, 0), std=(1, 1, 1))]]
 
-        tta_transform = TestTimeAug(transforms)
-        transforms = tta_transform.transforms
-        assert len(transforms) == 3
-        assert len(transforms[0]) == 2
-        assert len(transforms[1]) == 2
-        assert len(transforms[2]) == 1
+        tta_transform = TestTimeAug(subroutines)
+        subroutines = tta_transform.subroutines
+        assert len(subroutines) == 4
 
-        assert isinstance(transforms[0][0], Resize)
-        assert isinstance(transforms[0][1], Resize)
-        assert isinstance(transforms[1][0], RandomFlip)
-        assert isinstance(transforms[1][1], RandomFlip)
-        assert isinstance(transforms[2][0], Normalize)
+        assert isinstance(subroutines[0].transforms[0], Resize)
+        assert isinstance(subroutines[0].transforms[1], RandomFlip)
+        assert isinstance(subroutines[0].transforms[2], Normalize)
+        assert isinstance(subroutines[1].transforms[0], Resize)
+        assert isinstance(subroutines[1].transforms[1], RandomFlip)
+        assert isinstance(subroutines[1].transforms[2], Normalize)
 
     def test_transform(self):
         results = {
@@ -946,21 +944,21 @@ class TestTestTimeAug:
         results = tta_transform.transform(results)
         assert len(results['img']) == 4
 
-        resize1 = tta_transform.transforms[0][0]
-        resize2 = tta_transform.transforms[0][1]
-        flip1 = tta_transform.transforms[1][0]
-        flip2 = tta_transform.transforms[1][1]
-        normalize = tta_transform.transforms[2][0]
+        resize1 = tta_transform.subroutines[0].transforms[0]
+        resize2 = tta_transform.subroutines[2].transforms[0]
+        flip1 = tta_transform.subroutines[0].transforms[1]
+        flip2 = tta_transform.subroutines[1].transforms[1]
+        normalize = tta_transform.subroutines[0].transforms[2]
         target_results = [
             normalize.transform(
                 flip1.transform(
                     resize1.transform(copy.deepcopy(input_results)))),
             normalize.transform(
-                flip1.transform(
-                    resize2.transform(copy.deepcopy(input_results)))),
-            normalize.transform(
                 flip2.transform(
                     resize1.transform(copy.deepcopy(input_results)))),
+            normalize.transform(
+                flip1.transform(
+                    resize2.transform(copy.deepcopy(input_results)))),
             normalize.transform(
                 flip2.transform(
                     resize2.transform(copy.deepcopy(input_results)))),
