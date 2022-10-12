@@ -3,6 +3,8 @@ import numpy as np
 import pytest
 import torch
 
+from mmcv.utils import IS_CUDA_AVAILABLE
+
 
 class TestBoxIoUQuadri:
 
@@ -33,8 +35,12 @@ class TestBoxIoUQuadri:
         assert np.allclose(
             ious.cpu().numpy(), np_expect_ious_aligned, atol=1e-4)
 
-    @pytest.mark.skipif(
-        not torch.cuda.is_available(), reason='requires CUDA support')
+    @pytest.mark.parametrize('device', [
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    ])
     def test_box_iou_quadri_cuda(self):
         from mmcv.ops import box_iou_quadri
         np_boxes1 = np.asarray([[1.0, 1.0, 3.0, 4.0, 4.0, 4.0, 4.0, 1.0],
@@ -88,8 +94,12 @@ class TestBoxIoUQuadri:
         assert np.allclose(
             ious.cpu().numpy(), np_expect_ious_aligned, atol=1e-4)
 
-    @pytest.mark.skipif(
-        not torch.cuda.is_available(), reason='requires CUDA support')
+    @pytest.mark.parametrize('device', [
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    ])
     def test_box_iou_quadri_iof_cuda(self):
         from mmcv.ops import box_iou_quadri
         np_boxes1 = np.asarray([[1.0, 1.0, 3.0, 4.0, 4.0, 4.0, 4.0, 1.0],

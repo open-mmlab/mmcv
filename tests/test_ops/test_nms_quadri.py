@@ -3,6 +3,8 @@ import numpy as np
 import pytest
 import torch
 
+from mmcv.utils import IS_CUDA_AVAILABLE
+
 
 class TestNMSQuadri:
 
@@ -78,8 +80,12 @@ class TestNMSQuadri:
         assert np.allclose(dets.numpy()[:, :8], np_expect_dets)
         assert np.allclose(keep_inds.numpy(), np_expect_keep_inds)
 
-    @pytest.mark.skipif(
-        not torch.cuda.is_available(), reason='requires CUDA support')
+    @pytest.mark.parametrize('device', [
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    ])
     def test_nms_quadri(self):
         from mmcv.ops import nms_quadri
         np_boxes = np.array([[1.0, 1.0, 3.0, 4.0, 4.0, 4.0, 4.0, 1.0, 0.7],
@@ -146,8 +152,12 @@ class TestNMSQuadri:
         assert np.allclose(boxes.numpy()[:, :8], np_expect_dets)
         assert np.allclose(keep.numpy(), np_expect_keep_inds)
 
-    @pytest.mark.skipif(
-        not torch.cuda.is_available(), reason='requires CUDA support')
+    @pytest.mark.parametrize('device', [
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    ])
     def test_batched_nms(self):
         # test batched_nms with nms_quadri
         from mmcv.ops import batched_nms

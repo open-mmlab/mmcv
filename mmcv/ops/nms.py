@@ -489,14 +489,15 @@ def nms_quadri(dets: Tensor,
 
     multi_label = labels is not None
     if multi_label:
-        dets_with_lables = torch.cat((dets, labels.unsqueeze(1)), 1)  # type: ignore
+        dets_with_lables = \
+            torch.cat((dets, labels.unsqueeze(1)), 1)  # type: ignore
     else:
         dets_with_lables = dets
     _, order = scores.sort(0, descending=True)
-    dets_sorted = dets_wl.index_select(0, order)
+    dets_sorted = dets_with_lables.index_select(0, order)
 
-    keep_inds = ext_module.nms_quadri(dets_wl, scores, order, dets_sorted,
-                                      iou_threshold, multi_label)
+    keep_inds = ext_module.nms_quadri(dets_with_lables, scores, order,
+                                      dets_sorted, iou_threshold, multi_label)
     dets = torch.cat((dets[keep_inds], scores[keep_inds].reshape(-1, 1)),
                      dim=1)
     return dets, keep_inds
