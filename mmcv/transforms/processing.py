@@ -747,7 +747,7 @@ class MultiScaleFlipAug(BaseTransform):
     - resize to (1333, 800) + flip
 
     The four results are then transformed with ``transforms`` argument.
-    After that, results are wrapped into lists of the same length as followed:
+    After that, results are wrapped into lists of the same length as below:
 
     .. code-block::
 
