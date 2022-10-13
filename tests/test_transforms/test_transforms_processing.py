@@ -982,6 +982,7 @@ class TestTestTimeAug:
         repr_str = repr(tta_transform)
         repr_str_list = repr_str.split('\n')
         assert repr_str_list[0] == 'TestTimeAugtransforms='
-        assert repr_str_list[1].startswith('[Resize(scale=(1333, 800)')
-        assert repr_str_list[2].startswith('[RandomFlip(prob=0.0')
-        assert repr_str_list[3].startswith('[Normalize(mean=[0. 0. 0.]')
+        assert repr_str_list[1] == 'Compose('
+        assert repr_str_list[2].startswith('    Resize(scale=(1333, 800)')
+        assert repr_str_list[3].startswith('    RandomFlip(prob=0.0')
+        assert repr_str_list[4].startswith('    Normalize(mean=[0. 0. 0.]')
