@@ -10,6 +10,7 @@ MMCV 提供了检测、分割等任务中常用的算子
 | BBoxOverlaps                 |     | √    | √   | √   |
 | BorderAlign                  |     | √    |     |     |
 | BoxIouRotated                | √   | √    |     |     |
+| BoxIouQuadri                 | √   | √    |     |     |
 | CARAFE                       |     | √    | √   |     |
 | ChamferDistance              |     | √    |     |     |
 | CrissCrossAttention          |     | √    |     |     |
@@ -35,6 +36,7 @@ MMCV 提供了检测、分割等任务中常用的算子
 | MultiScaleDeformableAttn     |     | √    |     |     |
 | NMS                          | √   | √    | √   |     |
 | NMSRotated                   | √   | √    |     |     |
+| NMSQuadri                    | √   | √    |     |     |
 | PixelGroup                   | √   |      |     |     |
 | PointsInBoxes                | √   | √    |     |     |
 | PointsInPolygons             |     | √    |     |     |
