@@ -1144,11 +1144,12 @@ class RandomFlip(BaseTransform):
         if self.swap_label_pairs is not None:
             # to handle datasets with left/right annotations
             # like 'Left-arm' and 'Right-arm' in LIP dataset
+            # Modified from https://github.com/openseg-group/openseg.pytorch/blob/master/lib/datasets/tools/cv2_aug_transforms.py # noqa:E501
+            # Licensed under MIT license
             temp = seg_map.copy()
             assert isinstance(self.swap_label_pairs, (tuple, list))
             for pair in self.swap_label_pairs:
-                assert isinstance(self.swap_label_pairs, (tuple, list)) and \
-                    len(pair) == 2, \
+                assert isinstance(pair, (tuple, list)) and len(pair) == 2, \
                     'swap_label_pairs must be a sequence with pair, but got ' \
                     f'{self.swap_label_pairs}.'
                 seg_map[temp == pair[0]] = pair[1]
