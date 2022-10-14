@@ -75,6 +75,16 @@ void group_points_backward(Tensor grad_out_tensor, Tensor idx_tensor,
                            Tensor grad_points_tensor, int b, int c, int n,
                            int npoints, int nsample);
 
+void stack_group_points_forward(Tensor points_tensor, Tensor points_batch_cnt_tensor,
+                           Tensor idx_tensor, Tensor idx_batch_cnt_tensor,
+                          Tensor out_tensor, int b, int c, int m,
+                          int nsample);
+
+void stack_group_points_backward(Tensor grad_out_tensor, Tensor idx_tensor,
+                            Tensor idx_batch_cnt_tensor, Tensor features_batch_cnt_tensor,
+                           Tensor grad_points_tensor, int b, int c, int m, int n,
+                           int nsample);
+
 void roipoint_pool3d_forward(Tensor xyz, Tensor boxes3d, Tensor pts_feature,
                              Tensor pooled_features, Tensor pooled_empty_flag);
 
@@ -239,6 +249,11 @@ void tin_shift_backward(Tensor grad_output, Tensor shift, Tensor grad_input);
 void ball_query_forward(Tensor new_xyz_tensor, Tensor xyz_tensor,
                         Tensor idx_tensor, int b, int n, int m,
                         float min_radius, float max_radius, int nsample);
+
+void stack_ball_query_forward(Tensor new_xyz_tensor,Tensor new_xyz_batch_cnt, Tensor xyz_tensor,
+                        Tensor xyz_batch_cnt,
+                        Tensor idx_tensor,
+                        float max_radius, int nsample);
 
 void prroi_pool_forward(Tensor input, Tensor rois, Tensor output,
                         int pooled_height, int pooled_width,
@@ -550,6 +565,16 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         "group_points_backward", py::arg("grad_out_tensor"),
         py::arg("idx_tensor"), py::arg("grad_points_tensor"), py::arg("b"),
         py::arg("c"), py::arg("n"), py::arg("npoints"), py::arg("nsample"));
+  m.def("stack_group_points_forward", &stack_group_points_forward, "stack_group_points_forward",
+        py::arg("points_tensor"), py::arg("points_batch_cnt_tensor"), py::arg("idx_tensor"),
+        py::arg("idx_batch_cnt_tensor"), py::arg("out_tensor"),
+        py::arg("b"), py::arg("c"), py::arg("m"),
+        py::arg("nsample"));
+  m.def("stack_group_points_backward", &stack_group_points_backward,
+        "stack_group_points_backward", py::arg("grad_out_tensor"),
+        py::arg("idx_tensor"),py::arg("idx_batch_cnt_tensor"),py::arg("features_batch_cnt_tensor"),
+        py::arg("grad_points_tensor"), py::arg("b"),
+        py::arg("c"), py::arg("m"), py::arg("n"), py::arg("nsample"));
   m.def("knn_forward", &knn_forward, "knn_forward", py::arg("b"), py::arg("n"),
         py::arg("m"), py::arg("nsample"), py::arg("xyz_tensor"),
         py::arg("new_xyz_tensor"), py::arg("idx_tensor"),
@@ -718,6 +743,10 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("ball_query_forward", &ball_query_forward, "ball_query_forward",
         py::arg("new_xyz_tensor"), py::arg("xyz_tensor"), py::arg("idx_tensor"),
         py::arg("b"), py::arg("n"), py::arg("m"), py::arg("min_radius"),
+        py::arg("max_radius"), py::arg("nsample"));
+  m.def("stack_ball_query_forward", &stack_ball_query_forward, "stack_ball_query_forward",
+        py::arg("new_xyz_tensor"), py::arg("new_xyz_batch_cnt"), py::arg("xyz_tensor"),
+        py::arg("xyz_batch_cnt"), py::arg("idx_tensor"),
         py::arg("max_radius"), py::arg("nsample"));
   m.def("roi_align_rotated_forward", &roi_align_rotated_forward,
         "roi_align_rotated forward", py::arg("input"), py::arg("rois"),

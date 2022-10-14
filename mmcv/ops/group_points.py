@@ -3,14 +3,16 @@ from typing import Optional, Tuple, Union
 
 import torch
 from torch import nn as nn
-from torch.autograd import Function
+from torch.autograd import Function, Variable
 
 from ..utils import ext_loader
 from .ball_query import ball_query
 from .knn import knn
 
-ext_module = ext_loader.load_ext(
-    '_ext', ['group_points_forward', 'group_points_backward'])
+ext_module = ext_loader.load_ext('_ext', [
+    'group_points_forward', 'group_points_backward',
+    'stack_group_points_forward', 'stack_group_points_backward'
+])
 
 
 class QueryAndGroup(nn.Module):
@@ -183,39 +185,69 @@ class GroupingOperation(Function):
     """Group feature with given index."""
 
     @staticmethod
-    def forward(ctx, features: torch.Tensor,
-                indices: torch.Tensor) -> torch.Tensor:
+    def forward(
+            ctx,
+            features: torch.Tensor,
+            indices: torch.Tensor,
+            features_batch_cnt: Optional[torch.Tensor] = None,
+            indices_batch_cnt: Optional[torch.Tensor] = None) -> torch.Tensor:
         """
         Args:
-            features (Tensor): (B, C, N) tensor of features to group.
-            indices (Tensor): (B, npoint, nsample) the indices of
-                features to group with.
+            features (Tensor): Tensor of features to group, input shape is
+                (B, C, N) or stacked inputs (N1 + N2 ..., C).
+            indices (Tensor):  The indices of features to group with, input
+                shape is (B, npoint, nsample) or stacked inputs
+                (M1 + M2 ..., nsample).
+            features_batch_cnt (Tensor, optional): Input features nums in
+                each batch, just like (N1, N2, ...). Default None.
+            indices_batch_cnt (Tensor, optional): Input indices nums in
+                each batch, just like (M1, M2, ...). Default None.
 
         Returns:
-            Tensor: (B, C, npoint, nsample) Grouped features.
+            Tensor: Grouped features, shape is (B, C, npoint, nsample)
+                or (M1 + M2 ..., C, nsample).
         """
         features = features.contiguous()
         indices = indices.contiguous()
+        if features_batch_cnt is not None and indices_batch_cnt is not None:
+            assert features_batch_cnt.dtype == torch.int and\
+                   indices_batch_cnt.dtype == torch.int
+            M, nsample = indices.size()
+            N, C = features.size()
+            B = indices_batch_cnt.shape[0]
+            output = features.new_zeros((M, C, nsample))
+            ext_module.stack_group_points_forward(
+                features,
+                features_batch_cnt,
+                indices,
+                indices_batch_cnt,
+                output,
+                b=B,
+                m=M,
+                c=C,
+                nsample=nsample)
+            ctx.for_backwards = (B, N, indices, features_batch_cnt,
+                                 indices_batch_cnt)
+        else:
+            B, nfeatures, nsample = indices.size()
+            _, C, N = features.size()
+            output = torch.cuda.FloatTensor(B, C, nfeatures, nsample)
 
-        B, nfeatures, nsample = indices.size()
-        _, C, N = features.size()
-        output = torch.cuda.FloatTensor(B, C, nfeatures, nsample)
+            ext_module.group_points_forward(
+                features,
+                indices,
+                output,
+                b=B,
+                c=C,
+                n=N,
+                npoints=nfeatures,
+                nsample=nsample)
 
-        ext_module.group_points_forward(
-            features,
-            indices,
-            output,
-            b=B,
-            c=C,
-            n=N,
-            npoints=nfeatures,
-            nsample=nsample)
-
-        ctx.for_backwards = (indices, N)
+            ctx.for_backwards = (indices, N)
         return output
 
     @staticmethod
-    def backward(ctx, grad_out: torch.Tensor) -> Tuple[torch.Tensor, None]:
+    def backward(ctx, grad_out: torch.Tensor) -> Tuple:
         """
         Args:
             grad_out (Tensor): (B, C, npoint, nsample) tensor of the gradients
@@ -224,22 +256,42 @@ class GroupingOperation(Function):
         Returns:
             Tensor: (B, C, N) gradient of the features.
         """
-        idx, N = ctx.for_backwards
+        if len(ctx.for_backwards) != 5:
+            idx, N = ctx.for_backwards
 
-        B, C, npoint, nsample = grad_out.size()
-        grad_features = torch.cuda.FloatTensor(B, C, N).zero_()
+            B, C, npoint, nsample = grad_out.size()
+            grad_features = torch.cuda.FloatTensor(B, C, N).zero_()
 
-        grad_out_data = grad_out.data.contiguous()
-        ext_module.group_points_backward(
-            grad_out_data,
-            idx,
-            grad_features.data,
-            b=B,
-            c=C,
-            n=N,
-            npoints=npoint,
-            nsample=nsample)
-        return grad_features, None
+            grad_out_data = grad_out.data.contiguous()
+            ext_module.group_points_backward(
+                grad_out_data,
+                idx,
+                grad_features.data,
+                b=B,
+                c=C,
+                n=N,
+                npoints=npoint,
+                nsample=nsample)
+            return grad_features, None
+        else:
+            B, N, idx, features_batch_cnt, idx_batch_cnt = ctx.for_backwards
+
+            M, C, nsample = grad_out.size()
+            grad_features = Variable(torch.cuda.FloatTensor(N, C).zero_())
+
+            grad_out_data = grad_out.data.contiguous()
+            ext_module.stack_group_points_backward(
+                grad_out_data,
+                idx,
+                idx_batch_cnt,
+                features_batch_cnt,
+                grad_features.data,
+                b=B,
+                c=C,
+                m=M,
+                n=N,
+                nsample=nsample)
+            return grad_features, None, None, None
 
 
 grouping_operation = GroupingOperation.apply

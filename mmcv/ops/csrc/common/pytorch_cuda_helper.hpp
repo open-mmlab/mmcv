@@ -15,5 +15,6 @@ using at::Tensor;
 using phalf = at::Half;
 
 #define __PHALF(x) (x)
+#define DIVUP(m,n) ((m) / (n) + ((m) % (n) > 0))
 
 #endif  // PYTORCH_CUDA_HELPER
