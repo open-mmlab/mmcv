@@ -820,6 +820,7 @@ class TestRandomFlip:
         results_update = TRANSFORMS.transform(copy.deepcopy(results))
         assert (results_update['gt_seg_map'] == np.array([[0, 1], [3,
                                                                    2]])).all()
+        assert results_update['swap_label_pairs'] == [[0, 1]]
 
         TRANSFORMS = RandomFlip(0.0)
         results_update = TRANSFORMS.transform(copy.deepcopy(results))

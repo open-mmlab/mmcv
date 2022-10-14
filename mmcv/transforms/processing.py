@@ -1204,6 +1204,7 @@ class RandomFlip(BaseTransform):
         if results.get('gt_seg_map', None) is not None:
             results['gt_seg_map'] = self.flip_seg_map(
                 results['gt_seg_map'], direction=results['flip_direction'])
+            results['swap_label_pairs'] = self.swap_label_pairs
 
     def _flip_on_direction(self, results: dict) -> None:
         """Function to flip images, bounding boxes, semantic segmentation map
