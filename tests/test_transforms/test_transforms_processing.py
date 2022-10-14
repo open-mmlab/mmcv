@@ -777,7 +777,9 @@ class TestRandomFlip:
             'img': np.random.random((224, 224, 3)),
             'gt_bboxes': np.array([[0, 1, 100, 101]]),
             'gt_keypoints': np.array([[[100, 100, 1.0]]]),
-            'gt_seg_map': np.random.random((224, 224, 3))
+            # seg map flip is irrelative with image, so there is no requirement
+            # that the test seg map matches image.
+            'gt_seg_map': np.array([[0, 1], [2, 3]])
         }
 
         # horizontal flip
@@ -785,29 +787,46 @@ class TestRandomFlip:
         results_update = TRANSFORMS.transform(copy.deepcopy(results))
         assert (results_update['gt_bboxes'] == np.array([[124, 1, 224,
                                                           101]])).all()
+        assert (results_update['gt_seg_map'] == np.array([[1, 0], [3,
+                                                                   2]])).all()
 
-        # diagnal flip
+        # diagonal flip
         TRANSFORMS = RandomFlip([1.0], ['diagonal'])
         results_update = TRANSFORMS.transform(copy.deepcopy(results))
         assert (results_update['gt_bboxes'] == np.array([[124, 123, 224,
                                                           223]])).all()
+        assert (results_update['gt_seg_map'] == np.array([[3, 2], [1,
+                                                                   0]])).all()
 
         # vertical flip
         TRANSFORMS = RandomFlip([1.0], ['vertical'])
         results_update = TRANSFORMS.transform(copy.deepcopy(results))
         assert (results_update['gt_bboxes'] == np.array([[0, 123, 100,
                                                           223]])).all()
+        assert (results_update['gt_seg_map'] == np.array([[2, 3], [0,
+                                                                   1]])).all()
 
         # horizontal flip when direction is None
         TRANSFORMS = RandomFlip(1.0)
         results_update = TRANSFORMS.transform(copy.deepcopy(results))
         assert (results_update['gt_bboxes'] == np.array([[124, 1, 224,
                                                           101]])).all()
+        assert (results_update['gt_seg_map'] == np.array([[1, 0], [3,
+                                                                   2]])).all()
+
+        # horizontal flip and swap label pair
+        TRANSFORMS = RandomFlip([1.0], ['horizontal'],
+                                swap_label_pairs=[[0, 1]])
+        results_update = TRANSFORMS.transform(copy.deepcopy(results))
+        assert (results_update['gt_seg_map'] == np.array([[0, 1], [3,
+                                                                   2]])).all()
 
         TRANSFORMS = RandomFlip(0.0)
         results_update = TRANSFORMS.transform(copy.deepcopy(results))
         assert (results_update['gt_bboxes'] == np.array([[0, 1, 100,
                                                           101]])).all()
+        assert (results_update['gt_seg_map'] == np.array([[0, 1], [2,
+                                                                   3]])).all()
 
         # flip direction is invalid in bbox flip
         with pytest.raises(ValueError):
@@ -820,6 +839,12 @@ class TestRandomFlip:
             TRANSFORMS = RandomFlip(1.0)
             results_update = TRANSFORMS.flip_keypoints(results['gt_keypoints'],
                                                        (224, 224), 'invalid')
+
+        # swap pair is invalid
+        with pytest.raises(AssertionError):
+            TRANSFORMS = RandomFlip(1.0, swap_label_pairs='invalid')
+            results_update = TRANSFORMS.flip_seg_map(results['gt_seg_map'],
+                                                     'horizontal')
 
     def test_repr(self):
         TRANSFORMS = RandomFlip(0.1)

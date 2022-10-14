@@ -1027,19 +1027,21 @@ class RandomFlip(BaseTransform):
     - flip_direction
 
     Args:
-         prob (float | list[float], optional): The flipping probability.
-             Defaults to None.
-         direction(str | list[str]): The flipping direction. Options
-             If input is a list, the length must equal ``prob``. Each
-             element in ``prob`` indicates the flip probability of
-             corresponding direction. Defaults to 'horizontal'.
+        prob (float | list[float], optional): The flipping probability.
+            Defaults to None.
+        direction(str | list[str]): The flipping direction. Options
+            If input is a list, the length must equal ``prob``. Each
+            element in ``prob`` indicates the flip probability of
+            corresponding direction. Defaults to 'horizontal'.
+        swap_label_pairs(list, optional): The label pair need to be swap for
+            ground truth, like 'left arm' and 'right arm' need to be swap
+            after horizontal flip.
     """
 
-    def __init__(
-            self,
-            prob: Optional[Union[float, Iterable[float]]] = None,
-            direction: Union[str,
-                             Sequence[Optional[str]]] = 'horizontal') -> None:
+    def __init__(self,
+                 prob: Optional[Union[float, Iterable[float]]] = None,
+                 direction: Union[str, Sequence[Optional[str]]] = 'horizontal',
+                 swap_label_pairs: Optional[Sequence] = None) -> None:
         if isinstance(prob, list):
             assert mmengine.is_list_of(prob, float)
             assert 0 <= sum(prob) <= 1
@@ -1049,6 +1051,7 @@ class RandomFlip(BaseTransform):
             raise ValueError(f'probs must be float or list of float, but \
                               got `{type(prob)}`.')
         self.prob = prob
+        self.swap_label_pairs = swap_label_pairs
 
         valid_directions = ['horizontal', 'vertical', 'diagonal']
         if isinstance(direction, str):
@@ -1127,6 +1130,31 @@ class RandomFlip(BaseTransform):
         flipped = np.concatenate([keypoints, meta_info], axis=-1)
         return flipped
 
+    def flip_seg_map(self, seg_map: dict, direction: str) -> None:
+        """Flip segmentation map horizontally, vertically or diagonally.
+
+        Args:
+            seg_map (numpy.ndarray): segmentation map, shape (H, W).
+            direction (str): Flip direction. Options are 'horizontal',
+                'vertical'.
+        Returns:
+            numpy.ndarray: Flipped keypoints.
+        """
+        seg_map = mmcv.imflip(seg_map, direction=direction)
+        if self.swap_label_pairs is not None:
+            # to handle datasets with left/right annotations
+            # like 'Left-arm' and 'Right-arm' in LIP dataset
+            temp = seg_map.copy()
+            assert isinstance(self.swap_label_pairs, (tuple, list))
+            for pair in self.swap_label_pairs:
+                assert isinstance(self.swap_label_pairs, (tuple, list)) and \
+                    len(pair) == 2, \
+                    'swap_label_pairs must be a sequence with pair, but got ' \
+                    f'{self.swap_label_pairs}.'
+                seg_map[temp == pair[0]] = pair[1]
+                seg_map[temp == pair[1]] = pair[0]
+        return seg_map
+
     @cache_randomness
     def _choose_direction(self) -> str:
         """Choose the flip direction according to `prob` and `direction`"""
@@ -1171,9 +1199,9 @@ class RandomFlip(BaseTransform):
             results['gt_keypoints'] = self.flip_keypoints(
                 results['gt_keypoints'], img_shape, results['flip_direction'])
 
-        # flip segs
+        # flip seg map
         if results.get('gt_seg_map', None) is not None:
-            results['gt_seg_map'] = mmcv.imflip(
+            results['gt_seg_map'] = self.flip_seg_map(
                 results['gt_seg_map'], direction=results['flip_direction'])
 
     def _flip_on_direction(self, results: dict) -> None:
