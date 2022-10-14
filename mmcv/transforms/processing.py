@@ -1130,7 +1130,7 @@ class RandomFlip(BaseTransform):
         flipped = np.concatenate([keypoints, meta_info], axis=-1)
         return flipped
 
-    def flip_seg_map(self, seg_map: dict, direction: str) -> None:
+    def flip_seg_map(self, seg_map: dict, direction: str) -> np.ndarray:
         """Flip segmentation map horizontally, vertically or diagonally.
 
         Args:
