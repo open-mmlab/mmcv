@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_CAMB_AVAILABLE
 
 _USING_PARROTS = True
 try:
@@ -94,11 +94,16 @@ def _test_roialign_allclose(device, dtype):
 
 
 @pytest.mark.parametrize('device', [
-    'cpu',
+    pytest.param(
+        'cpu',
+        marks=pytest.mark.skipif(
+            IS_CAMB_AVAILABLE, reason="The parrots extension does not support"
+                                      " two devices for one operator")),
     pytest.param(
         'cuda',
         marks=pytest.mark.skipif(
-            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+            not (IS_CUDA_AVAILABLE or IS_CAMB_AVAILABLE),
+            reason='requires CUDA or CAMB support')),
     pytest.param(
         'mlu',
         marks=pytest.mark.skipif(
@@ -109,9 +114,13 @@ def _test_roialign_allclose(device, dtype):
     pytest.param(
         torch.double,
         marks=pytest.mark.skipif(
-            IS_MLU_AVAILABLE,
+            IS_MLU_AVAILABLE or IS_CAMB_AVAILABLE,
             reason='MLU does not support for 64-bit floating point')),
-    torch.half
+    pytest.param(
+        torch.half,
+        marks=pytest.mark.skipif(
+            IS_CAMB_AVAILABLE,
+            reason='parrots camb not support half now')),
 ])
 def test_roialign(device, dtype):
     # check double only
