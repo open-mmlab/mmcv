@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_CAMB_AVAILABLE
 
 _USING_PARROTS = True
 try:
@@ -133,7 +133,8 @@ class Testfocalloss:
         pytest.param(
             'cuda',
             marks=pytest.mark.skipif(
-                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+                not (IS_CUDA_AVAILABLE or IS_CAMB_AVAILABLE),
+                reason='requires CUDA support')),
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
