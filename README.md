@@ -108,7 +108,7 @@ pip install -U openmim
 mim install mmcv
 ```
 
-### Supported projects
+## Supported projects
 
 - [MIM](https://github.com/open-mmlab/mim): MIM installs OpenMMLab packages.
 - [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab image classification toolbox and benchmark.
