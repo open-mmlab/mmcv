@@ -10,7 +10,7 @@ We implement common ops used in detection, segmentation, etc.
 | BBoxOverlaps                 |     | √    | √   | √   |
 | BorderAlign                  |     | √    |     |     |
 | BoxIouRotated                | √   | √    |     |     |
-| CARAFE                       |     | √    |     |     |
+| CARAFE                       |     | √    | √   |     |
 | ChamferDistance              |     | √    |     |     |
 | CrissCrossAttention          |     | √    |     |     |
 | ContourExpand                | √   |      |     |     |
@@ -18,7 +18,7 @@ We implement common ops used in detection, segmentation, etc.
 | CornerPool                   |     | √    |     |     |
 | Correlation                  |     | √    |     |     |
 | Deformable Convolution v1/v2 | √   | √    |     |     |
-| Deformable RoIPool           |     | √    |     |     |
+| Deformable RoIPool           |     | √    | √   |     |
 | DiffIoURotated               |     | √    |     |     |
 | DynamicScatter               |     | √    |     |     |
 | FurthestPointSample          |     | √    |     |     |
@@ -28,7 +28,7 @@ We implement common ops used in detection, segmentation, etc.
 | GroupPoints                  |     | √    |     |     |
 | Iou3d                        |     | √    |     |     |
 | KNN                          |     | √    |     |     |
-| MaskedConv                   |     | √    |     |     |
+| MaskedConv                   |     | √    | √   |     |
 | MergeCells                   |     | √    |     |     |
 | MinAreaPolygon               |     | √    |     |     |
 | ModulatedDeformConv2d        | √   | √    |     |     |
@@ -40,7 +40,7 @@ We implement common ops used in detection, segmentation, etc.
 | PointsInPolygons             |     | √    |     |     |
 | PSAMask                      | √   | √    | √   |     |
 | RotatedFeatureAlign          | √   | √    |     |     |
-| RoIPointPool3d               |     | √    |     |     |
+| RoIPointPool3d               |     | √    | √   |     |
 | RoIPool                      |     | √    | √   |     |
 | RoIAlignRotated              | √   | √    | √   |     |
 | RiRoIAlignRotated            |     | √    |     |     |
@@ -53,7 +53,7 @@ We implement common ops used in detection, segmentation, etc.
 | Sparse Convolution           |     | √    |     |     |
 | Synchronized BatchNorm       |     | √    |     |     |
 | ThreeInterpolate             |     | √    |     |     |
-| ThreeNN                      |     | √    |     |     |
+| ThreeNN                      |     | √    | √   |     |
 | TINShift                     |     | √    | √   |     |
 | UpFirDn2d                    |     | √    |     |     |
 | Voxelization                 | √   | √    |     |     |

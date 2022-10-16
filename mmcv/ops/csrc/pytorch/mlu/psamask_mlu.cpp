@@ -161,7 +161,7 @@ void PSAMaskForwardMLUKernelLauncher(const int psa_type, const Tensor x,
   TORCH_CHECK(h_feature * w_feature == y_c,
               "channel of y should be the same as h_feature * w_feature");
   TORCH_CHECK(psa_type == 0 || psa_type == 1,
-              "psa_type only suppurts 'COLLECT' and 'DISTRIBUTE' currently");
+              "psa_type only supports 'COLLECT' and 'DISTRIBUTE' currently");
 
   if (x.numel() == 0) {
     CNLOG(INFO) << "skip zero-element tensor";
@@ -227,7 +227,7 @@ void PSAMaskBackwardMLUKernelLauncher(const int psa_type, const Tensor dy,
   TORCH_CHECK(h_mask * w_mask == dx_c,
               "channel of dx should be the same as h_mask * w_mask");
   TORCH_CHECK(psa_type == 0 || psa_type == 1,
-              "psa_type only suppurts 'COLLECT' and 'DISTRIBUTE' currently");
+              "psa_type only supports 'COLLECT' and 'DISTRIBUTE' currently");
 
   if (dx.numel() == 0) {
     CNLOG(INFO) << "skip zero-element tensor";

@@ -3,6 +3,7 @@ import io
 import os.path as osp
 import warnings
 from pathlib import Path
+from typing import Optional, Union
 
 import cv2
 import numpy as np
@@ -42,7 +43,7 @@ imread_flags = {
 imread_backend = 'cv2'
 
 
-def use_backend(backend):
+def use_backend(backend: str) -> None:
     """Select a backend for image decoding.
 
     Args:
@@ -68,7 +69,7 @@ def use_backend(backend):
             raise ImportError('`tifffile` is not installed')
 
 
-def _jpegflag(flag='color', channel_order='bgr'):
+def _jpegflag(flag: str = 'color', channel_order: str = 'bgr'):
     channel_order = channel_order.lower()
     if channel_order not in ['rgb', 'bgr']:
         raise ValueError('channel order must be either "rgb" or "bgr"')
@@ -84,7 +85,9 @@ def _jpegflag(flag='color', channel_order='bgr'):
         raise ValueError('flag must be "color" or "grayscale"')
 
 
-def _pillow2array(img, flag='color', channel_order='bgr'):
+def _pillow2array(img,
+                  flag: str = 'color',
+                  channel_order: str = 'bgr') -> np.ndarray:
     """Convert a pillow image to numpy array.
 
     Args:
@@ -139,11 +142,11 @@ def _pillow2array(img, flag='color', channel_order='bgr'):
     return array
 
 
-def imread(img_or_path,
-           flag='color',
-           channel_order='bgr',
-           backend=None,
-           file_client_args=None):
+def imread(img_or_path: Union[np.ndarray, str, Path],
+           flag: str = 'color',
+           channel_order: str = 'bgr',
+           backend: Optional[str] = None,
+           file_client_args: Optional[dict] = None) -> np.ndarray:
     """Read an image.
 
     Note:
@@ -207,7 +210,10 @@ def imread(img_or_path,
                         'a pathlib.Path object')
 
 
-def imfrombytes(content, flag='color', channel_order='bgr', backend=None):
+def imfrombytes(content: bytes,
+                flag: str = 'color',
+                channel_order: str = 'bgr',
+                backend: Optional[str] = None) -> np.ndarray:
     """Read an image from bytes.
 
     Args:
@@ -240,7 +246,8 @@ def imfrombytes(content, flag='color', channel_order='bgr', backend=None):
             f'backend: {backend} is not supported. Supported '
             "backends are 'cv2', 'turbojpeg', 'pillow', 'tifffile'")
     if backend == 'turbojpeg':
-        img = jpeg.decode(content, _jpegflag(flag, channel_order))
+        img = jpeg.decode(  # type: ignore
+            content, _jpegflag(flag, channel_order))
         if img.shape[-1] == 1:
             img = img[:, :, 0]
         return img
@@ -262,11 +269,11 @@ def imfrombytes(content, flag='color', channel_order='bgr', backend=None):
         return img
 
 
-def imwrite(img,
-            file_path,
-            params=None,
-            auto_mkdir=None,
-            file_client_args=None):
+def imwrite(img: np.ndarray,
+            file_path: str,
+            params: Optional[list] = None,
+            auto_mkdir: Optional[bool] = None,
+            file_client_args: Optional[dict] = None) -> bool:
     """Write image to file.
 
     Note:

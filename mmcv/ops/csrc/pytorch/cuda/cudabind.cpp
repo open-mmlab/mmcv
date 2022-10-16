@@ -570,14 +570,12 @@ void IoU3DBoxesOverlapBevForwardCUDAKernelLauncher(const int num_a,
                                                    const Tensor boxes_b,
                                                    Tensor ans_overlap);
 
-void IoU3DNMS3DForwardCUDAKernelLauncher(const Tensor boxes,
-                                         unsigned long long* mask,
-                                         int boxes_num,
+void IoU3DNMS3DForwardCUDAKernelLauncher(const Tensor boxes, Tensor& keep,
+                                         Tensor& keep_num,
                                          float nms_overlap_thresh);
 
-void IoU3DNMS3DNormalForwardCUDAKernelLauncher(const Tensor boxes,
-                                               unsigned long long* mask,
-                                               int boxes_num,
+void IoU3DNMS3DNormalForwardCUDAKernelLauncher(const Tensor boxes, Tensor& keep,
+                                               Tensor& keep_num,
                                                float nms_overlap_thresh);
 
 void iou3d_boxes_overlap_bev_forward_cuda(const int num_a, const Tensor boxes_a,
@@ -587,16 +585,16 @@ void iou3d_boxes_overlap_bev_forward_cuda(const int num_a, const Tensor boxes_a,
                                                 ans_overlap);
 };
 
-void iou3d_nms3d_forward_cuda(const Tensor boxes, unsigned long long* mask,
-                              int boxes_num, float nms_overlap_thresh) {
-  IoU3DNMS3DForwardCUDAKernelLauncher(boxes, mask, boxes_num,
+void iou3d_nms3d_forward_cuda(const Tensor boxes, Tensor& keep,
+                              Tensor& keep_num, float nms_overlap_thresh) {
+  IoU3DNMS3DForwardCUDAKernelLauncher(boxes, keep, keep_num,
                                       nms_overlap_thresh);
 };
 
-void iou3d_nms3d_normal_forward_cuda(const Tensor boxes,
-                                     unsigned long long* mask, int boxes_num,
+void iou3d_nms3d_normal_forward_cuda(const Tensor boxes, Tensor& keep,
+                                     Tensor& keep_num,
                                      float nms_overlap_thresh) {
-  IoU3DNMS3DNormalForwardCUDAKernelLauncher(boxes, mask, boxes_num,
+  IoU3DNMS3DNormalForwardCUDAKernelLauncher(boxes, keep, keep_num,
                                             nms_overlap_thresh);
 };
 
@@ -604,11 +602,11 @@ void iou3d_boxes_overlap_bev_forward_impl(const int num_a, const Tensor boxes_a,
                                           const int num_b, const Tensor boxes_b,
                                           Tensor ans_overlap);
 
-void iou3d_nms3d_forward_impl(const Tensor boxes, unsigned long long* mask,
-                              int boxes_num, float nms_overlap_thresh);
+void iou3d_nms3d_forward_impl(const Tensor boxes, Tensor& keep,
+                              Tensor& keep_num, float nms_overlap_thresh);
 
-void iou3d_nms3d_normal_forward_impl(const Tensor boxes,
-                                     unsigned long long* mask, int boxes_num,
+void iou3d_nms3d_normal_forward_impl(const Tensor boxes, Tensor& keep,
+                                     Tensor& keep_num,
                                      float nms_overlap_thresh);
 
 REGISTER_DEVICE_IMPL(iou3d_boxes_overlap_bev_forward_impl, CUDA,
@@ -1706,8 +1704,8 @@ void ChamferDistanceForwardCUDAKernelLauncher(
     const Tensor dist2, const Tensor idx1, const Tensor idx2);
 
 void ChamferDistanceBackwardCUDAKernelLauncher(
-    const Tensor xyz1, const Tensor xyz2, Tensor grad_xyz1, Tensor grad_xyz2,
-    Tensor grad_dist1, Tensor grad_dist2, Tensor idx1, Tensor idx2);
+    const Tensor xyz1, const Tensor xyz2, Tensor idx1, Tensor idx2,
+    Tensor grad_dist1, Tensor grad_dist2, Tensor grad_xyz1, Tensor grad_xyz2);
 
 void chamfer_distance_forward_cuda(const Tensor xyz1, const Tensor xyz2,
                                    const Tensor dist1, const Tensor dist2,
@@ -1717,11 +1715,11 @@ void chamfer_distance_forward_cuda(const Tensor xyz1, const Tensor xyz2,
 };
 
 void chamfer_distance_backward_cuda(const Tensor xyz1, const Tensor xyz2,
-                                    Tensor gradxyz1, Tensor gradxyz2,
-                                    Tensor graddist1, Tensor graddist2,
-                                    Tensor idx1, Tensor idx2) {
-  ChamferDistanceBackwardCUDAKernelLauncher(xyz1, xyz2, gradxyz1, gradxyz2,
-                                            graddist1, graddist2, idx1, idx2);
+                                    Tensor idx1, Tensor idx2, Tensor graddist1,
+                                    Tensor graddist2, Tensor gradxyz1,
+                                    Tensor gradxyz2) {
+  ChamferDistanceBackwardCUDAKernelLauncher(xyz1, xyz2, idx1, idx2, graddist1,
+                                            graddist2, gradxyz1, gradxyz2);
 };
 
 void chamfer_distance_forward_impl(const Tensor xyz1, const Tensor xyz2,
@@ -1729,9 +1727,9 @@ void chamfer_distance_forward_impl(const Tensor xyz1, const Tensor xyz2,
                                    const Tensor idx1, const Tensor idx2);
 
 void chamfer_distance_backward_impl(const Tensor xyz1, const Tensor xyz2,
-                                    Tensor gradxyz1, Tensor gradxyz2,
-                                    Tensor graddist1, Tensor graddist2,
-                                    Tensor idx1, Tensor idx2);
+                                    Tensor idx1, Tensor idx2, Tensor graddist1,
+                                    Tensor graddist2, Tensor gradxyz1,
+                                    Tensor gradxyz2);
 
 REGISTER_DEVICE_IMPL(chamfer_distance_forward_impl, CUDA,
                      chamfer_distance_forward_cuda);

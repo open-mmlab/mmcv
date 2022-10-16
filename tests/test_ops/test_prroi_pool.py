@@ -59,8 +59,7 @@ class TestPrRoiPool:
             froipool = PrRoIPool((pool_h, pool_w), spatial_scale)
 
             if _USING_PARROTS:
-                pass
-                # gradcheck(froipool, (x, rois), no_grads=[rois])
+                gradcheck(froipool, (x, rois), no_grads=[rois])
             else:
                 gradcheck(froipool, (x, rois), eps=1e-2, atol=1e-2)
 

@@ -601,7 +601,6 @@ def test_rotated_feature_align():
 
 @pytest.mark.parametrize('mode', ['top', 'bottom', 'left', 'right'])
 def test_corner_pool(mode, opset=11):
-
     from mmcv.ops import get_onnxruntime_op_path
     ort_custom_op_path = get_onnxruntime_op_path()
     if not os.path.exists(ort_custom_op_path):
@@ -646,7 +645,6 @@ def test_corner_pool(mode, opset=11):
 
 @pytest.mark.parametrize('key', ['cummax', 'cummin'])
 def test_cummax_cummin(key, opset=11):
-
     # Note generally `cummax` or `cummin` is exportable to ONNX
     # as long as the pytorch version >= 1.5.0, since `torch.cummax`
     # is only supported with torch >= 1.5.0.

@@ -1665,7 +1665,6 @@ def test_dvclive_hook_model_file(tmp_path):
     hook = DvcliveLoggerHook(model_file=osp.join(runner.work_dir, 'model.pth'))
     runner.register_hook(hook)
 
-    loader = torch.utils.data.DataLoader(torch.ones((5, 2)))
     loader = DataLoader(torch.ones((5, 2)))
 
     runner.run([loader, loader], [('train', 1), ('val', 1)])
@@ -1673,6 +1672,16 @@ def test_dvclive_hook_model_file(tmp_path):
     assert osp.exists(osp.join(runner.work_dir, 'model.pth'))
 
     shutil.rmtree(runner.work_dir)
+
+
+def test_dvclive_hook_pass_logger(tmp_path):
+    sys.modules['dvclive'] = MagicMock()
+    from dvclive import Live
+    logger = Live()
+
+    sys.modules['dvclive'] = MagicMock()
+    assert DvcliveLoggerHook().dvclive is not logger
+    assert DvcliveLoggerHook(dvclive=logger).dvclive is logger
 
 
 def test_clearml_hook():
@@ -1926,6 +1935,48 @@ def test_gradient_cumulative_optimizer_hook():
     optimizer_hook = GradientCumulativeOptimizerHook(
         grad_clip=dict(max_norm=0.2), cumulative_iters=3)
     assert optimizer_hook.has_batch_norm(model)
+
+    def calc_loss_factors(runner):
+        optimizer_hook = GradientCumulativeOptimizerHook(
+            grad_clip=dict(max_norm=0.2), cumulative_iters=3)
+        optimizer_hook._init(runner)
+        loss_factors = []
+        for current_iter in range(runner._iter, runner._max_iters):
+            runner._iter = current_iter
+            loss_factor = optimizer_hook._get_loss_factor(runner)
+            loss_factors.append(loss_factor)
+        shutil.rmtree(runner.work_dir)
+
+        return loss_factors
+
+    # test loss_factor with EpochBasedRunner
+    runner = build_toy_runner(dict(type='EpochBasedRunner', max_epochs=2))
+    runner._max_iters = 6  # max_epochs * len(data_loader)
+    assert calc_loss_factors(runner) == [3] * 6
+    runner = build_toy_runner(dict(type='EpochBasedRunner', max_epochs=2))
+    runner._max_iters = 8  # max_epochs * len(data_loader)
+    assert calc_loss_factors(runner) == [3] * 6 + [2, 2]
+    runner = build_toy_runner(dict(type='EpochBasedRunner', max_epochs=2))
+    runner._max_iters = 10  # max_epochs * len(data_loader)
+    assert calc_loss_factors(runner) == [3] * 9 + [1]
+    runner = build_toy_runner(dict(type='EpochBasedRunner', max_epochs=2))
+    runner._max_iters = 10  # max_epochs * len(data_loader)
+    runner._iter = 5  # resume
+    assert calc_loss_factors(runner) == [3] * 4 + [1]
+
+    # test loss_factor with IterBasedRunner
+    runner = build_toy_runner(dict(type='IterBasedRunner', max_iters=6))
+    assert calc_loss_factors(runner) == [3] * 6
+    runner = build_toy_runner(dict(type='IterBasedRunner', max_iters=7))
+    assert calc_loss_factors(runner) == [3] * 6 + [1]
+    runner = build_toy_runner(dict(type='IterBasedRunner', max_iters=8))
+    assert calc_loss_factors(runner) == [3] * 6 + [2, 2]
+    runner = build_toy_runner(dict(type='IterBasedRunner', max_iters=6))
+    runner._iter = 3  # resume
+    assert calc_loss_factors(runner) == [3] * 3
+    runner = build_toy_runner(dict(type='IterBasedRunner', max_iters=8))
+    runner._iter = 3  # resume
+    assert calc_loss_factors(runner) == [3] * 3 + [2, 2]
 
 
 @pytest.mark.skipif(

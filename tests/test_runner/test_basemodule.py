@@ -437,7 +437,6 @@ def test_without_layer_weight_init():
 
 
 def test_override_weight_init():
-
     # only initialize 'override'
     model_cfg = dict(
         type='FooModel',
