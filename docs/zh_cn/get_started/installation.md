@@ -34,7 +34,7 @@ pip install -U openmim
 mim install mmcv-full
 ```
 
-如果发现上述的安装命令没有使用预编译包（以.whl结尾）而是使用源码包（以.tar.gz结尾）安装，则可能是没有对应 PyTorch 或者 CUDA 或者 mmcv-full 版本的预编译包，此时，你可以[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html)。
+如果发现上述的安装命令没有使用预编译包（以 `.whl` 结尾）而是使用源码包（以 `.tar.gz` 结尾）安装，则可能是没有对应 PyTorch 或者 CUDA 或者 mmcv-full 版本的预编译包，此时，你可以[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html)。
 
 <details>
 <summary>使用预编译包的安装日志</summary>
@@ -353,8 +353,8 @@ docker image build -t mmcv -f docker/release/Dockerfile --build-arg MMCV=1.5.0 .
 
 ```bash
 docker build -t mmcv -f docker/release/Dockerfile \
-    --build-arg PYTORCH=1.9.0 \
-    --build-arg CUDA=11.1 \
+    --build-arg PYTORCH=1.11.0 \
+    --build-arg CUDA=11.3 \
     --build-arg CUDNN=8 \
     --build-arg MMCV=1.5.0 .
 ```
