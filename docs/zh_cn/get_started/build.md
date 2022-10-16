@@ -92,7 +92,11 @@ pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
 #### 在 macOS 上编译 mmcv-full
 
-| TODO: 视频教程以及 MPS 的编译步骤
+| TODO: 视频教程
+
+```{note}
+如果你使用的 mac 是 M1 芯片，请安装 PyTorch 的 nightly 版本，否则会遇到 [issues#2218](https://github.com/open-mmlab/mmcv/issues/2218) 中的问题。
+```
 
 1. 克隆代码仓库
 

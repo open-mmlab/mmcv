@@ -80,6 +80,10 @@ you can first install it before installing MMCV to skip the installation of `ope
 
 #### Build on macOS
 
+```{note}
+If you are using a mac with an M1 chip, install the nightly version of PyTorch, otherwise you will encounter the problem in [issues#2218](https://github.com/open-mmlab/mmcv/issues/2218).
+```
+
 1. Clone the repo
 
    ```bash
@@ -96,7 +100,7 @@ you can first install it before installing MMCV to skip the installation of `ope
 3. Start building
 
    ```bash
-   CC=clang CXX=clang++ CFLAGS='-stdlib=libc++' MMCV_WITH_OPS=1 pip install -e .
+   MMCV_WITH_OPS=1 pip install -e .
    ```
 
 4. Validate the installation
