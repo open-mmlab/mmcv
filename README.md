@@ -31,7 +31,7 @@ English | [简体中文](README_zh-CN.md)
 
 ## Introduction
 
-MMCV is a foundational library for computer vision research and it provides the following functionalities.
+MMCV is a foundational library for computer vision research and it provides the following functionalities:
 
 - [Universal IO APIs](https://mmcv.readthedocs.io/en/latest/understand_mmcv/io.html)
 - [Image/Video processing](https://mmcv.readthedocs.io/en/latest/understand_mmcv/data_process.html)
@@ -41,7 +41,7 @@ MMCV is a foundational library for computer vision research and it provides the 
 - [Various CNN architectures](https://mmcv.readthedocs.io/en/latest/understand_mmcv/cnn.html)
 - [High-quality implementation of common CPU and CUDA ops](https://mmcv.readthedocs.io/en/latest/understand_mmcv/ops.html)
 
-It supports the following systems.
+It supports the following systems:
 
 - Linux
 - Windows
@@ -55,7 +55,7 @@ Note: MMCV requires Python 3.6+.
 
 There are two versions of MMCV:
 
-- **mmcv-full**: comprehensive, with full features and various CPU and CUDA ops out of box. It takes longer time to build.
+- **mmcv-full**: comprehensive, with full features and various CPU and CUDA ops out of the box. It takes longer time to build.
 - **mmcv**: lite, without CPU and CUDA ops but all other features, similar to mmcv\<1.0.0. It is useful when you do not need those CUDA ops.
 
 **Note**: Do not install both versions in the same environment, otherwise you may encounter errors like `ModuleNotFound`. You need to uninstall one before installing the other. `Installing the full version is highly recommended if CUDA is available`.
@@ -64,14 +64,14 @@ There are two versions of MMCV:
 
 Before installing mmcv-full, make sure that PyTorch has been successfully installed following the [PyTorch official installation guide](https://github.com/pytorch/pytorch#installation).
 
-The command to install mmcv-full on Linux and Windows platforms is as follows (if your system is macOS, please refer to [build mmcv-full from source](https://mmcv.readthedocs.io/en/latest/get_started/build.html#macos-mmcv-full))
+The command to install mmcv-full on Linux or Windows platforms is as follows (if your system is macOS, please refer to [build mmcv-full from source](https://mmcv.readthedocs.io/en/latest/get_started/build.html#macos-mmcv-full))
 
 ```bash
 pip install -U openmim
 mim install mmcv-full
 ```
 
-If need to specify the version of mmcv-full, you can use the following command
+If you need to specify the version of mmcv-full, you can use the following command
 
 ```bash
 mim install mmcv-full==1.5.0

@@ -114,7 +114,7 @@ pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 3. 开始编译
 
    ```bash
-   CC=clang CXX=clang++ CFLAGS='-stdlib=libc++' MMCV_WITH_OPS=1 pip install -e .
+   MMCV_WITH_OPS=1 pip install -e .
    ```
 
 4. 验证安装
@@ -123,7 +123,7 @@ pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
    python .dev_scripts/check_installation.py
    ```
 
-   如果上述命令没有报错，说明安装成功。如有报错，请查看[问题解决页面](https://mmcv.readthedocs.io/zh_CN/latest/faq.html#id2)是否已经有解决方案。
+   如果上述命令没有报错，说明安装成功。如有报错，请查看[问题解决页面](../faq.md)是否已经有解决方案。
 
    如果没有找到解决方案，欢迎提 [issue](https://github.com/open-mmlab/mmcv/issues)。
 
@@ -296,7 +296,7 @@ mmcv-full 有两个版本：
 (mmcv) PS C:\Users\xxx\mmcv> python .dev_scripts/check_installation.py
 ```
 
-如果上述命令没有报错，说明安装成功。如有报错，请查看[问题解决页面](https://mmcv.readthedocs.io/zh_CN/latest/faq.html)是否已经有解决方案。
+如果上述命令没有报错，说明安装成功。如有报错，请查看[问题解决页面](../faq.md)是否已经有解决方案。
 如果没有找到解决方案，欢迎提 [issue](https://github.com/open-mmlab/mmcv/issues)。
 
 ### 编译 mmcv
@@ -321,3 +321,23 @@ mmcv-full 有两个版本：
    ```bash
    python -c 'import mmcv;print(mmcv.__version__)'
    ```
+
+### 在 IPU 机器编译 mmcv
+
+首先你需要有可用的 IPU 云机器，可以查看[这里](https://www.graphcore.ai/ipus-in-the-cloud)。
+
+#### 选项1: 使用 Docker
+
+1. 拉取镜像
+
+   ```bash
+   docker pull graphcore/pytorch
+   ```
+
+2. 编译 mmcv
+
+#### 选项2: 使用 SDK
+
+1. 编译 mmcv
+
+2. 参考 [IPU PyTorch document](https://docs.graphcore.ai/projects/poptorch-user-guide/en/latest/installation.html) 安装 sdk。

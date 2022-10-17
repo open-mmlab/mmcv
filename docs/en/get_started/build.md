@@ -36,7 +36,7 @@ you can first install it before installing MMCV to skip the installation of `ope
    pip install -r requirements/optional.txt
    ```
 
-3. Check the nvcc version (requires 9.2+. if no GPU, you can skip it)
+3. Check the nvcc version (requires 9.2+. Skip if no GPU available.)
 
    ```bash
    nvcc --version
@@ -74,7 +74,7 @@ you can first install it before installing MMCV to skip the installation of `ope
    python .dev_scripts/check_installation.py
    ```
 
-   If no error is reported by the above command, the installation is successful. If there is an error reported, please check [Frequently Asked Questions](https://mmcv.readthedocs.io/en/latest/faq.html) to see if there is already a solution.
+   If no error is reported by the above command, the installation is successful. If there is an error reported, please check [Frequently Asked Questions](../faq.md) to see if there is already a solution.
 
    If no solution is found, please feel free to open an [issue](https://github.com/open-mmlab/mmcv/issues).
 
@@ -109,7 +109,7 @@ If you are using a mac with an M1 chip, install the nightly version of PyTorch, 
    python .dev_scripts/check_installation.py
    ```
 
-   If no error is reported by the above command, the installation is successful. If there is an error reported, please check [Frequently Asked Questions](https://mmcv.readthedocs.io/en/latest/faq.html) to see if there is already a solution.
+   If no error is reported by the above command, the installation is successful. If there is an error reported, please check [Frequently Asked Questions](../faq.md) to see if there is already a solution.
 
    If no solution is found, please feel free to open an [issue](https://github.com/open-mmlab/mmcv/issues).
 
@@ -137,7 +137,7 @@ Install them first.
 You should know how to set up environment variables, especially `Path`, on Windows. The following instruction relies heavily on this skill.
 ```
 
-#### Common steps
+##### Common steps
 
 1. Launch Anaconda prompt from Windows Start menu
 
@@ -178,13 +178,7 @@ You should know how to set up environment variables, especially `Path`, on Windo
    (mmcv) PS C:\Users\xxx\mmcv> pip install -r requirements/runtime.txt
    ```
 
-7. It is recommended to install `ninja` to speed up the compilation
-
-   ```bash
-   (mmcv) PS C:\Users\xxx\mmcv> pip install -r requirements/optional.txt
-   ```
-
-8. Set up MSVC compiler
+7. Set up MSVC compiler
 
    Set Environment variable, add `C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\bin\Hostx86\x64` to `PATH`, so that `cl.exe` will be available in prompt, as shown below.
 
@@ -200,7 +194,7 @@ You should know how to set up environment variables, especially `Path`, on Windo
 
    You may want to change the system language to English because pytorch will parse text output from `cl.exe` to check its version. However only utf-8 is recognized. Navigate to Control Panel -> Region -> Administrative -> Language for Non-Unicode programs and change it to English.
 
-#### Build and install MMCV
+##### Build and install MMCV
 
 mmcv-full can be built in two ways:
 
@@ -212,7 +206,7 @@ mmcv-full can be built in two ways:
 
    Both x86 and CUDA codes of `ops` module will be compiled. The compiled version can be run on both CPU and CUDA-enabled GPU (if implemented).
 
-##### CPU version
+###### CPU version
 
 1. Set up environment variables
 
@@ -227,7 +221,7 @@ mmcv-full can be built in two ways:
    (mmcv) PS C:\Users\xxx\mmcv> python setup.py develop
    ```
 
-##### GPU version
+###### GPU version
 
 2. Make sure `CUDA_PATH` or `CUDA_HOME` is already set in `envs` via `ls env:`, desired output is shown as below:
 
@@ -288,7 +282,7 @@ mmcv-full can be built in two ways:
 (mmcv) PS C:\Users\xxx\mmcv> python .dev_scripts/check_installation.py
 ```
 
-If no error is reported by the above command, the installation is successful. If there is an error reported, please check [Frequently Asked Questions](https://mmcv.readthedocs.io/en/latest/faq.html) to see if there is already a solution.
+If no error is reported by the above command, the installation is successful. If there is an error reported, please check [Frequently Asked Questions](../faq.md) to see if there is already a solution.
 If no solution is found, please feel free to open an [issue](https://github.com/open-mmlab/mmcv/issues).
 
 ### Build mmcv
@@ -314,7 +308,7 @@ If you need to use PyTorch-related modules, make sure PyTorch has been successfu
    python -c 'import mmcv;print(mmcv.__version__)'
    ```
 
-### Build mmcv on IPU machine
+### Build mmcv-full on IPU machine
 
 Firstly, you need to apply for an IPU cloud machine, see [here](https://www.graphcore.ai/ipus-in-the-cloud).
 

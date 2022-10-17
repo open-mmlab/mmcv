@@ -34,7 +34,7 @@ pip install -U openmim
 mim install mmcv-full
 ```
 
-If you find that the above installation command does not use a pre-built package ending with `.whl` but a source package ending with `.tar.gz`, you may not have a pre-build package corresponding to the PyTorch or CUDA or mmcv-full version, in which case you can [build mmcv-full from source](https://mmcv.readthedocs.io/en/latest/get_started/build.html).
+If you find that the above installation command does not use a pre-built package ending with `.whl` but a source package ending with `.tar.gz`, you may not have a pre-build package corresponding to the PyTorch or CUDA or mmcv-full version, in which case you can [build mmcv-full from source](build.md).
 
 <details>
 <summary>Installation log using pre-built packages</summary>
@@ -307,7 +307,7 @@ Select the appropriate installation command depending on the type of system, CUD
 </script>
 </html>
 
-If you do not find a corresponding version in the dropdown box above, you probably do not have a pre-built package corresponding to the PyTorch or CUDA or mmcv-full version, at which point you can [build mmcv-full from source](https://mmcv.readthedocs.io/en/latest/get_started/build.html).
+If you do not find a corresponding version in the dropdown box above, you probably do not have a pre-built package corresponding to the PyTorch or CUDA or mmcv-full version, at which point you can [build mmcv-full from source](build.md).
 
 :::{note}
 mmcv-full is only compiled on PyTorch 1.x.0 because the compatibility
