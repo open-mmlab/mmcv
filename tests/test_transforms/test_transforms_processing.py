@@ -816,11 +816,11 @@ class TestRandomFlip:
 
         # horizontal flip and swap label pair
         TRANSFORMS = RandomFlip([1.0], ['horizontal'],
-                                swap_label_pairs=[[0, 1]])
+                                swap_seg_labels=[[0, 1]])
         results_update = TRANSFORMS.transform(copy.deepcopy(results))
         assert (results_update['gt_seg_map'] == np.array([[0, 1], [3,
                                                                    2]])).all()
-        assert results_update['swap_label_pairs'] == [[0, 1]]
+        assert results_update['swap_seg_labels'] == [[0, 1]]
 
         TRANSFORMS = RandomFlip(0.0)
         results_update = TRANSFORMS.transform(copy.deepcopy(results))
@@ -843,7 +843,7 @@ class TestRandomFlip:
 
         # swap pair is invalid
         with pytest.raises(AssertionError):
-            TRANSFORMS = RandomFlip(1.0, swap_label_pairs='invalid')
+            TRANSFORMS = RandomFlip(1.0, swap_seg_labels='invalid')
             results_update = TRANSFORMS._flip_seg_map(results['gt_seg_map'],
                                                       'horizontal')
 
