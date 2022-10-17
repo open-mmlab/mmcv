@@ -56,9 +56,11 @@ class ChamferDistanceFunction(Function):
 
     @staticmethod
     @once_differentiable
-    def backward(ctx, grad_dist1: Tensor, grad_dist2: Tensor,
-                 grad_idx1: Tensor,
-                 grad_idx2: Tensor) -> Tuple[Tensor, Tensor]:
+    def backward(ctx,
+                 grad_dist1: Tensor,
+                 grad_dist2: Tensor,
+                 grad_idx1=None,
+                 grad_idx2=None) -> Tuple[Tensor, Tensor]:
         """
 
         Args:
@@ -66,10 +68,6 @@ class ChamferDistanceFunction(Function):
                 (xyz1 to xyz2) with shape (B, N).
             grad_dist2 (Tensor): Gradient of chamfer distance
                 (xyz2 to xyz1) with shape (B, N).
-            grad_idx1 (Tensor): Index of chamfer distance (xyz1 to xyz2)
-                with shape (B, N), which be used in compute gradient.
-            grad_idx2 (Tensor): Index of chamfer distance (xyz2 to xyz2)
-                with shape (B, N), which be used in compute gradient.
 
         Returns:
             Tuple[Tensor, Tensor]:
@@ -86,9 +84,9 @@ class ChamferDistanceFunction(Function):
         grad_xyz1 = torch.zeros(xyz1.size()).to(device)
         grad_xyz2 = torch.zeros(xyz2.size()).to(device)
 
-        ext_module.chamfer_distance_backward(xyz1, xyz2, grad_xyz1, grad_xyz2,
-                                             grad_dist1, grad_dist2, idx1,
-                                             idx2)
+        ext_module.chamfer_distance_backward(xyz1, xyz2, idx1, idx2,
+                                             grad_dist1, grad_dist2, grad_xyz1,
+                                             grad_xyz2)
         return grad_xyz1, grad_xyz2
 
 

@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Dict, Optional
+
 from torch import nn
 
 from .registry import CONV_LAYERS
@@ -9,7 +11,7 @@ CONV_LAYERS.register_module('Conv3d', module=nn.Conv3d)
 CONV_LAYERS.register_module('Conv', module=nn.Conv2d)
 
 
-def build_conv_layer(cfg, *args, **kwargs):
+def build_conv_layer(cfg: Optional[Dict], *args, **kwargs) -> nn.Module:
     """Build convolution layer.
 
     Args:

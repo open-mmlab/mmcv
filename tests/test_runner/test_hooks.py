@@ -152,7 +152,7 @@ def test_checkpoint_hook(tmp_path):
         runner.run([loader], [('train', 1)])
         basename = osp.basename(runner.work_dir.rstrip(osp.sep))
         assert runner.meta['hook_msgs']['last_ckpt'] == \
-               '/'.join([out_dir, basename, 'epoch_4.pth'])
+            '/'.join([out_dir, basename, 'epoch_4.pth'])
     mock_put.assert_called()
     mock_remove.assert_called()
     mock_isfile.assert_called()
@@ -183,7 +183,7 @@ def test_checkpoint_hook(tmp_path):
         runner.run([loader], [('train', 1)])
         basename = osp.basename(runner.work_dir.rstrip(osp.sep))
         assert runner.meta['hook_msgs']['last_ckpt'] == \
-               '/'.join([out_dir, basename, 'iter_4.pth'])
+            '/'.join([out_dir, basename, 'iter_4.pth'])
     mock_put.assert_called()
     mock_remove.assert_called()
     mock_isfile.assert_called()
@@ -332,7 +332,8 @@ def test_pavi_hook():
     loader = DataLoader(torch.ones((5, 2)))
     runner = _build_demo_runner()
     runner.meta = dict(config_dict=dict(lr=0.02, gpu_ids=range(1)))
-    hook = PaviLoggerHook(add_graph=False, add_last_ckpt=True)
+    hook = PaviLoggerHook(
+        add_graph_kwargs=None, add_last_ckpt=False, add_ckpt_kwargs=None)
     runner.register_hook(hook)
     runner.run([loader, loader], [('train', 1), ('val', 1)])
     shutil.rmtree(runner.work_dir)
@@ -342,15 +343,113 @@ def test_pavi_hook():
         'learning_rate': 0.02,
         'momentum': 0.95
     }, 1)
+
+
+def test_pavi_hook_epoch_based():
+    """Test setting start epoch and interval epoch."""
+    sys.modules['pavi'] = MagicMock()
+
+    loader = DataLoader(torch.ones((5, 2)))
+    runner = _build_demo_runner(max_epochs=6)
+    runner.meta = dict(config_dict=dict(lr=0.02, gpu_ids=range(1)))
+    hook = PaviLoggerHook(
+        add_graph_kwargs={
+            'active': False,
+            'start': 0,
+            'interval': 1
+        },
+        add_last_ckpt=True,
+        add_ckpt_kwargs={
+            'active': True,
+            'start': 1,
+            'interval': 2
+        })
+    runner.register_hook(hook)
+    runner.run([loader, loader], [('train', 1), ('val', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    assert hasattr(hook, 'writer')
+
     # in Windows environment, the latest checkpoint is copied from epoch_1.pth
     if platform.system() == 'Windows':
-        snapshot_file_path = osp.join(runner.work_dir, 'latest.pth')
+        final_file_path = osp.join(runner.work_dir, 'latest.pth')
     else:
-        snapshot_file_path = osp.join(runner.work_dir, 'epoch_1.pth')
-    hook.writer.add_snapshot_file.assert_called_with(
-        tag=runner.work_dir.split('/')[-1],
-        snapshot_file_path=snapshot_file_path,
-        iteration=1)
+        final_file_path = osp.join(runner.work_dir, 'epoch_6.pth')
+    calls = [
+        call(
+            tag=runner.work_dir.split('/')[-1],
+            snapshot_file_path=osp.join(runner.work_dir, 'epoch_1.pth'),
+            iteration=1),
+        call(
+            tag=runner.work_dir.split('/')[-1],
+            snapshot_file_path=osp.join(runner.work_dir, 'epoch_3.pth'),
+            iteration=3),
+        call(
+            tag=runner.work_dir.split('/')[-1],
+            snapshot_file_path=osp.join(runner.work_dir, 'epoch_5.pth'),
+            iteration=5),
+        call(
+            tag=runner.work_dir.split('/')[-1],
+            snapshot_file_path=osp.join(runner.work_dir, final_file_path),
+            iteration=6),
+    ]
+    hook.writer.add_snapshot_file.assert_has_calls(calls, any_order=False)
+
+
+def test_pavi_hook_iter_based():
+    """Test setting start epoch and interval epoch."""
+    sys.modules['pavi'] = MagicMock()
+
+    loader = DataLoader(torch.ones((5, 2)))
+    runner = _build_demo_runner(
+        'IterBasedRunner', max_iters=15, max_epochs=None)
+    runner.meta = dict()
+    hook = PaviLoggerHook(
+        by_epoch=False,
+        add_graph_kwargs={
+            'active': False,
+            'start': 0,
+            'interval': 1
+        },
+        add_last_ckpt=True,
+        add_ckpt_kwargs={
+            'active': True,
+            'start': 0,
+            'interval': 4
+        })
+
+    runner.register_hook(CheckpointHook(interval=4, by_epoch=False))
+    runner.register_hook(hook)
+
+    runner.run([loader], [('train', 1)])
+    shutil.rmtree(runner.work_dir)
+
+    assert hasattr(hook, 'writer')
+
+    # in Windows environment, the latest checkpoint is copied from epoch_1.pth
+    if platform.system() == 'Windows':
+        final_file_path = osp.join(runner.work_dir, 'latest.pth')
+    else:
+        final_file_path = osp.join(runner.work_dir, 'iter_15.pth')
+    calls = [
+        call(
+            tag=runner.work_dir.split('/')[-1],
+            snapshot_file_path=osp.join(runner.work_dir, 'iter_4.pth'),
+            iteration=4),
+        call(
+            tag=runner.work_dir.split('/')[-1],
+            snapshot_file_path=osp.join(runner.work_dir, 'iter_8.pth'),
+            iteration=8),
+        call(
+            tag=runner.work_dir.split('/')[-1],
+            snapshot_file_path=osp.join(runner.work_dir, 'iter_12.pth'),
+            iteration=12),
+        call(
+            tag=runner.work_dir.split('/')[-1],
+            snapshot_file_path=osp.join(runner.work_dir, final_file_path),
+            iteration=15),
+    ]
+    hook.writer.add_snapshot_file.assert_has_calls(calls, any_order=False)
 
 
 def test_sync_buffers_hook():
@@ -1566,7 +1665,6 @@ def test_dvclive_hook_model_file(tmp_path):
     hook = DvcliveLoggerHook(model_file=osp.join(runner.work_dir, 'model.pth'))
     runner.register_hook(hook)
 
-    loader = torch.utils.data.DataLoader(torch.ones((5, 2)))
     loader = DataLoader(torch.ones((5, 2)))
 
     runner.run([loader, loader], [('train', 1), ('val', 1)])
@@ -1574,6 +1672,16 @@ def test_dvclive_hook_model_file(tmp_path):
     assert osp.exists(osp.join(runner.work_dir, 'model.pth'))
 
     shutil.rmtree(runner.work_dir)
+
+
+def test_dvclive_hook_pass_logger(tmp_path):
+    sys.modules['dvclive'] = MagicMock()
+    from dvclive import Live
+    logger = Live()
+
+    sys.modules['dvclive'] = MagicMock()
+    assert DvcliveLoggerHook().dvclive is not logger
+    assert DvcliveLoggerHook(dvclive=logger).dvclive is logger
 
 
 def test_clearml_hook():
@@ -1827,6 +1935,48 @@ def test_gradient_cumulative_optimizer_hook():
     optimizer_hook = GradientCumulativeOptimizerHook(
         grad_clip=dict(max_norm=0.2), cumulative_iters=3)
     assert optimizer_hook.has_batch_norm(model)
+
+    def calc_loss_factors(runner):
+        optimizer_hook = GradientCumulativeOptimizerHook(
+            grad_clip=dict(max_norm=0.2), cumulative_iters=3)
+        optimizer_hook._init(runner)
+        loss_factors = []
+        for current_iter in range(runner._iter, runner._max_iters):
+            runner._iter = current_iter
+            loss_factor = optimizer_hook._get_loss_factor(runner)
+            loss_factors.append(loss_factor)
+        shutil.rmtree(runner.work_dir)
+
+        return loss_factors
+
+    # test loss_factor with EpochBasedRunner
+    runner = build_toy_runner(dict(type='EpochBasedRunner', max_epochs=2))
+    runner._max_iters = 6  # max_epochs * len(data_loader)
+    assert calc_loss_factors(runner) == [3] * 6
+    runner = build_toy_runner(dict(type='EpochBasedRunner', max_epochs=2))
+    runner._max_iters = 8  # max_epochs * len(data_loader)
+    assert calc_loss_factors(runner) == [3] * 6 + [2, 2]
+    runner = build_toy_runner(dict(type='EpochBasedRunner', max_epochs=2))
+    runner._max_iters = 10  # max_epochs * len(data_loader)
+    assert calc_loss_factors(runner) == [3] * 9 + [1]
+    runner = build_toy_runner(dict(type='EpochBasedRunner', max_epochs=2))
+    runner._max_iters = 10  # max_epochs * len(data_loader)
+    runner._iter = 5  # resume
+    assert calc_loss_factors(runner) == [3] * 4 + [1]
+
+    # test loss_factor with IterBasedRunner
+    runner = build_toy_runner(dict(type='IterBasedRunner', max_iters=6))
+    assert calc_loss_factors(runner) == [3] * 6
+    runner = build_toy_runner(dict(type='IterBasedRunner', max_iters=7))
+    assert calc_loss_factors(runner) == [3] * 6 + [1]
+    runner = build_toy_runner(dict(type='IterBasedRunner', max_iters=8))
+    assert calc_loss_factors(runner) == [3] * 6 + [2, 2]
+    runner = build_toy_runner(dict(type='IterBasedRunner', max_iters=6))
+    runner._iter = 3  # resume
+    assert calc_loss_factors(runner) == [3] * 3
+    runner = build_toy_runner(dict(type='IterBasedRunner', max_iters=8))
+    runner._iter = 3  # resume
+    assert calc_loss_factors(runner) == [3] * 3 + [2, 2]
 
 
 @pytest.mark.skipif(

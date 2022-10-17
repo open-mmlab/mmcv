@@ -69,7 +69,6 @@ class Model(nn.Module):
 
 
 def _build_epoch_runner():
-
     model = Model()
     tmp_dir = tempfile.mkdtemp()
 
@@ -79,7 +78,6 @@ def _build_epoch_runner():
 
 
 def _build_iter_runner():
-
     model = Model()
     tmp_dir = tempfile.mkdtemp()
 

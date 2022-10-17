@@ -56,6 +56,8 @@ extensions = [
 
 myst_heading_anchors = 4
 
+myst_enable_extensions = ['colon_fence']
+
 autodoc_mock_imports = ['mmcv._ext', 'mmcv.utils.ext_loader', 'torchvision']
 
 # Add any paths that contain templates here, relative to this directory.

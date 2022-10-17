@@ -116,7 +116,8 @@ void bbox_overlaps(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
 void knn_forward(Tensor xyz_tensor, Tensor new_xyz_tensor, Tensor idx_tensor,
                  Tensor dist2_tensor, int b, int n, int m, int nsample);
 
-void iou3d_boxes_iou3d_forward(Tensor boxes_a, Tensor boxes_b, Tensor ans_iou);
+void iou3d_boxes_overlap_bev_forward(Tensor boxes_a, Tensor boxes_b,
+                                     Tensor ans_overlap);
 
 void iou3d_nms3d_forward(Tensor boxes, Tensor keep, Tensor keep_num,
                          float nms_overlap_thresh);
@@ -238,6 +239,18 @@ void tin_shift_backward(Tensor grad_output, Tensor shift, Tensor grad_input);
 void ball_query_forward(Tensor new_xyz_tensor, Tensor xyz_tensor,
                         Tensor idx_tensor, int b, int n, int m,
                         float min_radius, float max_radius, int nsample);
+
+void prroi_pool_forward(Tensor input, Tensor rois, Tensor output,
+                        int pooled_height, int pooled_width,
+                        float spatial_scale);
+
+void prroi_pool_backward(Tensor grad_output, Tensor rois, Tensor grad_input,
+                         int pooled_height, int pooled_width,
+                         float spatial_scale);
+
+void prroi_pool_coor_backward(Tensor output, Tensor grad_output, Tensor input,
+                              Tensor rois, Tensor grad_rois, int pooled_height,
+                              int pooled_width, float spatial_scale);
 
 template <unsigned NDim>
 std::vector<torch::Tensor> get_indice_pairs_forward(
@@ -406,9 +419,9 @@ void chamfer_distance_forward(const Tensor xyz1, const Tensor xyz2,
                               const Tensor idx1, const Tensor idx);
 
 void chamfer_distance_backward(const Tensor xyz1, const Tensor xyz2,
-                               Tensor gradxyz1, Tensor gradxyz2,
-                               Tensor graddist1, Tensor graddist2, Tensor idx1,
-                               Tensor idx2);
+                               Tensor idx1, Tensor idx2, Tensor graddist1,
+                               Tensor graddist2, Tensor gradxyz1,
+                               Tensor gradxyz2);
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
@@ -541,9 +554,9 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("m"), py::arg("nsample"), py::arg("xyz_tensor"),
         py::arg("new_xyz_tensor"), py::arg("idx_tensor"),
         py::arg("dist2_tensor"));
-  m.def("iou3d_boxes_iou3d_forward", &iou3d_boxes_iou3d_forward,
-        "iou3d_boxes_iou3d_forward", py::arg("boxes_a"), py::arg("boxes_b"),
-        py::arg("ans_iou"));
+  m.def("iou3d_boxes_overlap_bev_forward", &iou3d_boxes_overlap_bev_forward,
+        "iou3d_boxes_overlap_bev_forward", py::arg("boxes_a"),
+        py::arg("boxes_b"), py::arg("ans_iou"));
   m.def("iou3d_nms3d_forward", &iou3d_nms3d_forward, "iou3d_nms3d_forward",
         py::arg("boxes"), py::arg("keep"), py::arg("num_out"),
         py::arg("nms_overlap_thresh"));
@@ -825,6 +838,19 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("dist1"), py::arg("dist2"), py::arg("idx1"), py::arg("idx2"));
   m.def("chamfer_distance_backward", &chamfer_distance_backward,
         "chamfer_distance_backward", py::arg("xyz1"), py::arg("xyz2"),
-        py::arg("gradxyz1"), py::arg("gradxyz2"), py::arg("graddist1"),
-        py::arg("graddist2"), py::arg("idx1"), py::arg("idx2"));
+        py::arg("idx1"), py::arg("idx2"), py::arg("graddist1"),
+        py::arg("graddist2"), py::arg("gradxyz1"), py::arg("gradxyz2"));
+  m.def("prroi_pool_forward", &prroi_pool_forward, "prroi_pool forward",
+        py::arg("input"), py::arg("rois"), py::arg("output"),
+        py::arg("pooled_height"), py::arg("pooled_width"),
+        py::arg("spatial_scale"));
+  m.def("prroi_pool_backward", &prroi_pool_backward, "prroi_pool_backward",
+        py::arg("grad_output"), py::arg("rois"), py::arg("grad_input"),
+        py::arg("pooled_height"), py::arg("pooled_width"),
+        py::arg("spatial_scale"));
+  m.def("prroi_pool_coor_backward", &prroi_pool_coor_backward,
+        "prroi_pool_coor_backward", py::arg("output"), py::arg("grad_output"),
+        py::arg("input"), py::arg("rois"), py::arg("grad_rois"),
+        py::arg("pooled_height"), py::arg("pooled_width"),
+        py::arg("spatial_scale"));
 }

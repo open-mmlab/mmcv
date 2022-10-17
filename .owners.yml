@@ -5,10 +5,10 @@ assign:
   scedule:
     '*/1 * * * *'
   assignees:
-    - teamwong111
     - zhouzaida
-    - imabackstabber
+    - ice-tong
     - HAOCHENYE
-    - teamwong111
+    - zhouzaida
+    - ice-tong
     - HAOCHENYE
     - zhouzaida

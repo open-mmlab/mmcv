@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 from torch.nn.parameter import Parameter
 
-from mmcv.utils import TORCH_VERSION, digit_version
+from mmcv.utils import IS_NPU_AVAILABLE, TORCH_VERSION, digit_version
 from .dist_utils import allreduce_grads as _allreduce_grads
 
 try:
@@ -18,7 +18,10 @@ try:
     # and used; otherwise, auto fp16 will adopt mmcv's implementation.
     # Note that when PyTorch >= 1.6.0, we still cast tensor types to fp16
     # manually, so the behavior may not be consistent with real amp.
-    from torch.cuda.amp import autocast
+    if IS_NPU_AVAILABLE:
+        from torch.npu.amp import autocast
+    else:
+        from torch.cuda.amp import autocast
 except ImportError:
     pass
 
@@ -103,10 +106,10 @@ def auto_fp16(
         >>>         pass
     """
 
-    def auto_fp16_wrapper(old_func):
+    def auto_fp16_wrapper(old_func: Callable) -> Callable:
 
         @functools.wraps(old_func)
-        def new_func(*args, **kwargs):
+        def new_func(*args, **kwargs) -> Callable:
             # check if the module has set the attribute `fp16_enabled`, if not,
             # just fallback to the original method.
             if not isinstance(args[0], supported_types):
@@ -195,7 +198,7 @@ def force_fp32(apply_to: Optional[Iterable] = None,
     def force_fp32_wrapper(old_func):
 
         @functools.wraps(old_func)
-        def new_func(*args, **kwargs):
+        def new_func(*args, **kwargs) -> Callable:
             # check if the module has set the attribute `fp16_enabled`, if not,
             # just fallback to the original method.
             if not isinstance(args[0], torch.nn.Module):
@@ -380,7 +383,7 @@ class LossScaler:
                 return True
         return False
 
-    def _has_inf_or_nan(x):
+    def _has_inf_or_nan(x: torch.Tensor) -> bool:
         """Check if params contain NaN."""
         try:
             cpu_sum = float(x.float().sum())
@@ -407,7 +410,7 @@ class LossScaler:
                 self.cur_scale *= self.scale_factor
         self.cur_iter += 1
 
-    def state_dict(self):
+    def state_dict(self) -> dict:
         """Returns the state of the scaler as a :class:`dict`."""
         return dict(
             cur_scale=self.cur_scale,
@@ -431,5 +434,5 @@ class LossScaler:
         self.scale_window = state_dict['scale_window']
 
     @property
-    def loss_scale(self):
+    def loss_scale(self) -> float:
         return self.cur_scale

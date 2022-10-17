@@ -21,15 +21,15 @@ MMCV 是一个面向计算机视觉的基础库，它支持了很多开源项目
 - [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMLab 图片视频生成模型工具箱
 - [MMDeploy](https://github.com/open-mmlab/mmdeploy): OpenMMLab 模型部署框架
 
-MMCV 提供了如下众多功能：
+MMCV 提供了以下功能：
 
-- 通用的 IO 接口
-- 图像和视频处理
-- 图像和标注结果可视化
-- 常用小工具（进度条，计时器等）
-- 基于 PyTorch 的通用训练框架
-- 多种 CNN 网络结构
-- 高质量实现的常见 CUDA 算子
+- [通用的 IO 接口](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/io.html)
+- [图像和视频处理](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/data_process.html)
+- [图像和标注结果可视化](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/visualization.html)
+- [常用小工具（进度条，计时器等）](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/utils.html)
+- [基于 PyTorch 的通用训练框架](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/runner.html)
+- [多种 CNN 网络结构](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/cnn.html)
+- [高质量实现的 CPU 和 CUDA 算子](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/ops.html)
 
 MMCV 支持以下的系统：
 
@@ -37,7 +37,7 @@ MMCV 支持以下的系统：
 - Windows
 - macOS
 
-如想了解更多特性和使用，请参考[文档](https://mmcv.readthedocs.io/zh_CN/latest)。
+欢迎查看[文档](http://mmcv.readthedocs.io/zh_CN/latest)了解更多特性和用法。
 
 ```{note}
 MMCV 需要 Python 3.6 以上版本。

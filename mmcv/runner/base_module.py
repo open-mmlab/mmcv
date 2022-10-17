@@ -50,10 +50,10 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         #     self.init_cfg = dict(type='Pretrained', checkpoint=pretrained)
 
     @property
-    def is_init(self):
+    def is_init(self) -> bool:
         return self._is_init
 
-    def init_weights(self):
+    def init_weights(self) -> None:
         """Initialize the weights."""
 
         is_top_level_module = False
@@ -68,7 +68,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
             #       which indicates whether the parameter has been modified.
             # this attribute would be deleted after all parameters
             # is initialized.
-            self._params_init_info = defaultdict(dict)
+            self._params_init_info: defaultdict = defaultdict(dict)
             is_top_level_module = True
 
             # Initialize the `_params_init_info`,
@@ -134,7 +134,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
                 del sub_module._params_init_info
 
     @master_only
-    def _dump_init_info(self, logger_name: str):
+    def _dump_init_info(self, logger_name: str) -> None:
         """Dump the initialization information to a file named
         `initialization.log.json` in workdir.
 

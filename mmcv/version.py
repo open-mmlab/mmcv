@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-__version__ = '1.5.2'
+__version__ = '1.6.2'
 
 
 def parse_version_info(version_str: str, length: int = 4) -> tuple:

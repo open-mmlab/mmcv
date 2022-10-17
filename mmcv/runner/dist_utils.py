@@ -13,10 +13,10 @@ from torch import distributed as dist
 from torch._utils import (_flatten_dense_tensors, _take_tensors,
                           _unflatten_dense_tensors)
 
-from mmcv.utils import IS_MLU_AVAILABLE
+from mmcv.utils import IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
 
 
-def _find_free_port():
+def _find_free_port() -> str:
     # Copied from https://github.com/facebookresearch/detectron2/blob/main/detectron2/engine/launch.py # noqa: E501
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # Binding to port 0 will cause the OS to find an available port for us
@@ -27,7 +27,7 @@ def _find_free_port():
     return port
 
 
-def _is_free_port(port):
+def _is_free_port(port: int) -> bool:
     ips = socket.gethostbyname_ex(socket.gethostname())[-1]
     ips.append('localhost')
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -47,7 +47,7 @@ def init_dist(launcher: str, backend: str = 'nccl', **kwargs) -> None:
         raise ValueError(f'Invalid launcher type: {launcher}')
 
 
-def _init_dist_pytorch(backend: str, **kwargs):
+def _init_dist_pytorch(backend: str, **kwargs) -> None:
     # TODO: use local_rank instead of rank % num_gpus
     rank = int(os.environ['RANK'])
     if IS_MLU_AVAILABLE:
@@ -58,13 +58,21 @@ def _init_dist_pytorch(backend: str, **kwargs):
             rank=rank,
             world_size=int(os.environ['WORLD_SIZE']),
             **kwargs)
+    elif IS_NPU_AVAILABLE:
+        import torch_npu  # noqa: F401
+        torch.npu.set_device(rank)
+        dist.init_process_group(
+            backend='hccl',
+            rank=rank,
+            world_size=int(os.environ['WORLD_SIZE']),
+            **kwargs)
     else:
         num_gpus = torch.cuda.device_count()
         torch.cuda.set_device(rank % num_gpus)
         dist.init_process_group(backend=backend, **kwargs)
 
 
-def _init_dist_mpi(backend: str, **kwargs):
+def _init_dist_mpi(backend: str, **kwargs) -> None:
     local_rank = int(os.environ['OMPI_COMM_WORLD_LOCAL_RANK'])
     torch.cuda.set_device(local_rank)
     if 'MASTER_PORT' not in os.environ:
@@ -77,7 +85,7 @@ def _init_dist_mpi(backend: str, **kwargs):
     dist.init_process_group(backend=backend, **kwargs)
 
 
-def _init_dist_slurm(backend: str, port: Optional[int] = None):
+def _init_dist_slurm(backend: str, port: Optional[int] = None) -> None:
     """Initialize slurm distributed training environment.
 
     If argument ``port`` is not specified, then the master port will be system
@@ -187,7 +195,9 @@ def allreduce_grads(params: List[torch.nn.Parameter],
             dist.all_reduce(tensor.div_(world_size))
 
 
-def _allreduce_coalesced(tensors, world_size, bucket_size_mb=-1):
+def _allreduce_coalesced(tensors: torch.Tensor,
+                         world_size: int,
+                         bucket_size_mb: int = -1) -> None:
     if bucket_size_mb > 0:
         bucket_size_bytes = bucket_size_mb * 1024 * 1024
         buckets = _take_tensors(tensors, bucket_size_bytes)

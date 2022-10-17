@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
+from typing import Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -35,16 +36,16 @@ class ModulatedDeformConv2dFunction(Function):
 
     @staticmethod
     def forward(ctx,
-                input,
-                offset,
-                mask,
-                weight,
-                bias=None,
-                stride=1,
-                padding=0,
-                dilation=1,
-                groups=1,
-                deform_groups=1):
+                input: torch.Tensor,
+                offset: torch.Tensor,
+                mask: torch.Tensor,
+                weight: nn.Parameter,
+                bias: Optional[nn.Parameter] = None,
+                stride: int = 1,
+                padding: int = 0,
+                dilation: int = 1,
+                groups: int = 1,
+                deform_groups: int = 1) -> torch.Tensor:
         if input is not None and input.dim() != 4:
             raise ValueError(
                 f'Expected 4D tensor as input, got {input.dim()}D tensor \
@@ -66,7 +67,8 @@ class ModulatedDeformConv2dFunction(Function):
         # whatever the pytorch version is.
         input = input.type_as(offset)
         weight = weight.type_as(input)
-        bias = bias.type_as(input)
+        bias = bias.type_as(input)  # type: ignore
+        mask = mask.type_as(input)
         ctx.save_for_backward(input, offset, mask, weight, bias)
         output = input.new_empty(
             ModulatedDeformConv2dFunction._output_size(ctx, input, weight))
@@ -95,7 +97,7 @@ class ModulatedDeformConv2dFunction(Function):
 
     @staticmethod
     @once_differentiable
-    def backward(ctx, grad_output):
+    def backward(ctx, grad_output: torch.Tensor) -> tuple:
         input, offset, mask, weight, bias = ctx.saved_tensors
         grad_input = torch.zeros_like(input)
         grad_offset = torch.zeros_like(offset)
@@ -159,15 +161,15 @@ class ModulatedDeformConv2d(nn.Module):
     @deprecated_api_warning({'deformable_groups': 'deform_groups'},
                             cls_name='ModulatedDeformConv2d')
     def __init__(self,
-                 in_channels,
-                 out_channels,
-                 kernel_size,
-                 stride=1,
-                 padding=0,
-                 dilation=1,
-                 groups=1,
-                 deform_groups=1,
-                 bias=True):
+                 in_channels: int,
+                 out_channels: int,
+                 kernel_size: Union[int, Tuple[int]],
+                 stride: int = 1,
+                 padding: int = 0,
+                 dilation: int = 1,
+                 groups: int = 1,
+                 deform_groups: int = 1,
+                 bias: Union[bool, str] = True):
         super().__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -199,7 +201,8 @@ class ModulatedDeformConv2d(nn.Module):
         if self.bias is not None:
             self.bias.data.zero_()
 
-    def forward(self, x, offset, mask):
+    def forward(self, x: torch.Tensor, offset: torch.Tensor,
+                mask: torch.Tensor) -> torch.Tensor:
         return modulated_deform_conv2d(x, offset, mask, self.weight, self.bias,
                                        self.stride, self.padding,
                                        self.dilation, self.groups,
@@ -238,13 +241,13 @@ class ModulatedDeformConv2dPack(ModulatedDeformConv2d):
             bias=True)
         self.init_weights()
 
-    def init_weights(self):
+    def init_weights(self) -> None:
         super().init_weights()
         if hasattr(self, 'conv_offset'):
             self.conv_offset.weight.data.zero_()
             self.conv_offset.bias.data.zero_()
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # type: ignore
         out = self.conv_offset(x)
         o1, o2, mask = torch.chunk(out, 3, dim=1)
         offset = torch.cat((o1, o2), dim=1)
