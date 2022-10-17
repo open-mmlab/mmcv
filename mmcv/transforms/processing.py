@@ -1035,7 +1035,8 @@ class RandomFlip(BaseTransform):
             corresponding direction. Defaults to 'horizontal'.
         swap_seg_labels (list, optional): The label pair need to be swapped
             for ground truth, like 'left arm' and 'right arm' need to be
-            swapped after horizontal flipping.
+            swapped after horizontal flipping. For example, ``[(1, 5)]``,
+            where 1/5 is the label of the left/right arm. Defaults to None.
     """
 
     def __init__(self,
