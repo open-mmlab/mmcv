@@ -1033,9 +1033,9 @@ class RandomFlip(BaseTransform):
             If input is a list, the length must equal ``prob``. Each
             element in ``prob`` indicates the flip probability of
             corresponding direction. Defaults to 'horizontal'.
-        swap_label_pairs(list, optional): The label pair need to be swap for
-            ground truth, like 'left arm' and 'right arm' need to be swap
-            after horizontal flip.
+        swap_label_pairs (list, optional): The label pair need to be swapped
+            for ground truth, like 'left arm' and 'right arm' need to be
+            swapped after horizontal flipping.
     """
 
     def __init__(self,
@@ -1067,8 +1067,8 @@ class RandomFlip(BaseTransform):
         if isinstance(prob, list):
             assert len(prob) == len(self.direction)
 
-    def flip_bbox(self, bboxes: np.ndarray, img_shape: Tuple[int, int],
-                  direction: str) -> np.ndarray:
+    def _flip_bbox(self, bboxes: np.ndarray, img_shape: Tuple[int, int],
+                   direction: str) -> np.ndarray:
         """Flip bboxes horizontally.
 
         Args:
@@ -1099,8 +1099,9 @@ class RandomFlip(BaseTransform):
                   or 'diagonal', but got '{direction}'")
         return flipped
 
-    def flip_keypoints(self, keypoints: np.ndarray, img_shape: Tuple[int, int],
-                       direction: str) -> np.ndarray:
+    def _flip_keypoints(self, keypoints: np.ndarray, img_shape: Tuple[int,
+                                                                      int],
+                        direction: str) -> np.ndarray:
         """Flip keypoints horizontally, vertically or diagonally.
 
         Args:
@@ -1130,7 +1131,7 @@ class RandomFlip(BaseTransform):
         flipped = np.concatenate([keypoints, meta_info], axis=-1)
         return flipped
 
-    def flip_seg_map(self, seg_map: dict, direction: str) -> np.ndarray:
+    def _flip_seg_map(self, seg_map: dict, direction: str) -> np.ndarray:
         """Flip segmentation map horizontally, vertically or diagonally.
 
         Args:
@@ -1138,7 +1139,7 @@ class RandomFlip(BaseTransform):
             direction (str): Flip direction. Options are 'horizontal',
                 'vertical'.
         Returns:
-            numpy.ndarray: Flipped keypoints.
+            numpy.ndarray: Flipped segmentation map.
         """
         seg_map = mmcv.imflip(seg_map, direction=direction)
         if self.swap_label_pairs is not None:
@@ -1191,18 +1192,18 @@ class RandomFlip(BaseTransform):
 
         # flip bboxes
         if results.get('gt_bboxes', None) is not None:
-            results['gt_bboxes'] = self.flip_bbox(results['gt_bboxes'],
-                                                  img_shape,
-                                                  results['flip_direction'])
+            results['gt_bboxes'] = self._flip_bbox(results['gt_bboxes'],
+                                                   img_shape,
+                                                   results['flip_direction'])
 
         # flip keypoints
         if results.get('gt_keypoints', None) is not None:
-            results['gt_keypoints'] = self.flip_keypoints(
+            results['gt_keypoints'] = self._flip_keypoints(
                 results['gt_keypoints'], img_shape, results['flip_direction'])
 
         # flip seg map
         if results.get('gt_seg_map', None) is not None:
-            results['gt_seg_map'] = self.flip_seg_map(
+            results['gt_seg_map'] = self._flip_seg_map(
                 results['gt_seg_map'], direction=results['flip_direction'])
             results['swap_label_pairs'] = self.swap_label_pairs
 

@@ -778,7 +778,7 @@ class TestRandomFlip:
             'gt_bboxes': np.array([[0, 1, 100, 101]]),
             'gt_keypoints': np.array([[[100, 100, 1.0]]]),
             # seg map flip is irrelative with image, so there is no requirement
-            # that the test seg map matches image.
+            # that gt_set_map of test data matches image.
             'gt_seg_map': np.array([[0, 1], [2, 3]])
         }
 
@@ -832,20 +832,20 @@ class TestRandomFlip:
         # flip direction is invalid in bbox flip
         with pytest.raises(ValueError):
             TRANSFORMS = RandomFlip(1.0)
-            results_update = TRANSFORMS.flip_bbox(results['gt_bboxes'],
-                                                  (224, 224), 'invalid')
+            results_update = TRANSFORMS._flip_bbox(results['gt_bboxes'],
+                                                   (224, 224), 'invalid')
 
         # flip direction is invalid in keypoints flip
         with pytest.raises(ValueError):
             TRANSFORMS = RandomFlip(1.0)
-            results_update = TRANSFORMS.flip_keypoints(results['gt_keypoints'],
-                                                       (224, 224), 'invalid')
+            results_update = TRANSFORMS._flip_keypoints(
+                results['gt_keypoints'], (224, 224), 'invalid')
 
         # swap pair is invalid
         with pytest.raises(AssertionError):
             TRANSFORMS = RandomFlip(1.0, swap_label_pairs='invalid')
-            results_update = TRANSFORMS.flip_seg_map(results['gt_seg_map'],
-                                                     'horizontal')
+            results_update = TRANSFORMS._flip_seg_map(results['gt_seg_map'],
+                                                      'horizontal')
 
     def test_repr(self):
         TRANSFORMS = RandomFlip(0.1)
