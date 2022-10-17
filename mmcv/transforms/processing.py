@@ -1025,21 +1025,25 @@ class RandomFlip(BaseTransform):
 
     - flip
     - flip_direction
+    - swap_seg_labels (optional)
 
     Args:
-         prob (float | list[float], optional): The flipping probability.
-             Defaults to None.
-         direction(str | list[str]): The flipping direction. Options
-             If input is a list, the length must equal ``prob``. Each
-             element in ``prob`` indicates the flip probability of
-             corresponding direction. Defaults to 'horizontal'.
+        prob (float | list[float], optional): The flipping probability.
+            Defaults to None.
+        direction(str | list[str]): The flipping direction. Options
+            If input is a list, the length must equal ``prob``. Each
+            element in ``prob`` indicates the flip probability of
+            corresponding direction. Defaults to 'horizontal'.
+        swap_seg_labels (list, optional): The label pair need to be swapped
+            for ground truth, like 'left arm' and 'right arm' need to be
+            swapped after horizontal flipping. For example, ``[(1, 5)]``,
+            where 1/5 is the label of the left/right arm. Defaults to None.
     """
 
-    def __init__(
-            self,
-            prob: Optional[Union[float, Iterable[float]]] = None,
-            direction: Union[str,
-                             Sequence[Optional[str]]] = 'horizontal') -> None:
+    def __init__(self,
+                 prob: Optional[Union[float, Iterable[float]]] = None,
+                 direction: Union[str, Sequence[Optional[str]]] = 'horizontal',
+                 swap_seg_labels: Optional[Sequence] = None) -> None:
         if isinstance(prob, list):
             assert mmengine.is_list_of(prob, float)
             assert 0 <= sum(prob) <= 1
@@ -1049,6 +1053,7 @@ class RandomFlip(BaseTransform):
             raise ValueError(f'probs must be float or list of float, but \
                               got `{type(prob)}`.')
         self.prob = prob
+        self.swap_seg_labels = swap_seg_labels
 
         valid_directions = ['horizontal', 'vertical', 'diagonal']
         if isinstance(direction, str):
@@ -1064,8 +1069,8 @@ class RandomFlip(BaseTransform):
         if isinstance(prob, list):
             assert len(prob) == len(self.direction)
 
-    def flip_bbox(self, bboxes: np.ndarray, img_shape: Tuple[int, int],
-                  direction: str) -> np.ndarray:
+    def _flip_bbox(self, bboxes: np.ndarray, img_shape: Tuple[int, int],
+                   direction: str) -> np.ndarray:
         """Flip bboxes horizontally.
 
         Args:
@@ -1096,8 +1101,12 @@ class RandomFlip(BaseTransform):
                   or 'diagonal', but got '{direction}'")
         return flipped
 
-    def flip_keypoints(self, keypoints: np.ndarray, img_shape: Tuple[int, int],
-                       direction: str) -> np.ndarray:
+    def _flip_keypoints(
+        self,
+        keypoints: np.ndarray,
+        img_shape: Tuple[int, int],
+        direction: str,
+    ) -> np.ndarray:
         """Flip keypoints horizontally, vertically or diagonally.
 
         Args:
@@ -1126,6 +1135,33 @@ class RandomFlip(BaseTransform):
                   or 'diagonal', but got '{direction}'")
         flipped = np.concatenate([keypoints, meta_info], axis=-1)
         return flipped
+
+    def _flip_seg_map(self, seg_map: dict, direction: str) -> np.ndarray:
+        """Flip segmentation map horizontally, vertically or diagonally.
+
+        Args:
+            seg_map (numpy.ndarray): segmentation map, shape (H, W).
+            direction (str): Flip direction. Options are 'horizontal',
+                'vertical'.
+
+        Returns:
+            numpy.ndarray: Flipped segmentation map.
+        """
+        seg_map = mmcv.imflip(seg_map, direction=direction)
+        if self.swap_seg_labels is not None:
+            # to handle datasets with left/right annotations
+            # like 'Left-arm' and 'Right-arm' in LIP dataset
+            # Modified from https://github.com/openseg-group/openseg.pytorch/blob/master/lib/datasets/tools/cv2_aug_transforms.py # noqa:E501
+            # Licensed under MIT license
+            temp = seg_map.copy()
+            assert isinstance(self.swap_seg_labels, (tuple, list))
+            for pair in self.swap_seg_labels:
+                assert isinstance(pair, (tuple, list)) and len(pair) == 2, \
+                    'swap_seg_labels must be a sequence with pair, but got ' \
+                    f'{self.swap_seg_labels}.'
+                seg_map[temp == pair[0]] = pair[1]
+                seg_map[temp == pair[1]] = pair[0]
+        return seg_map
 
     @cache_randomness
     def _choose_direction(self) -> str:
@@ -1162,19 +1198,20 @@ class RandomFlip(BaseTransform):
 
         # flip bboxes
         if results.get('gt_bboxes', None) is not None:
-            results['gt_bboxes'] = self.flip_bbox(results['gt_bboxes'],
-                                                  img_shape,
-                                                  results['flip_direction'])
+            results['gt_bboxes'] = self._flip_bbox(results['gt_bboxes'],
+                                                   img_shape,
+                                                   results['flip_direction'])
 
         # flip keypoints
         if results.get('gt_keypoints', None) is not None:
-            results['gt_keypoints'] = self.flip_keypoints(
+            results['gt_keypoints'] = self._flip_keypoints(
                 results['gt_keypoints'], img_shape, results['flip_direction'])
 
-        # flip segs
+        # flip seg map
         if results.get('gt_seg_map', None) is not None:
-            results['gt_seg_map'] = mmcv.imflip(
+            results['gt_seg_map'] = self._flip_seg_map(
                 results['gt_seg_map'], direction=results['flip_direction'])
+            results['swap_seg_labels'] = self.swap_seg_labels
 
     def _flip_on_direction(self, results: dict) -> None:
         """Function to flip images, bounding boxes, semantic segmentation map
