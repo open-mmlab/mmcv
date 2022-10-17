@@ -125,6 +125,13 @@ void box_iou_rotated_impl(const Tensor boxes1, const Tensor boxes2, Tensor ious,
                           const int mode_flag, const bool aligned);
 REGISTER_DEVICE_IMPL(box_iou_rotated_impl, CUDA, box_iou_rotated_cuda);
 
+void box_iou_quadri_cuda(const Tensor boxes1, const Tensor boxes2, Tensor ious,
+                         const int mode_flag, const bool aligned);
+
+void box_iou_quadri_impl(const Tensor boxes1, const Tensor boxes2, Tensor ious,
+                         const int mode_flag, const bool aligned);
+REGISTER_DEVICE_IMPL(box_iou_quadri_impl, CUDA, box_iou_quadri_cuda);
+
 void CARAFEForwardCUDAKernelLauncher(const Tensor features, const Tensor masks,
                                      Tensor rfeatures, Tensor routput,
                                      Tensor rmasks, Tensor output,

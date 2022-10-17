@@ -303,14 +303,15 @@ class Pad(BaseTransform):
             None.
         pad_to_square (bool): Whether to pad the image into a square.
             Currently only used for YOLOX. Defaults to False.
-        pad_val (Number | dict[str, Number], optional) - Padding value for if
-            the pad_mode is "constant".  If it is a single number, the value
+        pad_val (Number | dict[str, Number], optional): Padding value for if
+            the pad_mode is "constant". If it is a single number, the value
             to pad the image is the number and to pad the semantic
             segmentation map is 255. If it is a dict, it should have the
             following keys:
 
             - img: The value to pad the image.
             - seg: The value to pad the semantic segmentation map.
+
             Defaults to dict(img=0, seg=255).
         padding_mode (str): Type of padding. Should be: constant, edge,
             reflect or symmetric. Defaults to 'constant'.
@@ -1113,38 +1114,44 @@ class RandomFlip(BaseTransform):
     keys: flip, flip_direction, img, gt_bboxes, gt_seg_map, and
     gt_keypoints. There are 3 flip modes:
 
-     - ``prob`` is float, ``direction`` is string: the image will be
-         ``direction``ly flipped with probability of ``prob`` .
-         E.g., ``prob=0.5``, ``direction='horizontal'``,
-         then image will be horizontally flipped with probability of 0.5.
-     - ``prob`` is float, ``direction`` is list of string: the image will
-         be ``direction[i]``ly flipped with probability of
-         ``prob/len(direction)``.
-         E.g., ``prob=0.5``, ``direction=['horizontal', 'vertical']``,
-         then image will be horizontally flipped with probability of 0.25,
-         vertically with probability of 0.25.
-     - ``prob`` is list of float, ``direction`` is list of string:
-         given ``len(prob) == len(direction)``, the image will
-         be ``direction[i]``ly flipped with probability of ``prob[i]``.
-         E.g., ``prob=[0.3, 0.5]``, ``direction=['horizontal',
-         'vertical']``, then image will be horizontally flipped with
-         probability of 0.3, vertically with probability of 0.5.
+    - ``prob`` is float, ``direction`` is string: the image will be
+      ``direction``ly flipped with probability of ``prob`` .
+      E.g., ``prob=0.5``, ``direction='horizontal'``,
+      then image will be horizontally flipped with probability of 0.5.
+
+    - ``prob`` is float, ``direction`` is list of string: the image will
+      be ``direction[i]``ly flipped with probability of
+      ``prob/len(direction)``.
+      E.g., ``prob=0.5``, ``direction=['horizontal', 'vertical']``,
+      then image will be horizontally flipped with probability of 0.25,
+      vertically with probability of 0.25.
+
+    - ``prob`` is list of float, ``direction`` is list of string:
+      given ``len(prob) == len(direction)``, the image will
+      be ``direction[i]``ly flipped with probability of ``prob[i]``.
+      E.g., ``prob=[0.3, 0.5]``, ``direction=['horizontal',
+      'vertical']``, then image will be horizontally flipped with
+      probability of 0.3, vertically with probability of 0.5.
 
     Required Keys:
-        - img
-        - gt_bboxes (optional)
-        - gt_seg_map (optional)
-        - gt_keypoints (optional)
+
+    - img
+    - gt_bboxes (optional)
+    - gt_seg_map (optional)
+    - gt_keypoints (optional)
 
     Modified Keys:
-        - img
-        - gt_bboxes (optional)
-        - gt_seg_map (optional)
-        - gt_keypoints (optional)
+
+    - img
+    - gt_bboxes (optional)
+    - gt_seg_map (optional)
+    - gt_keypoints (optional)
 
     Added Keys:
-        - flip
-        - flip_direction
+
+    - flip
+    - flip_direction
+
     Args:
          prob (float | list[float], optional): The flipping probability.
              Defaults to None.
@@ -1360,11 +1367,11 @@ class RandomResize(BaseTransform):
     is for width, and ``ratio_range[1]`` is for height.
 
     - if ``keep_ratio`` is True, the minimum value of ``target_scale`` will be
-    used to set the shorter side and the maximum value will be used to
-    set the longer side.
+      used to set the shorter side and the maximum value will be used to
+      set the longer side.
 
     - if ``keep_ratio`` is False, the value of ``target_scale`` will be used to
-    reisze the width and height accordingly.
+      reisze the width and height accordingly.
 
     Required Keys:
 

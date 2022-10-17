@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 
 class BaseTransform(metaclass=ABCMeta):
+    """Base class for all transformations."""
 
     def __call__(self,
                  results: Dict) -> Optional[Union[Dict, Tuple[List, List]]]:
