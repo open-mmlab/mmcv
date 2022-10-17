@@ -1025,6 +1025,7 @@ class RandomFlip(BaseTransform):
 
     - flip
     - flip_direction
+    - swap_seg_labels (optional)
 
     Args:
         prob (float | list[float], optional): The flipping probability.
