@@ -1141,7 +1141,7 @@ class RandomFlip(BaseTransform):
             seg_map (numpy.ndarray): segmentation map, shape (H, W).
             direction (str): Flip direction. Options are 'horizontal',
                 'vertical'.
-        
+
         Returns:
             numpy.ndarray: Flipped segmentation map.
         """
