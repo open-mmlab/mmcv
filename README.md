@@ -104,7 +104,7 @@ If you need to use PyTorch-related modules, make sure PyTorch has been successfu
 
 ```bash
 pip install -U openmim
-mim install mmcv
+mim install 'mmcv-lite>=2.0.0rc1'
 ```
 
 ## FAQ
