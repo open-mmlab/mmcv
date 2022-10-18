@@ -68,22 +68,28 @@ void ball_query_forward_impl(int b, int n, int m, float min_radius,
 REGISTER_DEVICE_IMPL(ball_query_forward_impl, CUDA, ball_query_forward_cuda);
 
 void StackBallQueryForwardCUDAKernelLauncher(float max_radius, int nsample,
-                             const Tensor new_xyz,const Tensor new_xyz_batch_cnt, const Tensor xyz,const Tensor xyz_batch_cnt,
-                             Tensor idx);
+                                             const Tensor new_xyz,
+                                             const Tensor new_xyz_batch_cnt,
+                                             const Tensor xyz,
+                                             const Tensor xyz_batch_cnt,
+                                             Tensor idx);
 
-void stack_ball_query_forward_cuda(
-                             float max_radius, int nsample,
-                             const Tensor new_xyz,const Tensor new_xyz_batch_cnt, const Tensor xyz,const Tensor xyz_batch_cnt,
-                             Tensor idx) {
-  StackBallQueryForwardCUDAKernelLauncher(max_radius,
-                       nsample, new_xyz,new_xyz_batch_cnt, xyz,xyz_batch_cnt, idx);
+void stack_ball_query_forward_cuda(float max_radius, int nsample,
+                                   const Tensor new_xyz,
+                                   const Tensor new_xyz_batch_cnt,
+                                   const Tensor xyz, const Tensor xyz_batch_cnt,
+                                   Tensor idx) {
+  StackBallQueryForwardCUDAKernelLauncher(
+      max_radius, nsample, new_xyz, new_xyz_batch_cnt, xyz, xyz_batch_cnt, idx);
 };
 
-void stack_ball_query_forward_impl(
-                             float max_radius, int nsample,
-                             const Tensor new_xyz,const Tensor new_xyz_batch_cnt, const Tensor xyz,const Tensor xyz_batch_cnt,
-                             Tensor idx);
-REGISTER_DEVICE_IMPL(stack_ball_query_forward_impl, CUDA, stack_ball_query_forward_cuda);
+void stack_ball_query_forward_impl(float max_radius, int nsample,
+                                   const Tensor new_xyz,
+                                   const Tensor new_xyz_batch_cnt,
+                                   const Tensor xyz, const Tensor xyz_batch_cnt,
+                                   Tensor idx);
+REGISTER_DEVICE_IMPL(stack_ball_query_forward_impl, CUDA,
+                     stack_ball_query_forward_cuda);
 
 void BBoxOverlapsCUDAKernelLauncher(const Tensor bboxes1, const Tensor bboxes2,
                                     Tensor ious, const int mode,
@@ -589,37 +595,50 @@ REGISTER_DEVICE_IMPL(group_points_forward_impl, CUDA,
 REGISTER_DEVICE_IMPL(group_points_backward_impl, CUDA,
                      group_points_backward_cuda);
 
-void StackGroupPointsForwardCUDAKernelLauncher(int b, int c, int m, int nsample,
-                               const Tensor features_tensor, const Tensor features_batch_cnt_tensor,
-                               const Tensor idx_tensor, const Tensor idx_batch_cnt_tensor,
-                               Tensor out_tensor);
-void StackGroupPointsBackwardCUDAKernelLauncher(int b, int c, int m, int n, int nsample,
-                                const Tensor grad_out_tensor, const Tensor idx_tensor, const Tensor idx_batch_cnt_tensor, const Tensor features_batch_cnt_tensor,
-                                Tensor grad_features_tensor);
+void StackGroupPointsForwardCUDAKernelLauncher(
+    int b, int c, int m, int nsample, const Tensor features_tensor,
+    const Tensor features_batch_cnt_tensor, const Tensor idx_tensor,
+    const Tensor idx_batch_cnt_tensor, Tensor out_tensor);
+void StackGroupPointsBackwardCUDAKernelLauncher(
+    int b, int c, int m, int n, int nsample, const Tensor grad_out_tensor,
+    const Tensor idx_tensor, const Tensor idx_batch_cnt_tensor,
+    const Tensor features_batch_cnt_tensor, Tensor grad_features_tensor);
 
 void stack_group_points_forward_cuda(int b, int c, int m, int nsample,
-                               const Tensor features_tensor, const Tensor features_batch_cnt_tensor,
-                               const Tensor idx_tensor, const Tensor idx_batch_cnt_tensor,
-                               Tensor out_tensor){
-  StackGroupPointsForwardCUDAKernelLauncher(b, c, m, nsample, features_tensor,features_batch_cnt_tensor,
-                                         idx_tensor,idx_batch_cnt_tensor,out_tensor);
+                                     const Tensor features_tensor,
+                                     const Tensor features_batch_cnt_tensor,
+                                     const Tensor idx_tensor,
+                                     const Tensor idx_batch_cnt_tensor,
+                                     Tensor out_tensor) {
+  StackGroupPointsForwardCUDAKernelLauncher(
+      b, c, m, nsample, features_tensor, features_batch_cnt_tensor, idx_tensor,
+      idx_batch_cnt_tensor, out_tensor);
 };
 
 void stack_group_points_backward_cuda(int b, int c, int m, int n, int nsample,
-                                const Tensor grad_out_tensor, const Tensor idx_tensor, const Tensor idx_batch_cnt_tensor, const Tensor features_batch_cnt_tensor,
-                                Tensor grad_features_tensor){
-  StackGroupPointsBackwardCUDAKernelLauncher(b, c, m, n, nsample, grad_out_tensor,
-                                        idx_tensor, idx_batch_cnt_tensor, features_batch_cnt_tensor,grad_features_tensor);
+                                      const Tensor grad_out_tensor,
+                                      const Tensor idx_tensor,
+                                      const Tensor idx_batch_cnt_tensor,
+                                      const Tensor features_batch_cnt_tensor,
+                                      Tensor grad_features_tensor) {
+  StackGroupPointsBackwardCUDAKernelLauncher(
+      b, c, m, n, nsample, grad_out_tensor, idx_tensor, idx_batch_cnt_tensor,
+      features_batch_cnt_tensor, grad_features_tensor);
 };
 
 void stack_group_points_forward_impl(int b, int c, int m, int nsample,
-                               const Tensor features_tensor, const Tensor features_batch_cnt_tensor,
-                               const Tensor idx_tensor, const Tensor idx_batch_cnt_tensor,
-                               Tensor out_tensor);
+                                     const Tensor features_tensor,
+                                     const Tensor features_batch_cnt_tensor,
+                                     const Tensor idx_tensor,
+                                     const Tensor idx_batch_cnt_tensor,
+                                     Tensor out_tensor);
 
 void stack_group_points_backward_impl(int b, int c, int m, int n, int nsample,
-                                const Tensor grad_out_tensor, const Tensor idx_tensor, const Tensor idx_batch_cnt_tensor, const Tensor features_batch_cnt_tensor,
-                                Tensor grad_features_tensor);
+                                      const Tensor grad_out_tensor,
+                                      const Tensor idx_tensor,
+                                      const Tensor idx_batch_cnt_tensor,
+                                      const Tensor features_batch_cnt_tensor,
+                                      Tensor grad_features_tensor);
 
 REGISTER_DEVICE_IMPL(stack_group_points_forward_impl, CUDA,
                      stack_group_points_forward_cuda);

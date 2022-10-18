@@ -11,11 +11,10 @@
 #endif
 
 template <typename T>
-__global__ void stack_ball_query_forward_cuda_kernel(int B, int M, float radius, int nsample,
-                                  const T *new_xyz,
-                                  const int *new_xyz_batch_cnt,
-                                  const T *xyz, const int *xyz_batch_cnt,
-                                  int *idx) {
+__global__ void stack_ball_query_forward_cuda_kernel(
+    int B, int M, float radius, int nsample, const T *new_xyz,
+    const int *new_xyz_batch_cnt, const T *xyz, const int *xyz_batch_cnt,
+    int *idx) {
   // :param xyz: (N1 + N2 ..., 3) xyz coordinates of the features
   // :param xyz_batch_cnt: (batch_size), [N1, N2, ...]
   // :param new_xyz: (M1 + M2 ..., 3) centers of the ball query
@@ -28,17 +27,15 @@ __global__ void stack_ball_query_forward_cuda_kernel(int B, int M, float radius,
     int bs_idx = 0;
     for (int pt_cnt = 0; bs_idx < B; bs_idx++) {
       pt_cnt += new_xyz_batch_cnt[bs_idx];
-      if (pt_idx < pt_cnt)
-        break;
+      if (pt_idx < pt_cnt) break;
     }
 
     int xyz_batch_start_idx = 0;
-    for (int k = 0; k < bs_idx; k++)
-      xyz_batch_start_idx += xyz_batch_cnt[k];
+    for (int k = 0; k < bs_idx; k++) xyz_batch_start_idx += xyz_batch_cnt[k];
     // for (int k = 0; k < bs_idx; k++) new_xyz_batch_start_idx +=
     // new_xyz_batch_cnt[k];
 
-    const T* new_xyz_p = new_xyz + pt_idx * 3;
+    const T *new_xyz_p = new_xyz + pt_idx * 3;
     cur_xyz += xyz_batch_start_idx * 3;
     cur_idx += pt_idx * nsample;
 
@@ -54,7 +51,7 @@ __global__ void stack_ball_query_forward_cuda_kernel(int B, int M, float radius,
       T y = cur_xyz[k * 3 + 1];
       T z = cur_xyz[k * 3 + 2];
       T d2 = (new_x - x) * (new_x - x) + (new_y - y) * (new_y - y) +
-                (new_z - z) * (new_z - z);
+             (new_z - z) * (new_z - z);
       if (d2 < radius2) {
         if (cnt == 0) {
           for (int l = 0; l < nsample; ++l) {
@@ -63,12 +60,10 @@ __global__ void stack_ball_query_forward_cuda_kernel(int B, int M, float radius,
         }
         cur_idx[cnt] = k;
         ++cnt;
-        if (cnt >= nsample)
-          break;
+        if (cnt >= nsample) break;
       }
     }
-    if (cnt == 0)
-      cur_idx[0] = -1;
+    if (cnt == 0) cur_idx[0] = -1;
   }
 }
 
