@@ -34,8 +34,7 @@ static cnnlStatus_t policyFunc(cnrtDim3_t *k_dim, cnrtFunctionType_t *k_type,
                                int &core_num_per_class,
                                const int input_box_num) {
   uint32_t core_dim = torch_mlu::getDeviceAttr(cnrtAttrMcorePerCluster);
-  uint32_t cluster_number = torch_mlu::getDeviceAttr(cnrtAttrClusterCount);
-  uint32_t job_limit = cluster_number * core_dim;
+  uint32_t job_limit = getJobLimitCapability();
   uint32_t core_number = job_limit;
 
   int box_num_per_core = (input_box_num + core_number - 1) / core_number;
