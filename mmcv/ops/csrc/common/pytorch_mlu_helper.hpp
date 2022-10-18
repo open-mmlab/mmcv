@@ -25,6 +25,16 @@
 
 #define CEIL_ALIGN(x, y) (((x) + (y)-1) / (y) * (y))
 
+inline int32_t getJobLimitCapability() {
+  CNcontext drv_ctx;
+  CNctxConfigParam ctx_conf_param;
+  TORCH_CHECK(
+      CN_SUCCESS == cnGetCtxConfigParam(drv_ctx, CN_CTX_CONFIG_UNION_LIMIT,
+                                        &ctx_conf_param),
+      "cnGetCtxConfigParam fails.");
+  return (int32_t)ctx_conf_param.unionLimit;
+}
+
 #endif  // MMCV_WITH_MLU
 
 #endif  // PYTORCH_MLU_HELPER_HPP_
