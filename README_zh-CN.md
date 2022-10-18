@@ -63,7 +63,7 @@ MMCV 有两个版本：
 
 在安装 mmcv 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://github.com/pytorch/pytorch#installation)。
 
-在 Linux 和 Windows 平台安装 mmcv 的命令如下（如果你的系统是 macOS，请参考[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/2.x/get_started/build.html#macos-mmcv)）
+在 Linux 和 Windows 平台安装 mmcv 的命令如下（如果你的系统是 macOS，请参考[源码安装 mmcv](https://mmcv.readthedocs.io/zh_CN/2.x/get_started/build.html#macos-mmcv)）
 
 ```bash
 pip install -U openmim
