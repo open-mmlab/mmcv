@@ -37,7 +37,7 @@ void nms_parrots<HostContext>(HostContext& ctx, const SSElement& attr,
 #endif  // USE_CPU_NMS
 
 #ifdef PARROTS_USE_CAMB
-void KernelNms(cnrtDim3_t k_dim, cnrtFunctionType_t k_type, cnrtQueue_t queue,
+void KernelNms2(cnrtDim3_t k_dim, cnrtFunctionType_t k_type, cnrtQueue_t queue,
                const cnrtDataType_t data_type_input, const void* boxes_ptr,
                const void* scores_ptr, const int input_num_boxes,
                const int input_stride, const int max_output_boxes,
@@ -99,7 +99,7 @@ void NMSMLUKernelLauncher(CambContext& ctx, const DArrayLite& boxes,
     }
     case CNRT_FUNC_TYPE_BLOCK:
     case CNRT_FUNC_TYPE_UNION1: {
-      KernelNms(k_dim, k_type, queue, data_type_input, boxes.data(),
+      KernelNms2(k_dim, k_type, queue, data_type_input, boxes.data(),
                 scores.data(), input_num_boxes, input_stride, max_output_boxes,
                 iou_threshold, offset, workspace.data(), output_size.data(),
                 output_tmp.data());
