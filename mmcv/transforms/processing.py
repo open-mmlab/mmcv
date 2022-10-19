@@ -902,7 +902,7 @@ class TestTimeAug(BaseTransform):
     - Resize to (1333, 800) + no flip
     - resize to (1333, 800) + flip
 
-    After that, results are wrapped into lists of the same length as followed:
+    After that, results are wrapped into lists of the same length as below:
 
     .. code-block::
 
@@ -959,7 +959,7 @@ class TestTimeAug(BaseTransform):
            ``RandomFlip``, and aggregates into a list of 4 results.
         3. Each result will be processed by ``PackDetInputs``, and
            return a list of dict.
-        4. Aggregates the same fields of results, and finally return
+        4. Aggregates the same fields of results, and finally returns
            a dict. Each value of the dict represents 4 transformed
            results.
 

@@ -907,7 +907,7 @@ class TestTestTimeAug:
     def test_init(self):
         subroutines = [[
             dict(type='Resize', scale=(1333, 800), keep_ratio=True),
-            dict(type='Resize', scale=(1333, 800), keep_ratio=True)
+            dict(type='Resize', scale=(1333, 400), keep_ratio=True)
         ], [
             dict(type='RandomFlip', prob=1.),
             dict(type='RandomFlip', prob=0.)
@@ -934,7 +934,7 @@ class TestTestTimeAug:
         input_results = copy.deepcopy(results)
         transforms = [[
             dict(type='Resize', scale=(1333, 800), keep_ratio=True),
-            dict(type='Resize', scale=(1333, 640), keep_ratio=True)
+            dict(type='Resize', scale=(1333, 400), keep_ratio=True)
         ], [
             dict(type='RandomFlip', prob=0.),
             dict(type='RandomFlip', prob=1.)
@@ -972,7 +972,7 @@ class TestTestTimeAug:
     def test_repr(self):
         transforms = [[
             dict(type='Resize', scale=(1333, 800), keep_ratio=True),
-            dict(type='Resize', scale=(1333, 640), keep_ratio=True)
+            dict(type='Resize', scale=(1333, 400), keep_ratio=True)
         ], [
             dict(type='RandomFlip', prob=0.),
             dict(type='RandomFlip', prob=1.)
