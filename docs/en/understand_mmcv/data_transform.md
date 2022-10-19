@@ -37,7 +37,7 @@ All data transformation classes must inherit `BaseTransform` and implement the `
 
 ## Data pipeline
 
-As mentioned above, the input and output of all data transformations are a dictionary, and according to the \[Convention on Datasets\] (TODO) in OpenMMLab, the basic information of each sample in the dataset is a dictionary. This way, we can connect all data transformation operations end to end and combine them into a data pipeline. This pipeline inputs the information dictionary of the samples in the data set and outputs the information dictionary after a series of processing.
+As mentioned above, the inputs and outputs of all data transformations are dictionaries. Moreover, according to the \[Convention on Datasets\] (TODO) in OpenMMLab, the basic information of each sample in the dataset is also a dictionary. This way, we can connect all data transformation operations end to end and combine them into a data pipeline. This pipeline inputs the information dictionary of the samples in the dataset and outputs the information dictionary after a series of processing.
 
 Taking the classification task as an example, we show a typical data pipeline in the figure below. For each sample, the information stored in the dataset is a dictionary, as shown on the far left in the figure. After each data transformation operation represented by the blue block, a new field (marked in green) will be added to the data dictionary or an existing field (marked in orange) will be updated.
 
