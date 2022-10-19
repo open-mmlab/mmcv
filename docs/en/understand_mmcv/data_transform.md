@@ -147,7 +147,7 @@ It should be noted that if you want to use it in the configuration file, you mus
 
 ## Transform wrapper
 
-Transform wrappers are a special class of data transformations. They do not operate on images, labels, and other information in the data dictionary by themselves, however, they enhance the behavior of data transformations defined in them.
+Transform wrappers are a special class of data transformations. They do not operate on images, labels or other information in the data dictionary by themselves. Instead, they enhance the behavior of data transformations defined in them.
 
 ### KeyMapper
 
