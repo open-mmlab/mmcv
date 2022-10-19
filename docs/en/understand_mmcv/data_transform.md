@@ -176,7 +176,7 @@ With `KeyMapper`, we don't need to consider various possible input field names i
 
 ### RandomChoice and RandomApply
 
-`RandomChoice` is used to randomly apply a combination of data transformations from a series of combinations of data transformations. With this wrapper, we can easily implement some data augmentation functions, such as AutoAugment.
+`RandomChoice` is used to randomly select a data transformation pipeline from the given choices. With this wrapper, we can easily implement some data augmentation functions, such as AutoAugment.
 
 In configuration file, you can use `RandomChoice` as follows:
 
