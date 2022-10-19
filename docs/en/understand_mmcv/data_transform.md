@@ -94,7 +94,7 @@ Data preprocessing and augmentation usually involve transforming the image itsel
 
 ### Data formatting
 
-Data formatting operations are typed conversions performed on the data.
+Data formatting operations are type conversions performed on the data.
 
 |          Class          |                   Feature                    |
 | :---------------------: | :------------------------------------------: |
