@@ -151,7 +151,7 @@ Transform wrappers are a special class of data transformations. They do not oper
 
 ### KeyMapper
 
-`KeyMapper` is used to map fields in the data dictionary. For example, usually image processing transforms get their values from the `"img"` field in the data dictionary. But sometimes we want these transforms to handle images in other fields in the data dictionary, such as the `"gt_img"` field.
+`KeyMapper` is used to map fields in the data dictionary. For example, image processing transforms usually get their values from the `"img"` field in the data dictionary. But sometimes we want these transforms to handle images in other fields in the data dictionary, such as the `"gt_img"` field.
 
 When used with registry and configuration file, the field map wrapper should be used as follows:
 
