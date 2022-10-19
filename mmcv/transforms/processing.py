@@ -882,7 +882,7 @@ class TestTimeAug(BaseTransform):
 
         dict(type='TestTimeAug',
              transforms=[
-                [dict(type='Resize', scale=(1333, 800), keep_ratio=True),
+                [dict(type='Resize', scale=(1333, 400), keep_ratio=True),
                  dict(type='Resize', scale=(1333, 800), keep_ratio=True)],
                 [dict(type='RandomFlip', prob=1.),
                  dict(type='RandomFlip', prob=0.)],
