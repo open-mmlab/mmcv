@@ -27,7 +27,7 @@ It provides the following functionalities:
 - Universal IO APIs
 - Image/Video processing
 - Image and annotation visualization
-- Useful developing tools (such as timer, etc)
+- Image transformation
 - Various CNN architectures
 - High-quality implementation of common CUDA ops
 
