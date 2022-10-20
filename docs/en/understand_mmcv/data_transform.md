@@ -101,7 +101,7 @@ Data formatting operations are type conversions performed on the data.
 |   [`ToTensor`](TODO)    | Convert the specified data to `torch.Tensor` |
 | [`ImageToTensor`](TODO) |     Convert the image to `torch.Tensor`      |
 
-## Customizing data transformation classes
+## Customize data transformation classes
 
 To implement a new data transformation class, you must extend `BaseTransform` and implement the `transform` method. Here, we use a simple flip transform (`MyFlip`) as an example:
 
