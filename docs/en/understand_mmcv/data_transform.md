@@ -103,7 +103,7 @@ Data formatting operations are type conversions performed on the data.
 
 ## Customize data transformation classes
 
-To implement a new data transformation class, you must extend `BaseTransform` and implement the `transform` method. Here, we use a simple flip transform (`MyFlip`) as an example:
+To implement a new data transformation class, you must inherit `BaseTransform` and implement the `transform` method. Here, we use a simple flip transform (`MyFlip`) as an example:
 
 ```python
 import random
