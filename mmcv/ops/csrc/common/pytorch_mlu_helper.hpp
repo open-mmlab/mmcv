@@ -27,8 +27,7 @@
 
 inline int32_t getJobLimitCapability() {
   CNcontext drv_ctx;
-  TORCH_CHECK(CN_SUCCESS == cnCtxGetCurrent(&drv_ctx),
-      "cnCtxGetCurrent fails");
+  TORCH_CHECK(CN_SUCCESS == cnCtxGetCurrent(&drv_ctx), "cnCtxGetCurrent fails");
   CNctxConfigParam ctx_conf_param;
   TORCH_CHECK(
       CN_SUCCESS == cnGetCtxConfigParam(drv_ctx, CN_CTX_CONFIG_UNION_LIMIT,
