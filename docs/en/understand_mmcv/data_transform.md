@@ -214,7 +214,7 @@ pipeline = [
 
 ### TransformBroadcaster
 
-Usually, a data transformation class only reads the target of an operation from one field. While we can also use `KeyMapper` to change the fields read, there is no way to apply transformations to the data of multiple fields at once. To achieve this, we need to use the multi-target extension wrapper (`TransformBroadcaster`).
+Usually, a data transformation class only reads the target of an operation from one field. While we can also use `KeyMapper` to change the fields read, there is no way to apply transformations to the data of multiple fields at once. To achieve this, we need to use the multi-target extension wrapper `TransformBroadcaster`.
 
 `TransformBroadcaster` has two uses, one is to apply data transformation to multiple specified fields, and the other is to apply data transformation to a group of targets under a field.
 
