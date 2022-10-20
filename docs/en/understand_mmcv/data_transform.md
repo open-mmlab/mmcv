@@ -88,7 +88,7 @@ Data preprocessing and augmentation usually involve transforming the image itsel
 |         [`Resize`](TODO)         |         Resize to the specified size or ratio          |
 |      [`RandomResize`](TODO)      |  Scale the image randomly within the specified range   |
 | [`RandomMultiscaleResize`](TODO) | Scale the image to a random size from multiple options |
-|    [`RandomGrayscale`](TODO)     |                    Random greyscale                    |
+|    [`RandomGrayscale`](TODO)     |                    Random grayscale                    |
 |       [`RandomFlip`](TODO)       |                      Random flip                       |
 |   [`MultiScaleFlipAug`](TODO)    |    Support scaling and flipping during the testing     |
 
