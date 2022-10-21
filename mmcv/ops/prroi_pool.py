@@ -3,11 +3,12 @@ from typing import Tuple, Union
 
 import torch
 import torch.nn as nn
+from mmengine.utils.dl_utils import TORCH_VERSION
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
-from ..utils import TORCH_VERSION, ext_loader
+from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
     '_ext',
