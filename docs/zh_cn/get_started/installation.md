@@ -12,7 +12,7 @@ MMCV 有两个版本：
 ### 安装 mmcv
 
 ```{note}
-下述安装步骤仅适用于 Linux 和 Windows 平台，如需在 macOS 平台安装 mmcv，请参考[源码安装 mmcv](https://mmcv.readthedocs.io/zh_CN/2.x/get_started/build.html#macos-mmcv)。
+下述安装步骤仅适用于 Linux 和 Windows 平台，如需在 macOS 平台安装 mmcv，请参考[源码安装 mmcv](build.md#macos-mmcv)。
 ```
 
 在安装 mmcv 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://pytorch.org/get-started/locally/#start-locally)。可使用以下命令验证
@@ -303,7 +303,7 @@ python -c 'import torch;print(torch.__version__);print(torch.version.cuda)'
 </script>
 </html>
 
-如果在上面的下拉框中没有找到对应的版本，则可能是没有对应 PyTorch 或者 CUDA 或者 mmcv 版本的预编译包，此时，你可以[源码安装 mmcv](../faq.md)。
+如果在上面的下拉框中没有找到对应的版本，则可能是没有对应 PyTorch 或者 CUDA 或者 mmcv 版本的预编译包，此时，你可以[源码安装 mmcv](build.md)。
 
 :::{note}
 PyTorch 在 1.x.0 和 1.x.1 之间通常是兼容的，故 mmcv 只提供 1.x.0 的编译包。如果你
