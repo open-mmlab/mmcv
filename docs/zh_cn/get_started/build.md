@@ -81,7 +81,7 @@ pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
    python .dev_scripts/check_installation.py
    ```
 
-   如果上述命令没有报错，说明安装成功。如有报错，请查看[问题解决页面](https://mmcv.readthedocs.io/zh_CN/2.x/faq.html)是否已经有解决方案。
+   如果上述命令没有报错，说明安装成功。如有报错，请查看[问题解决页面](../faq.html)是否已经有解决方案。
 
    如果没有找到解决方案，欢迎提 [issue](https://github.com/open-mmlab/mmcv/issues)。
 
@@ -177,13 +177,7 @@ pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
    (mmcv) PS C:\Users\xxx\mmcv> pip install -r requirements/optional.txt
    ```
 
-6. 安装 mmcv 依赖
-
-   ```powershell
-   (mmcv) PS C:\Users\xxx\mmcv> pip install -r requirements/runtime.txt
-   ```
-
-7. 设置 MSVC 编译器
+6. 设置 MSVC 编译器
 
    设置环境变量。添加 `C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\bin\Hostx86\x64` 到 `PATH`，则 `cl.exe` 可以在命令行中运行，如下所示。
 
