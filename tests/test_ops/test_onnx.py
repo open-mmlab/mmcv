@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
-from functools import partial
 
 import numpy as np
 import onnx
@@ -8,7 +7,6 @@ import onnxruntime as rt
 import pytest
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 onnx_file = 'tmp.onnx'
 if torch.__version__ == 'parrots':
@@ -36,49 +34,6 @@ class WrapFunction(nn.Module):
 
     def forward(self, *args, **kwargs):
         return self.wrapped_function(*args, **kwargs)
-
-
-def test_nms():
-    from mmcv.ops import nms
-    np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
-                         [3.0, 7.0, 10.0, 12.0], [1.0, 4.0, 13.0, 7.0]],
-                        dtype=np.float32)
-    np_scores = np.array([0.6, 0.9, 0.7, 0.2], dtype=np.float32)
-    boxes = torch.from_numpy(np_boxes)
-    scores = torch.from_numpy(np_scores)
-
-    nms = partial(
-        nms, iou_threshold=0.3, offset=0, score_threshold=0, max_num=0)
-    pytorch_dets, _ = nms(boxes, scores)
-    pytorch_score = pytorch_dets[:, 4]
-
-    wrapped_model = WrapFunction(nms)
-    wrapped_model.cpu().eval()
-    with torch.no_grad():
-        torch.onnx.export(
-            wrapped_model, (boxes, scores),
-            onnx_file,
-            export_params=True,
-            keep_initializers_as_inputs=True,
-            input_names=['boxes', 'scores'],
-            opset_version=11)
-
-    onnx_model = onnx.load(onnx_file)
-    session_options = rt.SessionOptions()
-
-    # get onnx output
-    input_all = [node.name for node in onnx_model.graph.input]
-    input_initializer = [node.name for node in onnx_model.graph.initializer]
-    net_feed_input = list(set(input_all) - set(input_initializer))
-    assert (len(net_feed_input) == 2)
-    sess = rt.InferenceSession(
-        onnx_file, session_options, providers=['CPUExecutionProvider'])
-    onnx_dets, _ = sess.run(None, {
-        'scores': scores.detach().numpy(),
-        'boxes': boxes.detach().numpy()
-    })
-    onnx_score = onnx_dets[:, 4]
-    assert np.allclose(pytorch_score, onnx_score, atol=1e-3)
 
 
 def test_roialign():
@@ -210,69 +165,6 @@ def test_roipool():
 
         # allclose
         assert np.allclose(pytorch_output, onnx_output, atol=1e-3)
-
-
-def test_interpolate():
-    from mmcv.onnx.symbolic import register_extra_symbolics
-    opset_version = 11
-    register_extra_symbolics(opset_version)
-
-    def func(feat, scale_factor=2):
-        out = F.interpolate(feat, scale_factor=scale_factor)
-        return out
-
-    net = WrapFunction(func)
-    net = net.cpu().eval()
-    dummy_input = torch.randn(2, 4, 8, 8).cpu()
-    torch.onnx.export(
-        net,
-        dummy_input,
-        onnx_file,
-        input_names=['input'],
-        opset_version=opset_version)
-    sess = rt.InferenceSession(onnx_file, providers=['CPUExecutionProvider'])
-    onnx_result = sess.run(None, {'input': dummy_input.detach().numpy()})
-    pytorch_result = func(dummy_input).detach().numpy()
-
-    assert np.allclose(pytorch_result, onnx_result, atol=1e-3)
-
-
-@pytest.mark.parametrize('shifts_dims_pair', [([-3, 5], [2, 0]), (5, None)])
-def test_roll(shifts_dims_pair):
-    opset = 11
-    from mmcv.onnx.symbolic import register_extra_symbolics
-    register_extra_symbolics(opset)
-
-    input = torch.arange(0, 4 * 5 * 6, dtype=torch.float32).view(4, 5, 6)
-
-    shifts, dims = shifts_dims_pair
-    func = partial(torch.roll, shifts=shifts, dims=dims)
-    wrapped_model = WrapFunction(func).eval()
-
-    with torch.no_grad():
-        torch.onnx.export(
-            wrapped_model,
-            input,
-            onnx_file,
-            export_params=True,
-            keep_initializers_as_inputs=True,
-            input_names=['input'],
-            output_names=['output'],
-            opset_version=opset)
-
-    onnx_model = onnx.load(onnx_file)
-    input_all = [node.name for node in onnx_model.graph.input]
-    input_initializer = [node.name for node in onnx_model.graph.initializer]
-    net_feed_input = list(set(input_all) - set(input_initializer))
-    assert (len(net_feed_input) == 1)
-
-    sess = rt.InferenceSession(onnx_file, providers=['CPUExecutionProvider'])
-    ort_output = sess.run(None, {'input': input.detach().numpy()})[0]
-
-    with torch.no_grad():
-        pytorch_output = wrapped_model(input.clone())
-
-    torch.testing.assert_allclose(ort_output, pytorch_output)
 
 
 def _test_symbolic(model, inputs, symbol_name):

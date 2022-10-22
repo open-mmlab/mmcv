@@ -7,7 +7,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
 from torch.nn.modules.utils import _pair
-from torch.onnx.operators import shape_as_tensor
 
 
 def bilinear_grid_sample(im: Tensor,
@@ -178,12 +177,8 @@ def get_shape_from_feature_map(x: Tensor) -> Tensor:
     Returns:
         torch.Tensor: Spatial resolution (width, height), shape (1, 1, 2)
     """
-    if torch.onnx.is_in_onnx_export():
-        img_shape = shape_as_tensor(x)[2:].flip(0).view(1, 1, 2).to(
-            x.device).float()
-    else:
-        img_shape = torch.tensor(x.shape[2:]).flip(0).view(1, 1, 2).to(
-            x.device).float()
+    img_shape = torch.tensor(x.shape[2:]).flip(0).view(1, 1,
+                                                       2).to(x.device).float()
     return img_shape
 
 
@@ -272,15 +267,8 @@ def point_sample(input: Tensor,
     if points.dim() == 3:
         add_dim = True
         points = points.unsqueeze(2)
-    if torch.onnx.is_in_onnx_export():
-        # If custom ops for onnx runtime not compiled use python
-        # implementation of grid_sample function to make onnx graph
-        # with supported nodes
-        output = bilinear_grid_sample(
-            input, denormalize(points), align_corners=align_corners)
-    else:
-        output = F.grid_sample(
-            input, denormalize(points), align_corners=align_corners, **kwargs)
+    output = F.grid_sample(
+        input, denormalize(points), align_corners=align_corners, **kwargs)
     if add_dim:
         output = output.squeeze(3)
     return output
@@ -315,33 +303,25 @@ class SimpleRoIAlign(nn.Module):
         rel_roi_points = generate_grid(
             num_rois, self.output_size, device=rois.device)
 
-        if torch.onnx.is_in_onnx_export():
-            rel_img_points = rel_roi_point_to_rel_img_point(
-                rois, rel_roi_points, features, self.spatial_scale)
-            rel_img_points = rel_img_points.reshape(num_imgs, -1,
-                                                    *rel_img_points.shape[1:])
-            point_feats = point_sample(
-                features, rel_img_points, align_corners=not self.aligned)
-            point_feats = point_feats.transpose(1, 2)
-        else:
-            point_feats = []
-            for batch_ind in range(num_imgs):
-                # unravel batch dim
-                feat = features[batch_ind].unsqueeze(0)
-                inds = (rois[:, 0].long() == batch_ind)
-                if inds.any():
-                    rel_img_points = rel_roi_point_to_rel_img_point(
-                        rois[inds], rel_roi_points[inds], feat,
-                        self.spatial_scale).unsqueeze(0)
-                    point_feat = point_sample(
-                        feat, rel_img_points, align_corners=not self.aligned)
-                    point_feat = point_feat.squeeze(0).transpose(0, 1)
-                    point_feats.append(point_feat)
+        point_feats = []
+        for batch_ind in range(num_imgs):
+            # unravel batch dim
+            feat = features[batch_ind].unsqueeze(0)
+            inds = (rois[:, 0].long() == batch_ind)
+            if inds.any():
+                rel_img_points = rel_roi_point_to_rel_img_point(
+                    rois[inds], rel_roi_points[inds], feat,
+                    self.spatial_scale).unsqueeze(0)
+                point_feat = point_sample(
+                    feat, rel_img_points, align_corners=not self.aligned)
+                point_feat = point_feat.squeeze(0).transpose(0, 1)
+                point_feats.append(point_feat)
 
-            point_feats = torch.cat(point_feats, dim=0)
+        point_feats_t = torch.cat(point_feats, dim=0)
 
         channels = features.size(1)
-        roi_feats = point_feats.reshape(num_rois, channels, *self.output_size)
+        roi_feats = point_feats_t.reshape(num_rois, channels,
+                                          *self.output_size)
 
         return roi_feats
 
