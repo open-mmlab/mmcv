@@ -2,7 +2,6 @@
 
 MMCV is a foundational library for computer vision research and provides the following functionalities.
 
-- [Universal IO APIs](../understand_mmcv/io.md)
 - [Image/Video processing](../understand_mmcv/data_process.md)
 - [Image and annotation visualization](../understand_mmcv/visualization.md)
 - [Image transformation](../understand_mmcv/data_transform.md)

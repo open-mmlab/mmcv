@@ -2,7 +2,6 @@
 
 MMCV 是一个面向计算机视觉的基础库，它提供了以下功能：
 
-- [通用的 IO 接口](../understand_mmcv/io.md)
 - [图像和视频处理](../understand_mmcv/data_process.md)
 - [图像和标注结果可视化](../understand_mmcv/visualization.md)
 - [图像变换](../understand_mmcv/data_transform.md)

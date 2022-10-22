@@ -268,7 +268,7 @@ Build and install
 If no error is reported by the above command, the installation is successful. If there is an error reported, please check [Frequently Asked Questions](../faq.md) to see if there is already a solution.
 If no solution is found, please feel free to open an [issue](https://github.com/open-mmlab/mmcv/issues).
 
-### Build mmcv
+### Build mmcv-lite
 
 If you need to use PyTorch-related modules, make sure PyTorch has been successfully installed in your environment by referring to the [PyTorch official installation guide](https://github.com/pytorch/pytorch#installation).
 
