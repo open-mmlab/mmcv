@@ -12,7 +12,7 @@ MMCV 有两个版本：
 ### 安装 mmcv
 
 ```{note}
-下述安装步骤仅适用于 Linux 和 Windows 平台，如需在 macOS 平台安装 mmcv，请参考[源码安装 mmcv](build.md#macos-mmcv)。
+下述安装步骤仅适用于 Linux 和 Windows 平台，如需在 macOS 平台安装 mmcv，请参考[源码安装 mmcv](build.md#在-macos-上编译-mmcv)。
 ```
 
 在安装 mmcv 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://pytorch.org/get-started/locally/#start-locally)。可使用以下命令验证

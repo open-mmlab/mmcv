@@ -16,6 +16,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    :caption: Understand MMCV
 
    understand_mmcv/data_process.md
+   understand_mmcv/data_transform.md
    understand_mmcv/visualization.md
    understand_mmcv/cnn.md
    understand_mmcv/ops.md

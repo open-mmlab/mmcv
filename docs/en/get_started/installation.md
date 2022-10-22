@@ -12,7 +12,7 @@ Do not install both versions in the same environment, otherwise you may encounte
 ### Install mmcv
 
 ```{note}
-The following installation steps are for Linux and Windows platforms only. To install mmcv on macOS platform, please refer to [build mmcv from source](build.md#macos-mmcv).
+The following installation steps are for Linux and Windows platforms only. To install mmcv on macOS platform, please refer to [build mmcv from source](build.md#build-on-macos).
 ```
 
 Before installing mmcv-full, make sure that PyTorch has been successfully installed following the [PyTorch official installation guide](https://pytorch.org/get-started/locally/#start-locally). This can be verified using the following command
