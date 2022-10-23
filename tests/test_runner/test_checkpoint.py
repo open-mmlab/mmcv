@@ -148,7 +148,6 @@ def test_get_state_dict():
 
 
 def test_load_pavimodel_dist():
-
     sys.modules['pavi'] = MagicMock()
     sys.modules['pavi.modelcloud'] = MagicMock()
     pavimodel = Mockpavimodel()

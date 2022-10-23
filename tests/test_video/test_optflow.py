@@ -142,7 +142,6 @@ def test_flow2rgb():
 
 
 def test_flow_warp():
-
     img = np.zeros((5, 5, 3))
     img[2, 2, 0] = 1
     flow = np.ones((5, 5, 2))

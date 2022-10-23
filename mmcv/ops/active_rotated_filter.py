@@ -47,12 +47,12 @@ class ActiveRotatedFilterFunction(Function):
     def backward(ctx, grad_out: torch.Tensor) -> Tuple[torch.Tensor, None]:
         """
         Args:
-            grad_output (torch.Tensor): The gradiant of output features
+            grad_output (torch.Tensor): The gradient of output features
                 with shape [num_output_planes * num_rotations,
                 num_input_planes * num_orientations, H, W].
 
         Returns:
-            torch.Tensor: The gradiant of input features with shape
+            torch.Tensor: The gradient of input features with shape
             [num_output_planes, num_input_planes, num_orientations, H, W].
         """
         input, indices = ctx.saved_tensors

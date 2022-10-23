@@ -653,7 +653,6 @@ def test_cummin_cummax(func: Callable):
 @pytest.mark.parametrize('dynamic_export', [True, False])
 @pytest.mark.parametrize('fp16_mode', [True, False])
 def test_instance_norm(dynamic_export, fp16_mode):
-
     n, c, h, w = 2, 3, 10, 10
     data = torch.randn(n, c, h, w).cuda()
     norm = nn.InstanceNorm2d(c, affine=True)

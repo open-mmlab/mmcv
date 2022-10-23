@@ -276,7 +276,6 @@ def ycbcr2bgr(img: np.ndarray) -> np.ndarray:
 
 
 def convert_color_factory(src: str, dst: str) -> Callable:
-
     code = getattr(cv2, f'COLOR_{src.upper()}2{dst.upper()}')
 
     def convert_color(img: np.ndarray) -> np.ndarray:
