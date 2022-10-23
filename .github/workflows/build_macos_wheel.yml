@@ -23,9 +23,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  MMCV_WITH_OPS: 1
-
 jobs:
   build_macos10_wheel:
     runs-on: macos-10.15
