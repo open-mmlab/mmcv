@@ -1,23 +1,6 @@
 name: build macos wheel
 
-on:
-  push:
-    paths-ignore:
-      - 'README.md'
-      - 'README_zh-CN.md'
-      - 'docs/**'
-      - 'examples/**'
-      - '.dev_scripts/**'
-      - 'docker/**'
-
-  pull_request:
-    paths-ignore:
-      - 'README.md'
-      - 'README_zh-CN.md'
-      - 'docs/**'
-      - 'examples/**'
-      - '.dev_scripts/**'
-      - 'docker/**'
+on: push
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -33,7 +16,7 @@ jobs:
     strategy:
       matrix:
         torch: [1.5.1, 1.6.0, 1.7.0, 1.8.0, 1.9.0, 1.10.0, 1.11.0, 1.12.0]
-        python-version: [3.6, 3.7, 3.8, 3.9, 3.10]
+        python-version: [3.6, 3.7, 3.8, 3.9, '3.10']
         include:
           - torch: 1.5.1
             torchvision: 0.6.1
@@ -55,21 +38,21 @@ jobs:
           - torch: 1.5.1
             python-version: 3.9
           - torch: 1.5.1
-            python-version: 3.10
+            python-version: '3.10'
           - torch: 1.6.0
             python-version: 3.9
           - torch: 1.6.0
-            python-version: 3.10
+            python-version: '3.10'
           - torch: 1.7.0
             python-version: 3.9
           - torch: 1.7.0
-            python-version: 3.10
+            python-version: '3.10'
           - torch: 1.8.0
-            python-version: 3.10
+            python-version: '3.10'
           - torch: 1.9.0
-            python-version: 3.10
+            python-version: '3.10'
           - torch: 1.10.0
-            python-version: 3.10
+            python-version: '3.10'
           - torch: 1.11.0
             python-version: 3.6
           - torch: 1.12.0
@@ -92,51 +75,3 @@ jobs:
         with:
           name: ${{matrix.torch}}
           path: dist/
-
-  # build_macos11_wheel:
-  #   runs-on: macos-11
-  #   env:
-  #     RUNNER_ARCH: ARM64
-  #   strategy:
-  #     matrix:
-  #       # torch: [1.9.0, 1.10.0, 1.11.0, 1.12.0]
-  #       torch: [1.9.0, 1.10.0]
-  #       python-version: [3.7, 3.8, 3.9]
-  #       include:
-  #         - torch: 1.9.0
-  #           torchvision: 0.10.0
-  #         - torch: 1.10.0
-  #           torchvision: 0.11.0
-  #         # - torch: 1.11.0
-  #         #   torchvision: 0.12.0
-  #         # - torch: 1.12.0
-  #         #   torchvision: 0.13.0
-  #       exclude:
-  #         - torch: 1.9.0
-  #           python-version: 3.7
-  #         - torch: 1.9.0
-  #           python-version: 3.10
-  #         - torch: 1.10.0
-  #           python-version: 3.7
-  #         - torch: 1.10.0
-  #           python-version: 3.10
-  #         - torch: 1.11.0
-  #           python-version: 3.7
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: "${{ matrix.python-version }}"
-  #     - name: Install psutil
-  #       run: pip install psutil
-  #     - name: Install PyTorch
-  #       run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} --no-cache-dir
-  #     - name: Build and install
-  #       run: |
-  #         pip install wheel
-  #         python setup.py bdist_wheel
-  #     - uses: actions/upload-artifact@v3
-  #       with:
-  #         name: ${{matrix.torch}}
-  #         path: dist/
