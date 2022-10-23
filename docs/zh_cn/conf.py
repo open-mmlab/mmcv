@@ -57,6 +57,8 @@ extensions = [
 
 myst_heading_anchors = 4
 
+myst_enable_extensions = ['colon_fence']
+
 autodoc_mock_imports = ['mmcv._ext', 'mmcv.utils.ext_loader', 'torchvision']
 autosectionlabel_prefix_document = True
 
