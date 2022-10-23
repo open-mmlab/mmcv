@@ -22,12 +22,22 @@
 [![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmcv.readthedocs.io/zh_CN/latest/)
 [![platform](https://img.shields.io/badge/platform-Linux%7CWindows%7CmacOS-blue)](https://mmcv.readthedocs.io/zh_CN/latest/get_started/installation.html)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mmcv)](https://pypi.org/project/mmcv/)
+[![pytorch](https://img.shields.io/badge/pytorch-1.5~1.12-orange)](https://pytorch.org/get-started/previous-versions/)
+[![cuda](https://img.shields.io/badge/cuda-9.2~11.6-green)](https://developer.nvidia.com/cuda-downloads)
 [![PyPI](https://img.shields.io/pypi/v/mmcv)](https://pypi.org/project/mmcv)
 [![badge](https://github.com/open-mmlab/mmcv/workflows/build/badge.svg)](https://github.com/open-mmlab/mmcv/actions)
 [![codecov](https://codecov.io/gh/open-mmlab/mmcv/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmcv)
 [![license](https://img.shields.io/github/license/open-mmlab/mmcv.svg)](https://github.com/open-mmlab/mmcv/blob/master/LICENSE)
 
 [English](README.md) | 简体中文
+
+## Highlights
+
+OpenMMLab 团队于 2022 年 9 月 1 号在世界人工智能大会发布了新一代训练引擎 [MMEngine](https://github.com/open-mmlab/mmengine)，它是一个用于训练深度学习模型的基础库。相比于 MMCV，它提供了更高级且通用的训练器、接口更加统一的开放架构以及可定制化程度更高的“乐高”式训练流程。
+
+与此同时，MMCV 发布了 [2.x](https://github.com/open-mmlab/mmcv/tree/2.x) 预发布版本并将于 2023 年 1 月 1 号 发布 2.x 正式版本。在 2.x 版本中，它删除了和训练流程相关的组件，只保留了和图像视频处理相关的模块以及新增数据变换模块。另外，在 2.x 版本中，包名 **mmcv** 被重命名为 **mmcv-lite**、**mmcv-full** 被重命名为 **mmcv**。
+
+MMCV 会同时维护 1.x 和 2.x 版本，详情见[分支维护计划](README_zh-CN.md#分支维护计划)。
 
 ## 简介
 
@@ -107,6 +117,16 @@ Collecting mmcv-full==1.6.0<br />
 pip install -U openmim
 mim install mmcv
 ```
+
+## 分支维护计划
+
+MMCV 目前有两个分支，分别是 master 和 2.x 分支，它们会经历以下三个阶段：
+
+| 阶段   | 时间                  | 分支                                                                                                | 说明                                                                                                         |
+| ------ | --------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| 公测期 | 2022/9/1 - 2022.12.31 | 公测版代码发布在 2.x 分支（开发分支为 2.x）；默认主分支 master 仍对应 1.x 版本（开发分支为 master） | master 和 2.x 分支正常进行迭代更新                                                                           |
+| 兼容期 | 2023/1/1 - 2023.12.31 | 切换默认主分支 master 为 2.x 版本（开发分支为 master）；1.x 分支对应 1.x 版本（开发分支为 1.x）     | 保持对旧版本 1.x 的维护和开发，响应用户需求，但尽量不引进破坏旧版本兼容性的改动；master 分支正常进行迭代更新 |
+| 维护期 | 2024/1/1 - 待定       | 默认主分支 master 对应 2.x 版本（开发分支为 master）；1.x 分支对应 1.x 版本（开发分支为 1.x）       | 1.x 分支进入维护阶段，不再进行新功能支持；master 分支正常进行迭代更新                                        |
 
 ## 支持的开源项目
 

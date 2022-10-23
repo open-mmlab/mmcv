@@ -12,9 +12,9 @@ Do not install both versions in the same environment, otherwise you may encounte
 ### Install mmcv-full
 
 ```{note}
-- The following installation steps are for Linux and Windows platforms only. To install mmcv-full on macOS platform, please refer to [build mmcv-full from source](https://mmcv.readthedocs.io/en/latest/get_started/build.html#macos-mmcv-full).
-- To compile ONNX Runtime custom operators, please refer to [How to build custom operators for ONNX Runtime](https://mmcv.readthedocs.io/en/latest/deployment/onnxruntime_op.html#how-to-build-custom-operators-for-onnx-runtime)
-- To compile TensorRT customization, please refer to [How to build TensorRT plugins in MMCV](https://mmcv.readthedocs.io/en/latest/deployment/tensorrt_plugin.html#how-to-build-tensorrt-plugins-in-mmcv)
+- The following installation steps are for Linux and Windows platforms only. To install mmcv-full on macOS platform, please refer to [build mmcv-full from source](build.md#build-on-macos).
+- To compile ONNX Runtime custom operators, please refer to [How to build custom operators for ONNX Runtime](../deployment/onnxruntime_op.md#how-to-build-custom-operators-for-onnx-runtime)
+- To compile TensorRT customization, please refer to [How to build TensorRT plugins in MMCV](../deployment/tensorrt_plugin.md#how-to-build-tensorrt-plugins-in-mmcv)
 ```
 
 Before installing mmcv-full, make sure that PyTorch has been successfully installed following the [PyTorch official installation guide](https://pytorch.org/get-started/locally/#start-locally). This can be verified using the following command
