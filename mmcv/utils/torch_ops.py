@@ -5,7 +5,7 @@ from .parrots_wrapper import TORCH_VERSION
 from .version_utils import digit_version
 
 _torch_version_meshgrid_indexing = (
-    'parrots' not in TORCH_VERSION
+    'parrots' != TORCH_VERSION
     and digit_version(TORCH_VERSION) >= digit_version('1.10.0a0'))
 
 

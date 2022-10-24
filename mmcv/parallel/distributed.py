@@ -41,14 +41,14 @@ class MMDistributedDataParallel(DistributedDataParallel):
 
         # In PyTorch >= 1.7, ``reducer._rebuild_buckets()`` is moved from the
         # end of backward to the beginning of forward.
-        if ('parrots' not in TORCH_VERSION
+        if ('parrots' != TORCH_VERSION
                 and digit_version(TORCH_VERSION) >= digit_version('1.7')
                 and self.reducer._rebuild_buckets()):
             print_log(
                 'Reducer buckets have been rebuilt in this iteration.',
                 logger='mmcv')
 
-        if ('parrots' not in TORCH_VERSION
+        if ('parrots' != TORCH_VERSION
                 and digit_version(TORCH_VERSION) >= digit_version('1.11.0a0')):
             if self._check_sync_bufs_pre_fwd():
                 self._sync_buffers()
@@ -68,7 +68,7 @@ class MMDistributedDataParallel(DistributedDataParallel):
         else:
             output = self.module.train_step(*inputs, **kwargs)
 
-        if ('parrots' not in TORCH_VERSION
+        if ('parrots' != TORCH_VERSION
                 and digit_version(TORCH_VERSION) >= digit_version('1.11.0a0')):
             if self._check_sync_bufs_post_fwd():
                 self._sync_buffers()
@@ -81,7 +81,7 @@ class MMDistributedDataParallel(DistributedDataParallel):
             else:
                 self.reducer.prepare_for_backward([])
         else:
-            if ('parrots' not in TORCH_VERSION
+            if ('parrots' != TORCH_VERSION
                     and digit_version(TORCH_VERSION) > digit_version('1.2')):
                 self.require_forward_param_sync = False
         return output
@@ -96,14 +96,14 @@ class MMDistributedDataParallel(DistributedDataParallel):
         """
         # In PyTorch >= 1.7, ``reducer._rebuild_buckets()`` is moved from the
         # end of backward to the beginning of forward.
-        if ('parrots' not in TORCH_VERSION
+        if ('parrots' != TORCH_VERSION
                 and digit_version(TORCH_VERSION) >= digit_version('1.7')
                 and self.reducer._rebuild_buckets()):
             print_log(
                 'Reducer buckets have been rebuilt in this iteration.',
                 logger='mmcv')
 
-        if ('parrots' not in TORCH_VERSION
+        if ('parrots' != TORCH_VERSION
                 and digit_version(TORCH_VERSION) >= digit_version('1.11.0a0')):
             if self._check_sync_bufs_pre_fwd():
                 self._sync_buffers()
@@ -123,7 +123,7 @@ class MMDistributedDataParallel(DistributedDataParallel):
         else:
             output = self.module.val_step(*inputs, **kwargs)
 
-        if ('parrots' not in TORCH_VERSION
+        if ('parrots' != TORCH_VERSION
                 and digit_version(TORCH_VERSION) >= digit_version('1.11.0a0')):
             if self._check_sync_bufs_post_fwd():
                 self._sync_buffers()
@@ -136,7 +136,7 @@ class MMDistributedDataParallel(DistributedDataParallel):
             else:
                 self.reducer.prepare_for_backward([])
         else:
-            if ('parrots' not in TORCH_VERSION
+            if ('parrots' != TORCH_VERSION
                     and digit_version(TORCH_VERSION) > digit_version('1.2')):
                 self.require_forward_param_sync = False
         return output
