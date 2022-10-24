@@ -66,13 +66,13 @@ The command to install mmcv on Linux or Windows platforms is as follows (if your
 
 ```bash
 pip install -U openmim
-mim install 'mmcv>=2.0.0rc1'
+mim install "mmcv>=2.0.0rc1"
 ```
 
 If you need to specify the version of mmcv, you can use the following command
 
 ```bash
-mim install mmcv==2.0.0rc1
+mim install "mmcv==2.0.0rc1"
 ```
 
 If you find that the above installation command does not use a pre-built package ending with `.whl` but a source package ending with `.tar.gz`, you may not have a pre-build package corresponding to the PyTorch or CUDA or mmcv version, in which case you can [build mmcv from source](https://mmcv.readthedocs.io/en/2.x/get_started/build.html).
@@ -103,7 +103,7 @@ If you need to use PyTorch-related modules, make sure PyTorch has been successfu
 
 ```bash
 pip install -U openmim
-mim install 'mmcv-lite>=2.0.0rc1'
+mim install "mmcv-lite>=2.0.0rc1"
 ```
 
 ## FAQ
