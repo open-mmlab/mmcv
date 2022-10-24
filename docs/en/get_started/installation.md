@@ -29,7 +29,7 @@ If version information is output, then PyTorch is installed.
 
 ```bash
 pip install -U openmim
-mim install 'mmcv>=2.0.0rc1'
+mim install "mmcv>=2.0.0rc1"
 ```
 
 If you find that the above installation command does not use a pre-built package ending with `.whl` but a source package ending with `.tar.gz`, you may not have a pre-build package corresponding to the PyTorch or CUDA or mmcv version, in which case you can [build mmcv from source](build.md).
@@ -55,7 +55,7 @@ Collecting mmcv==2.0.0rc1<br />
 To install a specific version of mmcv, for example, mmcv version 2.0.0rc1, you can use the following command
 
 ```bash
-mim install mmcv==2.0.0rc1
+mim install "mmcv==2.0.0rc1"
 ```
 
 :::{note}
@@ -66,7 +66,7 @@ you can first install it before installing MMCV to skip the installation of `ope
 Alternatively, if it takes too long to install a dependency library, you can specify the pypi source
 
 ```bash
-mim install 'mmcv>=2.0.0rc1' -i https://pypi.tuna.tsinghua.edu.cn/simple
+mim install "mmcv>=2.0.0rc1" -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 :::
@@ -296,7 +296,7 @@ you can first install it before installing MMCV to skip the installation of `ope
 Alternatively, if it takes too long to install a dependency library, you can specify the pypi source
 
 ```bash
-mim install mmcv -i https://pypi.tuna.tsinghua.edu.cn/simple
+mim install "mmcv>=2.0.0rc1" -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 :::
@@ -343,5 +343,5 @@ More available versions of PyTorch and CUDA can be found at [dockerhub/pytorch](
 If you need to use PyTorch-related modules, make sure PyTorch has been successfully installed in your environment by referring to the [PyTorch official installation guide](https://github.com/pytorch/pytorch#installation).
 
 ```python
-pip install mmcv-lite
+pip install "mmcv-lite>=2.0.0rc1"
 ```
