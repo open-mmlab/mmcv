@@ -50,7 +50,7 @@ class WandbLoggerHook(LoggerHook):
              "none"].
             For example, if setting
             ``define_metric_cfg={'coco/bbox_mAP': 'max'}``, the maximum value
-            of``coco/bbox_mAP`` will be logged on wandb UI. See
+            of ``coco/bbox_mAP`` will be logged on wandb UI. See
             `wandb docs <https://docs.wandb.ai/ref/python/run#define_metric>`_
             for details.
             Default: None.
