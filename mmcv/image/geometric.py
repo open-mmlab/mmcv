@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import numbers
-import warnings
 from typing import List, Optional, Tuple, Union, no_type_check
 
 import cv2
@@ -355,12 +354,6 @@ def imrotate(img: np.ndarray,
     Returns:
         np.ndarray: The rotated image.
     """
-    warnings.warn("We have added an arg 'border_mode' in this func "
-                  'and will reorder the args in the future as: '
-                  '( ..., scale: float = 1.0, '
-                  "border_mode: str = 'constant', "
-                  'border_value: int = 0, ... ). '
-                  'Please use keyword arguments to call this function.')
     if center is not None and auto_bound:
         raise ValueError('`auto_bound` conflicts with `center`')
     h, w = img.shape[:2]
