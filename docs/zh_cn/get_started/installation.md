@@ -29,7 +29,7 @@ python -c 'import torch;print(torch.__version__)'
 
 ```bash
 pip install -U openmim
-mim install 'mmcv>=2.0.0rc1'
+mim install "mmcv>=2.0.0rc1"
 ```
 
 如果发现上述的安装命令没有使用预编译包（以 `.whl` 结尾）而是使用源码包（以 `.tar.gz` 结尾）安装，则有可能是我们没有提供和当前环境的 PyTorch 版本、CUDA 版本相匹配的 mmcv 预编译包，此时，你可以[源码安装 mmcv](build.md)。
@@ -64,7 +64,7 @@ mim install mmcv==2.0.0rc1
 另外，如果安装依赖库的时间过长，可以指定 pypi 源
 
 ```bash
-mim install 'mmcv>=2.0.0rc1' -i https://pypi.tuna.tsinghua.edu.cn/simple
+mim install "mmcv>=2.0.0rc1" -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 :::
@@ -317,7 +317,7 @@ PyTorch 版本是 1.8.1，你可以放心选择 1.8.x。
 另外，如果安装依赖库的时间过长，可以指定 pypi 源
 
 ```bash
-pip install mmcv -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install "mmcv>=2.0.0rc1" -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 :::

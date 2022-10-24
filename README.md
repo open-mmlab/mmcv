@@ -66,7 +66,7 @@ The command to install mmcv on Linux or Windows platforms is as follows (if your
 
 ```bash
 pip install -U openmim
-mim install 'mmcv>=2.0.0rc1'
+mim install "mmcv>=2.0.0rc1"
 ```
 
 If you need to specify the version of mmcv, you can use the following command
@@ -103,7 +103,7 @@ If you need to use PyTorch-related modules, make sure PyTorch has been successfu
 
 ```bash
 pip install -U openmim
-mim install 'mmcv-lite>=2.0.0rc1'
+mim install "mmcv-lite>=2.0.0rc1"
 ```
 
 ## FAQ

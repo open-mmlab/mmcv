@@ -66,7 +66,7 @@ MMCV 有两个版本：
 
 ```bash
 pip install -U openmim
-mim install 'mmcv>=2.0.0rc1'
+mim install "mmcv>=2.0.0rc1"
 ```
 
 如果需要指定 mmcv 的版本，可以使用以下命令
@@ -103,7 +103,7 @@ Collecting mmcv==2.0.0rc1<br />
 
 ```bash
 pip install -U openmim
-mim install 'mmcv-lite>=2.0.0rc1'
+mim install "mmcv-lite>=2.0.0rc1"
 ```
 
 ## FAQ
