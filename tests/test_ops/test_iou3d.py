@@ -96,10 +96,11 @@ def test_nms3d(device):
     assert np.allclose(inds.cpu().numpy(), np_inds)
 
     # test for many boxes
-    # In the float data type calculation process, float will be converted to double
-    # in CUDA kernel (https://github.com/open-mmlab/mmcv/blob/master/mmcv/ops/csrc
-    # /common/box_iou_rotated_utils.hpp#L61), always use float in MLU kernel.
-    # The difference between the mentioned above leads to different results.
+    # In the float data type calculation process, float will be converted to
+    # double in CUDA kernel (https://github.com/open-mmlab/mmcv/blob
+    # /master/mmcv/ops/csrc/common/box_iou_rotated_utils.hpp#L61),
+    # always use float in MLU kernel. The difference between the mentioned
+    # above leads to different results.
     if device != 'mlu':
         np.random.seed(42)
         np_boxes = np.random.rand(555, 7).astype(np.float32)
