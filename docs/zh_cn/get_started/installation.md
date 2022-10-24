@@ -364,5 +364,5 @@ docker build -t mmcv -f docker/release/Dockerfile \
 如果你需要使用和 PyTorch 相关的模块，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://pytorch.org/get-started/locally/#start-locally)。
 
 ```python
-pip install "mmcv-lite>=2.0.0rc1"
+pip install mmcv-lite
 ```
