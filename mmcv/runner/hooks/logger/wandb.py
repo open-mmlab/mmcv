@@ -53,8 +53,8 @@ class WandbLoggerHook(LoggerHook):
             of ``coco/bbox_mAP`` will be logged on wandb UI. See
             `wandb docs <https://docs.wandb.ai/ref/python/run#define_metric>`_
             for details.
-            Default: None.
-            `New in version 1.6.2.`
+            Defaults to None.
+            `New in version 1.6.3.`
 
     .. _wandb:
         https://docs.wandb.ai
