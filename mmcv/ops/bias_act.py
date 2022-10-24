@@ -16,7 +16,9 @@ from typing import Any
 import numpy as np
 import torch
 
-from .. import custom_ops
+from ..utils import ext_loader
+
+ext_module = ext_loader.load_ext('_ext', ['bias_act'])
 
 
 class EasyDict(dict):
@@ -113,19 +115,6 @@ activation_funcs = {
 
 _plugin = None
 _null_tensor = torch.empty([0])
-
-
-def _init():
-    global _plugin
-    if _plugin is None:
-        _plugin = custom_ops.get_plugin(
-            module_name='bias_act_plugin',
-            sources=['bias_act.cpp', 'bias_act.cu'],
-            headers=['bias_act.h'],
-            source_dir=os.path.dirname(__file__),
-            extra_cuda_cflags=['--use_fast_math'],
-        )
-    return True
 
 
 def bias_act(x,
@@ -244,9 +233,9 @@ def _bias_act_cuda(dim=1, act='linear', alpha=None, gain=None, clamp=None):
             y = x
             if act != 'linear' or gain != 1 or clamp >= 0 or (
                     b is not _null_tensor):
-                y = _plugin.bias_act(x, b, _null_tensor, _null_tensor,
-                                     _null_tensor, 0, dim, spec.cuda_idx,
-                                     alpha, gain, clamp)
+                y = ext_module.bias_act(x, b, _null_tensor, _null_tensor,
+                                        _null_tensor, 0, dim, spec.cuda_idx,
+                                        alpha, gain, clamp)
             ctx.save_for_backward(
                 x if 'x' in spec.ref or spec.has_2nd_grad else _null_tensor,
                 b if 'x' in spec.ref or spec.has_2nd_grad else _null_tensor,
@@ -277,8 +266,8 @@ def _bias_act_cuda(dim=1, act='linear', alpha=None, gain=None, clamp=None):
         def forward(ctx, dy, x, b, y):  # pylint: disable=arguments-differ
             ctx.memory_format = torch.channels_last if dy.ndim > 2 and (
                 dy.stride(1) == 1) else torch.contiguous_format
-            dx = _plugin.bias_act(dy, b, x, y, _null_tensor, 1, dim,
-                                  spec.cuda_idx, alpha, gain, clamp)
+            dx = ext_module.bias_act(dy, b, x, y, _null_tensor, 1, dim,
+                                     spec.cuda_idx, alpha, gain, clamp)
             ctx.save_for_backward(dy if spec.has_2nd_grad else _null_tensor, x,
                                   b, y)
             return dx
@@ -297,8 +286,8 @@ def _bias_act_cuda(dim=1, act='linear', alpha=None, gain=None, clamp=None):
 
             if spec.has_2nd_grad and (ctx.needs_input_grad[1]
                                       or ctx.needs_input_grad[2]):
-                d_x = _plugin.bias_act(d_dx, b, x, y, dy, 2, dim,
-                                       spec.cuda_idx, alpha, gain, clamp)
+                d_x = ext_module.bias_act(d_dx, b, x, y, dy, 2, dim,
+                                          spec.cuda_idx, alpha, gain, clamp)
 
             if spec.has_2nd_grad and ctx.needs_input_grad[2]:
                 d_b = d_x.sum([i for i in range(d_x.ndim) if i != dim])

@@ -423,6 +423,8 @@ void chamfer_distance_backward(const Tensor xyz1, const Tensor xyz2,
                                Tensor graddist2, Tensor gradxyz1,
                                Tensor gradxyz2);
 
+Tensor bias_act(const Tensor &x, const Tensor &b, const Tensor &xref, const Tensor &yref, const Tensor &dy, int grad, int dim, int act, float alpha, float gain, float clamp);
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
         py::arg("kernel"), py::arg("up_x"), py::arg("up_y"), py::arg("down_x"),
@@ -853,4 +855,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("input"), py::arg("rois"), py::arg("grad_rois"),
         py::arg("pooled_height"), py::arg("pooled_width"),
         py::arg("spatial_scale"));
+  m.def("bias_act", &bias_act, "bias_act (CUDA)", py::arg("x"), py::arg("b"),
+       py::arg("xref"), py::arg("yref"), py::arg("dy"), py::arg("grad"),
+        py::arg("dim"), py::arg("act"), py::arg("alpha"), py::arg("gain"), 
+        py::arg("clamp"));
 }

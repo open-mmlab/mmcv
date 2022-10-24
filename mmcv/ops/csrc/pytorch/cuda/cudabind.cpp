@@ -493,6 +493,13 @@ torch::Tensor fused_bias_leakyrelu_op_impl(const torch::Tensor& input,
 REGISTER_DEVICE_IMPL(fused_bias_leakyrelu_op_impl, CUDA,
                      fused_bias_leakyrelu_op);
 
+torch::Tensor bias_act_op_impl(const torch::Tensor& x, const torch::Tensor& b, const torch::Tensor& xref, const torch::Tensor& yref, const torch::Tensor& dy, int grad, int dim, int act, float alpha, float gain, float clamp);
+
+torch::Tensor bias_act_op(const torch::Tensor& x, const torch::Tensor& b, const torch::Tensor& xref, const torch::Tensor& yref, const torch::Tensor& dy, int grad, int dim, int act, float alpha, float gain, float clamp);
+
+REGISTER_DEVICE_IMPL(bias_act_op_impl, CUDA,
+                     bias_act_op);
+
 void GatherPointsForwardCUDAKernelLauncher(int b, int c, int n, int npoints,
                                            const Tensor points,
                                            const Tensor idx, Tensor out);
