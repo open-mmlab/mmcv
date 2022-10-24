@@ -343,5 +343,5 @@ More available versions of PyTorch and CUDA can be found at [dockerhub/pytorch](
 If you need to use PyTorch-related modules, make sure PyTorch has been successfully installed in your environment by referring to the [PyTorch official installation guide](https://github.com/pytorch/pytorch#installation).
 
 ```python
-pip install "mmcv-lite>=2.0.0rc1"
+pip install mmcv-lite
 ```
