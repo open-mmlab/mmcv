@@ -55,7 +55,7 @@ Collecting mmcv==2.0.0rc1<br />
 如需安装指定版本的 mmcv，例如安装 2.0.0rc1 版本的 mmcv，可使用以下命令
 
 ```bash
-mim install "mmcv==2.0.0rc1"
+mim install mmcv==2.0.0rc1
 ```
 
 :::{note}
