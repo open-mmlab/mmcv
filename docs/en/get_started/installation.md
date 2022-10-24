@@ -55,7 +55,7 @@ Collecting mmcv==2.0.0rc1<br />
 To install a specific version of mmcv, for example, mmcv version 2.0.0rc1, you can use the following command
 
 ```bash
-mim install "mmcv==2.0.0rc1"
+mim install mmcv==2.0.0rc1
 ```
 
 :::{note}
