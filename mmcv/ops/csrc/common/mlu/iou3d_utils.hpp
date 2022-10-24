@@ -44,8 +44,8 @@ __mlu_func__ void pvUnlock() {
 // cross2d<T>(A, B) = A.x * B.y - A.y * B.x;
 template <typename T>
 inline __mlu_func__ void cross2d(T *result, const T *p1_x, const T *p1_y,
-                                 const T *p2_x, const T *p2_y, const int &length,
-                                 T *temp_ram) {
+                                 const T *p2_x, const T *p2_y,
+                                 const int &length, T *temp_ram) {
   __bang_mul((T *)temp_ram, (T *)p1_x, (T *)p2_y, length);
   __bang_mul((T *)result, (T *)p1_y, (T *)p2_x, length);
   __bang_sub((T *)result, (T *)temp_ram, (T *)result, length);
