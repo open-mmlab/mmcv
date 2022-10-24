@@ -50,7 +50,9 @@ expected_idx = [[[0, 3, 4], [1, 2, 0], [2, 0, 3], [0, 3, 4], [2, 1, 0],
         marks=pytest.mark.skipif(
             not IS_MLU_AVAILABLE, reason='requires MLU support'))
 ])
-def test_three_nn(device):
+@pytest.mark.parametrize('dtype,rtol', [(torch.float, 1e-8),
+                                        (torch.half, 1e-3)])
+def test_three_nn(device, dtype, rtol):
     dtype = torch.float
     known_t = torch.tensor(known, dtype=dtype, device=device)
     unknown_t = torch.tensor(unknown, dtype=dtype, device=device)
@@ -59,29 +61,5 @@ def test_three_nn(device):
     expected_dist_t = torch.tensor(expected_dist, dtype=dtype, device=device)
     expected_idx_t = torch.tensor(expected_idx, device=device)
 
-    print(dist_t.shape, expected_dist_t.shape)
-    assert torch.allclose(dist_t, expected_dist_t, atol=1e-4)
-    assert torch.all(idx_t == expected_idx_t)
-
-
-@pytest.mark.parametrize('device', [
-    pytest.param(
-        'cuda',
-        marks=pytest.mark.skipif(
-            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
-    pytest.param(
-        'mlu',
-        marks=pytest.mark.skipif(
-            not IS_MLU_AVAILABLE, reason='requires MLU support'))
-])
-def test_three_nn_half(device):
-    dtype = torch.half
-    known_t = torch.tensor(known, dtype=dtype, device=device)
-    unknown_t = torch.tensor(unknown, dtype=dtype, device=device)
-
-    dist_t, idx_t = three_nn(unknown_t, known_t)
-    expected_dist_t = torch.tensor(expected_dist, dtype=dtype, device=device)
-    expected_idx_t = torch.tensor(expected_idx, device=device)
-
-    assert torch.allclose(dist_t, expected_dist_t, atol=1e-4, rtol=1e-3)
+    assert torch.allclose(dist_t, expected_dist_t, atol=1e-4, rtol=rtol)
     assert torch.all(idx_t == expected_idx_t)
