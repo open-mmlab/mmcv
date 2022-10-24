@@ -72,7 +72,7 @@ mim install "mmcv>=2.0.0rc1"
 如果需要指定 mmcv 的版本，可以使用以下命令
 
 ```bash
-mim install "mmcv==2.0.0rc1"
+mim install mmcv==2.0.0rc1
 ```
 
 如果发现上述的安装命令没有使用预编译包（以 `.whl` 结尾）而是使用源码包（以 `.tar.gz` 结尾）安装，则有可能是我们没有提供和当前环境的 PyTorch 版本、CUDA 版本相匹配的 mmcv 预编译包，此时，你可以[源码安装 mmcv](https://mmcv.readthedocs.io/zh_CN/2.x/get_started/build.html)。
