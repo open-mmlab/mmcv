@@ -27,7 +27,7 @@ We implement common ops used in detection, segmentation, etc.
 | FusedBiasLeakyrelu           |     | √    |     |     |
 | GatherPoints                 |     | √    |     |     |
 | GroupPoints                  |     | √    |     |     |
-| Iou3d                        |     | √    |     |     |
+| Iou3d                        |     | √    | √   |     |
 | KNN                          |     | √    |     |     |
 | MaskedConv                   |     | √    | √   |     |
 | MergeCells                   |     | √    |     |     |
