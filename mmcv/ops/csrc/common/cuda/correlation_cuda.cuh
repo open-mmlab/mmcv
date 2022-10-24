@@ -36,7 +36,8 @@ template <typename scalar_t>
 __global__ void correlation_forward_cuda_kernel(
     const TensorAcc4R rInput1, const TensorAcc4R rInput2, TensorAcc5R output,
     int kH, int kW, int patchH, int patchW, int padH, int padW, int dilationH,
-    int dilationW, int dilation_patchH, int dilation_patchW, int dH, int dW) {
+    int dilationW, int dilation_patchH, int dilation_patchW, int dH, int dW,
+    int oH, int oW) {
   const int iH = rInput1.size(1);
   const int iW = rInput1.size(2);
   const int C = rInput1.size(3);
@@ -44,6 +45,9 @@ __global__ void correlation_forward_cuda_kernel(
   const int n = blockIdx.x;
   const int h = blockIdx.y * blockDim.y + threadIdx.y;
   const int w = blockIdx.z * blockDim.z + threadIdx.z;
+
+  if (h >= oH || w >= oW) return;
+
   const int thread = threadIdx.x;
 
   const int start_i = -padH + h * dH;
