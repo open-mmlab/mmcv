@@ -1,6 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 """This file holding some environment constant for sharing by other files."""
 
+import os.path as osp
+import subprocess
+
+import torch
 from mmengine.utils.dl_utils import collect_env as mmengine_collect_env
 
 import mmcv
@@ -31,6 +35,37 @@ def collect_env():
             - MMCV CUDA Compiler: The CUDA version for compiling MMCV ops.
     """
     env_info = mmengine_collect_env()
+
+    # MMEngine does not add the hipcc compiler information when collecting
+    # environment information, so it is added here. When MMEngine v0.3.0 is
+    # released, the code here can be removed.
+    cuda_available = torch.cuda.is_available()
+    if cuda_available and env_info.get('NVCC') == 'Not Available':
+        CUDA_HOME = env_info['CUDA_HOME']
+        if CUDA_HOME is not None and osp.isdir(CUDA_HOME):
+            if CUDA_HOME == '/opt/rocm':
+                try:
+                    nvcc = osp.join(CUDA_HOME, 'hip/bin/hipcc')
+                    nvcc = subprocess.check_output(
+                        f'"{nvcc}" --version', shell=True)
+                    nvcc = nvcc.decode('utf-8').strip()
+                    release = nvcc.rfind('HIP version:')
+                    build = nvcc.rfind('')
+                    nvcc = nvcc[release:build].strip()
+                except subprocess.SubprocessError:
+                    nvcc = 'Not Available'
+            else:
+                try:
+                    nvcc = osp.join(CUDA_HOME, 'bin/nvcc')
+                    nvcc = subprocess.check_output(f'"{nvcc}" -V', shell=True)
+                    nvcc = nvcc.decode('utf-8').strip()
+                    release = nvcc.rfind('Cuda compilation tools')
+                    build = nvcc.rfind('Build ')
+                    nvcc = nvcc[release:build].strip()
+                except subprocess.SubprocessError:
+                    nvcc = 'Not Available'
+            env_info['NVCC'] = nvcc
+
     env_info['MMCV'] = mmcv.__version__
 
     try:

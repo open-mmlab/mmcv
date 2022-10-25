@@ -106,15 +106,15 @@ An example json file could be like:
 
 The default links of the pre-trained models hosted on OpenMMLab AWS could be found [here](https://github.com/open-mmlab/mmcv/blob/master/mmcv/model_zoo/open_mmlab.json).
 
-You may override default links by putting `open-mmlab.json` under `MMCV_HOME`. If `MMCV_HOME` is not find in the environment, `~/.cache/mmcv` will be used by default. You may `export MMCV_HOME=/your/path` to use your own path.
+You may override default links by putting `open-mmlab.json` under `MMCV_HOME`. If `MMCV_HOME` is not found in your environment, `~/.cache/mmcv` will be used by default. You may use your own path with `export MMCV_HOME=/your/path`.
 
 The external json files will be merged into default one. If the same key presents in both external json and default json, the external one will be used.
 
 #### Load Checkpoint
 
-The following types are supported for `filename` argument of `mmcv.load_checkpoint()`.
+The following types are supported for `filename` of `mmcv.load_checkpoint()`.
 
 - filepath: The filepath of the checkpoint.
 - `http://xxx` and `https://xxx`: The link to download the checkpoint. The `SHA256` postfix should be contained in the filename.
-- `torchvision://xxx`: The model links in `torchvision.models`.Please refer to [torchvision](https://pytorch.org/docs/stable/torchvision/models.html) for details.
+- `torchvision://xxx`: The model links in `torchvision.models`. Please refer to [torchvision](https://pytorch.org/docs/stable/torchvision/models.html) for details.
 - `open-mmlab://xxx`: The model links or filepath provided in default and additional json files.

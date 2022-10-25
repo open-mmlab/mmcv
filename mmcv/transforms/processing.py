@@ -1,6 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import copy
 import random
 import warnings
+from itertools import product
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import mmengine
@@ -250,7 +252,8 @@ class Resize(BaseTransform):
             results['scale'] = self.scale
         else:
             img_shape = results['img'].shape[:2]
-            results['scale'] = _scale_size(img_shape[::-1], self.scale_factor)
+            results['scale'] = _scale_size(img_shape[::-1],
+                                           self.scale_factor)  # type: ignore
         self._resize_img(results)
         self._resize_bboxes(results)
         self._resize_seg(results)
@@ -497,7 +500,7 @@ class CenterCrop(BaseTransform):
         """
         if results.get('img', None) is not None:
             img = mmcv.imcrop(results['img'], bboxes=bboxes)
-            img_shape = img.shape[:2]
+            img_shape = img.shape[:2]  # type: ignore
             results['img'] = img
             results['img_shape'] = img_shape
             results['pad_shape'] = img_shape
@@ -746,7 +749,7 @@ class MultiScaleFlipAug(BaseTransform):
     - resize to (1333, 800) + flip
 
     The four results are then transformed with ``transforms`` argument.
-    After that, results are wrapped into lists of the same length as followed:
+    After that, results are wrapped into lists of the same length as below:
 
     .. code-block::
 
@@ -867,6 +870,130 @@ class MultiScaleFlipAug(BaseTransform):
         repr_str += f', scales={self.scales}'
         repr_str += f', allow_flip={self.allow_flip}'
         repr_str += f', flip_direction={self.flip_direction})'
+        return repr_str
+
+
+@TRANSFORMS.register_module()
+class TestTimeAug(BaseTransform):
+    """Test-time augmentation transform.
+
+    An example configuration is as followed:
+
+    .. code-block::
+
+        dict(type='TestTimeAug',
+             transforms=[
+                [dict(type='Resize', scale=(1333, 400), keep_ratio=True),
+                 dict(type='Resize', scale=(1333, 800), keep_ratio=True)],
+                [dict(type='RandomFlip', prob=1.),
+                 dict(type='RandomFlip', prob=0.)],
+                [dict(type='PackDetInputs',
+                      meta_keys=('img_id', 'img_path', 'ori_shape',
+                                 'img_shape', 'scale_factor', 'flip',
+                                 'flip_direction'))]])
+
+    ``results`` will be transformed using all transforms defined in
+    ``transforms`` arguments.
+
+    For the above configuration, there are four combinations of resize
+    and flip:
+
+    - Resize to (1333, 400) + no flip
+    - Resize to (1333, 400) + flip
+    - Resize to (1333, 800) + no flip
+    - resize to (1333, 800) + flip
+
+    After that, results are wrapped into lists of the same length as below:
+
+    .. code-block::
+
+        dict(
+            inputs=[...],
+            data_samples=[...]
+        )
+
+    The length of ``inputs`` and ``data_samples`` are both 4.
+
+    Required Keys:
+
+    - Depending on the requirements of the ``transforms`` parameter.
+
+    Modified Keys:
+
+    - All output keys of each transform.
+
+    Args:
+        transforms (list[list[dict]]): Transforms to be applied to data sampled
+            from dataset. ``transforms`` is a list of list, and each list
+            element usually represents a series of transforms with the same
+            type and different arguments. Data will be processed by each list
+            elements sequentially. See more information in :meth:`transform`.
+    """
+
+    def __init__(self, transforms: list):
+        for i, transform_list in enumerate(transforms):
+            for j, transform in enumerate(transform_list):
+                if isinstance(transform, dict):
+                    transform_list[j] = TRANSFORMS.build(transform)
+                elif callable(transform):
+                    continue
+                else:
+                    raise TypeError(
+                        'transform must be callable or a dict, but got'
+                        f' {type(transform)}')
+            transforms[i] = transform_list
+
+        self.subroutines = [
+            Compose(subroutine) for subroutine in product(*transforms)
+        ]
+
+    def transform(self, results: dict) -> dict:
+        """Apply all transforms defined in :attr:`transforms` to the results.
+
+        As the example given in :obj:`TestTimeAug`, ``transforms`` consists of
+        2 ``Resize``, 2 ``RandomFlip`` and 1 ``PackDetInputs``.
+        The data sampled from dataset will be processed as follows:
+
+        1. Data will be processed by 2 ``Resize`` and return a list
+           of 2 results.
+        2. Each result in list will be further passed to 2
+           ``RandomFlip``, and aggregates into a list of 4 results.
+        3. Each result will be processed by ``PackDetInputs``, and
+           return a list of dict.
+        4. Aggregates the same fields of results, and finally returns
+           a dict. Each value of the dict represents 4 transformed
+           results.
+
+        Args:
+            results (dict): Result dict contains the data to transform.
+
+        Returns:
+            dict: The augmented data, where each value is wrapped
+            into a list.
+        """
+        results_list = []  # type: ignore
+        for subroutine in self.subroutines:
+            result = subroutine(copy.deepcopy(results))
+            assert isinstance(result, dict), (
+                f'Data processed by {subroutine} must return a dict, but got '
+                f'{result}')
+            assert result is not None, (
+                f'Data processed by {subroutine} in `TestTimeAug` should not '
+                'be None! Please check your validation dataset and the '
+                f'transforms in {subroutine}')
+            results_list.append(result)
+
+        aug_data_dict = {
+            key: [item[key] for item in results_list]  # type: ignore
+            for key in results_list[0]  # type: ignore
+        }
+        return aug_data_dict
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += 'transforms=\n'
+        for subroutine in self.subroutines:
+            repr_str += f'{repr(subroutine)}\n'
         return repr_str
 
 

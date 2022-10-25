@@ -651,14 +651,12 @@ void IoU3DBoxesOverlapBevForwardCUDAKernelLauncher(const int num_a,
                                                    const Tensor boxes_b,
                                                    Tensor ans_overlap);
 
-void IoU3DNMS3DForwardCUDAKernelLauncher(const Tensor boxes,
-                                         unsigned long long* mask,
-                                         int boxes_num,
+void IoU3DNMS3DForwardCUDAKernelLauncher(const Tensor boxes, Tensor& keep,
+                                         Tensor& keep_num,
                                          float nms_overlap_thresh);
 
-void IoU3DNMS3DNormalForwardCUDAKernelLauncher(const Tensor boxes,
-                                               unsigned long long* mask,
-                                               int boxes_num,
+void IoU3DNMS3DNormalForwardCUDAKernelLauncher(const Tensor boxes, Tensor& keep,
+                                               Tensor& keep_num,
                                                float nms_overlap_thresh);
 
 void iou3d_boxes_overlap_bev_forward_cuda(const int num_a, const Tensor boxes_a,
@@ -668,16 +666,16 @@ void iou3d_boxes_overlap_bev_forward_cuda(const int num_a, const Tensor boxes_a,
                                                 ans_overlap);
 };
 
-void iou3d_nms3d_forward_cuda(const Tensor boxes, unsigned long long* mask,
-                              int boxes_num, float nms_overlap_thresh) {
-  IoU3DNMS3DForwardCUDAKernelLauncher(boxes, mask, boxes_num,
+void iou3d_nms3d_forward_cuda(const Tensor boxes, Tensor& keep,
+                              Tensor& keep_num, float nms_overlap_thresh) {
+  IoU3DNMS3DForwardCUDAKernelLauncher(boxes, keep, keep_num,
                                       nms_overlap_thresh);
 };
 
-void iou3d_nms3d_normal_forward_cuda(const Tensor boxes,
-                                     unsigned long long* mask, int boxes_num,
+void iou3d_nms3d_normal_forward_cuda(const Tensor boxes, Tensor& keep,
+                                     Tensor& keep_num,
                                      float nms_overlap_thresh) {
-  IoU3DNMS3DNormalForwardCUDAKernelLauncher(boxes, mask, boxes_num,
+  IoU3DNMS3DNormalForwardCUDAKernelLauncher(boxes, keep, keep_num,
                                             nms_overlap_thresh);
 };
 
@@ -685,11 +683,11 @@ void iou3d_boxes_overlap_bev_forward_impl(const int num_a, const Tensor boxes_a,
                                           const int num_b, const Tensor boxes_b,
                                           Tensor ans_overlap);
 
-void iou3d_nms3d_forward_impl(const Tensor boxes, unsigned long long* mask,
-                              int boxes_num, float nms_overlap_thresh);
+void iou3d_nms3d_forward_impl(const Tensor boxes, Tensor& keep,
+                              Tensor& keep_num, float nms_overlap_thresh);
 
-void iou3d_nms3d_normal_forward_impl(const Tensor boxes,
-                                     unsigned long long* mask, int boxes_num,
+void iou3d_nms3d_normal_forward_impl(const Tensor boxes, Tensor& keep,
+                                     Tensor& keep_num,
                                      float nms_overlap_thresh);
 
 REGISTER_DEVICE_IMPL(iou3d_boxes_overlap_bev_forward_impl, CUDA,

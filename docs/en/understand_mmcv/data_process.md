@@ -2,7 +2,7 @@
 
 ### Image
 
-This module provides some image processing methods, which requires `opencv` to be installed.
+This module provides some image processing methods, which requires `opencv` to be installed first.
 
 #### Read/Write/Show
 
@@ -118,7 +118,7 @@ mmcv.imflip(img, direction='vertical')
 
 #### Crop
 
-`imcrop` can crop the image with one or some regions, represented as (x1, y1, x2, y2).
+`imcrop` can crop the image with one or more regions. Each region is represented by the upper left and lower right coordinates as (x1, y1, x2, y2).
 
 ```python
 import mmcv
@@ -140,7 +140,7 @@ patches = mmcv.imcrop(img, bboxes, scale=1.2)
 
 #### Padding
 
-There are two methods `impad` and `impad_to_multiple` to pad an image to the
+There are two methods, `impad` and `impad_to_multiple`, to pad an image to the
 specific size with given values.
 
 ```python
@@ -165,7 +165,7 @@ img_ = mmcv.impad_to_multiple(img, 32)
 
 ### Video
 
-This module provides the following functionalities.
+This module provides the following functionalities:
 
 - A `VideoReader` class with friendly apis to read and convert videos.
 - Some methods for editing (cut, concat, resize) videos.

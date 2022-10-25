@@ -4,7 +4,7 @@ from .builder import TRANSFORMS
 from .loading import LoadAnnotations, LoadImageFromFile
 from .processing import (CenterCrop, MultiScaleFlipAug, Normalize, Pad,
                          RandomChoiceResize, RandomFlip, RandomGrayscale,
-                         RandomResize, Resize)
+                         RandomResize, Resize, TestTimeAug)
 from .wrappers import (Compose, KeyMapper, RandomApply, RandomChoice,
                        TransformBroadcaster)
 
@@ -16,7 +16,7 @@ except ImportError:
         'RandomChoice', 'KeyMapper', 'LoadImageFromFile', 'LoadAnnotations',
         'Normalize', 'Resize', 'Pad', 'RandomFlip', 'RandomChoiceResize',
         'CenterCrop', 'RandomGrayscale', 'MultiScaleFlipAug', 'RandomResize',
-        'RandomApply'
+        'RandomApply', 'TestTimeAug'
     ]
 else:
     from .formatting import ImageToTensor, ToTensor, to_tensor
@@ -26,5 +26,5 @@ else:
         'RandomChoice', 'KeyMapper', 'LoadImageFromFile', 'LoadAnnotations',
         'Normalize', 'Resize', 'Pad', 'ToTensor', 'to_tensor', 'ImageToTensor',
         'RandomFlip', 'RandomChoiceResize', 'CenterCrop', 'RandomGrayscale',
-        'MultiScaleFlipAug', 'RandomResize', 'RandomApply'
+        'MultiScaleFlipAug', 'RandomResize', 'RandomApply', 'TestTimeAug'
     ]
