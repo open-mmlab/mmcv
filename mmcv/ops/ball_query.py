@@ -34,9 +34,11 @@ class BallQuery(Function):
             center_xyz (torch.Tensor): (B, npoint, 3) centers of the ball
                 query, or staked input (M1 + M2 ..., 3).
             xyz_batch_cnt: (batch_size): Stacked input xyz coordinates nums in
-                each batch, just like (N1, N2, ...). Default None.
+                each batch, just like (N1, N2, ...). Defaults to None.
+                New in version 1.7.0.
             center_xyz_batch_cnt: (batch_size): Stacked centers coordinates
-                nums in each batch, just line (M1, M2, ...). Default None.
+                nums in each batch, just line (M1, M2, ...). Defaults to None.
+                New in version 1.7.0.
 
         Returns:
             torch.Tensor: (B, npoint, nsample) tensor with the indices of the

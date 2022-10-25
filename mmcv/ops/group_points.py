@@ -3,7 +3,7 @@ from typing import Optional, Tuple, Union
 
 import torch
 from torch import nn as nn
-from torch.autograd import Function, Variable
+from torch.autograd import Function
 
 from ..utils import ext_loader
 from .ball_query import ball_query
@@ -199,19 +199,21 @@ class GroupingOperation(Function):
                 shape is (B, npoint, nsample) or stacked inputs
                 (M1 + M2 ..., nsample).
             features_batch_cnt (Tensor, optional): Input features nums in
-                each batch, just like (N1, N2, ...). Default None.
+                each batch, just like (N1, N2, ...). Defaults to None.
+                New in version 1.7.0.
             indices_batch_cnt (Tensor, optional): Input indices nums in
-                each batch, just like (M1, M2, ...). Default None.
+                each batch, just like (M1, M2, ...). Defaults to None.
+                New in version 1.7.0.
 
         Returns:
-            Tensor: Grouped features, shape is (B, C, npoint, nsample)
+            Tensor: Grouped features, the shape is (B, C, npoint, nsample)
                 or (M1 + M2 ..., C, nsample).
         """
         features = features.contiguous()
         indices = indices.contiguous()
         if features_batch_cnt is not None and indices_batch_cnt is not None:
-            assert features_batch_cnt.dtype == torch.int and\
-                   indices_batch_cnt.dtype == torch.int
+            assert features_batch_cnt.dtype == torch.int
+            assert indices_batch_cnt.dtype == torch.int
             M, nsample = indices.size()
             N, C = features.size()
             B = indices_batch_cnt.shape[0]
@@ -277,7 +279,7 @@ class GroupingOperation(Function):
             B, N, idx, features_batch_cnt, idx_batch_cnt = ctx.for_backwards
 
             M, C, nsample = grad_out.size()
-            grad_features = Variable(torch.cuda.FloatTensor(N, C).zero_())
+            grad_features = torch.cuda.FloatTensor(N, C).zero_()
 
             grad_out_data = grad_out.data.contiguous()
             ext_module.stack_group_points_backward(
