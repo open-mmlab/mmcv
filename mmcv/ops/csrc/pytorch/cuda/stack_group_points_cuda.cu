@@ -36,8 +36,8 @@ void StackGroupPointsForwardCUDAKernelLauncher(
         stack_group_points_forward_cuda_kernel<scalar_t>
             <<<blocks, threads, 0, stream>>>(
                 b, c, m, nsample, features_tensor.data_ptr<scalar_t>(),
-                idx_tensor.data_ptr<int>(),
                 features_batch_cnt_tensor.data_ptr<int>(),
+                idx_tensor.data_ptr<int>(),
                 idx_batch_cnt_tensor.data_ptr<int>(),
                 out_tensor.data_ptr<scalar_t>());
       });

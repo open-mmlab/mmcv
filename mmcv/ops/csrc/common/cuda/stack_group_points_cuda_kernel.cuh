@@ -28,11 +28,14 @@ __global__ void stack_group_points_forward_cuda_kernel(
     int c_idx = (index / nsample) % c;
     int pt_idx = (index / nsample / c);
 
-    if (c_idx >= c || sample_idx >= nsample) break;
+    if (pt_idx >= m || c_idx >= c || sample_idx >= nsample)
+      break;
     int bs_idx = 0, pt_cnt = idx_batch_cnt[0];
-    for (int pt_cnt = 0; bs_idx < b; bs_idx++) {
-      pt_cnt += idx_batch_cnt[bs_idx];
-      if (pt_idx < pt_cnt) break;
+    for (int k = 1; k < b; k++) {
+      if (pt_idx < pt_cnt)
+        break;
+      pt_cnt += idx_batch_cnt[k];
+      bs_idx = k;
     }
 
     int features_batch_start_idx = 0;
@@ -61,16 +64,19 @@ __global__ void stack_group_points_backward_cuda_kernel(
   //     grad_features: (N1 + N2 ..., C) gradient of the features
   const T *cur_grad_out = grad_out;
   const int *cur_idx = idx;
+  T *cur_grad_features = grad_features;
   CUDA_1D_KERNEL_LOOP(index, m * c * nsample) {
     int sample_idx = index % nsample;
     int c_idx = (index / nsample) % c;
     int pt_idx = (index / nsample / c);
 
-    if (c_idx >= c || sample_idx >= nsample) break;
+    if (pt_idx >= m || c_idx >= c || sample_idx >= nsample)
+      return;
 
     int bs_idx = 0, pt_cnt = idx_batch_cnt[0];
     for (int k = 1; k < b; k++) {
-      if (pt_idx < pt_cnt) break;
+      if (pt_idx < pt_cnt)
+        break;
       pt_cnt += idx_batch_cnt[k];
       bs_idx = k;
     }
@@ -81,10 +87,10 @@ __global__ void stack_group_points_backward_cuda_kernel(
 
     cur_grad_out += pt_idx * c * nsample + c_idx * nsample + sample_idx;
     cur_idx += pt_idx * nsample + sample_idx;
-    grad_features += (features_batch_start_idx + cur_idx[0]) * c + c_idx;
+    cur_grad_features += (features_batch_start_idx + cur_idx[0]) * c + c_idx;
 
-    atomicAdd(grad_features, cur_grad_out[0]);
+    atomicAdd(cur_grad_features, cur_grad_out[0]);
   }
 }
 
-#endif  // GROUP_POINTS_CUDA_KERNEL_CUH
+#endif // GROUP_POINTS_CUDA_KERNEL_CUH

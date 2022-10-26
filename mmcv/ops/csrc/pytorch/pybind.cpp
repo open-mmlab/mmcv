@@ -75,8 +75,8 @@ void group_points_backward(Tensor grad_out_tensor, Tensor idx_tensor,
                            Tensor grad_points_tensor, int b, int c, int n,
                            int npoints, int nsample);
 
-void stack_group_points_forward(Tensor points_tensor,
-                                Tensor points_batch_cnt_tensor,
+void stack_group_points_forward(Tensor features_tensor,
+                                Tensor features_batch_cnt_tensor,
                                 Tensor idx_tensor, Tensor idx_batch_cnt_tensor,
                                 Tensor out_tensor, int b, int c, int m,
                                 int nsample);
@@ -84,8 +84,8 @@ void stack_group_points_forward(Tensor points_tensor,
 void stack_group_points_backward(Tensor grad_out_tensor, Tensor idx_tensor,
                                  Tensor idx_batch_cnt_tensor,
                                  Tensor features_batch_cnt_tensor,
-                                 Tensor grad_points_tensor, int b, int c, int m,
-                                 int n, int nsample);
+                                 Tensor grad_features_tensor, int b, int c,
+                                 int m, int n, int nsample);
 
 void roipoint_pool3d_forward(Tensor xyz, Tensor boxes3d, Tensor pts_feature,
                              Tensor pooled_features, Tensor pooled_empty_flag);
@@ -574,14 +574,14 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("idx_tensor"), py::arg("grad_points_tensor"), py::arg("b"),
         py::arg("c"), py::arg("n"), py::arg("npoints"), py::arg("nsample"));
   m.def("stack_group_points_forward", &stack_group_points_forward,
-        "stack_group_points_forward", py::arg("points_tensor"),
-        py::arg("points_batch_cnt_tensor"), py::arg("idx_tensor"),
+        "stack_group_points_forward", py::arg("features_tensor"),
+        py::arg("features_batch_cnt_tensor"), py::arg("idx_tensor"),
         py::arg("idx_batch_cnt_tensor"), py::arg("out_tensor"), py::arg("b"),
         py::arg("c"), py::arg("m"), py::arg("nsample"));
   m.def("stack_group_points_backward", &stack_group_points_backward,
         "stack_group_points_backward", py::arg("grad_out_tensor"),
         py::arg("idx_tensor"), py::arg("idx_batch_cnt_tensor"),
-        py::arg("features_batch_cnt_tensor"), py::arg("grad_points_tensor"),
+        py::arg("features_batch_cnt_tensor"), py::arg("grad_features_tensor"),
         py::arg("b"), py::arg("c"), py::arg("m"), py::arg("n"),
         py::arg("nsample"));
   m.def("knn_forward", &knn_forward, "knn_forward", py::arg("b"), py::arg("n"),
