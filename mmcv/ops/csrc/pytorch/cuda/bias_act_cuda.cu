@@ -196,8 +196,7 @@ static bool has_same_layout(torch::Tensor x, torch::Tensor y)
 }
 
 //------------------------------------------------------------------------
-
-static torch::Tensor bias_act_op(torch::Tensor x, torch::Tensor b, torch::Tensor xref, torch::Tensor yref, torch::Tensor dy, int grad, int dim, int act, float alpha, float gain, float clamp)
+torch::Tensor bias_act_op(const torch::Tensor& x, const torch::Tensor& b, const torch::Tensor& xref, const torch::Tensor& yref, const torch::Tensor& dy, int grad, int dim, int act, float alpha, float gain, float clamp)
 {
     // Validate arguments.
     TORCH_CHECK(x.is_cuda(), "x must reside on CUDA device");

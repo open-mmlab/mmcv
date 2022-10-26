@@ -500,6 +500,17 @@ torch::Tensor bias_act_op(const torch::Tensor& x, const torch::Tensor& b, const 
 REGISTER_DEVICE_IMPL(bias_act_op_impl, CUDA,
                      bias_act_op);
 
+std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op_impl(
+    torch::Tensor x, torch::Tensor fu, torch::Tensor fd, torch::Tensor b, torch::Tensor si,
+    int up, int down, int px0, int px1, int py0, int py1, int sx, int sy, float gain, float slope, float clamp, bool flip_filters, bool writeSigns);
+
+std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
+    torch::Tensor x, torch::Tensor fu, torch::Tensor fd, torch::Tensor b, torch::Tensor si,
+    int up, int down, int px0, int px1, int py0, int py1, int sx, int sy, float gain, float slope, float clamp, bool flip_filters, bool writeSigns);
+
+REGISTER_DEVICE_IMPL(filtered_lrelu_op_impl, CUDA,
+                     filtered_lrelu_op);
+
 void GatherPointsForwardCUDAKernelLauncher(int b, int c, int n, int npoints,
                                            const Tensor points,
                                            const Tensor idx, Tensor out);

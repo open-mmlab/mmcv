@@ -425,6 +425,10 @@ void chamfer_distance_backward(const Tensor xyz1, const Tensor xyz2,
 
 Tensor bias_act(const Tensor &x, const Tensor &b, const Tensor &xref, const Tensor &yref, const Tensor &dy, int grad, int dim, int act, float alpha, float gain, float clamp);
 
+std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu(
+    torch::Tensor x, torch::Tensor fu, torch::Tensor fd, torch::Tensor b, torch::Tensor si,
+    int up, int down, int px0, int px1, int py0, int py1, int sx, int sy, float gain, float slope, float clamp, bool flip_filters, bool writeSigns);
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
         py::arg("kernel"), py::arg("up_x"), py::arg("up_y"), py::arg("down_x"),
@@ -857,6 +861,9 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("spatial_scale"));
   m.def("bias_act", &bias_act, "bias_act (CUDA)", py::arg("x"), py::arg("b"),
        py::arg("xref"), py::arg("yref"), py::arg("dy"), py::arg("grad"),
-        py::arg("dim"), py::arg("act"), py::arg("alpha"), py::arg("gain"), 
+        py::arg("dim"), py::arg("act"), py::arg("alpha"), py::arg("gain"),
         py::arg("clamp"));
+  m.def("filtered_lrelu", &filtered_lrelu, "filtered_lrelu (CUDA)", py::arg("x"), py::arg("fu"), py::arg("fd"), py::arg("b"),  py::arg("si"),
+     py::arg("up"),  py::arg("down"),  py::arg("px0"),  py::arg("px1"),  py::arg("py0"),  py::arg("py1"),  py::arg("sx"),  py::arg("sy"),  py::arg("gain"),
+       py::arg("slope"),  py::arg("clamp"),  py::arg("flip_filters"),  py::arg("writeSigns"));
 }

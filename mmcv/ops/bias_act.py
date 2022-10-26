@@ -10,7 +10,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 """Custom PyTorch ops for efficient bias and activation."""
 
-import os
 from typing import Any
 
 import numpy as np
@@ -158,7 +157,7 @@ def bias_act(x,
     """
     assert isinstance(x, torch.Tensor)
     assert impl in ['ref', 'cuda']
-    if impl == 'cuda' and x.device.type == 'cuda' and _init():
+    if impl == 'cuda' and x.device.type == 'cuda':
         return _bias_act_cuda(
             dim=dim, act=act, alpha=alpha, gain=gain, clamp=clamp).apply(x, b)
     return _bias_act_ref(
@@ -229,17 +228,19 @@ def _bias_act_cuda(dim=1, act='linear', alpha=None, gain=None, clamp=None):
             ctx.memory_format = torch.channels_last if x.ndim > 2 and x.stride(
                 1) == 1 else torch.contiguous_format
             x = x.contiguous(memory_format=ctx.memory_format)
-            b = b.contiguous() if b is not None else _null_tensor
+            b = b.contiguous() if b is not None else _null_tensor.to(x.device)
             y = x
             if act != 'linear' or gain != 1 or clamp >= 0 or (
-                    b is not _null_tensor):
-                y = ext_module.bias_act(x, b, _null_tensor, _null_tensor,
-                                        _null_tensor, 0, dim, spec.cuda_idx,
-                                        alpha, gain, clamp)
+                    b is not _null_tensor.to(x.device)):
+                y = ext_module.bias_act(x, b, _null_tensor.to(x.device),
+                                        _null_tensor.to(x.device),
+                                        _null_tensor.to(x.device), 0, dim,
+                                        spec.cuda_idx, alpha, gain, clamp)
             ctx.save_for_backward(
-                x if 'x' in spec.ref or spec.has_2nd_grad else _null_tensor,
-                b if 'x' in spec.ref or spec.has_2nd_grad else _null_tensor,
-                y if 'y' in spec.ref else _null_tensor)
+                x if 'x' in spec.ref or spec.has_2nd_grad else _null_tensor.to(
+                    x.device), b if 'x' in spec.ref or spec.has_2nd_grad else
+                _null_tensor.to(x.device),
+                y if 'y' in spec.ref else _null_tensor.to(x.device))
             return y
 
         @staticmethod
@@ -266,10 +267,11 @@ def _bias_act_cuda(dim=1, act='linear', alpha=None, gain=None, clamp=None):
         def forward(ctx, dy, x, b, y):  # pylint: disable=arguments-differ
             ctx.memory_format = torch.channels_last if dy.ndim > 2 and (
                 dy.stride(1) == 1) else torch.contiguous_format
-            dx = ext_module.bias_act(dy, b, x, y, _null_tensor, 1, dim,
-                                     spec.cuda_idx, alpha, gain, clamp)
-            ctx.save_for_backward(dy if spec.has_2nd_grad else _null_tensor, x,
-                                  b, y)
+            dx = ext_module.bias_act(dy, b, x, y, _null_tensor.to(x.device), 1,
+                                     dim, spec.cuda_idx, alpha, gain, clamp)
+            ctx.save_for_backward(
+                dy if spec.has_2nd_grad else _null_tensor.to(x.device), x, b,
+                y)
             return dx
 
         @staticmethod
