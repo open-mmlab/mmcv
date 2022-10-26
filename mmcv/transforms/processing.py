@@ -1,6 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import copy
 import random
 import warnings
+from itertools import product
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import mmengine
@@ -250,7 +252,8 @@ class Resize(BaseTransform):
             results['scale'] = self.scale
         else:
             img_shape = results['img'].shape[:2]
-            results['scale'] = _scale_size(img_shape[::-1], self.scale_factor)
+            results['scale'] = _scale_size(img_shape[::-1],
+                                           self.scale_factor)  # type: ignore
         self._resize_img(results)
         self._resize_bboxes(results)
         self._resize_seg(results)
@@ -497,7 +500,7 @@ class CenterCrop(BaseTransform):
         """
         if results.get('img', None) is not None:
             img = mmcv.imcrop(results['img'], bboxes=bboxes)
-            img_shape = img.shape[:2]
+            img_shape = img.shape[:2]  # type: ignore
             results['img'] = img
             results['img_shape'] = img_shape
             results['pad_shape'] = img_shape
@@ -746,7 +749,7 @@ class MultiScaleFlipAug(BaseTransform):
     - resize to (1333, 800) + flip
 
     The four results are then transformed with ``transforms`` argument.
-    After that, results are wrapped into lists of the same length as followed:
+    After that, results are wrapped into lists of the same length as below:
 
     .. code-block::
 
@@ -867,6 +870,130 @@ class MultiScaleFlipAug(BaseTransform):
         repr_str += f', scales={self.scales}'
         repr_str += f', allow_flip={self.allow_flip}'
         repr_str += f', flip_direction={self.flip_direction})'
+        return repr_str
+
+
+@TRANSFORMS.register_module()
+class TestTimeAug(BaseTransform):
+    """Test-time augmentation transform.
+
+    An example configuration is as followed:
+
+    .. code-block::
+
+        dict(type='TestTimeAug',
+             transforms=[
+                [dict(type='Resize', scale=(1333, 400), keep_ratio=True),
+                 dict(type='Resize', scale=(1333, 800), keep_ratio=True)],
+                [dict(type='RandomFlip', prob=1.),
+                 dict(type='RandomFlip', prob=0.)],
+                [dict(type='PackDetInputs',
+                      meta_keys=('img_id', 'img_path', 'ori_shape',
+                                 'img_shape', 'scale_factor', 'flip',
+                                 'flip_direction'))]])
+
+    ``results`` will be transformed using all transforms defined in
+    ``transforms`` arguments.
+
+    For the above configuration, there are four combinations of resize
+    and flip:
+
+    - Resize to (1333, 400) + no flip
+    - Resize to (1333, 400) + flip
+    - Resize to (1333, 800) + no flip
+    - resize to (1333, 800) + flip
+
+    After that, results are wrapped into lists of the same length as below:
+
+    .. code-block::
+
+        dict(
+            inputs=[...],
+            data_samples=[...]
+        )
+
+    The length of ``inputs`` and ``data_samples`` are both 4.
+
+    Required Keys:
+
+    - Depending on the requirements of the ``transforms`` parameter.
+
+    Modified Keys:
+
+    - All output keys of each transform.
+
+    Args:
+        transforms (list[list[dict]]): Transforms to be applied to data sampled
+            from dataset. ``transforms`` is a list of list, and each list
+            element usually represents a series of transforms with the same
+            type and different arguments. Data will be processed by each list
+            elements sequentially. See more information in :meth:`transform`.
+    """
+
+    def __init__(self, transforms: list):
+        for i, transform_list in enumerate(transforms):
+            for j, transform in enumerate(transform_list):
+                if isinstance(transform, dict):
+                    transform_list[j] = TRANSFORMS.build(transform)
+                elif callable(transform):
+                    continue
+                else:
+                    raise TypeError(
+                        'transform must be callable or a dict, but got'
+                        f' {type(transform)}')
+            transforms[i] = transform_list
+
+        self.subroutines = [
+            Compose(subroutine) for subroutine in product(*transforms)
+        ]
+
+    def transform(self, results: dict) -> dict:
+        """Apply all transforms defined in :attr:`transforms` to the results.
+
+        As the example given in :obj:`TestTimeAug`, ``transforms`` consists of
+        2 ``Resize``, 2 ``RandomFlip`` and 1 ``PackDetInputs``.
+        The data sampled from dataset will be processed as follows:
+
+        1. Data will be processed by 2 ``Resize`` and return a list
+           of 2 results.
+        2. Each result in list will be further passed to 2
+           ``RandomFlip``, and aggregates into a list of 4 results.
+        3. Each result will be processed by ``PackDetInputs``, and
+           return a list of dict.
+        4. Aggregates the same fields of results, and finally returns
+           a dict. Each value of the dict represents 4 transformed
+           results.
+
+        Args:
+            results (dict): Result dict contains the data to transform.
+
+        Returns:
+            dict: The augmented data, where each value is wrapped
+            into a list.
+        """
+        results_list = []  # type: ignore
+        for subroutine in self.subroutines:
+            result = subroutine(copy.deepcopy(results))
+            assert isinstance(result, dict), (
+                f'Data processed by {subroutine} must return a dict, but got '
+                f'{result}')
+            assert result is not None, (
+                f'Data processed by {subroutine} in `TestTimeAug` should not '
+                'be None! Please check your validation dataset and the '
+                f'transforms in {subroutine}')
+            results_list.append(result)
+
+        aug_data_dict = {
+            key: [item[key] for item in results_list]  # type: ignore
+            for key in results_list[0]  # type: ignore
+        }
+        return aug_data_dict
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += 'transforms=\n'
+        for subroutine in self.subroutines:
+            repr_str += f'{repr(subroutine)}\n'
         return repr_str
 
 
@@ -1025,21 +1152,25 @@ class RandomFlip(BaseTransform):
 
     - flip
     - flip_direction
+    - swap_seg_labels (optional)
 
     Args:
-         prob (float | list[float], optional): The flipping probability.
-             Defaults to None.
-         direction(str | list[str]): The flipping direction. Options
-             If input is a list, the length must equal ``prob``. Each
-             element in ``prob`` indicates the flip probability of
-             corresponding direction. Defaults to 'horizontal'.
+        prob (float | list[float], optional): The flipping probability.
+            Defaults to None.
+        direction(str | list[str]): The flipping direction. Options
+            If input is a list, the length must equal ``prob``. Each
+            element in ``prob`` indicates the flip probability of
+            corresponding direction. Defaults to 'horizontal'.
+        swap_seg_labels (list, optional): The label pair need to be swapped
+            for ground truth, like 'left arm' and 'right arm' need to be
+            swapped after horizontal flipping. For example, ``[(1, 5)]``,
+            where 1/5 is the label of the left/right arm. Defaults to None.
     """
 
-    def __init__(
-            self,
-            prob: Optional[Union[float, Iterable[float]]] = None,
-            direction: Union[str,
-                             Sequence[Optional[str]]] = 'horizontal') -> None:
+    def __init__(self,
+                 prob: Optional[Union[float, Iterable[float]]] = None,
+                 direction: Union[str, Sequence[Optional[str]]] = 'horizontal',
+                 swap_seg_labels: Optional[Sequence] = None) -> None:
         if isinstance(prob, list):
             assert mmengine.is_list_of(prob, float)
             assert 0 <= sum(prob) <= 1
@@ -1049,6 +1180,7 @@ class RandomFlip(BaseTransform):
             raise ValueError(f'probs must be float or list of float, but \
                               got `{type(prob)}`.')
         self.prob = prob
+        self.swap_seg_labels = swap_seg_labels
 
         valid_directions = ['horizontal', 'vertical', 'diagonal']
         if isinstance(direction, str):
@@ -1064,8 +1196,8 @@ class RandomFlip(BaseTransform):
         if isinstance(prob, list):
             assert len(prob) == len(self.direction)
 
-    def flip_bbox(self, bboxes: np.ndarray, img_shape: Tuple[int, int],
-                  direction: str) -> np.ndarray:
+    def _flip_bbox(self, bboxes: np.ndarray, img_shape: Tuple[int, int],
+                   direction: str) -> np.ndarray:
         """Flip bboxes horizontally.
 
         Args:
@@ -1096,8 +1228,12 @@ class RandomFlip(BaseTransform):
                   or 'diagonal', but got '{direction}'")
         return flipped
 
-    def flip_keypoints(self, keypoints: np.ndarray, img_shape: Tuple[int, int],
-                       direction: str) -> np.ndarray:
+    def _flip_keypoints(
+        self,
+        keypoints: np.ndarray,
+        img_shape: Tuple[int, int],
+        direction: str,
+    ) -> np.ndarray:
         """Flip keypoints horizontally, vertically or diagonally.
 
         Args:
@@ -1126,6 +1262,33 @@ class RandomFlip(BaseTransform):
                   or 'diagonal', but got '{direction}'")
         flipped = np.concatenate([keypoints, meta_info], axis=-1)
         return flipped
+
+    def _flip_seg_map(self, seg_map: dict, direction: str) -> np.ndarray:
+        """Flip segmentation map horizontally, vertically or diagonally.
+
+        Args:
+            seg_map (numpy.ndarray): segmentation map, shape (H, W).
+            direction (str): Flip direction. Options are 'horizontal',
+                'vertical'.
+
+        Returns:
+            numpy.ndarray: Flipped segmentation map.
+        """
+        seg_map = mmcv.imflip(seg_map, direction=direction)
+        if self.swap_seg_labels is not None:
+            # to handle datasets with left/right annotations
+            # like 'Left-arm' and 'Right-arm' in LIP dataset
+            # Modified from https://github.com/openseg-group/openseg.pytorch/blob/master/lib/datasets/tools/cv2_aug_transforms.py # noqa:E501
+            # Licensed under MIT license
+            temp = seg_map.copy()
+            assert isinstance(self.swap_seg_labels, (tuple, list))
+            for pair in self.swap_seg_labels:
+                assert isinstance(pair, (tuple, list)) and len(pair) == 2, \
+                    'swap_seg_labels must be a sequence with pair, but got ' \
+                    f'{self.swap_seg_labels}.'
+                seg_map[temp == pair[0]] = pair[1]
+                seg_map[temp == pair[1]] = pair[0]
+        return seg_map
 
     @cache_randomness
     def _choose_direction(self) -> str:
@@ -1162,19 +1325,20 @@ class RandomFlip(BaseTransform):
 
         # flip bboxes
         if results.get('gt_bboxes', None) is not None:
-            results['gt_bboxes'] = self.flip_bbox(results['gt_bboxes'],
-                                                  img_shape,
-                                                  results['flip_direction'])
+            results['gt_bboxes'] = self._flip_bbox(results['gt_bboxes'],
+                                                   img_shape,
+                                                   results['flip_direction'])
 
         # flip keypoints
         if results.get('gt_keypoints', None) is not None:
-            results['gt_keypoints'] = self.flip_keypoints(
+            results['gt_keypoints'] = self._flip_keypoints(
                 results['gt_keypoints'], img_shape, results['flip_direction'])
 
-        # flip segs
+        # flip seg map
         if results.get('gt_seg_map', None) is not None:
-            results['gt_seg_map'] = mmcv.imflip(
+            results['gt_seg_map'] = self._flip_seg_map(
                 results['gt_seg_map'], direction=results['flip_direction'])
+            results['swap_seg_labels'] = self.swap_seg_labels
 
     def _flip_on_direction(self, results: dict) -> None:
         """Function to flip images, bounding boxes, semantic segmentation map

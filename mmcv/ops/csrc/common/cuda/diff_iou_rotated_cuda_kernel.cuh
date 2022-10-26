@@ -44,6 +44,7 @@ __device__ bool compare_vertices(float x1, float y1, float x2, float y2) {
     else
       return false;
   }
+  return false;
 }
 
 __global__ void diff_iou_rotated_sort_vertices_forward_cuda_kernel(

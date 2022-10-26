@@ -36,7 +36,7 @@ TV_HOST_DEVICE Index getValidOutPos(const Index *input_pos,
   Index m, offset;
   bool valid = false;
 #pragma unroll
-  for (int i = 0; i < NDim; ++i) {
+  for (unsigned i = 0; i < NDim; ++i) {
     lowers[i] = (input_pos[i] - (kernelSize[i] - 1) * dilation[i] - 1 +
                  stride[i] + padding[i]) /
                 stride[i];
@@ -50,7 +50,7 @@ TV_HOST_DEVICE Index getValidOutPos(const Index *input_pos,
   }
 
 #pragma unroll
-  for (int i = 0; i < NDim; ++i) {
+  for (unsigned i = 0; i < NDim; ++i) {
     counter[i] = 0;
   }
   for (int i = 0; i < numPoints; ++i) {
@@ -98,7 +98,7 @@ TV_HOST_DEVICE Index getValidOutPosTranspose(
   Index m, offset;
   bool valid = false;
 #pragma unroll
-  for (int i = 0; i < NDim; ++i) {
+  for (unsigned i = 0; i < NDim; ++i) {
     lowers[i] = input_pos[i] * stride[i] - padding[i];
     uppers[i] = lowers[i] + (kernelSize[i] - 1) * dilation[i];
   }
@@ -108,7 +108,7 @@ TV_HOST_DEVICE Index getValidOutPosTranspose(
     numPoints *= counterSize[i];
   }
 #pragma unroll
-  for (int i = 0; i < NDim; ++i) {
+  for (unsigned i = 0; i < NDim; ++i) {
     counter[i] = 0;
   }
   for (int i = 0; i < numPoints; ++i) {
@@ -251,9 +251,7 @@ Index getIndicePairsSubM(tv::TensorView<const Index> indicesIn,
                          const Index *const stride, const Index *const padding,
                          const Index *dilation,
                          const Index *const outSpatialShape) {
-  Index numAct = 0;
   auto numActIn = indicesIn.dim(0);
-  Index batchIdx = 0;
   Index spatialVolume = 1;
 #pragma unroll
   for (int i = 0; i < NDim; ++i) {

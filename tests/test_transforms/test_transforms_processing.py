@@ -8,7 +8,7 @@ import pytest
 
 import mmcv
 from mmcv.transforms import (TRANSFORMS, Normalize, Pad, RandomFlip,
-                             RandomResize, Resize)
+                             RandomResize, Resize, TestTimeAug)
 from mmcv.transforms.base import BaseTransform
 
 try:
@@ -777,7 +777,9 @@ class TestRandomFlip:
             'img': np.random.random((224, 224, 3)),
             'gt_bboxes': np.array([[0, 1, 100, 101]]),
             'gt_keypoints': np.array([[[100, 100, 1.0]]]),
-            'gt_seg_map': np.random.random((224, 224, 3))
+            # seg map flip is irrelative with image, so there is no requirement
+            # that gt_set_map of test data matches image.
+            'gt_seg_map': np.array([[0, 1], [2, 3]])
         }
 
         # horizontal flip
@@ -785,41 +787,65 @@ class TestRandomFlip:
         results_update = TRANSFORMS.transform(copy.deepcopy(results))
         assert (results_update['gt_bboxes'] == np.array([[124, 1, 224,
                                                           101]])).all()
+        assert (results_update['gt_seg_map'] == np.array([[1, 0], [3,
+                                                                   2]])).all()
 
-        # diagnal flip
+        # diagonal flip
         TRANSFORMS = RandomFlip([1.0], ['diagonal'])
         results_update = TRANSFORMS.transform(copy.deepcopy(results))
         assert (results_update['gt_bboxes'] == np.array([[124, 123, 224,
                                                           223]])).all()
+        assert (results_update['gt_seg_map'] == np.array([[3, 2], [1,
+                                                                   0]])).all()
 
         # vertical flip
         TRANSFORMS = RandomFlip([1.0], ['vertical'])
         results_update = TRANSFORMS.transform(copy.deepcopy(results))
         assert (results_update['gt_bboxes'] == np.array([[0, 123, 100,
                                                           223]])).all()
+        assert (results_update['gt_seg_map'] == np.array([[2, 3], [0,
+                                                                   1]])).all()
 
         # horizontal flip when direction is None
         TRANSFORMS = RandomFlip(1.0)
         results_update = TRANSFORMS.transform(copy.deepcopy(results))
         assert (results_update['gt_bboxes'] == np.array([[124, 1, 224,
                                                           101]])).all()
+        assert (results_update['gt_seg_map'] == np.array([[1, 0], [3,
+                                                                   2]])).all()
+
+        # horizontal flip and swap label pair
+        TRANSFORMS = RandomFlip([1.0], ['horizontal'],
+                                swap_seg_labels=[[0, 1]])
+        results_update = TRANSFORMS.transform(copy.deepcopy(results))
+        assert (results_update['gt_seg_map'] == np.array([[0, 1], [3,
+                                                                   2]])).all()
+        assert results_update['swap_seg_labels'] == [[0, 1]]
 
         TRANSFORMS = RandomFlip(0.0)
         results_update = TRANSFORMS.transform(copy.deepcopy(results))
         assert (results_update['gt_bboxes'] == np.array([[0, 1, 100,
                                                           101]])).all()
+        assert (results_update['gt_seg_map'] == np.array([[0, 1], [2,
+                                                                   3]])).all()
 
         # flip direction is invalid in bbox flip
         with pytest.raises(ValueError):
             TRANSFORMS = RandomFlip(1.0)
-            results_update = TRANSFORMS.flip_bbox(results['gt_bboxes'],
-                                                  (224, 224), 'invalid')
+            results_update = TRANSFORMS._flip_bbox(results['gt_bboxes'],
+                                                   (224, 224), 'invalid')
 
         # flip direction is invalid in keypoints flip
         with pytest.raises(ValueError):
             TRANSFORMS = RandomFlip(1.0)
-            results_update = TRANSFORMS.flip_keypoints(results['gt_keypoints'],
-                                                       (224, 224), 'invalid')
+            results_update = TRANSFORMS._flip_keypoints(
+                results['gt_keypoints'], (224, 224), 'invalid')
+
+        # swap pair is invalid
+        with pytest.raises(AssertionError):
+            TRANSFORMS = RandomFlip(1.0, swap_seg_labels='invalid')
+            results_update = TRANSFORMS._flip_seg_map(results['gt_seg_map'],
+                                                      'horizontal')
 
     def test_repr(self):
         TRANSFORMS = RandomFlip(0.1)
@@ -900,3 +926,89 @@ class TestRandomResize:
                                       resize_type='Resize',
                                       keep_ratio=True)
             results_update = TRANSFORMS.transform(copy.deepcopy(results))
+
+
+class TestTestTimeAug:
+
+    def test_init(self):
+        subroutines = [[
+            dict(type='Resize', scale=(1333, 800), keep_ratio=True),
+            dict(type='Resize', scale=(1333, 400), keep_ratio=True)
+        ], [
+            dict(type='RandomFlip', prob=1.),
+            dict(type='RandomFlip', prob=0.)
+        ], [dict(type='Normalize', mean=(0, 0, 0), std=(1, 1, 1))]]
+
+        tta_transform = TestTimeAug(subroutines)
+        subroutines = tta_transform.subroutines
+        assert len(subroutines) == 4
+
+        assert isinstance(subroutines[0].transforms[0], Resize)
+        assert isinstance(subroutines[0].transforms[1], RandomFlip)
+        assert isinstance(subroutines[0].transforms[2], Normalize)
+        assert isinstance(subroutines[1].transforms[0], Resize)
+        assert isinstance(subroutines[1].transforms[1], RandomFlip)
+        assert isinstance(subroutines[1].transforms[2], Normalize)
+
+    def test_transform(self):
+        results = {
+            'img': np.random.random((224, 224, 3)),
+            'gt_bboxes': np.array([[0, 1, 100, 101]]),
+            'gt_keypoints': np.array([[[100, 100, 1.0]]]),
+            'gt_seg_map': np.random.random((224, 224, 3))
+        }
+        input_results = copy.deepcopy(results)
+        transforms = [[
+            dict(type='Resize', scale=(1333, 800), keep_ratio=True),
+            dict(type='Resize', scale=(1333, 400), keep_ratio=True)
+        ], [
+            dict(type='RandomFlip', prob=0.),
+            dict(type='RandomFlip', prob=1.)
+        ], [dict(type='Normalize', mean=(0, 0, 0), std=(1, 1, 1))]]
+
+        tta_transform = TestTimeAug(transforms)
+        results = tta_transform.transform(results)
+        assert len(results['img']) == 4
+
+        resize1 = tta_transform.subroutines[0].transforms[0]
+        resize2 = tta_transform.subroutines[2].transforms[0]
+        flip1 = tta_transform.subroutines[0].transforms[1]
+        flip2 = tta_transform.subroutines[1].transforms[1]
+        normalize = tta_transform.subroutines[0].transforms[2]
+        target_results = [
+            normalize.transform(
+                flip1.transform(
+                    resize1.transform(copy.deepcopy(input_results)))),
+            normalize.transform(
+                flip2.transform(
+                    resize1.transform(copy.deepcopy(input_results)))),
+            normalize.transform(
+                flip1.transform(
+                    resize2.transform(copy.deepcopy(input_results)))),
+            normalize.transform(
+                flip2.transform(
+                    resize2.transform(copy.deepcopy(input_results)))),
+        ]
+
+        assert np.allclose(target_results[0]['img'], results['img'][0])
+        assert np.allclose(target_results[1]['img'], results['img'][1])
+        assert np.allclose(target_results[2]['img'], results['img'][2])
+        assert np.allclose(target_results[3]['img'], results['img'][3])
+
+    def test_repr(self):
+        transforms = [[
+            dict(type='Resize', scale=(1333, 800), keep_ratio=True),
+            dict(type='Resize', scale=(1333, 400), keep_ratio=True)
+        ], [
+            dict(type='RandomFlip', prob=0.),
+            dict(type='RandomFlip', prob=1.)
+        ], [dict(type='Normalize', mean=(0, 0, 0), std=(1, 1, 1))]]
+
+        tta_transform = TestTimeAug(transforms)
+        repr_str = repr(tta_transform)
+        repr_str_list = repr_str.split('\n')
+        assert repr_str_list[0] == 'TestTimeAugtransforms='
+        assert repr_str_list[1] == 'Compose('
+        assert repr_str_list[2].startswith('    Resize(scale=(1333, 800)')
+        assert repr_str_list[3].startswith('    RandomFlip(prob=0.0')
+        assert repr_str_list[4].startswith('    Normalize(mean=[0. 0. 0.]')

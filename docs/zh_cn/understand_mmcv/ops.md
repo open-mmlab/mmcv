@@ -10,6 +10,7 @@ MMCV 提供了检测、分割等任务中常用的算子
 | BBoxOverlaps                 |     | √    | √   | √   |
 | BorderAlign                  |     | √    |     |     |
 | BoxIouRotated                | √   | √    |     |     |
+| BoxIouQuadri                 | √   | √    |     |     |
 | CARAFE                       |     | √    | √   |     |
 | ChamferDistance              |     | √    |     |     |
 | CrissCrossAttention          |     | √    |     |     |
@@ -18,7 +19,7 @@ MMCV 提供了检测、分割等任务中常用的算子
 | CornerPool                   |     | √    |     |     |
 | Correlation                  |     | √    |     |     |
 | Deformable Convolution v1/v2 | √   | √    |     |     |
-| Deformable RoIPool           |     | √    |     |     |
+| Deformable RoIPool           |     | √    | √   |     |
 | DiffIoURotated               |     | √    |     |     |
 | DynamicScatter               |     | √    |     |     |
 | FurthestPointSample          |     | √    |     |     |
@@ -35,12 +36,13 @@ MMCV 提供了检测、分割等任务中常用的算子
 | MultiScaleDeformableAttn     |     | √    |     |     |
 | NMS                          | √   | √    | √   |     |
 | NMSRotated                   | √   | √    |     |     |
+| NMSQuadri                    | √   | √    |     |     |
 | PixelGroup                   | √   |      |     |     |
 | PointsInBoxes                | √   | √    |     |     |
 | PointsInPolygons             |     | √    |     |     |
 | PSAMask                      | √   | √    | √   |     |
 | RotatedFeatureAlign          | √   | √    |     |     |
-| RoIPointPool3d               |     | √    |     |     |
+| RoIPointPool3d               |     | √    | √   |     |
 | RoIPool                      |     | √    | √   |     |
 | RoIAlignRotated              | √   | √    | √   |     |
 | RiRoIAlignRotated            |     | √    |     |     |
