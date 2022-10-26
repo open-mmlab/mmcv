@@ -12,9 +12,9 @@ MMCV 有两个版本：
 ### 安装 mmcv-full
 
 ```{note}
-- 下述安装步骤仅适用于 Linux 和 Windows 平台，如需在 macOS 平台安装 mmcv-full，请参考[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html#macos-mmcv-full)。
-- 如需编译 ONNX Runtime 自定义算子，请参考[如何编译ONNX Runtime自定义算子](https://mmcv.readthedocs.io/zh_CN/latest/deployment/onnxruntime_op.html#id1)
-- 如需编译 TensorRT 自定义，请参考[如何编译MMCV中的TensorRT插件](https://mmcv.readthedocs.io/zh_CN/latest/deployment/tensorrt_plugin.html#id3)
+- 下述安装步骤仅适用于 Linux 和 Windows 平台，如需在 macOS 平台安装 mmcv-full，请参考[源码安装 mmcv-full](build.md#在-macos-上编译-mmcv-full)。
+- 如需编译 ONNX Runtime 自定义算子，请参考[如何编译ONNX Runtime自定义算子](../deployment/onnxruntime_op.md#如何编译onnx-runtime自定义算子)
+- 如需编译 TensorRT 自定义，请参考[如何编译MMCV中的TensorRT插件](../deployment/tensorrt_plugin.md#如何编译mmcv中的tensorrt插件)
 ```
 
 在安装 mmcv-full 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://pytorch.org/get-started/locally/#start-locally)。可使用以下命令验证
