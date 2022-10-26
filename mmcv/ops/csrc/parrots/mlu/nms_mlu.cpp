@@ -1,4 +1,5 @@
 #include <parrots/compute/aten.hpp>
+#include <parrots/darray/darraymath.hpp>
 #include <parrots_mlu_helper.hpp>
 
 using namespace parrots;
@@ -49,7 +50,7 @@ void NMSMLUKernelLauncher(CambContext& ctx, const DArrayLite& boxes,
                           const DArrayLite& scores, DArrayLite& output,
                           const float iou_threshold, const int offset) {
   if (boxes.size() == 0) {
-    output = ctx.createDArrayLite(boxes.spec().withElemType(Prim::Int32));
+    output = ctx.createDArrayLite(boxes.spec().withElemType(Prim::Int64));
     return;
   }
   // dimension parameters check
@@ -112,11 +113,15 @@ void NMSMLUKernelLauncher(CambContext& ctx, const DArrayLite& boxes,
                                    queue, cnrtMemcpyDevToHost));
 
   PARROTS_CALLCNRT(cnrtSyncQueue(queue));
-  output = ctx.createDArrayLite(boxes.spec()
+  DArrayLite output32 = ctx.createDArrayLite(boxes.spec()
                                     .withElemType(Prim::Int32)
                                     .withShape(DArrayShape(output_num)));
-  PARROTS_CALLCNRT(cnrtMemcpyAsync(output.data(), output_tmp.data(),
-                                   output.nbytes(), queue, cnrtMemcpyDevToDev));
+  output = ctx.createDArrayLite(boxes.spec()
+                                    .withElemType(Prim::Int64)
+                                    .withShape(DArrayShape(output_num)));
+  PARROTS_CALLCNRT(cnrtMemcpyAsync(output32.data(), output_tmp.data(),
+                                   output32.nbytes(), queue, cnrtMemcpyDevToDev));
+  cast(ctx, output32, output);
 }
 
 template <>
