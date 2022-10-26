@@ -22,6 +22,8 @@
 [![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmcv.readthedocs.io/zh_CN/latest/)
 [![platform](https://img.shields.io/badge/platform-Linux%7CWindows%7CmacOS-blue)](https://mmcv.readthedocs.io/zh_CN/latest/get_started/installation.html)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mmcv)](https://pypi.org/project/mmcv/)
+[![pytorch](https://img.shields.io/badge/pytorch-1.5~1.12-orange)](https://pytorch.org/get-started/previous-versions/)
+[![cuda](https://img.shields.io/badge/cuda-9.2~11.6-green)](https://developer.nvidia.com/cuda-downloads)
 [![PyPI](https://img.shields.io/pypi/v/mmcv)](https://pypi.org/project/mmcv)
 [![badge](https://github.com/open-mmlab/mmcv/workflows/build/badge.svg)](https://github.com/open-mmlab/mmcv/actions)
 [![codecov](https://codecov.io/gh/open-mmlab/mmcv/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmcv)
