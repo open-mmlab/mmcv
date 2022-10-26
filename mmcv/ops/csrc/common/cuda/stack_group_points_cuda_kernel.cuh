@@ -28,12 +28,10 @@ __global__ void stack_group_points_forward_cuda_kernel(
     int c_idx = (index / nsample) % c;
     int pt_idx = (index / nsample / c);
 
-    if (pt_idx >= m || c_idx >= c || sample_idx >= nsample)
-      break;
+    if (pt_idx >= m || c_idx >= c || sample_idx >= nsample) break;
     int bs_idx = 0, pt_cnt = idx_batch_cnt[0];
     for (int k = 1; k < b; k++) {
-      if (pt_idx < pt_cnt)
-        break;
+      if (pt_idx < pt_cnt) break;
       pt_cnt += idx_batch_cnt[k];
       bs_idx = k;
     }
@@ -70,13 +68,11 @@ __global__ void stack_group_points_backward_cuda_kernel(
     int c_idx = (index / nsample) % c;
     int pt_idx = (index / nsample / c);
 
-    if (pt_idx >= m || c_idx >= c || sample_idx >= nsample)
-      return;
+    if (pt_idx >= m || c_idx >= c || sample_idx >= nsample) break;
 
     int bs_idx = 0, pt_cnt = idx_batch_cnt[0];
     for (int k = 1; k < b; k++) {
-      if (pt_idx < pt_cnt)
-        break;
+      if (pt_idx < pt_cnt) break;
       pt_cnt += idx_batch_cnt[k];
       bs_idx = k;
     }
@@ -93,4 +89,4 @@ __global__ void stack_group_points_backward_cuda_kernel(
   }
 }
 
-#endif // GROUP_POINTS_CUDA_KERNEL_CUH
+#endif  // GROUP_POINTS_CUDA_KERNEL_CUH
