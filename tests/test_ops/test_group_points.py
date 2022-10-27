@@ -233,15 +233,3 @@ def test_stack_grouping_points():
                                      [-1.8527e+00, -1.8527e+00,
                                       -1.8527e+00]]]).float().cuda()
     assert torch.allclose(output, expected_output)
-
-    # features = features.double()
-    # expected_output = expected_output.double()
-    # output = grouping_operation(features, idx, features_batch_cnt,
-    #                             indices_batch_cnt)
-    # assert torch.allclose(output, expected_output)
-    #
-    # features = features.half()
-    # expected_output = expected_output.half()
-    # output = grouping_operation(features, idx, features_batch_cnt,
-    #                             indices_batch_cnt)
-    # assert torch.allclose(output, expected_output)

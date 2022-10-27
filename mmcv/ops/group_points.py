@@ -207,7 +207,7 @@ class GroupingOperation(Function):
 
         Returns:
             Tensor: Grouped features, the shape is (B, C, npoint, nsample)
-                or (M1 + M2 ..., C, nsample).
+            or (M1 + M2 ..., C, nsample).
         """
         features = features.contiguous()
         indices = indices.contiguous()

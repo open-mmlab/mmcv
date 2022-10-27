@@ -19,16 +19,8 @@ void StackGroupPointsForwardCUDAKernelLauncher(
   at::cuda::CUDAGuard device_guard(features_tensor.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
-  // blockIdx.x(col), blockIdx.y(row)
   dim3 blocks(DIVUP(m * c * nsample, THREADS_PER_BLOCK));
   dim3 threads(THREADS_PER_BLOCK);
-
-  //   const float *features_ptr = features_tensor.data_ptr<scalar_t>();
-  //   const int *idx_ptr = idx_tensor.data_ptr<int>();
-  //   const int *features_batch_cnt_ptr =
-  //   features_batch_cnt_tensor.data_ptr<int>(); const int *idx_batch_cnt_ptr =
-  //   idx_batch_cnt_tensor.data_ptr<int>(); float *out_ptr =
-  //   out_tensor.data_ptr<scalar_t>();
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       features_tensor.scalar_type(), "stack_group_points_forward_cuda_kernel",
@@ -49,24 +41,12 @@ void StackGroupPointsBackwardCUDAKernelLauncher(
     int b, int c, int m, int n, int nsample, const Tensor grad_out_tensor,
     const Tensor idx_tensor, const Tensor idx_batch_cnt_tensor,
     const Tensor features_batch_cnt_tensor, Tensor grad_features_tensor) {
-  // grad_out: (B, C, npoints, nsample)
-  // idx: (B, npoints, nsample)
-  // output:
-  //      grad_points: (B, C, N)
 
   at::cuda::CUDAGuard device_guard(grad_features_tensor.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
-  // blockIdx.x(col), blockIdx.y(row)
   dim3 blocks(DIVUP(m * c * nsample, THREADS_PER_BLOCK));
   dim3 threads(THREADS_PER_BLOCK);
-
-  //   const float *grad_out_ptr = grad_out_tensor.data_ptr<float>();
-  //   const int *idx_ptr = idx_tensor.data_ptr<int>();
-  //   const int *idx_batch_cnt_ptr = idx_batch_cnt_tensor.data_ptr<int>();
-  //   const int *features_batch_cnt_ptr =
-  //   features_batch_cnt_tensor.data_ptr<int>(); float *grad_features_ptr =
-  //   grad_features_tensor.data_ptr<float>();
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       grad_features_tensor.scalar_type(),
