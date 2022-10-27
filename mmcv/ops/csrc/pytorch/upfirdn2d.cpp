@@ -102,17 +102,12 @@ THE POSSIBILITY OF SUCH DAMAGES.
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"
 
-torch::Tensor upfirdn2d_op_impl(const torch::Tensor& input,
-                                const torch::Tensor& kernel, int up_x, int up_y,
-                                int down_x, int down_y, int pad_x0, int pad_x1,
-                                int pad_y0, int pad_y1) {
-  return DISPATCH_DEVICE_IMPL(upfirdn2d_op_impl, input, kernel, up_x, up_y,
-                              down_x, down_y, pad_x0, pad_x1, pad_y0, pad_y1);
+torch::Tensor upfirdn2d_op_impl(torch::Tensor x, torch::Tensor f, int upx, int upy, int downx, int downy, int padx0, int padx1, int pady0, int pady1, bool flip, float gain)
+{
+    return DISPATCH_DEVICE_IMPL(upfirdn2d_op_impl, x, f, upx, upy, downx, downy, padx0, padx1, pady0, pady1, flip, gain);
 }
 
-torch::Tensor upfirdn2d(const torch::Tensor& input, const torch::Tensor& kernel,
-                        int up_x, int up_y, int down_x, int down_y, int pad_x0,
-                        int pad_x1, int pad_y0, int pad_y1) {
-  return upfirdn2d_op_impl(input, kernel, up_x, up_y, down_x, down_y, pad_x0,
-                           pad_x1, pad_y0, pad_y1);
+torch::Tensor upfirdn2d(torch::Tensor x, torch::Tensor f, int upx, int upy, int downx, int downy, int padx0, int padx1, int pady0, int pady1, bool flip, float gain)
+{
+    return upfirdn2d_op_impl(x, f, upx, upy, downx, downy, padx0, padx1, pady0, pady1, flip, gain);
 }
