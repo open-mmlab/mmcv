@@ -117,18 +117,19 @@ def test_forward_equal_with_pytorch_double():
         marks=pytest.mark.skipif(
             not IS_MLU_AVAILABLE, reason='requires MLU support'))
 ])
-def test_forward_equal_with_pytorch_float():
+def test_forward_equal_with_pytorch_float(device_type):
     N, M, D = 1, 2, 2
     Lq, L, P = 2, 2, 2
-    shapes = torch.as_tensor([(6, 4), (3, 2)], dtype=torch.long).cuda()
+    shapes = torch.as_tensor([(6, 4), (3, 2)],
+                             dtype=torch.long).to(device_type)
     level_start_index = torch.cat((shapes.new_zeros(
         (1, )), shapes.prod(1).cumsum(0)[:-1]))
     S = sum((H * W).item() for H, W in shapes)
 
     torch.manual_seed(3)
-    value = torch.rand(N, S, M, D).cuda() * 0.01
-    sampling_locations = torch.rand(N, Lq, M, L, P, 2).cuda()
-    attention_weights = torch.rand(N, Lq, M, L, P).cuda() + 1e-5
+    value = torch.rand(N, S, M, D).to(device_type) * 0.01
+    sampling_locations = torch.rand(N, Lq, M, L, P, 2).to(device_type)
+    attention_weights = torch.rand(N, Lq, M, L, P).to(device_type) + 1e-5
     attention_weights /= attention_weights.sum(
         -1, keepdim=True).sum(
             -2, keepdim=True)
