@@ -32,8 +32,6 @@ __global__ void stack_ball_query_forward_cuda_kernel(
 
     int xyz_batch_start_idx = 0;
     for (int k = 0; k < bs_idx; k++) xyz_batch_start_idx += xyz_batch_cnt[k];
-    // for (int k = 0; k < bs_idx; k++) new_xyz_batch_start_idx +=
-    // new_xyz_batch_cnt[k];
 
     const T *new_xyz_p = new_xyz + pt_idx * 3;
     cur_xyz += xyz_batch_start_idx * 3;
