@@ -261,8 +261,7 @@ void ROIAlignBackwardMLUKernelLauncher(
         DArrayShape(batch_size, channels, height, width),
         MemoryFormat::ChannelsLast));
     grad_input_ptr = &grad_input_;
-    PARROTS_CALLCNRT(
-        cnrtMemset(grad_input_ptr->data(), 0, grad_input_ptr->nbytes()));
+    fill(ctx, grad_input_, 0);
   }
 
   cnrtJobType_t k_type = CNRT_FUNC_TYPE_UNION1;
