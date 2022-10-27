@@ -40,7 +40,6 @@ void StackGroupPointsBackwardCUDAKernelLauncher(
     int b, int c, int m, int n, int nsample, const Tensor grad_out_tensor,
     const Tensor idx_tensor, const Tensor idx_batch_cnt_tensor,
     const Tensor features_batch_cnt_tensor, Tensor grad_features_tensor) {
-
   at::cuda::CUDAGuard device_guard(grad_features_tensor.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
