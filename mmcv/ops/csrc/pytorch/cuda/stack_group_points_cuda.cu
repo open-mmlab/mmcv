@@ -15,7 +15,6 @@ void StackGroupPointsForwardCUDAKernelLauncher(
   // idx: (B, npoints, nsample)
   // output:
   //      out: (B, C, npoints, nsample)
-
   at::cuda::CUDAGuard device_guard(features_tensor.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
