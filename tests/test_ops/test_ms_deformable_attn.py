@@ -5,6 +5,7 @@ import torch
 from mmcv.ops.multi_scale_deform_attn import (
     MultiScaleDeformableAttention, MultiScaleDeformableAttnFunction,
     multi_scale_deformable_attn_pytorch)
+from mmcv.utils import IS_MLU_AVAILABLE
 
 _USING_PARROTS = True
 try:
@@ -19,7 +20,11 @@ except ImportError:
     pytest.param(
         'cuda:0',
         marks=pytest.mark.skipif(
-            not torch.cuda.is_available(), reason='requires CUDA support'))
+            not torch.cuda.is_available(), reason='requires CUDA support')),
+    pytest.param(
+        'mlu',
+        marks=pytest.mark.skipif(
+            not IS_MLU_AVAILABLE, reason='requires MLU support'))
 ])
 def test_multiscale_deformable_attention(device_type):
     with pytest.raises(ValueError):
@@ -102,8 +107,16 @@ def test_forward_equal_with_pytorch_double():
     assert max_rel_err < 1e-15
 
 
-@pytest.mark.skipif(
-    not torch.cuda.is_available(), reason='requires CUDA support')
+@pytest.mark.parametrize('device_type', [
+    pytest.param(
+        'cuda',
+        marks=pytest.mark.skipif(
+            not torch.cuda.is_available(), reason='requires CUDA support')),
+    pytest.param(
+        'mlu',
+        marks=pytest.mark.skipif(
+            not IS_MLU_AVAILABLE, reason='requires MLU support'))
+])
 def test_forward_equal_with_pytorch_float():
     N, M, D = 1, 2, 2
     Lq, L, P = 2, 2, 2

@@ -32,7 +32,7 @@ We implement common ops used in detection, segmentation, etc.
 | MergeCells                   |     | √    |     |     |
 | MinAreaPolygon               |     | √    |     |     |
 | ModulatedDeformConv2d        | √   | √    |     |     |
-| MultiScaleDeformableAttn     |     | √    |     |     |
+| MultiScaleDeformableAttn     |     | √    | √   |     |
 | NMS                          | √   | √    | √   |     |
 | NMSRotated                   | √   | √    |     |     |
 | PixelGroup                   | √   |      |     |     |

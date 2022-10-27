@@ -13,6 +13,7 @@ from mmcv import deprecated_api_warning
 from mmcv.cnn import constant_init, xavier_init
 from mmcv.cnn.bricks.registry import ATTENTION
 from mmcv.runner import BaseModule
+from mmcv.utils import IS_MLU_AVAILABLE
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
@@ -47,18 +48,29 @@ class MultiScaleDeformableAttnFunction(Function):
         Returns:
             torch.Tensor: has shape (bs, num_queries, embed_dims)
         """
-
         ctx.im2col_step = im2col_step
-        output = ext_module.ms_deform_attn_forward(
-            value,
-            value_spatial_shapes,
-            value_level_start_index,
-            sampling_locations,
-            attention_weights,
-            im2col_step=ctx.im2col_step)
-        ctx.save_for_backward(value, value_spatial_shapes,
-                              value_level_start_index, sampling_locations,
-                              attention_weights)
+        if torch.cuda.is_available() and value.is_cuda:
+            output = ext_module.ms_deform_attn_forward(
+                value,
+                value_spatial_shapes,
+                value_level_start_index,
+                sampling_locations,
+                attention_weights,
+                im2col_step=ctx.im2col_step)
+            ctx.save_for_backward(value, value_spatial_shapes,
+                                  value_level_start_index, sampling_locations,
+                                  attention_weights)
+        elif IS_MLU_AVAILABLE and value.is_mlu:
+            output = ext_module.ms_deform_attn_forward(
+                value,
+                value_spatial_shapes.int(),
+                value_level_start_index.int(),
+                sampling_locations,
+                attention_weights,
+                im2col_step=ctx.im2col_step)
+            ctx.save_for_backward(value, value_spatial_shapes.int(),
+                                  value_level_start_index.int(),
+                                  sampling_locations, attention_weights)
         return output
 
     @staticmethod
@@ -351,6 +363,10 @@ class MultiScaleDeformableAttention(BaseModule):
             output = MultiScaleDeformableAttnFunction.apply(
                 value, spatial_shapes, level_start_index, sampling_locations,
                 attention_weights, self.im2col_step)
+        elif IS_MLU_AVAILABLE and value.is_mlu:
+            output = MultiScaleDeformableAttnFunction.apply(
+                value, spatial_shapes.int(), level_start_index.int(),
+                sampling_locations, attention_weights, self.im2col_step)
         else:
             output = multi_scale_deformable_attn_pytorch(
                 value, spatial_shapes, sampling_locations, attention_weights)

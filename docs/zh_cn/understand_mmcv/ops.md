@@ -32,7 +32,7 @@ MMCV 提供了检测、分割等任务中常用的算子
 | MergeCells                   |     | √    |     |     |
 | MinAreaPolygon               |     | √    |     |     |
 | ModulatedDeformConv2d        | √   | √    |     |     |
-| MultiScaleDeformableAttn     |     | √    |     |     |
+| MultiScaleDeformableAttn     |     | √    | √   |     |
 | NMS                          | √   | √    | √   |     |
 | NMSRotated                   | √   | √    |     |     |
 | PixelGroup                   | √   |      |     |     |
