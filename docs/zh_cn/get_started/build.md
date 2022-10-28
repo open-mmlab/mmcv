@@ -341,3 +341,208 @@ mmcv-full 有两个版本：
 1. 编译 mmcv
 
 2. 参考 [IPU PyTorch document](https://docs.graphcore.ai/projects/poptorch-user-guide/en/latest/installation.html) 安装 sdk。
+
+### 在 昇腾 NPU 机器编译 mmcv-full
+
+#### 安装Pytorch_npu
+
+##### 1. 安装Pytorch依赖环境
+```
+pip3 install pyyaml
+pip3 install wheel
+```
+##### 2. 编译安装 PyTorch 和昇腾插件
+
+PyTorch 完整安装教程详见 [在昇腾 NPU 机器安装 PyTorch]：
+
+https://gitee.com/ascend/pytorch/blob/v1.8.1-3.0.rc2/docs/zh/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97.md#pytorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97
+
+首先安装官方torch包，然后编译安装插件
+
+```
+#x86_64
+pip3 install torch==1.8.1+cpu #若使用pip命令安装cpu版本PyTorch报错，请手动下载whl包安装，下载地址：（https://download.pytorch.org/whl/torch）
+
+#aarch64
+#社区未提供arm架构cpu安装包，请参见完整安装教程FAQ第一条，使用源码编译安装pytorch
+```
+
+编译生成pytorch插件二进制安装包
+
+```
+# 下载对应分支代码，进入插件根目录
+git clone -b v1.8.1-3.0.rc2 https://gitee.com/ascend/pytorch.git
+cd pytorch
+# 指定python版本编包方式：
+bash ci/build.sh --python=3.7
+# 或
+bash ci/build.sh --python=3.8
+# 或
+bash ci/build.sh --python=3.9
+```
+
+然后安装pytorch/dist下生成的插件torch_npu包，{arch}为架构名称
+
+```
+pip3 install --upgrade dist/torch_npu-1.8.1rc2-cp37-cp37m-linux_{arch}.whl
+```
+
+下载torchvision
+
+```
+pip3 install torchvision==0.9.1
+```
+
+#### 安装Ascend-cann-toolkit
+
+Ascend-cann-toolkit版本和pytorch版本的对应关系参照：
+
+https://gitee.com/ascend/pytorch/blob/v1.8.1-3.0.rc2/docs/zh/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97.md#Ascend%E9%85%8D%E5%A5%97%E8%BD%AF%E4%BB%B6
+
+Ascend-cann-toolkit环境安装完整步骤：
+
+https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/60RC1alpha003/softwareinstall/instg/atlasdeploy_03_0014.html
+
+##### 1.准备硬件环境和安装驱动和固件：
+
+https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/60RC1alpha003/softwareinstall/instg/atlasdeploy_03_0014.html
+
+##### 2.安装开发环境
+
+###### 2.1 下载软件包
+
+https://www.hiascend.com/software/cann/community
+
+###### 2.2 准备安装及运行用户
+
+(1)以root用户登录安装环境,非root用户请参考完整安装教程
+
+(2)检查root用户的umask值
+
+```
+umask
+```
+
+(3)如果umask不等于0022，请执行如下操作配置，在该文件的最后一行添加umask 0022后保存。
+
+在任意目录下执行如下命令，打开.bashrc文件
+
+```
+vi ~/.bashrc
+```
+
+在文件最后一行后面添加umask 0022内容
+
+执行:wq!命令保存文件并退出。
+
+执行source ~/.bashrc命令使其立即生效。
+
+###### 2.3 安装依赖
+
+本章节以Ubuntu 18.04为例，详述依赖安装操作。其他系统参考完整安装教程。
+
+#### Ubuntu 18.04
+
+(1)安装依赖
+
+```
+gcc --version
+g++ --version
+make --version
+cmake --version
+dpkg -l zlib1g| grep zlib1g| grep ii
+dpkg -l zlib1g-dev| grep zlib1g-dev| grep ii
+dpkg -l libsqlite3-dev| grep libsqlite3-dev| grep ii
+dpkg -l openssl| grep openssl| grep ii
+dpkg -l libssl-dev| grep libssl-dev| grep ii
+dpkg -l libffi-dev| grep libffi-dev| grep ii
+dpkg -l unzip| grep unzip| grep ii
+dpkg -l pciutils| grep pciutils| grep ii
+dpkg -l net-tools| grep net-tools| grep ii
+dpkg -l libblas-dev| grep libblas-dev| grep ii
+dpkg -l gfortran| grep gfortran| grep ii
+dpkg -l libblas3| grep libblas3| grep ii
+dpkg -l libopenblas-dev| grep libopenblas-dev| grep ii
+```
+
+(2)安装python3.7.5和相关依赖
+
+```
+pip3 install attrs
+pip3 install numpy
+pip3 install decorator
+pip3 install sympy
+pip3 install cffi
+pip3 install pyyaml
+pip3 install pathlib2
+pip3 install psutil
+pip3 install protobuf
+pip3 install scipy
+pip3 install requests
+pip3 install absl-py
+```
+
+###### 2.3 安装Ascend-cann-toolkit_xxx.run
+
+(1)以软件包的安装用户登录安装环境。
+
+若安装依赖中安装依赖的用户为root用户，则软件包的安装用户可自行指定；若安装依赖中安装依赖的用户为非root用户，请确保软件包的安装用户与该用户保持一致。
+
+(2)将获取到的开发套件包上传到安装环境任意路径（如“/home/package”）。
+
+(3)进入软件包所在路径。
+
+(4)安装软件包
+
+```
+chmod +x 软件包名.run
+./软件包名.run --check
+./软件包名.run --install
+```
+
+安装完成后，若显示如下信息，则说明软件安装成功：
+
+```
+[INFO] xxx install success
+```
+
+xxx表示安装的实际软件包名。
+
+##### 3.编译MMCV NPU
+
+拉取MMCV npu_dev分支代码：
+
+https://github.com/open-mmlab/mmcv/tree/npu-dev
+
+###### 3.1编译+安装
+
+编译：
+
+```
+MMCV_WITH_OPS=1 FORCE_NPU=1 python set_up build_ext
+```
+
+安装
+
+```
+MMCV_WITH_OPS=1 FORCE_NPU=1 python set_up develop
+```
+
+验证：
+
+```
+import torch
+import torch_npu
+from mmcv.ops import softmax_focal_loss
+x = torch.randn(3, 10).npu()
+x.requires_grad = True
+y = torch.tensor([1, 5, 3]).npu()
+w = torch.ones(10).float().npu()
+output = softmax_focal_loss(x, y, 2.0, 0.25, w, 'none')
+```
+
+使用说明：
+
+```
+将torch tensor末尾加上.npu()就可以调用到npu算子
+```
