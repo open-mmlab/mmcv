@@ -137,14 +137,14 @@ def test_forward_equal_with_pytorch_float(device_type):
     output_pytorch = multi_scale_deformable_attn_pytorch(
         value, shapes, sampling_locations, attention_weights).detach().cpu()
 
-    output_cuda = MultiScaleDeformableAttnFunction.apply(
+    output_device = MultiScaleDeformableAttnFunction.apply(
         value, shapes, level_start_index, sampling_locations,
         attention_weights, im2col_step).detach().cpu()
-    assert torch.allclose(output_cuda, output_pytorch, rtol=1e-2, atol=1e-3)
-    max_abs_err = (output_cuda - output_pytorch).abs().max()
-    max_rel_err = ((output_cuda - output_pytorch).abs() /
+    assert torch.allclose(output_device, output_pytorch, rtol=1e-2, atol=1e-3)
+    max_abs_err = (output_device - output_pytorch).abs().max()
+    max_rel_err = ((output_device - output_pytorch).abs() /
                    output_pytorch.abs()).max()
-    assert max_abs_err < 1e-9
+    assert max_abs_err < 1e-8
     assert max_rel_err < 1e-6
 
 
