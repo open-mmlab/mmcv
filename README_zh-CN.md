@@ -35,7 +35,7 @@
 
 OpenMMLab 团队于 2022 年 9 月 1 日在世界人工智能大会发布了新一代训练引擎 [MMEngine](https://github.com/open-mmlab/mmengine)，它是一个用于训练深度学习模型的基础库。相比于 MMCV，它提供了更高级且通用的训练器、接口更加统一的开放架构以及可定制化程度更高的训练流程。
 
-与此同时，MMCV 发布了 [2.x](https://github.com/open-mmlab/mmcv/tree/2.x) 预发布版本并将于 2023 年 1 月 1 日发布 2.x 正式版本。在 2.x 版本中，它删除了和训练流程相关的组件，只保留了和图像视频处理相关的模块并新增了数据变换模块。另外，从 2.x 版本开始，包名 **mmcv** 被重命名为 **mmcv-lite**、**mmcv-full** 被重命名为 **mmcv**。详情见[兼容性文档](docs/zh_cn/compatibility.md)。
+与此同时，MMCV 发布了 [2.x](https://github.com/open-mmlab/mmcv/tree/2.x) 预发布版本并将于 2023 年 1 月 1 日发布 2.x 正式版本。在 2.x 版本中，它删除了和训练流程相关的组件，并新增了数据变换模块。另外，从 2.x 版本开始，重命名包名 **mmcv** 为 **mmcv-lite** 以及 **mmcv-full** 为 **mmcv**。详情见[兼容性文档](docs/zh_cn/compatibility.md)。
 
 MMCV 会同时维护 1.x 和 2.x 版本，详情见[分支维护计划](README_zh-CN.md#分支维护计划)。
 
