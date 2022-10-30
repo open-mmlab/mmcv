@@ -31,6 +31,16 @@
 
 English | [简体中文](README_zh-CN.md)
 
+## Highlights
+
+The OpenMMLab team released a new generation of training engine [MMEngine](https://github.com/open-mmlab/mmengine) at the World Artificial Intelligence Conference on September 1, 2022. It is a foundational library for training deep learning models. Compared with MMCV, it provides a universal and powerful runner, an open architecture with a more unified interfaces, and a more customizable training process.
+
+At the same time, MMCV released [2.x](https://github.com/open-mmlab/mmcv/tree/2.x) release candidate version and will release 2.x officially version on January 1, 2023.
+
+In version 2.x, it removed components related to the training process and added a data transformation module. Also, starting from 2.x, rename the package names **mmcv** to **mmcv-lite** and **mmcv-full** to **mmcv**. For details, see [Compatibility Documentation](docs/en/compatibility.md).
+
+MMCV will maintain both `1.x` and `2.x` versions. For details, see [Branch Maintenance Plan](README.md#branch-maintenance-plan).
+
 ## Introduction
 
 MMCV is a foundational library for computer vision research and it provides the following functionalities:
@@ -109,6 +119,8 @@ If you need to use PyTorch-related modules, make sure PyTorch has been successfu
 pip install -U openmim
 mim install mmcv
 ```
+
+## Branch Maintenance Plan
 
 ## Supported projects
 
