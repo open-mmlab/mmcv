@@ -76,7 +76,7 @@ you can first install it before installing MMCV to skip the installation of `ope
 #### Build on macOS
 
 ```{note}
-If you are using a mac with an M1 chip, install the nightly version of PyTorch, otherwise you will encounter the problem in [issues#2218](https://github.com/open-mmlab/mmcv/issues/2218).
+If you are using a mac with apple silicon chip, install the PyTorch 1.13+, otherwise you will encounter the problem in [issues#2218](https://github.com/open-mmlab/mmcv/issues/2218).
 ```
 
 1. Clone the repo
