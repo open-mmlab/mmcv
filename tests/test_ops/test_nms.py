@@ -38,7 +38,14 @@ class Testnms:
         assert np.allclose(dets.cpu().numpy(), np_dets)  # test gpu
         assert np.allclose(inds.cpu().numpy(), np_inds)  # test gpu
 
-    def test_softnms_allclose(self):
+    @pytest.mark.parametrize('device', [
+        'cpu',
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    ])
+    def test_softnms_allclose(self, device):
         if not torch.cuda.is_available():
             return
         from mmcv.ops import soft_nms
@@ -76,8 +83,8 @@ class Testnms:
             }
         }
 
-        boxes = torch.from_numpy(np_boxes)
-        scores = torch.from_numpy(np_scores)
+        boxes = torch.from_numpy(np_boxes).to(device)
+        scores = torch.from_numpy(np_scores).to(device)
 
         configs = [[0.3, 0.5, 0.01, 'linear'], [0.3, 0.5, 0.01, 'gaussian'],
                    [0.3, 0.5, 0.01, 'naive']]

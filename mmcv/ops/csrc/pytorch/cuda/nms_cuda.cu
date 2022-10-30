@@ -34,3 +34,13 @@ Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
   AT_CUDA_CHECK(cudaGetLastError());
   return order_t.masked_select(keep_t);
 }
+
+Tensor SoftNMSCUDAKernelLauncher(Tensor boxes, Tensor scores, Tensor dets,
+                                 float iou_threshold, float sigma, 
+                                 float min_score, int method, int offset)
+{
+  printf("Please implement softnms_cuda\n");
+  at::Tensor keep_t = at::zeros(
+      {1}, boxes.options().dtype(at::kBool).device(at::kCUDA));
+  return keep_t;
+}

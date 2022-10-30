@@ -88,11 +88,11 @@ class SoftNMSop(torch.autograd.Function):
     def forward(ctx: Any, boxes: Tensor, scores: Tensor, iou_threshold: float,
                 sigma: float, min_score: float, method: int,
                 offset: int) -> Tuple[Tensor, Tensor]:
-        dets = boxes.new_empty((boxes.size(0), 5), device='cpu')
+        dets = boxes.new_empty((boxes.size(0), 5))
         inds = ext_module.softnms(
-            boxes.cpu(),
-            scores.cpu(),
-            dets.cpu(),
+            boxes,
+            scores,
+            dets,
             iou_threshold=float(iou_threshold),
             sigma=float(sigma),
             min_score=float(min_score),
@@ -246,7 +246,7 @@ def soft_nms(boxes: array_like_type,
         }
         inds = ext_module.softnms(*indata_list, **indata_dict)
     else:
-        dets, inds = SoftNMSop.apply(boxes.cpu(), scores.cpu(),
+        dets, inds = SoftNMSop.apply(boxes, scores,
                                      float(iou_threshold), float(sigma),
                                      float(min_score), method_dict[method],
                                      int(offset))

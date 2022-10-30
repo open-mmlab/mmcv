@@ -767,12 +767,28 @@ REGISTER_DEVICE_IMPL(ms_deform_attn_impl_backward, CUDA,
 Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
                              int offset);
 
+Tensor SoftNMSCUDAKernelLauncher(Tensor boxes, Tensor scores, Tensor dets,
+                                 float iou_threshold, float sigma, 
+                                 float min_score, int method, int offset);
+
 Tensor nms_cuda(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
   return NMSCUDAKernelLauncher(boxes, scores, iou_threshold, offset);
 }
 
+Tensor softnms_cuda(Tensor boxes, Tensor scores, Tensor dets,
+                   float iou_threshold, float sigma, float min_score,
+                   int method, int offset)
+{
+  return SoftNMSCUDAKernelLauncher(boxes, scores, dets, iou_threshold, sigma,
+                                   min_score, method, offset);
+}
+
 Tensor nms_impl(Tensor boxes, Tensor scores, float iou_threshold, int offset);
+Tensor softnms_impl(Tensor boxes, Tensor scores, Tensor dets,
+                    float iou_threshold, float sigma, float min_score,
+                    int method, int offset);
 REGISTER_DEVICE_IMPL(nms_impl, CUDA, nms_cuda);
+REGISTER_DEVICE_IMPL(softnms_impl, CUDA, softnms_cuda);
 
 void PointsInBoxesPartForwardCUDAKernelLauncher(int batch_size, int boxes_num,
                                                 int pts_num, const Tensor boxes,
