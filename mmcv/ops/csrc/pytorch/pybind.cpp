@@ -75,6 +75,18 @@ void group_points_backward(Tensor grad_out_tensor, Tensor idx_tensor,
                            Tensor grad_points_tensor, int b, int c, int n,
                            int npoints, int nsample);
 
+void stack_group_points_forward(Tensor features_tensor,
+                                Tensor features_batch_cnt_tensor,
+                                Tensor idx_tensor, Tensor idx_batch_cnt_tensor,
+                                Tensor out_tensor, int b, int c, int m,
+                                int nsample);
+
+void stack_group_points_backward(Tensor grad_out_tensor, Tensor idx_tensor,
+                                 Tensor idx_batch_cnt_tensor,
+                                 Tensor features_batch_cnt_tensor,
+                                 Tensor grad_features_tensor, int b, int c,
+                                 int m, int n, int nsample);
+
 void roipoint_pool3d_forward(Tensor xyz, Tensor boxes3d, Tensor pts_feature,
                              Tensor pooled_features, Tensor pooled_empty_flag);
 
@@ -239,6 +251,10 @@ void tin_shift_backward(Tensor grad_output, Tensor shift, Tensor grad_input);
 void ball_query_forward(Tensor new_xyz_tensor, Tensor xyz_tensor,
                         Tensor idx_tensor, int b, int n, int m,
                         float min_radius, float max_radius, int nsample);
+
+void stack_ball_query_forward(Tensor new_xyz_tensor, Tensor new_xyz_batch_cnt,
+                              Tensor xyz_tensor, Tensor xyz_batch_cnt,
+                              Tensor idx_tensor, float max_radius, int nsample);
 
 void prroi_pool_forward(Tensor input, Tensor rois, Tensor output,
                         int pooled_height, int pooled_width,

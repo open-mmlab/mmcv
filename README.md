@@ -60,7 +60,7 @@ There are two versions of MMCV:
 
 ### Install mmcv
 
-Before installing mmcv, make sure that PyTorch has been successfully installed following the [PyTorch official installation guide](https://github.com/pytorch/pytorch#installation). For macOS M1 users, please make sure you are using `PyTorch Nightly`.
+Before installing mmcv, make sure that PyTorch has been successfully installed following the [PyTorch official installation guide](https://github.com/pytorch/pytorch#installation). For apple silicon users, please use PyTorch 1.13+.
 
 The command to install mmcv on Linux or Windows platforms is as follows (if your system is macOS, please refer to [build mmcv from source](https://mmcv.readthedocs.io/en/2.x/get_started/build.html#macos-mmcv))
 
