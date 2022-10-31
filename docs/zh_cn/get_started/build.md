@@ -380,6 +380,6 @@ output = softmax_focal_loss(x, y, 2.0, 0.25, w, 'none')
 
 使用说明：
 
-```
+```{note}
 将 tensor 末尾加上 .npu() 就可以调用到npu算子
 ```
