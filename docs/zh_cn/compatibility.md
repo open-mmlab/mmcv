@@ -4,16 +4,16 @@ OpenMMLab 团队于 2022 年 9 月 1 日在世界人工智能大会发布了新�
 
 与此同时，MMCV 发布了 [2.x](https://github.com/open-mmlab/mmcv/tree/2.x) 预发布版本并将于 2023 年 1 月 1 日发布 2.x 正式版本。在 2.x 版本中，它有以下变化：
 
-（1）它删除了以下组件：
+（1）删除了以下组件：
 
-- 在 PR [#2179](https://github.com/open-mmlab/mmcv/pull/2179) 中删除了 `mmcv.fileio` 模块并在需要使用 fileio 的地方使用 mmengine 中的 fileio 模块
-- 在 PR [#2216](https://github.com/open-mmlab/mmcv/pull/2216) 中删除了四个模块，分别是 `mmcv.runner`、`mmcv.parallel`、`mmcv.engine` 和 `mmcv.device`
-- 在 PR [#2217](https://github.com/open-mmlab/mmcv/pull/2217) 中删除了 `mmcv.utils` 中的所有类（例如 `Config` 和 `Registry`）和大部分函数，只保留少数和 mmcv 相关的函数
-- 在 PR [#2225](https://github.com/open-mmlab/mmcv/pull/2225) 中删除了 `mmcv.onnex`、`mmcv.tensorrt` 模块以及相关的函数
+- `mmcv.fileio` 模块，删除于 PR [#2179](https://github.com/open-mmlab/mmcv/pull/2179)。在需要使用 FileIO 的地方使用 mmengine 中的 FileIO 模块
+- `mmcv.runner`、`mmcv.parallel`、`mmcv.engine` 和 `mmcv.device`，删除于 PR [#2216](https://github.com/open-mmlab/mmcv/pull/2216)
+- `mmcv.utils` 中的所有类（例如 `Config` 和 `Registry`）和大部分函数，删除于 PR [#2217](https://github.com/open-mmlab/mmcv/pull/2217)，只保留少数和 mmcv 相关的函数
+- `mmcv.onnex`、`mmcv.tensorrt` 模块以及相关的函数，删除于 PR [#2225](https://github.com/open-mmlab/mmcv/pull/2225)
 
-（2）它新增了 [`mmcv.transforms`](https://github.com/open-mmlab/mmcv/tree/2.x/mmcv/transforms) 数据变换模块
+（2）新增了 [`mmcv.transforms`](https://github.com/open-mmlab/mmcv/tree/2.x/mmcv/transforms) 数据变换模块
 
-（3）它在 PR [#2235](https://github.com/open-mmlab/mmcv/pull/2235) 中将包名 **mmcv** 重命名为 **mmcv-lite**、 **mmcv-full** 重命名为 **mmcv**。此外，将环境变量 `MMCV_WITH_OPS` 的默认值从 0 改为 1
+（3）在 PR [#2235](https://github.com/open-mmlab/mmcv/pull/2235) 中将包名 **mmcv** 重命名为 **mmcv-lite**、 **mmcv-full** 重命名为 **mmcv**。此外，将环境变量 `MMCV_WITH_OPS` 的默认值从 0 改为 1
 
 <table class="docutils">
 <thead>

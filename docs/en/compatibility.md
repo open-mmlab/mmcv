@@ -1,19 +1,19 @@
 ### v2.0.0rc1
 
-The OpenMMLab team released a new generation of training engine [MMEngine](https://github.com/open-mmlab/mmengine) at the World Artificial Intelligence Conference on September 1, 2022. It is a foundational library for training deep learning models. Compared with MMCV, it provides a universal and powerful runner, an open architecture with a more unified interfaces, and a more customizable training process.
+The OpenMMLab team released a new generation of training engine [MMEngine](https://github.com/open-mmlab/mmengine) at the World Artificial Intelligence Conference on September 1, 2022. It is a foundational library for training deep learning models. Compared with MMCV, it provides a universal and powerful runner, an open architecture with a more unified interface, and a more customizable training process.
 
 At the same time, MMCV released [2.x](https://github.com/open-mmlab/mmcv/tree/2.x) release candidate version and will release 2.x officially version on January 1, 2023. In version 2.x, it has the following changes:
 
-(1) It removes the following components:
+(1) It removed the following components:
 
-- Removed `mmcv.fileio` module in PR [#2179](https://github.com/open-mmlab/mmcv/pull/2179) and used fileio module from mmengine wherever fileio is required.
-- Removed four modules in PR [#2216](https://github.com/open-mmlab/mmcv/pull/2216), `mmcv.runner`, `mmcv.parallel`, `mmcv. engine` and `mmcv.device`
-- Removed all classes in `mmcv.utils` (eg `Config` and `Registry`) and large Some functions in PR [#2217](https://github.com/open-mmlab/mmcv/pull/2217) , only a few functions related to mmcv are reserved.
-- Removed `mmcv.onnex`, `mmcv.tensorrt` modules and related functions in PR [#2225](https://github.com/open-mmlab/mmcv/pull/2225).
+- `mmcv.fileio` module, removed in PR [#2179](https://github.com/open-mmlab/mmcv/pull/2179). FileIO module from mmengine will be used wherever required.
+- `mmcv.runner`, `mmcv.parallel`, `mmcv. engine` and `mmcv.device`, removed in PR [#2216](https://github.com/open-mmlab/mmcv/pull/2216).
+- All classes in `mmcv.utils` (eg `Config` and `Registry`) and many functions, removed in PR [#2217](https://github.com/open-mmlab/mmcv/pull/2217). Only a few functions related to mmcv are reserved.
+- `mmcv.onnex`, `mmcv.tensorrt` modules and related functions, removed in PR [#2225](https://github.com/open-mmlab/mmcv/pull/2225).
 
-(2) It adds the [`mmcv.transforms`](https://github.com/open-mmlab/mmcv/tree/2.x/mmcv/transforms) data transformation module.
+(2) It added the [`mmcv.transforms`](https://github.com/open-mmlab/mmcv/tree/2.x/mmcv/transforms) data transformation module.
 
-(3) It renamed the package name **mmcv** to **mmcv-lite**, **mmcv-full** renamed to **mmcv** in PR [#2235](https://github.com/open-mmlab/mmcv/pull/2235). Also, change the default value of the environment variable `MMCV_WITH_OPS` from 0 to 1.
+(3) It renamed the package name **mmcv** to **mmcv-lite** and **mmcv-full** to **mmcv** in PR [#2235](https://github.com/open-mmlab/mmcv/pull/2235). Also, change the default value of the environment variable `MMCV_WITH_OPS` from 0 to 1.
 
 <table class="docutils">
 <thead>
