@@ -11,9 +11,9 @@
 arbitrarily high order gradients with zero performance penalty."""
 
 import contextlib
+from typing import Dict
 
 import torch
-from typing import Dict
 
 enabled = True
 weight_gradients_disabled = False
