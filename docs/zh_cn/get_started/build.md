@@ -351,18 +351,18 @@ mmcv-full 有两个版本：
 
 #### 2. 编译 MMCV NPU
 
-拉取 [MMCV 源码](https://github.com/open-mmlab/mmcv/tree/master)进行编译安装
+拉取 [MMCV 源码](https://github.com/open-mmlab/mmcv/tree/master) 进行编译安装
 
 编译：
 
 ```bash
-MMCV_WITH_OPS=1 MAX_JOBS=8 FORCE_NPU=1 python set_up.py build_ext
+MMCV_WITH_OPS=1 MAX_JOBS=8 FORCE_NPU=1 python setup.py build_ext
 ```
 
 安装
 
 ```bash
-MMCV_WITH_OPS=1 FORCE_NPU=1 python set_up develop
+MMCV_WITH_OPS=1 FORCE_NPU=1 python setup.py develop
 ```
 
 验证：
