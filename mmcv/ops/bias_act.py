@@ -8,9 +8,11 @@
 # and any modifications thereto.  Any use, reproduction, disclosure or
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
+
+# source: https://github.com/open-mmlab/mmediting/blob/dev-1.x/mmedit/models/editors/stylegan3/stylegan3_ops/ops/bias_act.py # noqa
 """Custom PyTorch ops for efficient bias and activation."""
 
-from typing import Any
+from typing import Any, Dict
 
 import numpy as np
 import torch
@@ -203,7 +205,7 @@ def _bias_act_ref(x,
     return x
 
 
-_bias_act_cuda_cache = dict()
+_bias_act_cuda_cache: Dict = dict()
 
 
 def _bias_act_cuda(dim=1, act='linear', alpha=None, gain=None, clamp=None):

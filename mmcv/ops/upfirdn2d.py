@@ -5,12 +5,16 @@
 # and any modifications thereto.  Any use, reproduction, disclosure or
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
+
+# source: https://github.com/NVlabs/stylegan3/blob/main/torch_utils/ops/upfirdn2d.py # noqa
 """Custom PyTorch ops for efficient resampling of 2D images."""
+from typing import Dict
+
 import numpy as np
 import torch
-from mmedit.models.base_archs.conv2d_gradfix import conv2d
 
 from ..utils import ext_loader
+from .conv2d_gradfix import conv2d
 
 ext_module = ext_loader.load_ext('_ext', ['upfirdn2d'])
 
@@ -231,7 +235,7 @@ def _upfirdn2d_ref(x, f, up=1, down=1, padding=0, flip_filter=False, gain=1):
     return x
 
 
-_upfirdn2d_cuda_cache = dict()
+_upfirdn2d_cuda_cache: Dict = dict()
 
 
 def _upfirdn2d_cuda(up=1, down=1, padding=0, flip_filter=False, gain=1):

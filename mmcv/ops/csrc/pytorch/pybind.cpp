@@ -426,6 +426,9 @@ Tensor bias_act(const Tensor &x, const Tensor &b, const Tensor &xref, const Tens
 std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu(
     torch::Tensor x, torch::Tensor fu, torch::Tensor fd, torch::Tensor b, torch::Tensor si,
     int up, int down, int px0, int px1, int py0, int py1, int sx, int sy, float gain, float slope, float clamp, bool flip_filters, bool writeSigns);
+
+std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_act_(torch::Tensor x, torch::Tensor si, int sx, int sy, float gain, float slope, float clamp, bool writeSigns);
+
 void box_iou_quadri(const Tensor boxes1, const Tensor boxes2, Tensor ious,
                     const int mode_flag, const bool aligned);
 
@@ -871,6 +874,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
       m.def("filtered_lrelu", &filtered_lrelu, "filtered_lrelu (CUDA)", py::arg("x"), py::arg("fu"), py::arg("fd"), py::arg("b"), py::arg("si"),
             py::arg("up"), py::arg("down"), py::arg("px0"), py::arg("px1"), py::arg("py0"), py::arg("py1"), py::arg("sx"), py::arg("sy"), py::arg("gain"),
             py::arg("slope"), py::arg("clamp"), py::arg("flip_filters"), py::arg("writeSigns"));
+      m.def("filtered_lrelu_act_", &filtered_lrelu_act_, "filtered_lrelu_act_ (CUDA)", py::arg("x"), py::arg("si"), py::arg("sx"), py::arg("sy"), py::arg("gain"), py::arg("slope"),
+            py::arg("clamp"), py::arg("writeSigns"));
       m.def("box_iou_quadri", &box_iou_quadri, "IoU for quadrilateral boxes",
             py::arg("boxes1"), py::arg("boxes2"), py::arg("ious"),
             py::arg("mode_flag"), py::arg("aligned"));

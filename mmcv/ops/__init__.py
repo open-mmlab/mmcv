@@ -11,6 +11,7 @@ from .carafe import CARAFE, CARAFENaive, CARAFEPack, carafe, carafe_naive
 from .cc_attention import CrissCrossAttention
 from .chamfer_distance import chamfer_distance
 from .contour_expand import contour_expand
+from .conv2d_gradfix import conv2d
 from .convex_iou import convex_giou, convex_iou
 from .corner_pool import CornerPool
 from .correlation import Correlation
@@ -104,5 +105,5 @@ __all__ = [
     'points_in_boxes_cpu', 'points_in_boxes_all', 'points_in_polygons',
     'min_area_polygons', 'active_rotated_filter', 'convex_iou', 'convex_giou',
     'diff_iou_rotated_2d', 'diff_iou_rotated_3d', 'chamfer_distance',
-    'PrRoIPool', 'prroi_pool', 'bias_act', 'filtered_lrelu'
+    'PrRoIPool', 'prroi_pool', 'bias_act', 'filtered_lrelu', 'conv2d'
 ]

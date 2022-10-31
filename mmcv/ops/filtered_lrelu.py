@@ -6,15 +6,19 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+# source: https://github.com/NVlabs/stylegan3/blob/main/torch_utils/ops/filtered_lrelu.py # noqa
 import warnings
+from typing import Dict
 
 import numpy as np
 import torch
 
 from ..utils import ext_loader
+from .bias_act import bias_act
+from .upfirdn2d import upfirdn2d
 
 ext_module = ext_loader.load_ext('_ext',
-                                 ['bias_act', 'upfirdn2d', 'filtered_lrelu'])
+                                 ['filtered_lrelu', 'filtered_lrelu_act_'])
 
 _plugin = None
 
@@ -174,26 +178,25 @@ def _filtered_lrelu_ref(x,
              (down - 1)) // down
 
     # Compute using existing ops.
-    x = ext_module.bias_act(x=x, b=b)  # Apply bias.
-    x = ext_module.upfirdn2d(
+    x = bias_act(x=x, b=b)  # Apply bias.
+    x = upfirdn2d(
         x=x,
         f=fu,
         up=up,
         padding=[px0, px1, py0, py1],
         gain=up**2,
         flip_filter=flip_filter)  # Upsample.
-    x = ext_module.bias_act(
+    x = bias_act(
         x=x, act='lrelu', alpha=slope, gain=gain,
         clamp=clamp)  # Bias, leaky ReLU, clamp.
-    x = ext_module.upfirdn2d(
-        x=x, f=fd, down=down, flip_filter=flip_filter)  # Downsample.
+    x = upfirdn2d(x=x, f=fd, down=down, flip_filter=flip_filter)  # Downsample.
 
     assert x.shape == (batch_size, channels, out_h, out_w)
     assert x.dtype == in_dtype
     return x
 
 
-_filtered_lrelu_cuda_cache = dict()
+_filtered_lrelu_cuda_cache: Dict = dict()
 
 
 def _filtered_lrelu_cuda(up=1,
@@ -288,17 +291,18 @@ def _filtered_lrelu_cuda(up=1,
                     RuntimeWarning)
 
                 y = x.add(b.unsqueeze(-1).unsqueeze(-1))  # Add bias.
-                y = ext_module.upfirdn2d(
+                y = upfirdn2d(
                     x=y,
                     f=fu,
                     up=up,
                     padding=[px0, px1, py0, py1],
-                    gain=up**2,
+                    gain=float(up**2),
                     flip_filter=flip_filter)  # Upsample.
                 # Activation function and sign handling. Modifies y in-place.
-                so = _plugin.filtered_lrelu_act_(y, si, sx, sy, gain, slope,
-                                                 clamp, write_signs)
-                y = ext_module.upfirdn2d(
+                so = ext_module.filtered_lrelu_act_(y, si.to(y.device), sx, sy,
+                                                    gain, slope, clamp,
+                                                    write_signs)
+                y = upfirdn2d(
                     x=y, f=fd, down=down,
                     flip_filter=flip_filter)  # Downsample.
 
