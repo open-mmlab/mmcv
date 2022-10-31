@@ -359,7 +359,7 @@ mmcv-full 有两个版本：
 MMCV_WITH_OPS=1 MAX_JOBS=8 FORCE_NPU=1 python setup.py build_ext
 ```
 
-安装
+安装：
 
 ```bash
 MMCV_WITH_OPS=1 FORCE_NPU=1 python setup.py develop
@@ -380,6 +380,6 @@ output = softmax_focal_loss(x, y, 2.0, 0.25, w, 'none')
 
 使用说明：
 
-```bash
+```
 将 tensor 末尾加上 .npu() 就可以调用到npu算子
 ```
