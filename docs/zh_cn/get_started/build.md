@@ -341,3 +341,44 @@ mmcv-full 有两个版本：
 1. 编译 mmcv
 
 2. 参考 [IPU PyTorch document](https://docs.graphcore.ai/projects/poptorch-user-guide/en/latest/installation.html) 安装 sdk。
+
+### 在昇腾 NPU 机器编译 mmcv-full
+
+#### 1. 安装 torch_npu
+
+- torch_npu 完整安装教程详见 [PyTorch安装指南](https://gitee.com/ascend/pytorch/blob/master/docs/zh/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97.md#pytorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97)
+
+#### 2. 编译 MMCV NPU
+
+拉取 [MMCV 源码](https://github.com/open-mmlab/mmcv/tree/master) 进行编译安装
+
+编译：
+
+```bash
+MMCV_WITH_OPS=1 MAX_JOBS=8 FORCE_NPU=1 python setup.py build_ext
+```
+
+安装：
+
+```bash
+MMCV_WITH_OPS=1 FORCE_NPU=1 python setup.py develop
+```
+
+验证：
+
+```python
+import torch
+import torch_npu
+from mmcv.ops import softmax_focal_loss
+x = torch.randn(3, 10).npu()
+x.requires_grad = True
+y = torch.tensor([1, 5, 3]).npu()
+w = torch.ones(10).float().npu()
+output = softmax_focal_loss(x, y, 2.0, 0.25, w, 'none')
+```
+
+使用说明：
+
+```{note}
+在 tensor 末尾加上 .npu() 就可以调用到 npu 算子
+```
