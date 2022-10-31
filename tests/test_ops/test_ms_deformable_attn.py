@@ -144,7 +144,7 @@ def test_forward_equal_with_pytorch_float(device_type):
     max_abs_err = (output_device - output_pytorch).abs().max()
     max_rel_err = ((output_device - output_pytorch).abs() /
                    output_pytorch.abs()).max()
-    assert max_abs_err < 1e-8
+    assert max_abs_err < 1e-9
     assert max_rel_err < 1e-6
 
 
