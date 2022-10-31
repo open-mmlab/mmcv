@@ -342,32 +342,16 @@ mmcv-full 有两个版本：
 
 2. 参考 [IPU PyTorch document](https://docs.graphcore.ai/projects/poptorch-user-guide/en/latest/installation.html) 安装 sdk。
 
+
 ### 在昇腾 NPU 机器编译 mmcv-full
 
-#### 一、安装 Pytorch_npu
+#### 1. 安装 torch_npu
 
-#### 1. 安装 Pytorch 依赖环境
+- torch_npu 完整安装教程详见 [PyTorch安装指南](https://gitee.com/ascend/pytorch/blob/master/docs/zh/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97.md#pytorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97)
 
-```bash
-pip3 install pyyaml
-pip3 install wheel
-```
+#### 2. 编译 MMCV NPU
 
-#### 2. 编译安装 PyTorch 和昇腾插件
-
-PyTorch 完整安装教程详见 [昇腾 NPU 机器安装 PyTorch](https://gitee.com/ascend/pytorch/blob/v1.8.1-3.0.rc2/docs/zh/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97.md#pytorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97)
-
-
-#### 二、安装 Ascend-cann-toolkit
-
-Ascend-cann-toolkit 版本和 pytorch 版本的对应关系参照 [Pytorch安装文档](https://gitee.com/ascend/pytorch/blob/v1.8.1-3.0.rc2/docs/zh/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97.md#Ascend%E9%85%8D%E5%A5%97%E8%BD%AF%E4%BB%B6)
-
-
-#### 3. 编译 MMCV NPU
-
-拉取 MMCV 的 npu_dev 分支代码，[下载地址](https://github.com/open-mmlab/mmcv/tree/master)
-
-##### 3.1 编译+安装
+拉取 [MMCV 源码](https://github.com/open-mmlab/mmcv/tree/master)进行编译安装
 
 编译：
 
