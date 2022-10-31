@@ -35,14 +35,12 @@ def test_RoIAwarePool3d(device, dtype):
          [-10.0, 23.0, 16.0, 20.0, 10.0, 20.0, -0.5 - np.pi / 2]],
         dtype=dtype).to(device)
     # boxes (m, 7) with bottom center in lidar coordinate
-
     pts = torch.tensor(
         [[1, 2, 3.3], [1.2, 2.5, 3.0], [0.8, 2.1, 3.5], [1.6, 2.6, 3.6],
          [0.8, 1.2, 3.9], [-9.2, 21.0, 18.2], [3.8, 7.9, 6.3],
          [4.7, 3.5, -12.2], [3.8, 7.6, -2], [-10.6, -12.9, -20], [-16, -18, 9],
          [-21.3, -52, -5], [0, 0, 0], [6, 7, 8], [-2, -3, -4]],
         dtype=dtype).to(device)  # points (n, 3) in lidar coordinate
-
     pts_feature = pts.clone()
 
     pooled_features_max = roiaware_pool3d_max(
