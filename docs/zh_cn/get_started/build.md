@@ -357,163 +357,22 @@ pip3 install wheel
 
 PyTorch 完整安装教程详见 [昇腾 NPU 机器安装 PyTorch](https://gitee.com/ascend/pytorch/blob/v1.8.1-3.0.rc2/docs/zh/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97.md#pytorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97)
 
-首先安装官方 torch 包，然后编译安装插件
-
-```bash
-#x86_64
-pip3 install torch==1.8.1+cpu #若使用pip命令安装cpu版本PyTorch报错，请手动下载whl包安装，下载地址:(https://download.pytorch.org/whl/torch)
-
-#aarch64
-#社区未提供arm架构cpu安装包，请参见完整安装教程FAQ第一条，使用源码编译安装pytorch
-```
-
-编译生成 pytorch 插件二进制安装包
-
-```bash
-# 下载对应分支代码，进入插件根目录
-git clone -b v1.8.1-3.0.rc2 https://gitee.com/ascend/pytorch.git
-cd pytorch
-# 指定python版本编包方式：
-bash ci/build.sh --python=3.7
-# 或
-bash ci/build.sh --python=3.8
-# 或
-bash ci/build.sh --python=3.9
-```
-
-然后安装`pytorch/dist`下生成的插件 torch_npu 包，{arch} 为架构名称
-
-```bash
-pip3 install --upgrade dist/torch_npu-1.8.1rc2-cp37-cp37m-linux_{arch}.whl
-```
-
-下载torchvision
-
-```bash
-pip3 install torchvision==0.9.1
-```
 
 #### 二、安装 Ascend-cann-toolkit
 
 Ascend-cann-toolkit 版本和 pytorch 版本的对应关系参照 [Pytorch安装文档](https://gitee.com/ascend/pytorch/blob/v1.8.1-3.0.rc2/docs/zh/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97.md#Ascend%E9%85%8D%E5%A5%97%E8%BD%AF%E4%BB%B6)
 
-Ascend-cann-toolkit 环境安装完整步骤参照 [Ascend-cann-toolkit安装文档](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/60RC1alpha003/softwareinstall/instg/atlasdeploy_03_0014.html)
-
-#### 1. 准备硬件环境和安装驱动和固件
-
-详细参照[昇腾硬件环境安装文档](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/60RC1alpha003/softwareinstall/instg/atlasdeploy_03_0014.html)
-
-#### 2. 安装开发环境
-
-##### 2.1 下载软件包
-
-[下载地址](https://www.hiascend.com/software/cann/community)
-
-##### 2.2 准备安装及运行用户
-
-(1)以root用户登录安装环境,非root用户请参考完整安装教程
-
-(2)检查root用户的 umask 值
-
-```bash
-umask
-```
-
-(3)如果 umask 不等于0022，请执行如下操作配置，在该文件的最后一行添加`umask 0022`后保存。
-
-在任意目录下执行如下命令，打开`.bashrc`文件
-
-```bash
-vi ~/.bashrc
-```
-
-在文件最后一行后面添加`umask 0022`内容
-
-执行`:wq!`命令保存文件并退出。
-
-执行`source ~/.bashrc`命令使其立即生效。
-
-##### 2.3 安装依赖
-
-本章节以 Ubuntu 18.04 为例，详述依赖安装操作。其他系统参考完整安装教程。
-
-##### Ubuntu 18.04
-
-(1)安装依赖
-
-```bash
-gcc --version
-g++ --version
-make --version
-cmake --version
-dpkg -l zlib1g| grep zlib1g| grep ii
-dpkg -l zlib1g-dev| grep zlib1g-dev| grep ii
-dpkg -l libsqlite3-dev| grep libsqlite3-dev| grep ii
-dpkg -l openssl| grep openssl| grep ii
-dpkg -l libssl-dev| grep libssl-dev| grep ii
-dpkg -l libffi-dev| grep libffi-dev| grep ii
-dpkg -l unzip| grep unzip| grep ii
-dpkg -l pciutils| grep pciutils| grep ii
-dpkg -l net-tools| grep net-tools| grep ii
-dpkg -l libblas-dev| grep libblas-dev| grep ii
-dpkg -l gfortran| grep gfortran| grep ii
-dpkg -l libblas3| grep libblas3| grep ii
-dpkg -l libopenblas-dev| grep libopenblas-dev| grep ii
-```
-
-(2)安装 python3.7.5 和相关依赖
-
-```bash
-pip3 install attrs
-pip3 install numpy
-pip3 install decorator
-pip3 install sympy
-pip3 install cffi
-pip3 install pyyaml
-pip3 install pathlib2
-pip3 install psutil
-pip3 install protobuf
-pip3 install scipy
-pip3 install requests
-pip3 install absl-py
-```
-
-##### 2.4 安装 Ascend-cann-toolkit_xxx.run
-
-(1)以软件包的安装用户登录安装环境。
-
-若安装依赖中安装依赖的用户为root用户，则软件包的安装用户可自行指定；若安装依赖中安装依赖的用户为非root用户，请确保软件包的安装用户与该用户保持一致。
-
-(2)将获取到的开发套件包上传到安装环境任意路径。
-
-(3)进入软件包所在路径。
-
-(4)安装软件包
-
-```bash
-chmod +x 软件包名.run
-./软件包名.run --check
-./软件包名.run --install
-```
-
-安装完成后，若显示如下信息，则说明软件安装成功：
-
-```bash
-[INFO] xxx install success
-```
-
-xxx表示安装的实际软件包名。
 
 #### 3. 编译 MMCV NPU
 
-拉取 MMCV 的 npu_dev 分支代码，[下载地址](https://github.com/open-mmlab/mmcv/tree/npu-dev)
+拉取 MMCV 的 npu_dev 分支代码，[下载地址](https://github.com/open-mmlab/mmcv/tree/master)
 
 ##### 3.1 编译+安装
 
 编译：
 
 ```bash
-MMCV_WITH_OPS=1 FORCE_NPU=1 python set_up build_ext
+MMCV_WITH_OPS=1 MAX_JOBS=8 FORCE_NPU=1 python set_up.py build_ext
 ```
 
 安装
