@@ -1,0 +1,3 @@
+[submodule "DIOPI"]
+	path = DIOPI
+	url = https://github.com/ParrotsDL/DIOPI.git
