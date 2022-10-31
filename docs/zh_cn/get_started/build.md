@@ -342,7 +342,6 @@ mmcv-full 有两个版本：
 
 2. 参考 [IPU PyTorch document](https://docs.graphcore.ai/projects/poptorch-user-guide/en/latest/installation.html) 安装 sdk。
 
-
 ### 在昇腾 NPU 机器编译 mmcv-full
 
 #### 1. 安装 torch_npu
