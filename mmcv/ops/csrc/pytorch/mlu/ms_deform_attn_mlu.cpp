@@ -56,10 +56,12 @@ Tensor ms_deform_attn_mlu_forward(const Tensor& value,
   // check datatype
   TORCH_CHECK((value.scalar_type() == at::kFloat),
               "value type should be Float, got ", value.scalar_type(), ".");
-  TORCH_CHECK((spatial_shapes.scalar_type() == at::kInt),
+  TORCH_CHECK((spatial_shapes.scalar_type() == at::kInt ||
+	       spatial_shapes.scalar_type() == at::kLong),
               "spatial_shapes type should be Int, got ",
               spatial_shapes.scalar_type(), ".");
-  TORCH_CHECK((level_start_index.scalar_type() == at::kInt),
+  TORCH_CHECK((level_start_index.scalar_type() == at::kInt ||
+	       level_start_index.scalar_type() == at::kLong),
               "level_start_index type should be Int, got ",
               level_start_index.scalar_type(), ".");
   TORCH_CHECK((sampling_loc.scalar_type() == at::kFloat),
@@ -166,12 +168,15 @@ Tensor ms_deform_attn_mlu_forward(const Tensor& value,
   // get compute queue
   auto queue = torch_mlu::getCurQueue();
 
+  auto spatial_shapes_ = spatial_shapes.to(at::kInt);
+  auto level_start_index_ = level_start_index.to(at::kInt);
+
   // get ptr of tensors
   auto value_impl = torch_mlu::getMluTensorImpl(value);
   auto value_ptr = value_impl->cnnlMalloc();
-  auto spatial_shapes_impl = torch_mlu::getMluTensorImpl(spatial_shapes);
+  auto spatial_shapes_impl = torch_mlu::getMluTensorImpl(spatial_shapes_);
   auto spatial_shapes_ptr = spatial_shapes_impl->cnnlMalloc();
-  auto level_start_index_impl = torch_mlu::getMluTensorImpl(level_start_index);
+  auto level_start_index_impl = torch_mlu::getMluTensorImpl(level_start_index_);
   auto level_start_index_ptr = level_start_index_impl->cnnlMalloc();
   auto sampling_loc_impl = torch_mlu::getMluTensorImpl(sampling_loc);
   auto sampling_loc_ptr = sampling_loc_impl->cnnlMalloc();

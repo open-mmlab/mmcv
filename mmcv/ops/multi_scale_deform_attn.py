@@ -28,7 +28,7 @@ class MultiScaleDeformableAttnFunction(Function):
                 sampling_locations: torch.Tensor,
                 attention_weights: torch.Tensor,
                 im2col_step: torch.Tensor) -> torch.Tensor:
-        """GPU version of multi-scale deformable attention.
+        """GPU/MLU version of multi-scale deformable attention.
 
         Args:
             value (torch.Tensor): The value has shape
@@ -48,35 +48,24 @@ class MultiScaleDeformableAttnFunction(Function):
         Returns:
             torch.Tensor: has shape (bs, num_queries, embed_dims)
         """
+
         ctx.im2col_step = im2col_step
-        if torch.cuda.is_available() and value.is_cuda:
-            output = ext_module.ms_deform_attn_forward(
-                value,
-                value_spatial_shapes,
-                value_level_start_index,
-                sampling_locations,
-                attention_weights,
-                im2col_step=ctx.im2col_step)
-            ctx.save_for_backward(value, value_spatial_shapes,
-                                  value_level_start_index, sampling_locations,
-                                  attention_weights)
-        elif IS_MLU_AVAILABLE and value.is_mlu:
-            output = ext_module.ms_deform_attn_forward(
-                value,
-                value_spatial_shapes.int(),
-                value_level_start_index.int(),
-                sampling_locations,
-                attention_weights,
-                im2col_step=ctx.im2col_step)
-            ctx.save_for_backward(value, value_spatial_shapes.int(),
-                                  value_level_start_index.int(),
-                                  sampling_locations, attention_weights)
+        output = ext_module.ms_deform_attn_forward(
+            value,
+            value_spatial_shapes,
+            value_level_start_index,
+            sampling_locations,
+            attention_weights,
+            im2col_step=ctx.im2col_step)
+        ctx.save_for_backward(value, value_spatial_shapes,
+                              value_level_start_index, sampling_locations,
+                              attention_weights)
         return output
 
     @staticmethod
     @once_differentiable
     def backward(ctx, grad_output: torch.Tensor) -> tuple:
-        """GPU version of backward function.
+        """GPU/MLU version of backward function.
 
         Args:
             grad_output (torch.Tensor): Gradient of output tensor of forward.
@@ -365,8 +354,8 @@ class MultiScaleDeformableAttention(BaseModule):
                 attention_weights, self.im2col_step)
         elif IS_MLU_AVAILABLE and value.is_mlu:
             output = MultiScaleDeformableAttnFunction.apply(
-                value, spatial_shapes.int(), level_start_index.int(),
-                sampling_locations, attention_weights, self.im2col_step)
+                value, spatial_shapes, level_start_index, sampling_locations,
+                attention_weights, self.im2col_step)
         else:
             output = multi_scale_deformable_attn_pytorch(
                 value, spatial_shapes, sampling_locations, attention_weights)
