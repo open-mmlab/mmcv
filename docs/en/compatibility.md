@@ -2,7 +2,7 @@
 
 The OpenMMLab team released a new generation of training engine [MMEngine](https://github.com/open-mmlab/mmengine) at the World Artificial Intelligence Conference on September 1, 2022. It is a foundational library for training deep learning models. Compared with MMCV, it provides a universal and powerful runner, an open architecture with a more unified interface, and a more customizable training process.
 
-At the same time, MMCV released [2.x](https://github.com/open-mmlab/mmcv/tree/2.x) release candidate version and will release 2.x officially version on January 1, 2023. In version 2.x, it has the following changes:
+At the same time, MMCV released [2.x](https://github.com/open-mmlab/mmcv/tree/2.x) release candidate version and will release 2.x official version on January 1, 2023. In version 2.x, it has the following changes:
 
 (1) It removed the following components:
 
