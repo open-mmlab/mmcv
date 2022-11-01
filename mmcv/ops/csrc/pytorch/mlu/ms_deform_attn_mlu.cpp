@@ -33,11 +33,7 @@ static void policyFuncForward(cnrtDim3_t* k_dim, cnrtFunctionType_t* k_type,
       MIN((batch_size * num_queries * num_heads + k_dim->x - 1) / k_dim->x,
           torch_mlu::getDeviceAttr(cnrtAttrClusterCount));
   k_dim->z = 1;
-#if __BANG_ARCH__ == 520
-  *k_type = CNRT_FUNC_TYPE_BLOCK;
-#else
   *k_type = CNRT_FUNC_TYPE_UNION1;
-#endif
 }
 
 Tensor ms_deform_attn_mlu_forward(const Tensor& value,
