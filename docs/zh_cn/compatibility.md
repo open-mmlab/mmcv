@@ -8,7 +8,7 @@ OpenMMLab 团队于 2022 年 9 月 1 日在世界人工智能大会发布了新�
 
 - `mmcv.fileio` 模块，删除于 PR [#2179](https://github.com/open-mmlab/mmcv/pull/2179)。在需要使用 FileIO 的地方使用 mmengine 中的 FileIO 模块
 - `mmcv.runner`、`mmcv.parallel`、`mmcv.engine` 和 `mmcv.device`，删除于 PR [#2216](https://github.com/open-mmlab/mmcv/pull/2216)
-- `mmcv.utils` 中的所有类（例如 `Config` 和 `Registry`）和大部分函数，删除于 PR [#2217](https://github.com/open-mmlab/mmcv/pull/2217)，只保留少数和 mmcv 相关的函数
+- `mmcv.utils` 的所有类（例如 `Config` 和 `Registry`）和大部分函数，删除于 PR [#2217](https://github.com/open-mmlab/mmcv/pull/2217)，只保留少数和 mmcv 相关的函数
 - `mmcv.onnex`、`mmcv.tensorrt` 模块以及相关的函数，删除于 PR [#2225](https://github.com/open-mmlab/mmcv/pull/2225)
 
 （2）新增了 [`mmcv.transforms`](https://github.com/open-mmlab/mmcv/tree/2.x/mmcv/transforms) 数据变换模块
