@@ -122,6 +122,14 @@ mim install mmcv
 
 ## Branch Maintenance Plan
 
+MMCV currently has two branches, the master and 2.x branches, which go through the following three phases.
+
+| Phase                | Time                  | Branch                                                                                                          | description                                                                                                                                              |
+| -------------------- | --------------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RC Period            | 2022/9/1 - 2022.12.31 | Release candidate code (2.x version) will be released on 2.x branch. Default master branch is still 1.x version | Master and 2.x branches iterate normally                                                                                                                 |
+| Compatibility Period | 2023/1/1 - 2023.12.31 | **Default master branch will be switched to 2.x branch**, and 1.x branch will correspond to 1.x version         | We still maintain the old version 1.x, respond to user needs, but try not to introduce changes that break compatibility; master branch iterates normally |
+| Maintenance Period   | From 2024/1/1         | Default master branch corresponds to 2.x version and 1.x branch is 1.x version                                  | 1.x branch is in maintenance phase, no more new feature support; master branch is iterating normally                                                     |
+
 ## Supported projects
 
 - [MIM](https://github.com/open-mmlab/mim): MIM installs OpenMMLab packages.
