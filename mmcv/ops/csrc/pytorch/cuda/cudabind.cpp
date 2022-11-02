@@ -750,6 +750,7 @@ void masked_col2im_forward_impl(const Tensor col, const Tensor mask_h_idx,
                                 const Tensor mask_w_idx, Tensor im, int height,
                                 int width, int channels);
 
+
 REGISTER_DEVICE_IMPL(masked_im2col_forward_impl, CUDA,
                      masked_im2col_forward_cuda);
 REGISTER_DEVICE_IMPL(masked_col2im_forward_impl, CUDA,
@@ -1867,3 +1868,46 @@ REGISTER_DEVICE_IMPL(prroi_pool_forward_impl, CUDA, prroi_pool_forward_cuda);
 REGISTER_DEVICE_IMPL(prroi_pool_backward_impl, CUDA, prroi_pool_backward_cuda);
 REGISTER_DEVICE_IMPL(prroi_pool_coor_backward_impl, CUDA,
                      prroi_pool_coor_backward_cuda);
+
+void StackQueryLocalNeighborIdxsCUDAKernelLauncher(const Tensor support_xyz_tensor, const Tensor xyz_batch_cnt_tensor,
+    const Tensor new_xyz_tensor, const Tensor new_xyz_batch_cnt_tensor,
+    Tensor stack_neighbor_idxs_tensor, Tensor start_len_tensor, Tensor cumsum_tensor,
+    const int avg_length_of_neighbor_idxs, const float max_neighbour_distance, const int nsample, const int neighbor_type);
+
+void stack_query_local_neighbor_idxs_cuda(const Tensor support_xyz_tensor, const Tensor xyz_batch_cnt_tensor,
+    const Tensor new_xyz_tensor, const Tensor new_xyz_batch_cnt_tensor,
+    Tensor stack_neighbor_idxs_tensor, Tensor start_len_tensor, Tensor cumsum_tensor,
+    const int avg_length_of_neighbor_idxs, const float max_neighbour_distance, const int nsample, const int neighbor_type){
+        StackQueryLocalNeighborIdxsCUDAKernelLauncher(support_xyz_tensor, xyz_batch_cnt_tensor, new_xyz_tensor,
+      new_xyz_batch_cnt_tensor, stack_neighbor_idxs_tensor, start_len_tensor, cumsum_tensor, avg_length_of_neighbor_idxs,
+      max_neighbour_distance, nsample, neighbor_type);
+    }
+
+void stack_query_local_neighbor_idxs_impl(const Tensor support_xyz_tensor, const Tensor xyz_batch_cnt_tensor,
+    const Tensor new_xyz_tensor, const Tensor new_xyz_batch_cnt_tensor,
+    Tensor stack_neighbor_idxs_tensor, Tensor start_len_tensor, Tensor cumsum_tensor,
+    const int avg_length_of_neighbor_idxs, const float max_neighbour_distance, const int nsample, const int neighbor_type);
+
+void StackQueryThreeNNLocalIdxsCUDAKernelLauncher(const Tensor support_xyz_tensor,
+    const Tensor new_xyz_tensor, const Tensor new_xyz_grid_centers_tensor,
+    Tensor new_xyz_grid_idxs_tensor, Tensor new_xyz_grid_dist2_tensor,
+    Tensor stack_neighbor_idxs_tensor, Tensor start_len_tensor,
+    const int M, const int num_total_grids);
+
+void stack_query_three_nn_local_idxs_cuda (const Tensor support_xyz_tensor,
+    const Tensor new_xyz_tensor, const Tensor new_xyz_grid_centers_tensor,
+    Tensor new_xyz_grid_idxs_tensor, Tensor new_xyz_grid_dist2_tensor,
+    Tensor stack_neighbor_idxs_tensor, Tensor start_len_tensor,
+    const int M, const int num_total_grids){
+        StackQueryThreeNNLocalIdxsCUDAKernelLauncher(support_xyz_tensor, new_xyz_tensor, new_xyz_grid_centers_tensor,
+      new_xyz_grid_idxs_tensor, new_xyz_grid_dist2_tensor, stack_neighbor_idxs_tensor, start_len_tensor, M, num_total_grids);
+    }
+
+void stack_query_three_nn_local_idxs_impl (const Tensor support_xyz_tensor,
+    const Tensor new_xyz_tensor, const Tensor new_xyz_grid_centers_tensor,
+    Tensor new_xyz_grid_idxs_tensor, Tensor new_xyz_grid_dist2_tensor,
+    Tensor stack_neighbor_idxs_tensor, Tensor start_len_tensor,
+    const int M, const int num_total_grids);
+REGISTER_DEVICE_IMPL(stack_query_three_nn_local_idxs_impl, CUDA, stack_query_three_nn_local_idxs_cuda);
+REGISTER_DEVICE_IMPL(stack_query_local_neighbor_idxs_impl, CUDA,
+                     stack_query_local_neighbor_idxs_cuda);

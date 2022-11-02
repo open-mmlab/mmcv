@@ -66,6 +66,7 @@ from .sparse_structure import SparseConvTensor, scatter_nd
 from .sync_bn import SyncBatchNorm
 from .three_interpolate import three_interpolate
 from .three_nn import three_nn
+from .ThreeNNForVectorPoolByTwoStep import three_nn_vector_pool_by_two_step
 from .tin_shift import TINShift, tin_shift
 from .upfirdn2d import upfirdn2d
 from .voxelize import Voxelization, voxelization
@@ -102,5 +103,5 @@ __all__ = [
     'points_in_boxes_cpu', 'points_in_boxes_all', 'points_in_polygons',
     'min_area_polygons', 'active_rotated_filter', 'convex_iou', 'convex_giou',
     'diff_iou_rotated_2d', 'diff_iou_rotated_3d', 'chamfer_distance',
-    'PrRoIPool', 'prroi_pool'
+    'PrRoIPool', 'prroi_pool', 'three_nn_vector_pool_by_two_step'
 ]
