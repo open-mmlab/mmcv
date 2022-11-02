@@ -184,9 +184,9 @@ static __global__ void upfirdn2d_kernel_small(upfirdn2d_kernel_params p) {
         scalar_t v = 0;
         if (inX >= 0 & inY >= 0 & inX < p.inSize.x & inY < p.inSize.y &
             c < p.inSize.z)
-          v = (scalar_t)((const T *)
-                             p.x)[inX * p.inStride.x + inY * p.inStride.y +
-                                  c * p.inStride.z + n * p.inStride.w];
+          v = (scalar_t)(
+              (const T *)p.x)[inX * p.inStride.x + inY * p.inStride.y +
+                              c * p.inStride.z + n * p.inStride.w];
         sx[relInY][relInX][relC] = v;
       }
 
