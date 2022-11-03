@@ -47,7 +47,7 @@ We implement common ops used in detection, segmentation, etc.
 | RoIAlignRotated              | √   | √    | √   |     |
 | RiRoIAlignRotated            |     | √    |     |     |
 | RoIAlign                     | √   | √    | √   |     |
-| RoIAwarePool3d               |     | √    |     |     |
+| RoIAwarePool3d               |     | √    | √   |     |
 | SAConv2d                     |     | √    |     |     |
 | SigmoidFocalLoss             |     | √    | √   |     |
 | SoftmaxFocalLoss             |     | √    |     |     |
