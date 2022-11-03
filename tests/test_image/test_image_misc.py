@@ -13,7 +13,6 @@ except ImportError:
 
 @pytest.mark.skipif(torch is None, reason='requires torch library')
 def test_tensor2imgs():
-
     # test tensor obj
     with pytest.raises(AssertionError):
         tensor = np.random.rand(2, 3, 3)

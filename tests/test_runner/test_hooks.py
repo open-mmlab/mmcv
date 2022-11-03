@@ -1606,7 +1606,8 @@ def test_segmind_hook():
 def test_wandb_hook():
     sys.modules['wandb'] = MagicMock()
     runner = _build_demo_runner()
-    hook = WandbLoggerHook(log_artifact=True)
+    hook = WandbLoggerHook(
+        log_artifact=True, define_metric_cfg={'val/loss': 'min'})
     loader = DataLoader(torch.ones((5, 2)))
 
     runner.register_hook(hook)
@@ -1615,6 +1616,7 @@ def test_wandb_hook():
     shutil.rmtree(runner.work_dir)
 
     hook.wandb.init.assert_called_with()
+    hook.wandb.define_metric.assert_called_with('val/loss', summary='min')
     hook.wandb.log.assert_called_with({
         'learning_rate': 0.02,
         'momentum': 0.95
@@ -1665,7 +1667,6 @@ def test_dvclive_hook_model_file(tmp_path):
     hook = DvcliveLoggerHook(model_file=osp.join(runner.work_dir, 'model.pth'))
     runner.register_hook(hook)
 
-    loader = torch.utils.data.DataLoader(torch.ones((5, 2)))
     loader = DataLoader(torch.ones((5, 2)))
 
     runner.run([loader, loader], [('train', 1), ('val', 1)])
@@ -1673,6 +1674,16 @@ def test_dvclive_hook_model_file(tmp_path):
     assert osp.exists(osp.join(runner.work_dir, 'model.pth'))
 
     shutil.rmtree(runner.work_dir)
+
+
+def test_dvclive_hook_pass_logger(tmp_path):
+    sys.modules['dvclive'] = MagicMock()
+    from dvclive import Live
+    logger = Live()
+
+    sys.modules['dvclive'] = MagicMock()
+    assert DvcliveLoggerHook().dvclive is not logger
+    assert DvcliveLoggerHook(dvclive=logger).dvclive is logger
 
 
 def test_clearml_hook():

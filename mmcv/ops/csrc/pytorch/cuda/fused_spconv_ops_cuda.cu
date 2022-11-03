@@ -1,9 +1,12 @@
 #include <cuda_runtime_api.h>
 #include <torch/script.h>
+// clang-format off
+// TODO: make spconv_utils.h order agnostic
+#include "../spconv_utils.h"
+// clang-format on
 #include <utils/spconv/spconv/indice.h>
 #include <utils/spconv/spconv/reordering.h>
 
-#include "../spconv_utils.h"
 #include "pytorch_cuda_helper.hpp"
 
 torch::Tensor FusedIndiceConvBatchnormCUDAKernelLauncher(
@@ -40,9 +43,6 @@ torch::Tensor FusedIndiceConvBatchnormCUDAKernelLauncher(
                // add.
     torch::mm_out(output, features, filters[indicePairMaxOffset]);
   }
-  double totalGatherTime = 0;
-  double totalGEMMTime = 0;
-  double totalSAddTime = 0;
   for (int i = 0; i < kernelVolume; ++i) {
     auto nHot = indicePairNumCpu.data_ptr<int>()[i];
     if (nHot <= 0 || (subM && i == indicePairMaxOffset)) {

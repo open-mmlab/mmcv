@@ -5,7 +5,6 @@ from mmcv.cnn.bricks import GeneralizedAttention
 
 
 def test_context_block():
-
     # test attention_type='1000'
     imgs = torch.randn(2, 16, 20, 20)
     gen_attention_block = GeneralizedAttention(16, attention_type='1000')

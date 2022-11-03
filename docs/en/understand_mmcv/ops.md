@@ -10,6 +10,7 @@ We implement common ops used in detection, segmentation, etc.
 | BBoxOverlaps                 |     | √    | √   | √   |
 | BorderAlign                  |     | √    |     |     |
 | BoxIouRotated                | √   | √    |     |     |
+| BoxIouQuadri                 | √   | √    |     |     |
 | CARAFE                       |     | √    | √   |     |
 | ChamferDistance              |     | √    |     |     |
 | CrissCrossAttention          |     | √    |     |     |
@@ -26,7 +27,7 @@ We implement common ops used in detection, segmentation, etc.
 | FusedBiasLeakyrelu           |     | √    |     |     |
 | GatherPoints                 |     | √    |     |     |
 | GroupPoints                  |     | √    |     |     |
-| Iou3d                        |     | √    |     |     |
+| Iou3d                        |     | √    | √   |     |
 | KNN                          |     | √    |     |     |
 | MaskedConv                   |     | √    | √   |     |
 | MergeCells                   |     | √    |     |     |
@@ -35,17 +36,18 @@ We implement common ops used in detection, segmentation, etc.
 | MultiScaleDeformableAttn     |     | √    |     |     |
 | NMS                          | √   | √    | √   |     |
 | NMSRotated                   | √   | √    |     |     |
+| NMSQuadri                    | √   | √    |     |     |
 | PixelGroup                   | √   |      |     |     |
 | PointsInBoxes                | √   | √    |     |     |
 | PointsInPolygons             |     | √    |     |     |
 | PSAMask                      | √   | √    | √   |     |
 | RotatedFeatureAlign          | √   | √    |     |     |
-| RoIPointPool3d               |     | √    |     |     |
+| RoIPointPool3d               |     | √    | √   |     |
 | RoIPool                      |     | √    | √   |     |
 | RoIAlignRotated              | √   | √    | √   |     |
 | RiRoIAlignRotated            |     | √    |     |     |
 | RoIAlign                     | √   | √    | √   |     |
-| RoIAwarePool3d               |     | √    |     |     |
+| RoIAwarePool3d               |     | √    | √   |     |
 | SAConv2d                     |     | √    |     |     |
 | SigmoidFocalLoss             |     | √    | √   |     |
 | SoftmaxFocalLoss             |     | √    |     |     |

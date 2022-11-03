@@ -172,7 +172,6 @@ def run_model(ipu_options,
 
 @skip_no_ipu
 def test_run_model():
-
     # test feature alignment not support gradientAccumulation mode
     options_cfg = dict(
         randomSeed=888,

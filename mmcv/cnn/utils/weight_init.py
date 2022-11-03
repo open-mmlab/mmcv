@@ -213,7 +213,8 @@ class ConstantInit(BaseInit):
 @INITIALIZERS.register_module(name='Xavier')
 class XavierInit(BaseInit):
     r"""Initialize module parameters with values according to the method
-    described in `Understanding the difficulty of training deep feedforward
+    described in `Understanding the difficulty of training deep feedforward.
+
     neural networks - Glorot, X. & Bengio, Y. (2010).
     <http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf>`_
 
@@ -271,7 +272,6 @@ class NormalInit(BaseInit):
             Defaults to None.
         layer (str | list[str], optional): the layer will be initialized.
             Defaults to None.
-
     """
 
     def __init__(self, mean: float = 0, std: float = 1, **kwargs):
@@ -317,7 +317,6 @@ class TruncNormalInit(BaseInit):
             Defaults to None.
         layer (str | list[str], optional): the layer will be initialized.
             Defaults to None.
-
     """
 
     def __init__(self,
@@ -401,7 +400,8 @@ class UniformInit(BaseInit):
 @INITIALIZERS.register_module(name='Kaiming')
 class KaimingInit(BaseInit):
     r"""Initialize module parameters with the values according to the method
-    described in `Delving deep into rectifiers: Surpassing human-level
+    described in `Delving deep into rectifiers: Surpassing human-level.
+
     performance on ImageNet classification - He, K. et al. (2015).
     <https://www.cv-foundation.org/openaccess/content_iccv_2015/
     papers/He_Delving_Deep_into_ICCV_2015_paper.pdf>`_
@@ -688,12 +688,12 @@ def trunc_normal_(tensor: Tensor,
                   std: float = 1.,
                   a: float = -2.,
                   b: float = 2.) -> Tensor:
-    r"""Fills the input Tensor with values drawn from a truncated
-    normal distribution. The values are effectively drawn from the
-    normal distribution :math:`\mathcal{N}(\text{mean}, \text{std}^2)`
-    with values outside :math:`[a, b]` redrawn until they are within
-    the bounds. The method used for generating the random values works
-    best when :math:`a \leq \text{mean} \leq b`.
+    r"""Fills the input Tensor with values drawn from a truncated normal
+    distribution. The values are effectively drawn from the normal distribution
+    :math:`\mathcal{N}(\text{mean}, \text{std}^2)` with values outside
+    :math:`[a, b]` redrawn until they are within the bounds. The method used
+    for generating the random values works best when :math:`a \leq \text{mean}
+    \leq b`.
 
     Modified from
     https://github.com/pytorch/pytorch/blob/master/torch/nn/init.py

@@ -55,15 +55,27 @@ def collect_env():
         env_info['CUDA_HOME'] = CUDA_HOME
 
         if CUDA_HOME is not None and osp.isdir(CUDA_HOME):
-            try:
-                nvcc = osp.join(CUDA_HOME, 'bin/nvcc')
-                nvcc = subprocess.check_output(f'"{nvcc}" -V', shell=True)
-                nvcc = nvcc.decode('utf-8').strip()
-                release = nvcc.rfind('Cuda compilation tools')
-                build = nvcc.rfind('Build ')
-                nvcc = nvcc[release:build].strip()
-            except subprocess.SubprocessError:
-                nvcc = 'Not Available'
+            if CUDA_HOME == '/opt/rocm':
+                try:
+                    nvcc = osp.join(CUDA_HOME, 'hip/bin/hipcc')
+                    nvcc = subprocess.check_output(
+                        f'"{nvcc}" --version', shell=True)
+                    nvcc = nvcc.decode('utf-8').strip()
+                    release = nvcc.rfind('HIP version:')
+                    build = nvcc.rfind('')
+                    nvcc = nvcc[release:build].strip()
+                except subprocess.SubprocessError:
+                    nvcc = 'Not Available'
+            else:
+                try:
+                    nvcc = osp.join(CUDA_HOME, 'bin/nvcc')
+                    nvcc = subprocess.check_output(f'"{nvcc}" -V', shell=True)
+                    nvcc = nvcc.decode('utf-8').strip()
+                    release = nvcc.rfind('Cuda compilation tools')
+                    build = nvcc.rfind('Build ')
+                    nvcc = nvcc[release:build].strip()
+                except subprocess.SubprocessError:
+                    nvcc = 'Not Available'
             env_info['NVCC'] = nvcc
 
     try:

@@ -333,7 +333,6 @@ def test_linear(in_w, in_h, in_feature, out_feature):
 
 @patch('mmcv.cnn.bricks.wrappers.TORCH_VERSION', (1, 10))
 def test_nn_op_forward_called():
-
     for m in ['Conv2d', 'ConvTranspose2d', 'MaxPool2d']:
         with patch(f'torch.nn.{m}.forward') as nn_module_forward:
             # randn input
