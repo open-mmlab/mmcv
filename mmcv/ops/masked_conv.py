@@ -51,7 +51,7 @@ class MaskedConv2dFunction(Function):
                     'Some input data is not in the NPU currently.')
             conv = nn.Conv2d(in_channel,
                              out_channel,
-                             kernel_size=(kernel_h,kernel_w),
+                             kernel_size=(kernel_h, kernel_w),
                              stride=stride,
                              padding=padding,
                              dilation=1).npu()
