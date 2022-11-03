@@ -22,74 +22,75 @@ __global__ void query_stacked_local_neighbor_idxs_cuda_kernel(
     // max_neighbour_distance: float
     // nsample: find all (-1), find limited number(>0)
     // neighbor_type: 1: ball, others: cube
+    CUDA_1D_KERNEL_LOOP(pt_idx, M) {
+        const T *cur_support_xyz = support_xyz;
+        const T *cur_new_xyz = new_xyz;
+        int *cur_start_len = start_len;
+        int bs_idx = 0, pt_cnt = new_xyz_batch_cnt[0];
+        for (int k = 1; k < batch_size; k++){
+            if (pt_idx < pt_cnt) break;
+            pt_cnt += new_xyz_batch_cnt[k];
+            bs_idx = k;
+        }
 
-    int pt_idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (pt_idx >= M) return;
+        int xyz_batch_start_idx = 0;
+        for (int k = 0; k < bs_idx; k++) xyz_batch_start_idx += xyz_batch_cnt[k];
 
-    int bs_idx = 0, pt_cnt = new_xyz_batch_cnt[0];
-    for (int k = 1; k < batch_size; k++){
-        if (pt_idx < pt_cnt) break;
-        pt_cnt += new_xyz_batch_cnt[k];
-        bs_idx = k;
-    }
+        cur_support_xyz += xyz_batch_start_idx * 3;
+        cur_new_xyz += pt_idx * 3;
+        cur_start_len += pt_idx * 2;
 
-    int xyz_batch_start_idx = 0;
-    for (int k = 0; k < bs_idx; k++) xyz_batch_start_idx += xyz_batch_cnt[k];
+        float new_x = cur_new_xyz[0];
+        float new_y = cur_new_xyz[1];
+        float new_z = cur_new_xyz[2];
+        int n = xyz_batch_cnt[bs_idx];
 
-    support_xyz += xyz_batch_start_idx * 3;
-    new_xyz += pt_idx * 3;
-    start_len += pt_idx * 2;
+        float local_x, local_y, local_z;
+        float radius2 = max_neighbour_distance * max_neighbour_distance;
 
-    float new_x = new_xyz[0];
-    float new_y = new_xyz[1];
-    float new_z = new_xyz[2];
-    int n = xyz_batch_cnt[bs_idx];
+        int temp_idxs[1000];
 
-    float local_x, local_y, local_z;
-    float radius2 = max_neighbour_distance * max_neighbour_distance;
+        int sample_cnt = 0;
+        for (int k = 0; k < n; ++k) {
+            local_x = cur_support_xyz[k * 3 + 0] - new_x;
+            local_y = cur_support_xyz[k * 3 + 1] - new_y;
+            local_z = cur_support_xyz[k * 3 + 2] - new_z;
 
-    int temp_idxs[1000];
-
-    int sample_cnt = 0;
-    for (int k = 0; k < n; ++k) {
-        local_x = support_xyz[k * 3 + 0] - new_x;
-        local_y = support_xyz[k * 3 + 1] - new_y;
-        local_z = support_xyz[k * 3 + 2] - new_z;
-
-        if (neighbor_type == 1){
-            // ball
-            if (local_x * local_x + local_y * local_y + local_z * local_z > radius2){
-                continue;
+            if (neighbor_type == 1){
+                // ball
+                if (local_x * local_x + local_y * local_y + local_z * local_z > radius2){
+                    continue;
+                }
             }
-        }
-        else{
-            // voxel
-            if ((fabs(local_x) > max_neighbour_distance) |
-                (fabs(local_y) > max_neighbour_distance) |
-                (fabs(local_z) > max_neighbour_distance)){
-                continue;
+            else{
+                // voxel
+                if ((fabs(local_x) > max_neighbour_distance) |
+                    (fabs(local_y) > max_neighbour_distance) |
+                    (fabs(local_z) > max_neighbour_distance)){
+                    continue;
+                }
             }
+            if (sample_cnt < 1000){
+                temp_idxs[sample_cnt] = k;
+            }
+            else{
+                break;
+            }
+            sample_cnt++;
+            if (nsample > 0 && sample_cnt >= nsample) break;
         }
-        if (sample_cnt < 1000){
-            temp_idxs[sample_cnt] = k;
+        cur_start_len[0] = atomicAdd(cumsum, sample_cnt);
+        cur_start_len[1] = sample_cnt;
+
+        int max_thresh = avg_length_of_neighbor_idxs * M;
+        if (cur_start_len[0] >= max_thresh) return;
+
+        stack_neighbor_idxs += cur_start_len[0];
+        if (cur_start_len[0] + sample_cnt >= max_thresh) sample_cnt = max_thresh - cur_start_len[0];
+
+        for (int k = 0; k < sample_cnt; k++){
+            stack_neighbor_idxs[k] = temp_idxs[k] + xyz_batch_start_idx;
         }
-        else{
-            break;
-        }
-        sample_cnt++;
-        if (nsample > 0 && sample_cnt >= nsample) break;
-    }
-    start_len[0] = atomicAdd(cumsum, sample_cnt);
-    start_len[1] = sample_cnt;
-
-    int max_thresh = avg_length_of_neighbor_idxs * M;
-    if (start_len[0] >= max_thresh) return;
-
-    stack_neighbor_idxs += start_len[0];
-    if (start_len[0] + sample_cnt >= max_thresh) sample_cnt = max_thresh - start_len[0];
-
-    for (int k = 0; k < sample_cnt; k++){
-        stack_neighbor_idxs[k] = temp_idxs[k] + xyz_batch_start_idx;
     }
 }
 
@@ -106,24 +107,26 @@ __global__ void query_three_nn_by_stacked_local_idxs_cuda_kernel(
     // new_xyz_grid_dist2: (M1 + M2 ..., num_total_grids, 3) square of dist of three-nn
     // stack_neighbor_idxs: (max_length_of_neighbor_idxs)
     // start_len: (M1 + M2, 2)  [start_offset, neighbor_length]
-
+CUDA_1D_KERNEL_LOOP(pt_idx, M) {
     int grid_idx = blockIdx.y;
-    int pt_idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (grid_idx >= num_total_grids) return;
+    const T *cur_new_xyz = new_xyz;
+    const T *cur_new_xyz_grid_centers = new_xyz_grid_centers;
+    int *cur_new_xyz_grid_idxs = new_xyz_grid_idxs;
+    T *cur_new_xyz_grid_dist2 = new_xyz_grid_dist2;
+    const int *cur_start_len = start_len;
+    cur_new_xyz += pt_idx * 3;
+    cur_new_xyz_grid_centers += pt_idx * num_total_grids * 3 + grid_idx * 3;
+    cur_new_xyz_grid_idxs += pt_idx * num_total_grids * 3 + grid_idx * 3;
+    cur_new_xyz_grid_dist2 += pt_idx * num_total_grids * 3 + grid_idx * 3;
 
-    if (pt_idx >= M || grid_idx >= num_total_grids) return;
+    cur_start_len += pt_idx * 2;
+    stack_neighbor_idxs += cur_start_len[0];
+    int neighbor_length = cur_start_len[1];
 
-    new_xyz += pt_idx * 3;
-    new_xyz_grid_centers += pt_idx * num_total_grids * 3 + grid_idx * 3;
-    new_xyz_grid_idxs += pt_idx * num_total_grids * 3 + grid_idx * 3;
-    new_xyz_grid_dist2 += pt_idx * num_total_grids * 3 + grid_idx * 3;
-
-    start_len += pt_idx * 2;
-    stack_neighbor_idxs += start_len[0];
-    int neighbor_length = start_len[1];
-
-    float center_x = new_xyz_grid_centers[0];
-    float center_y = new_xyz_grid_centers[1];
-    float center_z = new_xyz_grid_centers[2];
+    float center_x = cur_new_xyz_grid_centers[0];
+    float center_y = cur_new_xyz_grid_centers[1];
+    float center_z = cur_new_xyz_grid_centers[2];
 
     double best1 = 1e40, best2 = 1e40, best3 = 1e40;
     int besti1 = -1, besti2 = -1, besti3 = -1;
@@ -155,12 +158,13 @@ __global__ void query_three_nn_by_stacked_local_idxs_cuda_kernel(
     if (besti3 == -1){
         besti3 = besti1; best3 = best1;
     }
-    new_xyz_grid_dist2[0] = best1;
-    new_xyz_grid_dist2[1] = best2;
-    new_xyz_grid_dist2[2] = best3;
-    new_xyz_grid_idxs[0] = besti1;
-    new_xyz_grid_idxs[1] = besti2;
-    new_xyz_grid_idxs[2] = besti3;
+    cur_new_xyz_grid_dist2[0] = best1;
+    cur_new_xyz_grid_dist2[1] = best2;
+    cur_new_xyz_grid_dist2[2] = best3;
+    cur_new_xyz_grid_idxs[0] = besti1;
+    cur_new_xyz_grid_idxs[1] = besti2;
+    cur_new_xyz_grid_idxs[2] = besti3;
+    }
 }
 
 #endif
