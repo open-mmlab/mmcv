@@ -74,7 +74,7 @@ MMCV 有两个版本：
 
 在安装 mmcv-full 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://github.com/pytorch/pytorch#installation)。
 
-在 Linux 和 Windows 平台安装 mmcv-full 的命令如下（如果你的系统是 macOS，请参考[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html#macos-mmcv-full)）
+安装 mmcv-full 的命令如下：
 
 ```bash
 pip install -U openmim
@@ -84,7 +84,7 @@ mim install mmcv-full
 如果需要指定 mmcv-full 的版本，可以使用以下命令
 
 ```bash
-mim install mmcv-full==1.5.0
+mim install mmcv-full==1.7.0
 ```
 
 如果发现上述的安装命令没有使用预编译包（以 `.whl` 结尾）而是使用源码包（以 `.tar.gz` 结尾）安装，则有可能是我们没有提供和当前环境的 PyTorch 版本、CUDA 版本相匹配的 mmcv-full 预编译包，此时，你可以[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html)。

@@ -12,7 +12,6 @@ Do not install both versions in the same environment, otherwise you may encounte
 ### Install mmcv-full
 
 ```{note}
-- The following installation steps are for Linux and Windows platforms only. To install mmcv-full on macOS platform, please refer to [build mmcv-full from source](build.md#build-on-macos).
 - To compile ONNX Runtime custom operators, please refer to [How to build custom operators for ONNX Runtime](../deployment/onnxruntime_op.md#how-to-build-custom-operators-for-onnx-runtime)
 - To compile TensorRT customization, please refer to [How to build TensorRT plugins in MMCV](../deployment/tensorrt_plugin.md#how-to-build-tensorrt-plugins-in-mmcv)
 ```
@@ -54,10 +53,10 @@ Collecting mmcv-full==1.6.0<br />
 
 </details>
 
-To install a specific version of mmcv-full, for example, mmcv-full version 1.6.0, you can use the following command
+To install a specific version of mmcv-full, for example, mmcv-full version 1.7.0, you can use the following command
 
 ```bash
-mim install mmcv-full==1.6.0
+mim install mmcv-full==1.7.0
 ```
 
 :::{note}

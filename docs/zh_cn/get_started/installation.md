@@ -12,7 +12,6 @@ MMCV 有两个版本：
 ### 安装 mmcv-full
 
 ```{note}
-- 下述安装步骤仅适用于 Linux 和 Windows 平台，如需在 macOS 平台安装 mmcv-full，请参考[源码安装 mmcv-full](build.md#在-macos-上编译-mmcv-full)。
 - 如需编译 ONNX Runtime 自定义算子，请参考[如何编译ONNX Runtime自定义算子](../deployment/onnxruntime_op.md#如何编译onnx-runtime自定义算子)
 - 如需编译 TensorRT 自定义，请参考[如何编译MMCV中的TensorRT插件](../deployment/tensorrt_plugin.md#如何编译mmcv中的tensorrt插件)
 ```
@@ -54,10 +53,10 @@ Collecting mmcv-full==1.6.0<br />
 
 </details>
 
-如需安装指定版本的 mmcv-full，例如安装 1.6.0 版本的 mmcv-full，可使用以下命令
+如需安装指定版本的 mmcv-full，例如安装 1.7.0 版本的 mmcv-full，可使用以下命令
 
 ```bash
-mim install mmcv-full==1.6.0
+mim install mmcv-full==1.7.0
 ```
 
 :::{note}
