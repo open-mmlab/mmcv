@@ -446,16 +446,19 @@ Tensor nms_quadri(const Tensor dets, const Tensor scores, const Tensor order,
                   const Tensor dets_sorted, const float iou_threshold,
                   const int multi_label);
 
-void stack_query_local_neighbor_idxs(const Tensor support_xyz_tensor, const Tensor xyz_batch_cnt_tensor,
+void stack_query_local_neighbor_idxs(
+    const Tensor support_xyz_tensor, const Tensor xyz_batch_cnt_tensor,
     const Tensor new_xyz_tensor, const Tensor new_xyz_batch_cnt_tensor,
-    Tensor stack_neighbor_idxs_tensor, Tensor start_len_tensor, Tensor cumsum_tensor,
-    const int avg_length_of_neighbor_idxs, const float max_neighbour_distance, const int nsample, const int neighbor_type);
-
-void stack_query_three_nn_local_idxs(const Tensor support_xyz_tensor,
-    const Tensor new_xyz_tensor, const Tensor new_xyz_grid_centers_tensor,
-    Tensor new_xyz_grid_idxs_tensor, Tensor new_xyz_grid_dist2_tensor,
     Tensor stack_neighbor_idxs_tensor, Tensor start_len_tensor,
-    const int M, const int num_total_grids);
+    Tensor cumsum_tensor, const int avg_length_of_neighbor_idxs,
+    const float max_neighbour_distance, const int nsample,
+    const int neighbor_type);
+
+void stack_query_three_nn_local_idxs(
+    const Tensor support_xyz_tensor, const Tensor new_xyz_tensor,
+    const Tensor new_xyz_grid_centers_tensor, Tensor new_xyz_grid_idxs_tensor,
+    Tensor new_xyz_grid_dist2_tensor, Tensor stack_neighbor_idxs_tensor,
+    Tensor start_len_tensor, const int M, const int num_total_grids);
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
@@ -910,15 +913,19 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("dets"), py::arg("scores"), py::arg("order"),
         py::arg("dets_sorted"), py::arg("iou_threshold"),
         py::arg("multi_label"));
-    m.def("stack_query_local_neighbor_idxs", &stack_query_local_neighbor_idxs, "stack quert local neighbor indexes",
-        py::arg("support_xyz_tensor"), py::arg("xyz_batch_cnt_tensor"),
-        py::arg("new_xyz_tensor"), py::arg("new_xyz_batch_cnt_tensor"),
-        py::arg("stack_neighbor_idxs_tensor"),py::arg("start_len_tensor"),py::arg("cumsum_tensor"),
-        py::arg("avg_length_of_neighbor_idxs"),
-        py::arg("max_neighbour_distance"),py::arg("nsample"),py::arg("neighbor_type"));
-    m.def("stack_query_three_nn_local_idxs", &stack_query_three_nn_local_idxs, "stack quert three nn local indexes",
-        py::arg("support_xyz_tensor"), py::arg("new_xyz_tensor"), py::arg("new_xyz_grid_centers_tensor"),
-        py::arg("new_xyz_grid_idxs_tensor"), py::arg("new_xyz_grid_dist2_tensor"),
-        py::arg("stack_neighbor_idxs_tensor"),py::arg("start_len_tensor"),
-        py::arg("M"),py::arg("num_total_grids"));
+  m.def("stack_query_local_neighbor_idxs", &stack_query_local_neighbor_idxs,
+        "stack quert local neighbor indexes", py::arg("support_xyz_tensor"),
+        py::arg("xyz_batch_cnt_tensor"), py::arg("new_xyz_tensor"),
+        py::arg("new_xyz_batch_cnt_tensor"),
+        py::arg("stack_neighbor_idxs_tensor"), py::arg("start_len_tensor"),
+        py::arg("cumsum_tensor"), py::arg("avg_length_of_neighbor_idxs"),
+        py::arg("max_neighbour_distance"), py::arg("nsample"),
+        py::arg("neighbor_type"));
+  m.def("stack_query_three_nn_local_idxs", &stack_query_three_nn_local_idxs,
+        "stack quert three nn local indexes", py::arg("support_xyz_tensor"),
+        py::arg("new_xyz_tensor"), py::arg("new_xyz_grid_centers_tensor"),
+        py::arg("new_xyz_grid_idxs_tensor"),
+        py::arg("new_xyz_grid_dist2_tensor"),
+        py::arg("stack_neighbor_idxs_tensor"), py::arg("start_len_tensor"),
+        py::arg("M"), py::arg("num_total_grids"));
 }
