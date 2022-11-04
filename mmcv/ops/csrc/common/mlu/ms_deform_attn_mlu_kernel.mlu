@@ -15,7 +15,7 @@
 
 /****************************************************************************************
  *
- * NRAM partition:
+ * NRAM partition forward:
  * | spatial_shapes     | data_value_p1_ping | data_value_p2_ping |
  * | data_value_p3_ping | data_value_p4_ping | data_col_ping      |
  * | data_value_p1_pong | data_value_p2_pong | data_value_p3_pong |
@@ -28,7 +28,22 @@
  * | deal_size          |
  *
  ****************************************************************************************/
+
+/****************************************************************************************
+ *
+ * NRAM partition backward:
+ * | grad_output_nram   | grad_output_nram_temp | grad_weight       |
+ * | grad_h_weight      | grad_w_weight         | top_grad          |
+ * | top_grad_temp      | spatial_shapes_nram   | sampling_loc_nram |
+ * | deal_size          | deal_size             | deal_size         |
+ * | deal_size          | deal_size             | deal_size         |
+ * | deal_size          | deal_size             | 64bytes           |
+ *
+ ****************************************************************************************/
+
 #define TWELVE_SPLIT 12
+#define ALIGN_NUM 64
+#define ALIGN_NUM_FOR_REDUCE 32
 
 __nram__ char nram_buffer[MAX_NRAM_SIZE];
 
@@ -550,4 +565,289 @@ void KernelMsDeformAttnForward(
       data_value_gdram, data_spatial_shapes_gdram, data_level_start_index_gdram,
       data_sampling_loc_gdram, data_attn_weight_gdram, batch_size, num_keys,
       num_heads, channels, num_levels, num_queries, num_points, data_col_gdram);
+}
+
+template <typename T>
+void __mlu_func__ msDeformAttnCol2imBilinear(
+    T *top_grad_temp, const int32_t &height, const int32_t &width, const T &w1,
+    const T &w2, const T &w3, const T &w4, const int32_t &h_low,
+    const int32_t &w_low, const int32_t &h_high, const int32_t &w_high,
+    const int32_t &base_ptr, const int32_t &h_low_ptr_offset,
+    const int32_t &w_low_ptr_offset, const int32_t &h_high_ptr_offset,
+    const int32_t &w_high_ptr_offset, const T &hh, const T &hw, const T &lh,
+    const T &lw, T *top_grad, const T &data_attn_weight, T *grad_h_weight,
+    T *grad_w_weight, T *grad_value, T *grad_output_nram, T *grad_weight,
+    T *grad_sampling_loc, T *grad_attn_weight, T *grad_output_nram_temp,
+    const int32_t &deal_num, const int32_t &deal_num_real,
+    const T *data_value_ptr) {
+  if (h_low >= 0 && w_low >= 0) {
+    int32_t offset1 = h_low_ptr_offset + w_low_ptr_offset + base_ptr;
+    __memcpy(grad_output_nram, data_value_ptr + offset1,
+             deal_num_real * sizeof(T), GDRAM2NRAM);
+    __bang_mul_scalar(grad_weight, grad_output_nram, hw, deal_num);
+    __bang_sub(grad_h_weight, grad_h_weight, grad_weight, deal_num);
+    __bang_mul_scalar(grad_weight, grad_output_nram, hh, deal_num);
+    __bang_sub(grad_w_weight, grad_w_weight, grad_weight, deal_num);
+
+    __bang_mul_scalar(top_grad_temp, top_grad, data_attn_weight, deal_num);
+    __bang_mul_scalar(top_grad_temp, top_grad_temp, w1, deal_num);
+    // for calc grad_attn_weight
+    __bang_mul_scalar(grad_output_nram, grad_output_nram, w1, deal_num);
+    __bang_atomic_add((T *)top_grad_temp, (T *)(grad_value + offset1),
+                      (T *)top_grad_temp, deal_num_real);
+  }
+  if (h_low >= 0 && w_high <= width - 1) {
+    int32_t offset2 = h_low_ptr_offset + w_high_ptr_offset + base_ptr;
+    __memcpy(grad_output_nram_temp, data_value_ptr + offset2,
+             deal_num_real * sizeof(T), GDRAM2NRAM);
+    __bang_mul_scalar(grad_weight, grad_output_nram_temp, lw, deal_num);
+    __bang_sub(grad_h_weight, grad_h_weight, grad_weight, deal_num);
+    __bang_mul_scalar(grad_weight, grad_output_nram_temp, hh, deal_num);
+    __bang_add(grad_w_weight, grad_w_weight, grad_weight, deal_num);
+
+    __bang_mul_scalar(top_grad_temp, top_grad, data_attn_weight, deal_num);
+    __bang_mul_scalar(top_grad_temp, top_grad_temp, w2, deal_num);
+
+    __bang_mul_scalar(grad_output_nram_temp, grad_output_nram_temp, w2,
+                      deal_num);
+    __bang_add(grad_output_nram, grad_output_nram, grad_output_nram_temp,
+               deal_num);
+    __bang_atomic_add((T *)top_grad_temp, (T *)(grad_value + offset2),
+                      (T *)top_grad_temp, deal_num_real);
+  }
+  if (h_high <= height - 1 && w_low >= 0) {
+    int32_t offset3 = h_high_ptr_offset + w_low_ptr_offset + base_ptr;
+    __memcpy(grad_output_nram_temp, data_value_ptr + offset3,
+             deal_num_real * sizeof(T), GDRAM2NRAM);
+    __bang_mul_scalar(grad_weight, grad_output_nram_temp, hw, deal_num);
+    __bang_add(grad_h_weight, grad_h_weight, grad_weight, deal_num);
+    __bang_mul_scalar(grad_weight, grad_output_nram_temp, lh, deal_num);
+    __bang_sub(grad_w_weight, grad_w_weight, grad_weight, deal_num);
+
+    __bang_mul_scalar(top_grad_temp, top_grad, data_attn_weight, deal_num);
+    __bang_mul_scalar(top_grad_temp, top_grad_temp, w3, deal_num);
+    // for calc grad_attn_weight
+    __bang_mul_scalar(grad_output_nram_temp, grad_output_nram_temp, w3,
+                      deal_num);
+    __bang_add(grad_output_nram, grad_output_nram, grad_output_nram_temp,
+               deal_num);
+    __bang_atomic_add((T *)top_grad_temp, (T *)(grad_value + offset3),
+                      (T *)top_grad_temp, deal_num_real);
+  }
+  if (h_high <= height - 1 && w_high <= width - 1) {
+    int32_t offset4 = h_high_ptr_offset + w_high_ptr_offset + base_ptr;
+    __memcpy(grad_output_nram_temp, data_value_ptr + offset4,
+             deal_num_real * sizeof(T), GDRAM2NRAM);
+    __bang_mul_scalar(grad_weight, grad_output_nram_temp, lw, deal_num);
+    __bang_add(grad_h_weight, grad_h_weight, grad_weight, deal_num);
+    __bang_mul_scalar(grad_weight, grad_output_nram_temp, lh, deal_num);
+    __bang_add(grad_w_weight, grad_w_weight, grad_weight, deal_num);
+
+    __bang_mul_scalar(top_grad_temp, top_grad, data_attn_weight, deal_num);
+    __bang_mul_scalar(top_grad_temp, top_grad_temp, w4, deal_num);
+    // for calc grad_attn_weight
+    __bang_mul_scalar(grad_output_nram_temp, grad_output_nram_temp, w4,
+                      deal_num);
+    __bang_add(grad_output_nram, grad_output_nram, grad_output_nram_temp,
+               deal_num);
+
+    __bang_atomic_add((T *)top_grad_temp, (T *)(grad_value + offset4),
+                      (T *)top_grad_temp, deal_num_real);
+  }
+  __bang_mul(grad_output_nram, grad_output_nram, top_grad, deal_num);
+#if __BANG_ARCH__ >= 322
+  recursiveSumPool(grad_output_nram, 1, deal_num_real, ALIGN_NUM_FOR_REDUCE);
+#else
+  const int32_t align_num_on_200 = NFU_ALIGN_SIZE / sizeof(float);
+  recursiveSumPool(grad_output_nram, align_num_on_200,
+                   deal_num / align_num_on_200, ALIGN_NUM_FOR_REDUCE);
+  __bang_reduce_sum(grad_output_nram, grad_output_nram,
+                    NFU_ALIGN_SIZE / sizeof(float));
+#endif
+  __bang_atomic_add((T *)grad_output_nram, (T *)grad_attn_weight,
+                    (T *)grad_output_nram, 1);
+  __bang_mul_scalar(grad_w_weight, grad_w_weight, width, deal_num);
+  __bang_mul_scalar(top_grad_temp, top_grad, data_attn_weight, deal_num);
+  __bang_mul(grad_w_weight, grad_w_weight, top_grad_temp, deal_num);
+#if __BANG_ARCH__ >= 322
+  recursiveSumPool(grad_w_weight, 1, deal_num_real, ALIGN_NUM_FOR_REDUCE);
+#else
+  recursiveSumPool(grad_w_weight, align_num_on_200, deal_num / align_num_on_200,
+                   ALIGN_NUM_FOR_REDUCE);
+  __bang_reduce_sum(grad_w_weight, grad_w_weight,
+                    NFU_ALIGN_SIZE / sizeof(float));
+#endif
+  __bang_atomic_add((T *)grad_w_weight, (T *)(grad_sampling_loc),
+                    (T *)grad_w_weight, 1);
+
+  __bang_mul_scalar(grad_h_weight, grad_h_weight, height, deal_num);
+  __bang_mul(grad_h_weight, grad_h_weight, top_grad_temp, deal_num);
+#if __BANG_ARCH__ >= 322
+  recursiveSumPool(grad_h_weight, 1, deal_num_real, ALIGN_NUM_FOR_REDUCE);
+#else
+  recursiveSumPool(grad_h_weight, align_num_on_200, deal_num / align_num_on_200,
+                   ALIGN_NUM_FOR_REDUCE);
+  __bang_reduce_sum(grad_h_weight, grad_h_weight,
+                    NFU_ALIGN_SIZE / sizeof(float));
+#endif
+  __bang_atomic_add((T *)grad_h_weight, (T *)(grad_sampling_loc + 1),
+                    (T *)grad_h_weight, 1);
+}
+
+__mlu_global__ void MLUUnion1KernelMsDeformAttnBackward(
+    const float *data_value, const int32_t *spatial_shapes,
+    const int32_t *data_level_start_index, const float *data_sampling_loc,
+    const float *data_attn_weight, const float *grad_output,
+    const int32_t batch, const int32_t spatial_size, const int32_t num_heads,
+    const int32_t channels, const int32_t num_levels, const int32_t num_query,
+    const int32_t num_points, float *grad_value, float *grad_sampling_loc,
+    float *grad_attn_weight) {
+  if (coreId == 0x80) {
+    return;
+  }
+  const int32_t split_num = 8;
+  const int32_t spatial_shapes_size = 64;
+  int32_t deal_num = PAD_DOWN(
+      (MAX_NRAM_SIZE - spatial_shapes_size) / split_num / sizeof(float),
+      ALIGN_NUM);
+  float *grad_output_nram = (float *)nram_buffer;
+  float *grad_output_nram_temp = (float *)nram_buffer + deal_num;
+  float *grad_weight = (float *)nram_buffer + 2 * deal_num;
+  float *grad_h_weight = (float *)nram_buffer + 3 * deal_num;
+  float *grad_w_weight = (float *)nram_buffer + 4 * deal_num;
+  float *top_grad = (float *)nram_buffer + 5 * deal_num;
+  float *top_grad_temp = (float *)nram_buffer + 6 * deal_num;
+  int32_t *spatial_shapes_nram =
+      (int32_t *)((float *)nram_buffer + 7 * deal_num);
+  float *sampling_loc_nram =
+      (float *)nram_buffer + 7 * deal_num + 2 * sizeof(int32_t);
+  const int32_t total_num = batch * num_query * num_heads * num_levels;
+  int32_t num_per_core = total_num / taskDim;
+  int32_t num_rem = total_num % taskDim;
+  num_per_core = num_per_core + int32_t(taskId < num_rem);
+  int32_t start_per_core =
+      num_rem > taskId
+          ? (taskId * num_per_core)
+          : ((num_per_core + 1) * num_rem + (taskId - num_rem) * num_per_core);
+  int32_t end_per_core = start_per_core + num_per_core;
+  const int32_t C_repeat = channels / deal_num;
+  const int32_t C_tail = channels % deal_num;
+  const int32_t qid_stride = num_heads * channels;
+  int32_t base_ptr = 0;
+  for (int32_t num_loop = start_per_core; num_loop < end_per_core; ++num_loop) {
+    const int32_t l_col = num_loop % num_levels;
+    const int32_t m_col = num_loop / num_levels % num_heads;
+    const int32_t q_col = num_loop / num_levels / num_heads % num_query;
+    const int32_t b_col = num_loop / num_query / num_heads / num_levels;
+    int32_t data_weight_ptr = num_loop * num_points;
+    int32_t data_loc_w_ptr = data_weight_ptr << 1;
+    const int32_t value_offset = b_col * spatial_size * num_heads * channels;
+    const int32_t level_start_id = data_level_start_index[l_col];
+    int32_t spatial_h_ptr = l_col << 1;
+    int32_t grad_output_offset = b_col * num_query * num_heads * channels +
+                                 q_col * num_heads * channels +
+                                 m_col * channels;
+    __memcpy(spatial_shapes_nram, spatial_shapes + spatial_h_ptr,
+             2 * sizeof(int32_t), GDRAM2NRAM);
+    const int32_t spatial_h = spatial_shapes_nram[0];
+    const int32_t spatial_w = spatial_shapes_nram[1];
+    const int32_t value_ptr_offset = value_offset + level_start_id * qid_stride;
+    const float *data_value_ptr = data_value + value_ptr_offset;
+    float *grad_value_ptr = grad_value + value_ptr_offset;
+    const int32_t grad_attn_weight_out = num_loop * num_points;
+    const int32_t grad_sampling_loc_out = num_loop * num_points * 2;
+    for (int32_t p_col = 0; p_col < num_points; ++p_col) {
+      __memcpy(sampling_loc_nram, data_sampling_loc + data_loc_w_ptr,
+               2 * sizeof(float), GDRAM2NRAM);
+      const float loc_w = sampling_loc_nram[0];
+      const float loc_h = sampling_loc_nram[1];
+      const float weight = data_attn_weight[data_weight_ptr];
+      const float h_im = loc_h * spatial_h - 0.5;
+      const float w_im = loc_w * spatial_w - 0.5;
+      if (h_im > -1 && w_im > -1 && h_im < spatial_h && w_im < spatial_w) {
+        const int32_t h_low = floorf(h_im);
+        const int32_t w_low = floorf(w_im);
+        const int32_t h_high = h_low + 1;
+        const int32_t w_high = w_low + 1;
+
+        const float lh = h_im - h_low;
+        const float lw = w_im - w_low;
+        const float hh = 1.0 - lh;
+        const float hw = 1.0 - lw;
+
+        const int32_t w_stride = num_heads * channels;
+        const int32_t h_stride = spatial_w * w_stride;
+        const int32_t h_low_ptr_offset = h_low * h_stride;
+        const int32_t h_high_ptr_offset = h_low_ptr_offset + h_stride;
+        const int32_t w_low_ptr_offset = w_low * w_stride;
+        const int32_t w_high_ptr_offset = w_low_ptr_offset + w_stride;
+
+        float w1 = hh * hw;
+        float w2 = hh * lw;
+        float w3 = lh * hw;
+        float w4 = lh * lw;
+
+        for (int32_t C_loop = 0; C_loop < C_repeat; ++C_loop) {
+          base_ptr = m_col * channels + C_loop * deal_num;
+          __bang_write_zero(grad_weight, 3 * deal_num);
+          __bang_write_zero(grad_output_nram, deal_num);
+          __memcpy(top_grad,
+                   grad_output + grad_output_offset + C_loop * deal_num,
+                   deal_num * sizeof(float), GDRAM2NRAM);
+          msDeformAttnCol2imBilinear(
+              top_grad_temp, spatial_h, spatial_w, w1, w2, w3, w4, h_low, w_low,
+              h_high, w_high, base_ptr, h_low_ptr_offset, w_low_ptr_offset,
+              h_high_ptr_offset, w_high_ptr_offset, hh, hw, lh, lw, top_grad,
+              weight, grad_h_weight, grad_w_weight, grad_value_ptr,
+              grad_output_nram, grad_weight,
+              grad_sampling_loc + grad_sampling_loc_out + p_col * 2,
+              grad_attn_weight + grad_attn_weight_out + p_col,
+              grad_output_nram_temp, deal_num, deal_num, data_value_ptr);
+        }
+        if (C_tail != 0) {
+          base_ptr = m_col * channels + C_repeat * deal_num;
+          __bang_write_zero(grad_output_nram, 8 * deal_num);
+          __memcpy(top_grad,
+                   grad_output + grad_output_offset + C_repeat * deal_num,
+                   C_tail * sizeof(float), GDRAM2NRAM);
+          msDeformAttnCol2imBilinear(
+              top_grad_temp, spatial_h, spatial_w, w1, w2, w3, w4, h_low, w_low,
+              h_high, w_high, base_ptr, h_low_ptr_offset, w_low_ptr_offset,
+              h_high_ptr_offset, w_high_ptr_offset, hh, hw, lh, lw, top_grad,
+              weight, grad_h_weight, grad_w_weight, grad_value_ptr,
+              grad_output_nram, grad_weight,
+              grad_sampling_loc + grad_sampling_loc_out + p_col * 2,
+              grad_attn_weight + grad_attn_weight_out + p_col,
+              grad_output_nram_temp, deal_num, C_tail, data_value_ptr);
+        }
+      }
+      data_weight_ptr += 1;
+      data_loc_w_ptr += 2;
+    }
+  }
+}
+
+__mlu_global__ void MLUUnion1KernelMsDeformAttnBackward(
+    const float *data_value, const int32_t *spatial_shapes,
+    const int32_t *data_level_start_index, const float *data_sampling_loc,
+    const float *data_attn_weight, const float *grad_output,
+    const int32_t batch, const int32_t spatial_size, const int32_t num_heads,
+    const int32_t channels, const int32_t num_levels, const int32_t num_query,
+    const int32_t num_points, float *grad_value, float *grad_sampling_loc,
+    float *grad_attn_weight);
+
+void KernelMsDeformAttnBackward(
+    cnrtDim3_t k_dim, cnrtFunctionType_t k_type, cnrtQueue_t queue,
+    const cnrtDataType_t d_type, const float *data_value,
+    const int32_t *spatial_shapes, const int32_t *data_level_start_index,
+    const float *data_sampling_loc, const float *data_attn_weight,
+    const float *grad_output, const int32_t batch, const int32_t spatial_size,
+    const int32_t num_heads, const int32_t channels, const int32_t num_levels,
+    const int32_t num_query, const int32_t num_points, float *grad_value,
+    float *grad_sampling_loc, float *grad_attn_weight) {
+  MLUUnion1KernelMsDeformAttnBackward<<<k_dim, k_type, queue>>>(
+      data_value, spatial_shapes, data_level_start_index, data_sampling_loc,
+      data_attn_weight, grad_output, batch, spatial_size, num_heads, channels,
+      num_levels, num_query, num_points, grad_value, grad_sampling_loc,
+      grad_attn_weight);
 }

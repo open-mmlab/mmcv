@@ -23,7 +23,15 @@ void KernelMsDeformAttnForward(
     const int32_t batch_size, const int32_t num_keys, const int32_t num_heads,
     const int32_t channels, const int32_t num_levels, const int32_t num_queries,
     const int32_t num_points, char* data_col_gdram);
-
+void KernelMsDeformAttnBackward(
+    cnrtDim3_t k_dim, cnrtFunctionType_t k_type, cnrtQueue_t queue,
+    const cnrtDataType_t d_type, const float* data_value,
+    const int32_t* spatial_shapes, const int32_t* data_level_start_index,
+    const float* data_sampling_loc, const float* data_attn_weight,
+    const float* grad_output, const int32_t batch_size, const int32_t num_keys,
+    const int32_t num_heads, const int32_t channels, const int32_t num_levels,
+    const int32_t num_queries, const int32_t num_points, float* grad_value,
+    float* grad_sampling_loc, float* grad_attn_weight);
 // policy function
 static void policyFuncForward(cnrtDim3_t* k_dim, cnrtFunctionType_t* k_type,
                               const int batch_size, const int num_queries,
@@ -32,6 +40,24 @@ static void policyFuncForward(cnrtDim3_t* k_dim, cnrtFunctionType_t* k_type,
   k_dim->y =
       MIN((batch_size * num_queries * num_heads + k_dim->x - 1) / k_dim->x,
           torch_mlu::getDeviceAttr(cnrtAttrClusterCount));
+  k_dim->z = 1;
+  *k_type = CNRT_FUNC_TYPE_UNION1;
+}
+
+// policy function for backward
+static void policyFuncBackward(const int32_t batch_size,
+                               const int32_t num_queries,
+                               const int32_t num_heads,
+                               const int32_t num_levels,
+                               cnrtFunctionType_t* k_type, cnrtDim3_t* k_dim) {
+  size_t cluster_limit = torch_mlu::getDeviceAttr(cnrtAttrClusterCount);
+  size_t core_limit = torch_mlu::getDeviceAttr(cnrtAttrMcorePerCluster);
+  k_dim->x = core_limit;
+  int32_t total_num = batch_size * num_queries * num_heads * num_levels;
+  size_t total_num_align = CEIL_ALIGN(total_num, core_limit);
+  k_dim->y = (total_num_align / core_limit) > cluster_limit
+                 ? cluster_limit
+                 : (total_num_align / core_limit);
   k_dim->z = 1;
   *k_type = CNRT_FUNC_TYPE_UNION1;
 }
@@ -57,11 +83,11 @@ Tensor ms_deform_attn_mlu_forward(const Tensor& value,
   TORCH_CHECK((value.scalar_type() == at::kFloat),
               "value type should be Float, got ", value.scalar_type(), ".");
   TORCH_CHECK((spatial_shapes.scalar_type() == at::kInt ||
-	       spatial_shapes.scalar_type() == at::kLong),
+               spatial_shapes.scalar_type() == at::kLong),
               "spatial_shapes type should be Int, got ",
               spatial_shapes.scalar_type(), ".");
   TORCH_CHECK((level_start_index.scalar_type() == at::kInt ||
-	       level_start_index.scalar_type() == at::kLong),
+               level_start_index.scalar_type() == at::kLong),
               "level_start_index type should be Int, got ",
               level_start_index.scalar_type(), ".");
   TORCH_CHECK((sampling_loc.scalar_type() == at::kFloat),
@@ -209,7 +235,164 @@ void ms_deform_attn_mlu_backward(
     const Tensor& attn_weight, const Tensor& grad_output, Tensor& grad_value,
     Tensor& grad_sampling_loc, Tensor& grad_attn_weight,
     const int im2col_step) {
-  // TODO
+  // check contiguous
+  AT_ASSERTM(value.is_contiguous(), "value tensor has to be contiguous");
+  AT_ASSERTM(spatial_shapes.is_contiguous(),
+             "spatial_shapes tensor has to be contiguous");
+  AT_ASSERTM(level_start_index.is_contiguous(),
+             "level_start_index tensor has to be contiguous");
+  AT_ASSERTM(sampling_loc.is_contiguous(),
+             "sampling_loc tensor has to be contiguous");
+  AT_ASSERTM(attn_weight.is_contiguous(),
+             "attn_weight tensor has to be contiguous");
+  AT_ASSERTM(grad_output.is_contiguous(),
+             "grad_output tensor has to be contiguous");
+
+  // check datatype
+  TORCH_CHECK((value.scalar_type() == at::kFloat),
+              "value type should be Float, got ", value.scalar_type(), ".");
+  TORCH_CHECK((spatial_shapes.scalar_type() == at::kInt ||
+               spatial_shapes.scalar_type() == at::kLong),
+              "spatial_shapes type should be Int, got ",
+              spatial_shapes.scalar_type(), ".");
+  TORCH_CHECK((level_start_index.scalar_type() == at::kInt ||
+               level_start_index.scalar_type() == at::kLong),
+              "level_start_index type should be Int, got ",
+              level_start_index.scalar_type(), ".");
+  TORCH_CHECK((sampling_loc.scalar_type() == at::kFloat),
+              "sampling_loc type should be Float, got ",
+              sampling_loc.scalar_type(), ".");
+  TORCH_CHECK((attn_weight.scalar_type() == at::kFloat),
+              "attn_weight type should be Float, got ",
+              attn_weight.scalar_type(), ".");
+  TORCH_CHECK((grad_output.scalar_type() == at::kFloat),
+              "grad_output type should be Float, got ",
+              grad_output.scalar_type(), ".");
+
+  const int batch_size = value.size(0);
+  const int num_keys = value.size(1);
+  const int num_heads = value.size(2);
+  const int channels = value.size(3);
+  const int num_levels = spatial_shapes.size(0);
+  const int num_queries = sampling_loc.size(1);
+  const int num_points = sampling_loc.size(4);
+  // Check shape.
+  TORCH_CHECK(spatial_shapes.size(1) == 2,
+              "the 2nd dimensions of spatial_shapes should be 2, got ",
+              spatial_shapes.size(1), ".");
+
+  TORCH_CHECK((level_start_index.size(0) == num_levels),
+              "the 1st dimensions of level_start_index should be num_levels, ",
+              "but now the 1st dimension of level_start_index is ",
+              level_start_index.size(0), ", and num_levels is ", num_levels,
+              ".");
+
+  TORCH_CHECK((sampling_loc.size(0) == batch_size),
+              "the 1st dimensions of sampling_loc should be batch_size, ",
+              "but now the 1st dimension of sampling_loc is ",
+              sampling_loc.size(0), ", and batch_size is ", batch_size, ".");
+  TORCH_CHECK((sampling_loc.size(2) == num_heads),
+              "the 3rd dimensions of sampling_loc should be num_heads, ",
+              "but now the 3rd dimension of sampling_loc is ",
+              sampling_loc.size(2), ", and num_heads is ", num_heads, ".");
+  TORCH_CHECK((sampling_loc.size(3) == num_levels),
+              "the 4th dimensions of sampling_loc should be num_levels, ",
+              "but now the 4th dimension of sampling_loc is ",
+              sampling_loc.size(3), ", and num_levels is ", num_levels, ".");
+  TORCH_CHECK(sampling_loc.size(5) == 2,
+              "the 6th dimensions of sampling_loc should be 2, got ",
+              sampling_loc.size(5), ".");
+
+  TORCH_CHECK((attn_weight.size(0) == batch_size),
+              "the 1st dimensions of attn_weight should be batch_size, ",
+              "but now the 1st dimension of attn_weight is ",
+              attn_weight.size(0), ", and batch_size is ", batch_size, ".");
+  TORCH_CHECK((attn_weight.size(1) == num_queries),
+              "the 2nd dimensions of attn_weight should be num_queries, ",
+              "but now the 2nd dimension of attn_weight is ",
+              attn_weight.size(1), ", and num_queries is ", num_queries, ".");
+
+  TORCH_CHECK((attn_weight.size(2) == num_heads),
+              "the 3rd dimensions of attn_weight should be num_heads, ",
+              "but now the 3rd dimension of attn_weight is ",
+              attn_weight.size(2), ", and num_heads is ", num_heads, ".");
+  TORCH_CHECK((attn_weight.size(3) == num_levels),
+              "the 4th dimensions of attn_weight should be num_levels, ",
+              "but now the 4th dimension of attn_weight is ",
+              attn_weight.size(3), ", and num_levels is ", num_levels, ".");
+  TORCH_CHECK((attn_weight.size(4) == num_points),
+              "the 5th dimensions of attn_weight should be num_points, ",
+              "but now the 5th dimension of attn_weight is ",
+              attn_weight.size(4), ", and num_points is ", num_points, ".");
+
+  TORCH_CHECK((grad_output.size(0) == batch_size),
+              "the 1th dimensions of grad_output should be batch_size, ",
+              "but now the 1th dimension of grad_output is ",
+              grad_output.size(0), ", and batch_size is ", batch_size, ".");
+  TORCH_CHECK((grad_output.size(1) == num_queries),
+              "the 2th dimensions of grad_output should be num_queries, ",
+              "but now the 2th dimension of grad_output is ",
+              grad_output.size(1), ", and num_queries is ", num_queries, ".");
+  TORCH_CHECK(
+      (grad_output.size(2) == num_heads * channels),
+      "the 3th dimensions of grad_output should be num_heads * channels, ",
+      "but now the 3th dimension of grad_output is ", grad_output.size(2),
+      ", and num_heads * channels is ", num_heads * channels, ".");
+
+  // check zero element
+  TORCH_CHECK(batch != 0,"The batch is zero.");
+  TORCH_CHECK(channels != 0,"The channels is zero.");
+  TORCH_CHECK(num_key != 0,"The num_key is zero.");
+  TORCH_CHECK(num_heads != 0,"The num_heads is zero.");
+  TORCH_CHECK(num_queries != 0,"The num_queries is zero.");
+  if (num_levels == 0 || num_points == 0) {
+    return;
+  }
+
+
+  // calculate task dimension
+  cnrtDim3_t k_dim;
+  cnrtFunctionType_t k_type;
+  policyFuncBackward(batch_size, num_queries, num_heads, num_levels, &k_type,
+                     &k_dim);
+
+  // get compute queue
+  auto queue = torch_mlu::getCurQueue();
+
+  // get ptr of tensors
+  auto value_impl = torch_mlu::getMluTensorImpl(value);
+  auto value_ptr = value_impl->cnnlMalloc();
+  auto spatial_shapes_impl = torch_mlu::getMluTensorImpl(spatial_shapes);
+  auto spatial_shapes_ptr = spatial_shapes_impl->cnnlMalloc();
+  auto level_start_index_impl = torch_mlu::getMluTensorImpl(level_start_index);
+  auto level_start_index_ptr = level_start_index_impl->cnnlMalloc();
+  auto sampling_loc_impl = torch_mlu::getMluTensorImpl(sampling_loc);
+  auto sampling_loc_ptr = sampling_loc_impl->cnnlMalloc();
+  auto attn_weight_impl = torch_mlu::getMluTensorImpl(attn_weight);
+  auto attn_weight_ptr = attn_weight_impl->cnnlMalloc();
+  auto grad_output_impl = torch_mlu::getMluTensorImpl(grad_output);
+  auto grad_output_ptr = grad_output_impl->cnnlMalloc();
+  auto grad_value_impl = torch_mlu::getMluTensorImpl(grad_value);
+  auto grad_value_ptr = grad_value_impl->cnnlMalloc();
+  auto grad_sampling_loc_impl = torch_mlu::getMluTensorImpl(grad_sampling_loc);
+  auto grad_sampling_loc_ptr = grad_sampling_loc_impl->cnnlMalloc();
+  auto grad_attn_weight_impl = torch_mlu::getMluTensorImpl(grad_attn_weight);
+  auto grad_attn_weight_ptr = grad_attn_weight_impl->cnnlMalloc();
+
+  // get comput dtype of input
+  cnrtDataType_t data_type = torch_mlu::toCnrtDtype(value.dtype());
+
+  // launch kernel
+  CNLOG(INFO) << "Launch Kernel MLUKernelMsDeformAttnBackward<<<" << k_dim.x
+              << ", " << k_dim.y << ", " << k_dim.z << ">>>";
+
+  KernelMsDeformAttnBackward(
+      k_dim, k_type, queue, data_type, (float*)value_ptr,
+      (int32_t*)spatial_shapes_ptr, (int32_t*)level_start_index_ptr,
+      (float*)sampling_loc_ptr, (float*)attn_weight_ptr,
+      (float*)grad_output_ptr, batch_size, num_keys, num_heads, channels,
+      num_levels, num_queries, num_points, (float*)grad_value_ptr,
+      (float*)grad_sampling_loc_ptr, (float*)grad_attn_weight_ptr);
 }
 
 Tensor ms_deform_attn_impl_forward(const Tensor& value,
