@@ -180,9 +180,12 @@ Tensor ms_deform_attn_mlu_forward(const Tensor& value,
               output.numel(), ".");
 
   // check zero element
-  if (value.numel() == 0 || spatial_shapes.numel() == 0 ||
-      level_start_index.numel() == 0 || sampling_loc.numel() == 0 ||
-      attn_weight.numel() == 0 || output.numel() == 0) {
+  TORCH_CHECK(batch_size != 0, "batch_size should not be zero");
+  TORCH_CHECK(num_heads != 0, "num_heads should not be zero");
+  TORCH_CHECK(channels != 0, "channels should not be zero");
+  TORCH_CHECK(num_queries != 0, "num_queries should not be zero");
+
+  if (num_keys == 0 || num_levels == 0 || num_points == 0) {
     return output;
   }
 
