@@ -45,6 +45,26 @@ class MaskedConv2dFunction(Function):
                 'Stride could not only be 1 in masked_conv2d currently.')
         out_channel, in_channel, kernel_h, kernel_w = weight.size()
 
+        if features.device.type == 'npu':
+            if weight.device.type != 'npu' or bias.device.type != 'npu':
+                raise ValueError(
+                    'Some input data is not in the NPU currently.')
+            conv = nn.Conv2d(in_channel,
+                             out_channel,
+                             kernel_size=(kernel_h,
+                                          kernel_w),
+                             stride=stride,
+                             padding=padding,
+                             dilation=1).npu()
+            conv.weight = weight
+            conv.bias = bias
+            conv_output = conv(features)
+            features_h, features_w = features.size()[2:]
+            mask_reshape = mask.reshape(1, 1, features_h, features_w)
+            mask_bool = mask_reshape > 0
+            output = conv_output * mask_bool
+            return output
+
         batch_size = features.size(0)
         out_h = int(
             math.floor(
