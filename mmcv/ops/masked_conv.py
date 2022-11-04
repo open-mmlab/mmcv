@@ -3,6 +3,7 @@ import math
 from typing import Optional, Tuple, Union
 
 import torch
+import torch_npu
 import torch.nn as nn
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
@@ -44,6 +45,20 @@ class MaskedConv2dFunction(Function):
             raise ValueError(
                 'Stride could not only be 1 in masked_conv2d currently.')
         out_channel, in_channel, kernel_h, kernel_w = weight.size()
+
+        if features.device.type == 'npu':
+            conv = torch_npu.npu_conv2d(features,
+                                        weight,
+                                        bias,
+                                        stride=(stride_h, stride_w),
+                                        padding=padding,
+                                        dilation=(1, 1),
+                                        groups=1)
+            features_h, features_w = features.size()[2:]
+            mask_reshape = mask.reshape(1, 1, features_h, features_w)
+            mask_bool = mask_reshape > 0
+            output = conv * mask_bool
+            return output
 
         batch_size = features.size(0)
         out_h = int(
