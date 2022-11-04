@@ -3,8 +3,8 @@ import math
 from typing import Optional, Tuple, Union
 
 import torch
-import torch_npu
 import torch.nn as nn
+import torch_npu
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
@@ -47,13 +47,14 @@ class MaskedConv2dFunction(Function):
         out_channel, in_channel, kernel_h, kernel_w = weight.size()
 
         if features.device.type == 'npu':
-            conv = torch_npu.npu_conv2d(features,
-                                        weight,
-                                        bias,
-                                        stride=(stride_h, stride_w),
-                                        padding=padding,
-                                        dilation=(1, 1),
-                                        groups=1)
+            conv = torch_npu.npu_conv2d(
+                features,
+                weight,
+                bias,
+                stride=(stride_h, stride_w),
+                padding=padding,
+                dilation=(1, 1),
+                groups=1)
             features_h, features_w = features.size()[2:]
             mask_reshape = mask.reshape(1, 1, features_h, features_w)
             mask_bool = mask_reshape > 0
