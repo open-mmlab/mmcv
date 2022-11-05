@@ -4,16 +4,11 @@ using namespace NPU_NAME_SPACE;
 using namespace std;
 
 Tensor nms_npu(Tensor boxes, Tensor scores, float iou_threshold, int offset){
-    c10::SmallVector<int64_t, SIZE> boxes_size ={boxes.size(0), 
-    .size(1)};
     at::Tensor boxed_offest =
-        at_npu::native::OpPreparation::ApplyTensor(boxes_size,
-        boxes.options().dtype(at::kFloat), boxes);
+        at_npu::native::OpPreparation::ApplyTensor(boxes);
     at::Tensor ones_tensor =
-        at_npu::native::OpPreparation::ApplyTensor(boxes_size,
-        boxes.options().dtype(at::kFloat), boxes).fill_(1);
+        at_npu::native::OpPreparation::ApplyTensor(boxes).fill_(1);
     at::add_out(boxed_offest, boxes, ones_tensor, offset);
-    c10::SmallVector<int64_t, SIZE> OneSize = {1};
     at::Tensor iou_threshold_y =
         at_npu::native::OpPreparation::ApplyTensor({},
         boxes.options().dtype(at::kFloat), boxes).fill_(iou_threshold);
@@ -22,7 +17,7 @@ Tensor nms_npu(Tensor boxes, Tensor scores, float iou_threshold, int offset){
         boxes.options().dtype(at::kFloat), boxes).fill_(0);
     at::Tensor max_outputsize_y =
         at_npu::native::OpPreparation::ApplyTensor({},
-        boxes.options().dtype(at::kInt), boxes).fill_(0);
+        boxes.options().dtype(at::kInt), boxes).fill_(boxes.size(0));
     c10::SmallVector<int64_t, SIZE> outputsize = {boxes.size(0)};
     at::Tensor output =
         at_npu::native::OpPreparation::ApplyTensor(outputsize,
@@ -40,6 +35,8 @@ Tensor nms_npu(Tensor boxes, Tensor scores, float iou_threshold, int offset){
     auto outputsizeInt = outputsizeBool.to(at::ScalarType::Int);
     auto countLen = at::sum(outputsizeInt, at::ScalarType::Int);
     at::Tensor actual_output = output.slice(0, 0, countLen.item().toLong());
+    actual_output =
+      at_npu::native::NPUNativeFunctions::npu_dtype_cast(actual_output, at::kLong);
     return actual_output;
 }
 
