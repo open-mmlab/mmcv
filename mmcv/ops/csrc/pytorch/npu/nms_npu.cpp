@@ -42,5 +42,4 @@ Tensor nms_npu(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
 
 Tensor nms_impl(Tensor boxes, Tensor scores, float iou_threshold, int offset);
 
-REGISTER_NPU_IMPL(nms_impl,
-                  nms_npu);
+REGISTER_NPU_IMPL(nms_impl, nms_npu);
