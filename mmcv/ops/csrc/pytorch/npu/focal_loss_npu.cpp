@@ -7,12 +7,11 @@ void sigmoid_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
                                     Tensor output, float gamma, float alpha) {
   int64_t n_class = input.size(1);
   at::Tensor target_y = at::ones_like(input);
-  if(n_class == 1) {
+  if (n_class == 1) {
     target_y = at::reshape(target, input.sizes());
     target_y = at::mul(target_y, -1.0);
     target_y = at::add(target_y, 1.0);
-  }
-  else {
+  } else {
     target_y = at_npu::native::NPUNativeFunctions::one_hot(target, n_class);
   }
   target_y =
@@ -44,10 +43,9 @@ void sigmoid_focal_loss_backward_npu(Tensor input, Tensor target, Tensor weight,
                                      float alpha) {
   int64_t n_class = input.size(1);
   at::Tensor target_y = at::ones_like(input);
-  if(n_class == 1) {
+  if (n_class == 1) {
     target_y = at::reshape(target, input.sizes());
-  }
-  else {
+  } else {
     target_y = at_npu::native::NPUNativeFunctions::one_hot(target, n_class);
     target_y = at::mul(target_y, -1.0);
     target_y = at::add(target_y, 1.0);
@@ -105,12 +103,12 @@ void softmax_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
       .Attr("reduction", reduction)
       .Run();
   int64_t n_batch = input.size(0);
-  c10::SmallVector<int64_t, 2> offsets = {0,0};
-  c10::SmallVector<int64_t, 2> sizes = {n_batch,1};
+  c10::SmallVector<int64_t, 2> offsets = {0, 0};
+  c10::SmallVector<int64_t, 2> sizes = {n_batch, 1};
   at::IntArrayRef offset = at::IntArrayRef(offsets);
   at::IntArrayRef size = at::IntArrayRef(sizes);
-  at_npu::native::NPUNativeFunctions::npu_slice_out(op_output, offset,
-                                                    size, output);
+  at_npu::native::NPUNativeFunctions::npu_slice_out(op_output, offset, size,
+                                                    output);
 }
 
 void softmax_focal_loss_forward_impl(Tensor input, Tensor target, Tensor weight,
