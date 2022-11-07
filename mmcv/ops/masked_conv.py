@@ -57,7 +57,7 @@ class MaskedConv2dFunction(Function):
                 groups=1)
             if mask.size()[1:] != conv.size()[2:]:
                 raise ValueError(
-                    'The mask is consistent with the shape of output_conv.')
+                    'The mask is inconsistent with the shape of output_conv.')
             conv_h, conv_w = conv.size()[2:]
             mask_reshape = mask.reshape(1, 1, conv_h, conv_w)
             output = conv * mask_reshape
