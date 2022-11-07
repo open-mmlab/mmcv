@@ -9,6 +9,9 @@
 //------------------------------------------------------------------------
 // CUDA kernel parameters.
 
+#ifndef BIAS_ACT_H
+#define BIAS_ACT_H
+
 struct bias_act_kernel_params {
   const void* x;     // [sizeX]
   const void* b;     // [sizeB] or NULL
@@ -36,3 +39,4 @@ template <class T>
 void* choose_bias_act_kernel(const bias_act_kernel_params& p);
 
 //------------------------------------------------------------------------
+#endif // BIAS_ACT_H

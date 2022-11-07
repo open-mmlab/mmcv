@@ -1,3 +1,6 @@
+#ifndef UPFIRDN2D_H
+#define UPFIRDN2D_H
+
 #include <cuda_runtime.h>
 
 //------------------------------------------------------------------------
@@ -46,3 +49,4 @@ struct upfirdn2d_kernel_spec {
 
 template <class T>
 upfirdn2d_kernel_spec choose_upfirdn2d_kernel(const upfirdn2d_kernel_params &p);
+#endif

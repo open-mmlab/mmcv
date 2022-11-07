@@ -9,8 +9,7 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-#include <ATen/cuda/CUDAContext.h>
-#include <c10/cuda/CUDAGuard.h>
+#include "pytorch_cuda_helper.hpp"
 #include <c10/util/Half.h>
 #include <torch/extension.h>
 

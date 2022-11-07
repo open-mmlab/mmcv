@@ -6,6 +6,8 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+#ifndef FILTERED_LRELU_H
+#define FILTERED_LRELU_H
 #include <cuda_runtime.h>
 
 //------------------------------------------------------------------------
@@ -94,3 +96,4 @@ template <bool signWrite, bool signRead>
 cudaError_t copy_filters(cudaStream_t stream);
 
 //------------------------------------------------------------------------
+#endif
