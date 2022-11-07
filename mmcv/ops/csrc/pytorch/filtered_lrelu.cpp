@@ -1,6 +1,3 @@
-#include <cuda_runtime.h>
-#include <torch/extension.h>
-
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"
 
