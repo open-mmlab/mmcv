@@ -9,11 +9,11 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-#include "pytorch_cuda_helper.hpp"
 #include <c10/util/Half.h>
 #include <torch/extension.h>
 
 #include "../bias_act.h"
+#include "pytorch_cuda_helper.hpp"
 
 //------------------------------------------------------------------------
 

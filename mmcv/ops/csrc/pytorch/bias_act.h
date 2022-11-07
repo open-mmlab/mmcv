@@ -39,4 +39,4 @@ template <class T>
 void* choose_bias_act_kernel(const bias_act_kernel_params& p);
 
 //------------------------------------------------------------------------
-#endif // BIAS_ACT_H
+#endif  // BIAS_ACT_H
