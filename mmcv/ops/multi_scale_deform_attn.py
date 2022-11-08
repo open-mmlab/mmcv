@@ -29,6 +29,7 @@ class MultiScaleDeformableAttnFunction(Function):
                 attention_weights: torch.Tensor,
                 im2col_step: torch.Tensor) -> torch.Tensor:
         """GPU/MLU version of multi-scale deformable attention.
+
         Args:
             value (torch.Tensor): The value has shape
                 (bs, num_keys, mum_heads, embed_dims//num_heads)
@@ -43,6 +44,7 @@ class MultiScaleDeformableAttnFunction(Function):
                 used when calculate the attention, has shape
                 (bs ,num_queries, num_heads, num_levels, num_points),
             im2col_step (torch.Tensor): The step used in image to column.
+
         Returns:
             torch.Tensor: has shape (bs, num_queries, embed_dims)
         """
@@ -64,8 +66,10 @@ class MultiScaleDeformableAttnFunction(Function):
     @once_differentiable
     def backward(ctx, grad_output: torch.Tensor) -> tuple:
         """GPU/MLU version of backward function.
+
         Args:
             grad_output (torch.Tensor): Gradient of output tensor of forward.
+
         Returns:
             tuple[Tensor]: Gradient of input tensors in forward.
         """
@@ -96,6 +100,7 @@ def multi_scale_deformable_attn_pytorch(
         sampling_locations: torch.Tensor,
         attention_weights: torch.Tensor) -> torch.Tensor:
     """CPU version of multi-scale deformable attention.
+
     Args:
         value (torch.Tensor): The value has shape
             (bs, num_keys, num_heads, embed_dims//num_heads)
@@ -109,6 +114,7 @@ def multi_scale_deformable_attn_pytorch(
         attention_weights (torch.Tensor): The weight of sampling points used
             when calculate the attention, has shape
             (bs ,num_queries, num_heads, num_levels, num_points),
+
     Returns:
         torch.Tensor: has shape (bs, num_queries, embed_dims)
     """
@@ -156,6 +162,7 @@ class MultiScaleDeformableAttention(BaseModule):
     """An attention module used in Deformable-Detr.
     `Deformable DETR: Deformable Transformers for End-to-End Object Detection.
     <https://arxiv.org/pdf/2010.04159.pdf>`_.
+
     Args:
         embed_dims (int): The embedding dimension of Attention.
             Default: 256.
@@ -261,6 +268,7 @@ class MultiScaleDeformableAttention(BaseModule):
                 level_start_index: Optional[torch.Tensor] = None,
                 **kwargs) -> torch.Tensor:
         """Forward Function of MultiScaleDeformAttention.
+
         Args:
             query (torch.Tensor): Query of Transformer with shape
                 (num_query, bs, embed_dims).
@@ -288,6 +296,7 @@ class MultiScaleDeformableAttention(BaseModule):
             level_start_index (torch.Tensor): The start index of each level.
                 A tensor has shape ``(num_levels, )`` and can be represented
                 as [0, h_0*w_0, h_0*w_0+h_1*w_1, ...].
+
         Returns:
             torch.Tensor: forwarded results with shape
             [num_query, bs, embed_dims].

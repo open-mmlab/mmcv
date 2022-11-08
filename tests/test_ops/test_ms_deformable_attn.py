@@ -20,7 +20,11 @@ except ImportError:
     pytest.param(
         'cuda:0',
         marks=pytest.mark.skipif(
-            not torch.cuda.is_available(), reason='requires CUDA support'))
+            not torch.cuda.is_available(), reason='requires CUDA support')),
+    pytest.param(
+        'mlu',
+        marks=pytest.mark.skipif(
+            not IS_MLU_AVAILABLE, reason='requires MLU support'))
 ])
 def test_multiscale_deformable_attention(device_type):
     with pytest.raises(ValueError):
@@ -103,20 +107,29 @@ def test_forward_equal_with_pytorch_double():
     assert max_rel_err < 1e-15
 
 
-@pytest.mark.skipif(
-    not torch.cuda.is_available(), reason='requires CUDA support')
-def test_forward_equal_with_pytorch_float():
+@pytest.mark.parametrize('device_type', [
+    pytest.param(
+        'cuda',
+        marks=pytest.mark.skipif(
+            not torch.cuda.is_available(), reason='requires CUDA support')),
+    pytest.param(
+        'mlu',
+        marks=pytest.mark.skipif(
+            not IS_MLU_AVAILABLE, reason='requires MLU support'))
+])
+def test_forward_equal_with_pytorch_float(device_type):
     N, M, D = 1, 2, 2
     Lq, L, P = 2, 2, 2
-    shapes = torch.as_tensor([(6, 4), (3, 2)], dtype=torch.long).cuda()
+    shapes = torch.as_tensor([(6, 4), (3, 2)],
+                             dtype=torch.long).to(device_type)
     level_start_index = torch.cat((shapes.new_zeros(
         (1, )), shapes.prod(1).cumsum(0)[:-1]))
     S = sum((H * W).item() for H, W in shapes)
 
     torch.manual_seed(3)
-    value = torch.rand(N, S, M, D).cuda() * 0.01
-    sampling_locations = torch.rand(N, Lq, M, L, P, 2).cuda()
-    attention_weights = torch.rand(N, Lq, M, L, P).cuda() + 1e-5
+    value = torch.rand(N, S, M, D).to(device_type) * 0.01
+    sampling_locations = torch.rand(N, Lq, M, L, P, 2).to(device_type)
+    attention_weights = torch.rand(N, Lq, M, L, P).to(device_type) + 1e-5
     attention_weights /= attention_weights.sum(
         -1, keepdim=True).sum(
             -2, keepdim=True)
@@ -124,12 +137,12 @@ def test_forward_equal_with_pytorch_float():
     output_pytorch = multi_scale_deformable_attn_pytorch(
         value, shapes, sampling_locations, attention_weights).detach().cpu()
 
-    output_cuda = MultiScaleDeformableAttnFunction.apply(
+    output_device = MultiScaleDeformableAttnFunction.apply(
         value, shapes, level_start_index, sampling_locations,
         attention_weights, im2col_step).detach().cpu()
-    assert torch.allclose(output_cuda, output_pytorch, rtol=1e-2, atol=1e-3)
-    max_abs_err = (output_cuda - output_pytorch).abs().max()
-    max_rel_err = ((output_cuda - output_pytorch).abs() /
+    assert torch.allclose(output_device, output_pytorch, rtol=1e-2, atol=1e-3)
+    max_abs_err = (output_device - output_pytorch).abs().max()
+    max_rel_err = ((output_device - output_pytorch).abs() /
                    output_pytorch.abs()).max()
     assert max_abs_err < 1e-9
     assert max_rel_err < 1e-6
@@ -161,7 +174,7 @@ def test_forward_equal_with_pytorch_float():
     71,
     1025,
 ])
-def  test_gradient_numerical(channels,
+def test_gradient_numerical(channels,
                             device_type,
                             dtype,
                             grad_value=True,
