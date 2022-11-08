@@ -59,6 +59,16 @@ It supports the following systems:
 - Windows
 - macOS
 
+It supports the following chips:
+
+- Nvidia GPU
+- AMD GPU
+- Apple M1
+- HUAWEI Ascend
+- Cambricon MLU
+- HYGON DCU
+- Graphcore IPU
+
 See the [documentation](http://mmcv.readthedocs.io/en/latest) for more features and usage.
 
 Note: MMCV requires Python 3.6+.
@@ -71,6 +81,8 @@ There are two versions of MMCV:
 - **mmcv**: lite, without CPU and CUDA ops but all other features, similar to mmcv\<1.0.0. It is useful when you do not need those CUDA ops.
 
 **Note**: Do not install both versions in the same environment, otherwise you may encounter errors like `ModuleNotFound`. You need to uninstall one before installing the other. `Installing the full version is highly recommended if CUDA is available`.
+
+Following are the steps to install mmcv-full on NVIDIA GPUs or Apple chips, for other chips, please refer to [build mmcv-full from source](https://mmcv.readthedocs.io/en/latest/get_started/build.html#macos-mmcv-full)。
 
 ### Install mmcv-full
 

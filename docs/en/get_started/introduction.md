@@ -38,6 +38,16 @@ It supports the following systems:
 - Windows
 - macOS
 
+It supports the following chips:
+
+- Nvidia GPU
+- AMD GPU
+- Apple M1
+- HUAWEI Ascend
+- Cambricon MLU
+- HYGON DCU
+- Graphcore IPU
+
 ```{note}
 MMCV requires Python 3.6+.
 ```

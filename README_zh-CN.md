@@ -57,6 +57,16 @@ MMCV 支持多种平台，包括：
 - Windows
 - macOS
 
+MMCV 支持多种芯片，包括：
+
+- 英伟达 GPU
+- AMD GPU
+- 苹果 M1
+- 华为 Ascend
+- 寒武纪 MLU
+- 海光 DCU
+- Graphcore IPU
+
 如想了解更多特性和用法，请参考[文档](http://mmcv.readthedocs.io/zh_CN/latest)。
 
 提示: MMCV 需要 Python 3.6 以上版本。
@@ -69,6 +79,8 @@ MMCV 有两个版本：
 - **mmcv**: 精简版，不包含 CPU 和 CUDA 算子但包含其余所有特性和功能，类似 MMCV 1.0 之前的版本。如果你不需要使用算子的话，精简版可以作为一个考虑选项。
 
 **注意**: 请不要在同一个环境中安装两个版本，否则可能会遇到类似 `ModuleNotFound` 的错误。在安装一个版本之前，需要先卸载另一个。`如果 CUDA 可用，强烈推荐安装 mmcv-full`。
+
+下面介绍在英伟达 GPU 或者苹果芯片上安装 mmcv-full 的步骤，如需在其他芯片上安装，请参考[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html#macos-mmcv-full)。
 
 ### 安装 mmcv-full
 
