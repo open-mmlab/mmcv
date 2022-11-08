@@ -235,9 +235,9 @@ def box2corners(box: Tensor) -> Tensor:
     """
     B = box.size()[0]
     x, y, w, h, alpha = box.split([1, 1, 1, 1, 1], dim=-1)
-    x4 = torch.FloatTensor([0.5, -0.5, -0.5, 0.5]).to(box.device)
+    x4 = box.new_tensor([0.5, -0.5, -0.5, 0.5]).to(box.device)
     x4 = x4 * w  # (B, N, 4)
-    y4 = torch.FloatTensor([0.5, 0.5, -0.5, -0.5]).to(box.device)
+    y4 = box.new_tensor([0.5, 0.5, -0.5, -0.5]).to(box.device)
     y4 = y4 * h  # (B, N, 4)
     corners = torch.stack([x4, y4], dim=-1)  # (B, N, 4, 2)
     sin = torch.sin(alpha)
