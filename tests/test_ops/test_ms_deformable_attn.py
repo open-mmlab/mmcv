@@ -170,7 +170,6 @@ def  test_gradient_numerical(channels,
 
     N, M, _ = 1, 2, 2
     Lq, L, P = 2, 2, 2
-
     shapes = torch.as_tensor([(3, 2), (2, 1)], dtype=torch.long).to(device_type)
     level_start_index = torch.cat((shapes.new_zeros(
         (1, )), shapes.prod(1).cumsum(0)[:-1]))
