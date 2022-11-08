@@ -147,6 +147,7 @@ def test_forward_equal_with_pytorch_float(device_type):
     assert max_abs_err < 1e-9
     assert max_rel_err < 1e-6
 
+
 @pytest.mark.parametrize('device_type', [
     pytest.param(
         'cuda',
@@ -156,7 +157,7 @@ def test_forward_equal_with_pytorch_float(device_type):
         'mlu',
         marks=pytest.mark.skipif(
             not IS_MLU_AVAILABLE, reason='requires MLU support'))
-]) 
+])
 @pytest.mark.parametrize('dtype', [
     torch.float,
     pytest.param(
@@ -183,7 +184,8 @@ def test_gradient_numerical(channels,
 
     N, M, _ = 1, 2, 2
     Lq, L, P = 2, 2, 2
-    shapes = torch.as_tensor([(3, 2), (2, 1)], dtype=torch.long).to(device_type)
+    shapes = torch.as_tensor([(3, 2), (2, 1)],
+                             dtype=torch.long).to(device_type)
     level_start_index = torch.cat((shapes.new_zeros(
         (1, )), shapes.prod(1).cumsum(0)[:-1]))
     S = sum((H * W).item() for H, W in shapes)
@@ -201,19 +203,22 @@ def test_gradient_numerical(channels,
     value.requires_grad = grad_value
     sampling_locations.requires_grad = grad_sampling_loc
     attention_weights.requires_grad = grad_attn_weight
-    if device_type is 'cuda':
-       dtype = torch.double
-       eps = 1e-6
-    elif device_type is 'mlu':
-       dtype = torch.float
-       eps = 1e-4
+    if device_type == 'cuda':
+        dtype = torch.double
+        eps = 1e-6
+    elif device_type == 'mlu':
+        dtype = torch.float
+        eps = 1e-4
     if _USING_PARROTS:
         assert gradcheck(
             func, (value.to(dtype), shapes, level_start_index,
                    sampling_locations.to(dtype), attention_weights.to(dtype),
                    im2col_step),
-            no_grads=[shapes, level_start_index], eps = eps)
+            no_grads=[shapes, level_start_index],
+            eps=eps)
     else:
-        assert gradcheck(func, (value.to(dtype), shapes, level_start_index,
-                                sampling_locations.to(dtype),
-                                attention_weights.to(dtype), im2col_step), eps = eps)
+        assert gradcheck(
+            func, (value.to(dtype), shapes, level_start_index,
+                   sampling_locations.to(dtype), attention_weights.to(dtype),
+                   im2col_step),
+            eps=eps)
