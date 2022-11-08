@@ -329,23 +329,23 @@ void ms_deform_attn_mlu_backward(
               attn_weight.size(4), ", and num_points is ", num_points, ".");
 
   TORCH_CHECK((grad_output.size(0) == batch_size),
-              "the 1th dimensions of grad_output should be batch_size, ",
-              "but now the 1th dimension of grad_output is ",
+              "the 1st dimensions of grad_output should be batch_size, ",
+              "but now the 1st dimension of grad_output is ",
               grad_output.size(0), ", and batch_size is ", batch_size, ".");
   TORCH_CHECK((grad_output.size(1) == num_queries),
-              "the 2th dimensions of grad_output should be num_queries, ",
-              "but now the 2th dimension of grad_output is ",
+              "the 2nd dimensions of grad_output should be num_queries, ",
+              "but now the 2nd dimension of grad_output is ",
               grad_output.size(1), ", and num_queries is ", num_queries, ".");
   TORCH_CHECK(
       (grad_output.size(2) == num_heads * channels),
-      "the 3th dimensions of grad_output should be num_heads * channels, ",
-      "but now the 3th dimension of grad_output is ", grad_output.size(2),
+      "the 3rd dimensions of grad_output should be num_heads * channels, ",
+      "but now the 3rd dimension of grad_output is ", grad_output.size(2),
       ", and num_heads * channels is ", num_heads * channels, ".");
 
   // check zero element
-  TORCH_CHECK(batch != 0,"The batch is zero.");
+  TORCH_CHECK(batch_size != 0,"The batch_size is zero.");
   TORCH_CHECK(channels != 0,"The channels is zero.");
-  TORCH_CHECK(num_key != 0,"The num_key is zero.");
+  TORCH_CHECK(num_keys != 0,"The num_keys is zero.");
   TORCH_CHECK(num_heads != 0,"The num_heads is zero.");
   TORCH_CHECK(num_queries != 0,"The num_queries is zero.");
   if (num_levels == 0 || num_points == 0) {

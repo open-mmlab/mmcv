@@ -189,18 +189,19 @@ def  test_gradient_numerical(channels,
     value.requires_grad = grad_value
     sampling_locations.requires_grad = grad_sampling_loc
     attention_weights.requires_grad = grad_attn_weight
+    if device_type is 'cuda':
+       dtype = torch.double
+       eps = 1e-6
+    elif device_type is 'mlu':
+       dtype = torch.float
+       eps = 1e-4
     if _USING_PARROTS:
         assert gradcheck(
-            func, (value.float(), shapes, level_start_index,
-                   sampling_locations.float(), attention_weights.float(),
+            func, (value.to(dtype), shapes, level_start_index,
+                   sampling_locations.to(dtype), attention_weights.to(dtype),
                    im2col_step),
-            no_grads=[shapes, level_start_index])
+            no_grads=[shapes, level_start_index], eps = eps)
     else:
-        assert gradcheck(func, (value.float(), shapes, level_start_index,
-                                sampling_locations.float(),
-                                attention_weights.float(), im2col_step),eps=1e-4)
-
-
-
-
-
+        assert gradcheck(func, (value.to(dtype), shapes, level_start_index,
+                                sampling_locations.to(dtype),
+                                attention_weights.to(dtype), im2col_step), eps = eps)
