@@ -343,15 +343,14 @@ void ms_deform_attn_mlu_backward(
       ", and num_heads * channels is ", num_heads * channels, ".");
 
   // check zero element
-  TORCH_CHECK(batch_size != 0,"The batch_size is zero.");
-  TORCH_CHECK(channels != 0,"The channels is zero.");
-  TORCH_CHECK(num_keys != 0,"The num_keys is zero.");
-  TORCH_CHECK(num_heads != 0,"The num_heads is zero.");
-  TORCH_CHECK(num_queries != 0,"The num_queries is zero.");
+  TORCH_CHECK(batch_size != 0, "The batch_size is zero.");
+  TORCH_CHECK(channels != 0, "The channels is zero.");
+  TORCH_CHECK(num_keys != 0, "The num_keys is zero.");
+  TORCH_CHECK(num_heads != 0, "The num_heads is zero.");
+  TORCH_CHECK(num_queries != 0, "The num_queries is zero.");
   if (num_levels == 0 || num_points == 0) {
     return;
   }
-
 
   // calculate task dimension
   cnrtDim3_t k_dim;
