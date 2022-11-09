@@ -9,8 +9,6 @@ class TestFilteredLrelu:
 
     @classmethod
     def setup_class(cls):
-        if not torch.cuda.is_available():
-            return
         cls.input_tensor = torch.randn((1, 3, 16, 16), requires_grad=True)
         cls.bias = torch.randn(3, requires_grad=True)
         cls.fu = torch.randn((2, 2))
