@@ -5,7 +5,7 @@ import torch
 from mmcv.ops.multi_scale_deform_attn import (
     MultiScaleDeformableAttention, MultiScaleDeformableAttnFunction,
     multi_scale_deformable_attn_pytorch)
-from mmcv.utils import IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
 _USING_PARROTS = True
 try:
@@ -15,25 +15,25 @@ except ImportError:
     _USING_PARROTS = False
 
 
-@pytest.mark.parametrize('device_type', [
+@pytest.mark.parametrize('device', [
     'cpu',
     pytest.param(
         'cuda:0',
         marks=pytest.mark.skipif(
-            not torch.cuda.is_available(), reason='requires CUDA support')),
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
     pytest.param(
         'mlu',
         marks=pytest.mark.skipif(
             not IS_MLU_AVAILABLE, reason='requires MLU support'))
 ])
-def test_multiscale_deformable_attention(device_type):
+def test_multiscale_deformable_attention(device):
     with pytest.raises(ValueError):
         # embed_dims must be divisible by num_heads,
         MultiScaleDeformableAttention(
             embed_dims=256,
             num_heads=7,
         )
-    device = torch.device(device_type)
+    device = torch.device(device)
     msda = MultiScaleDeformableAttention(
         embed_dims=3, num_levels=2, num_heads=3)
     msda.init_weights()
@@ -74,8 +74,7 @@ def test_forward_multi_scale_deformable_attn_pytorch():
                                         attention_weights.double()).detach()
 
 
-@pytest.mark.skipif(
-    not torch.cuda.is_available(), reason='requires CUDA support')
+@pytest.mark.skipif(not IS_CUDA_AVAILABLE, reason='requires CUDA support')
 def test_forward_equal_with_pytorch_double():
     N, M, D = 1, 2, 2
     Lq, L, P = 2, 2, 2
@@ -107,29 +106,28 @@ def test_forward_equal_with_pytorch_double():
     assert max_rel_err < 1e-15
 
 
-@pytest.mark.parametrize('device_type', [
+@pytest.mark.parametrize('device', [
     pytest.param(
         'cuda',
         marks=pytest.mark.skipif(
-            not torch.cuda.is_available(), reason='requires CUDA support')),
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
     pytest.param(
         'mlu',
         marks=pytest.mark.skipif(
             not IS_MLU_AVAILABLE, reason='requires MLU support'))
 ])
-def test_forward_equal_with_pytorch_float(device_type):
+def test_forward_equal_with_pytorch_float(device):
     N, M, D = 1, 2, 2
     Lq, L, P = 2, 2, 2
-    shapes = torch.as_tensor([(6, 4), (3, 2)],
-                             dtype=torch.long).to(device_type)
+    shapes = torch.as_tensor([(6, 4), (3, 2)], dtype=torch.long).to(device)
     level_start_index = torch.cat((shapes.new_zeros(
         (1, )), shapes.prod(1).cumsum(0)[:-1]))
     S = sum((H * W).item() for H, W in shapes)
 
     torch.manual_seed(3)
-    value = torch.rand(N, S, M, D).to(device_type) * 0.01
-    sampling_locations = torch.rand(N, Lq, M, L, P, 2).to(device_type)
-    attention_weights = torch.rand(N, Lq, M, L, P).to(device_type) + 1e-5
+    value = torch.rand(N, S, M, D).to(device) * 0.01
+    sampling_locations = torch.rand(N, Lq, M, L, P, 2).to(device)
+    attention_weights = torch.rand(N, Lq, M, L, P).to(device) + 1e-5
     attention_weights /= attention_weights.sum(
         -1, keepdim=True).sum(
             -2, keepdim=True)
@@ -148,11 +146,11 @@ def test_forward_equal_with_pytorch_float(device_type):
     assert max_rel_err < 1e-6
 
 
-@pytest.mark.parametrize('device_type', [
+@pytest.mark.parametrize('device', [
     pytest.param(
         'cuda',
         marks=pytest.mark.skipif(
-            not torch.cuda.is_available(), reason='requires CUDA support')),
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
     pytest.param(
         'mlu',
         marks=pytest.mark.skipif(
@@ -176,7 +174,7 @@ def test_forward_equal_with_pytorch_float(device_type):
     1025,
 ])
 def test_gradient_numerical(channels,
-                            device_type,
+                            device,
                             dtype,
                             grad_value=True,
                             grad_sampling_loc=True,
@@ -184,15 +182,14 @@ def test_gradient_numerical(channels,
 
     N, M, _ = 1, 2, 2
     Lq, L, P = 2, 2, 2
-    shapes = torch.as_tensor([(3, 2), (2, 1)],
-                             dtype=torch.long).to(device_type)
+    shapes = torch.as_tensor([(3, 2), (2, 1)], dtype=torch.long).to(device)
     level_start_index = torch.cat((shapes.new_zeros(
         (1, )), shapes.prod(1).cumsum(0)[:-1]))
     S = sum((H * W).item() for H, W in shapes)
 
-    value = torch.rand(N, S, M, channels).to(device_type) * 0.01
-    sampling_locations = torch.rand(N, Lq, M, L, P, 2).to(device_type)
-    attention_weights = torch.rand(N, Lq, M, L, P).to(device_type) + 1e-5
+    value = torch.rand(N, S, M, channels).to(device) * 0.01
+    sampling_locations = torch.rand(N, Lq, M, L, P, 2).to(device)
+    attention_weights = torch.rand(N, Lq, M, L, P).to(device) + 1e-5
     attention_weights /= attention_weights.sum(
         -1, keepdim=True).sum(
             -2, keepdim=True)
@@ -203,10 +200,10 @@ def test_gradient_numerical(channels,
     value.requires_grad = grad_value
     sampling_locations.requires_grad = grad_sampling_loc
     attention_weights.requires_grad = grad_attn_weight
-    if device_type == 'cuda':
+    if device == 'cuda':
         dtype = torch.double
         eps = 1e-6
-    elif device_type == 'mlu':
+    elif device == 'mlu':
         dtype = torch.float
         eps = 1e-4
     if _USING_PARROTS:
