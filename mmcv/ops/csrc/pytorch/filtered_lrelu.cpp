@@ -21,14 +21,14 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu(
                                 writeSigns);
 }
 
-std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_act_op_impl(
+torch::Tensor filtered_lrelu_act_op_impl(
     torch::Tensor x, torch::Tensor si, int sx, int sy, float gain, float slope,
     float clamp, bool writeSigns) {
   return DISPATCH_DEVICE_IMPL(filtered_lrelu_act_op_impl, x, si, sx, sy, gain,
                               slope, clamp, writeSigns);
 }
 
-std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_act_(
+torch::Tensor filtered_lrelu_act_(
     torch::Tensor x, torch::Tensor si, int sx, int sy, float gain, float slope,
     float clamp, bool writeSigns) {
   return filtered_lrelu_act_op_impl(x, si, sx, sy, gain, slope, clamp,

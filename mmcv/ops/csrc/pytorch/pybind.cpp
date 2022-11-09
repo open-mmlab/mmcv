@@ -449,7 +449,7 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu(
     int sx, int sy, float gain, float slope, float clamp, bool flip_filters,
     bool writeSigns);
 
-std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_act_(
+torch::Tensor filtered_lrelu_act_(
     torch::Tensor x, torch::Tensor si, int sx, int sy, float gain, float slope,
     float clamp, bool writeSigns);
 

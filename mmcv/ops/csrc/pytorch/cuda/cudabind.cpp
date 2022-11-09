@@ -551,11 +551,11 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
 
 REGISTER_DEVICE_IMPL(filtered_lrelu_op_impl, CUDA, filtered_lrelu_op);
 
-std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_act_op_impl(
+torch::Tensor filtered_lrelu_act_op_impl(
     torch::Tensor x, torch::Tensor si, int sx, int sy, float gain, float slope,
     float clamp, bool writeSigns);
 
-std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_act_op(
+torch::Tensor filtered_lrelu_act_op(
     torch::Tensor x, torch::Tensor si, int sx, int sy, float gain, float slope,
     float clamp, bool writeSigns);
 

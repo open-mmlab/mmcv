@@ -182,14 +182,6 @@ void* choose_bias_act_kernel(const bias_act_kernel_params& p) {
 }
 
 //------------------------------------------------------------------------
-// Template specializations.
-
-template void* choose_bias_act_kernel<double>(const bias_act_kernel_params& p);
-template void* choose_bias_act_kernel<float>(const bias_act_kernel_params& p);
-template void* choose_bias_act_kernel<c10::Half>(
-    const bias_act_kernel_params& p);
-
-//------------------------------------------------------------------------
 
 static bool has_same_layout(torch::Tensor x, torch::Tensor y) {
   if (x.dim() != y.dim()) return false;
