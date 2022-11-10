@@ -27,7 +27,7 @@ void fused_bias_leakyrelu_parrots(CudaContext &ctx, const SSElement &attr,
   const auto &bias = buildATensor(ctx, ins[1]);
   const auto &refer = buildATensor(ctx, ins[2]);
   auto out = fused_bias_leakyrelu(input, bias, refer, act, grad, alpha, scale);
-  updateDArray(ctx, out, outs[0]);
+  // updateDArray(ctx, out, outs[0]);
 }
 
 PARROTS_EXTENSION_REGISTER(fused_bias_leakyrelu)

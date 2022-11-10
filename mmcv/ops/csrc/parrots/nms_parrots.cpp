@@ -46,7 +46,7 @@ void nms_parrots(T& ctx, const SSElement& attr,
   boxes = buildATensor(ctx, ins[0]);
   scores = buildATensor(ctx, ins[1]);
   auto out = nms(boxes, scores, iou_threshold, offset);
-  updateDArray(ctx, out, outs[0]);
+  // updateDArray(ctx, out, outs[0]);
 }
 
 /*Tensor softnms(Tensor boxes, Tensor scores, Tensor dets, float iou_threshold,
@@ -70,7 +70,7 @@ void softnms_parrots(T& ctx, const SSElement& attr,
   dets = buildATensor(ctx, ins[2]);
   auto out = softnms(boxes, scores, dets, iou_threshold, sigma, min_score,
                      method, offset);
-  updateDArray(ctx, out, outs[0]);
+  // updateDArray(ctx, out, outs[0]);
 }
 
 // std::vector<std::vector<int> > nms_match(Tensor dets, float iou_threshold);
@@ -91,7 +91,7 @@ void nms_match_parrots(T& ctx, const SSElement& attr,
   for (int i = 0; i < n; i++)
     tensor.slice(0, i, i + 1) =
         torch::from_blob(out[i].data(), {out[i].size()}, options);
-  updateDArray(ctx, tensor, outs[0]);
+  // updateDArray(ctx, tensor, outs[0]);
 }
 
 /*Tensor nms_rotated(const Tensor dets, const Tensor scores, const Tensor order,
@@ -114,7 +114,7 @@ void nms_rotated_parrots(T& ctx, const SSElement& attr,
   dets_sorted = buildATensor(ctx, ins[3]);
   auto out =
       nms_rotated(dets, scores, order, dets_sorted, iou_threshold, multi_label);
-  updateDArray(ctx, out, outs[0]);
+  // updateDArray(ctx, out, outs[0]);
 }
 
 PARROTS_EXTENSION_REGISTER(nms)

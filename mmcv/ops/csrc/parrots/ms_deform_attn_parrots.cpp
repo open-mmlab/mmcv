@@ -32,7 +32,7 @@ void ms_deform_attn_forward_parrots(CudaContext &ctx, const SSElement &attr,
   const auto &attn_weight = buildATensor(ctx, ins[4]);
   auto out = ms_deform_attn_forward(value, spatial_shapes, level_start_index,
                                     sampling_loc, attn_weight, im2col_step);
-  updateDArray(ctx, out, outs[0]);
+  // updateDArray(ctx, out, outs[0]);
 }
 
 void ms_deform_attn_backward_parrots(CudaContext &ctx, const SSElement &attr,

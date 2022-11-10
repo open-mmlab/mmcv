@@ -17,7 +17,7 @@ void diff_iou_rotated_sort_vertices_forward_cuda_parrots(
   auto num_valid = buildATensor(ctx, ins[2]);
   auto out =
       diff_iou_rotated_sort_vertices_forward_cuda(vertices, mask, num_valid);
-  updateDArray(ctx, out, outs[0]);
+  // updateDArray(ctx, out, outs[0]);
 }
 
 PARROTS_EXTENSION_REGISTER(diff_iou_rotated_sort_vertices_forward)
