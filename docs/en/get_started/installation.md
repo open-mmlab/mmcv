@@ -197,7 +197,12 @@ Select the appropriate installation command depending on the type of system, CUD
         const cmd = document.getElementById("select-cmd");
         let cmdString = "pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/{cu_version}/{torch_version}/index.html";
         // e.g: pip install mmcv-full==1.6.0 -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9/index.html
-        const cudaVersion = `${cudaVal === "cpu" ? cudaVal : `cu${cudaVal.split(".").join("")}`}`;
+        let cudaVersion;
+        if (cudaVal === "cpu" || cudaVal === "mps") {
+            cudaVersion = "cpu";
+        } else {
+            cudaVersion = `cu${cudaVal.split(".").join("")}`;
+        }
         const torchVersion = `torch${torchVal.substring(0, torchVal.length - 2)}`;
         cmdString = cmdString.replace("{cu_version}", cudaVersion).replace("{mmcv_version}", mmcvVal).replace("{torch_version}", torchVersion);
         cmd.textContent = cmdString;
@@ -214,7 +219,7 @@ Select the appropriate installation command depending on the type of system, CUD
         data.forEach(option => {
             const ele = document.createElement("option");
             let text = `${name} ${option}`;
-            if (name === "os" || option.toUpperCase() === "CPU") {
+            if (name === "os" || option.toUpperCase() === "CPU" || option.toUpperCase() === "MPS") {
                 text = `${option}`;
             }
             ele.textContent = text;
