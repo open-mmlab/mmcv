@@ -36,6 +36,26 @@ inline int32_t getJobLimitCapability() {
   return (int32_t)ctx_conf_param.unionLimit;
 }
 
+inline int32_t getCoreNumOfJobLimitCapability() {
+  switch (getJobLimitCapability()) {
+    default:
+      return torch_mlu::getDeviceAttr(cnrtAttrMcorePerCluster) *
+             getJobLimitCapability();
+    case CN_KERNEL_CLASS_BLOCK:
+      return 1;
+    case CN_KERNEL_CLASS_UNION:
+      return torch_mlu::getDeviceAttr(cnrtAttrMcorePerCluster);
+    case CN_KERNEL_CLASS_UNION2:
+      return torch_mlu::getDeviceAttr(cnrtAttrMcorePerCluster) * 2;
+    case CN_KERNEL_CLASS_UNION4:
+      return torch_mlu::getDeviceAttr(cnrtAttrMcorePerCluster) * 4;
+    case CN_KERNEL_CLASS_UNION8:
+      return torch_mlu::getDeviceAttr(cnrtAttrMcorePerCluster) * 8;
+    case CN_KERNEL_CLASS_UNION16:
+      return torch_mlu::getDeviceAttr(cnrtAttrMcorePerCluster) * 16;
+  }
+}
+
 #endif  // MMCV_WITH_MLU
 
 #endif  // PYTORCH_MLU_HELPER_HPP_
