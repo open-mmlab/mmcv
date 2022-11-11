@@ -2,7 +2,7 @@
 #define _DIOPI_REFERENCE_IMPLTORCH_ATEN_HPP_
 
 #include <vector>
-
+#include <iostream>
 #include <cuda_runtime.h>
 #include <ATen/ATen.h>
 
@@ -136,6 +136,7 @@ at::Tensor buildATen(diopiTensorHandle_t tensor) {
     caffe2::TypeMeta atType = getATenType(dtype);
     diopiDevice_t device;
     diopiGetTensorDevice(tensor, &device);
+    std::cout << "device is " << device << "\n";
     c10::DeviceType atDevice = getATenDevice(device);
 
     void* data = nullptr;

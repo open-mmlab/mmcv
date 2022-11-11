@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "../common/nms_cuda_kernel.cuh"
-
+#include<iostream>
 namespace mmcv {
 namespace diopiops {
 
@@ -8,8 +8,10 @@ using namespace at;
 
 Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
                              int64_t offset) {
+  std::cout << "dongkaixing into device_guard\n";
+  // std::cout << "boxes.device() = " << boxes.device()  << "\n";
   at::cuda::CUDAGuard device_guard(boxes.device());
-
+  std::cout << "dongkaixing out device_guard\n";
   if (boxes.numel() == 0) {
     return at::empty({0}, boxes.options().dtype(at::kLong));
   }
