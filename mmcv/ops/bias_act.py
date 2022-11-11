@@ -173,7 +173,7 @@ def _bias_act_ref(x,
                   alpha=None,
                   gain=None,
                   clamp=None):
-    """Slow reference implementation of `bias_act()` using standard TensorFlow
+    """Slow reference implementation of `bias_act()` using standard PyTorch
     ops."""
     assert isinstance(x, torch.Tensor)
     assert clamp is None or clamp >= 0

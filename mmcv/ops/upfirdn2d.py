@@ -96,7 +96,7 @@ def setup_filter(f,
     if separable is None:
         separable = (f.ndim == 1 and f.numel() >= 8)
     if f.ndim == 1 and not separable:
-        f = f.ger(f)
+        f = f.outer(f)
     assert f.ndim == (1 if separable else 2)
 
     # Apply normalize, flip, gain, and device.
