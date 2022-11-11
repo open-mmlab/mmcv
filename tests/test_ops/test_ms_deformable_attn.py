@@ -78,15 +78,15 @@ def test_forward_multi_scale_deformable_attn_pytorch():
 def test_forward_equal_with_pytorch_double():
     N, M, D = 1, 2, 2
     Lq, L, P = 2, 2, 2
-    shapes = torch.as_tensor([(6, 4), (3, 2)], dtype=torch.long).cuda()
+    shapes = torch.as_tensor([(6, 4), (3, 2)], dtype=torch.long)
     level_start_index = torch.cat((shapes.new_zeros(
         (1, )), shapes.prod(1).cumsum(0)[:-1]))
     S = sum((H * W).item() for H, W in shapes)
 
     torch.manual_seed(3)
-    value = torch.rand(N, S, M, D).cuda() * 0.01
-    sampling_locations = torch.rand(N, Lq, M, L, P, 2).cuda()
-    attention_weights = torch.rand(N, Lq, M, L, P).cuda() + 1e-5
+    value = torch.rand(N, S, M, D) * 0.01
+    sampling_locations = torch.rand(N, Lq, M, L, P, 2)
+    attention_weights = torch.rand(N, Lq, M, L, P) + 1e-5
     attention_weights /= attention_weights.sum(
         -1, keepdim=True).sum(
             -2, keepdim=True)
@@ -96,8 +96,9 @@ def test_forward_equal_with_pytorch_double():
         attention_weights.double()).detach().cpu()
 
     output_cuda = MultiScaleDeformableAttnFunction.apply(
-        value.double(), shapes, level_start_index, sampling_locations.double(),
-        attention_weights.double(), im2col_step).detach().cpu()
+        value.cuda().double(), shapes.cuda(), level_start_index.cuda(),
+        sampling_locations.cuda().double(),
+        attention_weights.cuda().double(), im2col_step).detach().cpu()
     assert torch.allclose(output_cuda, output_pytorch)
     max_abs_err = (output_cuda - output_pytorch).abs().max()
     max_rel_err = ((output_cuda - output_pytorch).abs() /
@@ -119,15 +120,15 @@ def test_forward_equal_with_pytorch_double():
 def test_forward_equal_with_pytorch_float(device):
     N, M, D = 1, 2, 2
     Lq, L, P = 2, 2, 2
-    shapes = torch.as_tensor([(6, 4), (3, 2)], dtype=torch.long).to(device)
+    shapes = torch.as_tensor([(6, 4), (3, 2)], dtype=torch.long)
     level_start_index = torch.cat((shapes.new_zeros(
         (1, )), shapes.prod(1).cumsum(0)[:-1]))
     S = sum((H * W).item() for H, W in shapes)
 
     torch.manual_seed(3)
-    value = torch.rand(N, S, M, D).to(device) * 0.01
-    sampling_locations = torch.rand(N, Lq, M, L, P, 2).to(device)
-    attention_weights = torch.rand(N, Lq, M, L, P).to(device) + 1e-5
+    value = torch.rand(N, S, M, D) * 0.01
+    sampling_locations = torch.rand(N, Lq, M, L, P, 2)
+    attention_weights = torch.rand(N, Lq, M, L, P) + 1e-5
     attention_weights /= attention_weights.sum(
         -1, keepdim=True).sum(
             -2, keepdim=True)
@@ -136,8 +137,9 @@ def test_forward_equal_with_pytorch_float(device):
         value, shapes, sampling_locations, attention_weights).detach().cpu()
 
     output_device = MultiScaleDeformableAttnFunction.apply(
-        value, shapes, level_start_index, sampling_locations,
-        attention_weights, im2col_step).detach().cpu()
+        value.to(device), shapes.to(device), level_start_index.to(device),
+        sampling_locations.to(device), attention_weights.to(device),
+        im2col_step).detach().cpu()
     assert torch.allclose(output_device, output_pytorch, rtol=1e-2, atol=1e-3)
     max_abs_err = (output_device - output_pytorch).abs().max()
     max_rel_err = ((output_device - output_pytorch).abs() /
