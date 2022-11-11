@@ -95,8 +95,6 @@ filtered_lrelu_kernel_spec choose_filtered_lrelu_kernel(
     const filtered_lrelu_kernel_params& p, int sharedKB);
 template <class T, bool signWrite, bool signRead>
 void* choose_filtered_lrelu_act_kernel(void);
-template <bool signWrite, bool signRead>
-cudaError_t copy_filters(cudaStream_t stream);
 
 //------------------------------------------------------------------------
 // Helpers.
@@ -234,7 +232,6 @@ static __global__ void setup_filters_kernel(filtered_lrelu_kernel_params p) {
 
 // Host function to copy filters written by setup kernel into constant buffer
 // for main kernel.
-template <bool, bool>
 static cudaError_t copy_filters(cudaStream_t stream) {
   void* src = 0;
   cudaError_t err = cudaGetSymbolAddress(&src, g_fbuf);
@@ -1831,14 +1828,11 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
 
   // Copy kernels to constant memory.
   if (writeSigns && !readSigns)
-    AT_CUDA_CHECK(
-        (copy_filters<true, false>(at::cuda::getCurrentCUDAStream())));
+    AT_CUDA_CHECK((copy_filters(at::cuda::getCurrentCUDAStream())));
   else if (!writeSigns && readSigns)
-    AT_CUDA_CHECK(
-        (copy_filters<false, true>(at::cuda::getCurrentCUDAStream())));
+    AT_CUDA_CHECK((copy_filters(at::cuda::getCurrentCUDAStream())));
   else if (!writeSigns && !readSigns)
-    AT_CUDA_CHECK(
-        (copy_filters<false, false>(at::cuda::getCurrentCUDAStream())));
+    AT_CUDA_CHECK((copy_filters(at::cuda::getCurrentCUDAStream())));
 
   // Set cache and shared memory configurations for main kernel.
   AT_CUDA_CHECK(cudaFuncSetCacheConfig(spec.exec, cudaFuncCachePreferShared));
