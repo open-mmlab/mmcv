@@ -3,6 +3,83 @@
 在这里我们列出了用户经常遇到的问题以及对应的解决方法。如果您遇到了其他常见的问题，并且知道可以帮到大家的解决办法，
 欢迎随时丰富这个列表。
 
+## pip/conda 下载包速度太慢的问题
+
+默认情况下 `pip` 使用的是国外的镜像，在下载的时候速度非常慢，下面我将介绍如何更新下载源为国内的清华镜像源，其地址为：`https://pypi.tuna.tsinghua.edu.cn/simple`，阿里云镜像的更新方法一样。
+
+### 1.1，查看 conda 和 pip 版本
+```bash
+root# conda --version
+conda 22.9.0
+root# pip --version
+pip 20.2.4 from /opt/miniconda3/lib/python3.8/site-packages/pip (python 3.8)
+```
+
+如果 `pip` 版本 `<10.0.0`，建议升级 pip 到最新的版本 (>=10.0.0) 以方便后面的更新下载源配置：
+
+```shell
+# 更新 pip 版本命令
+python -m pip install --upgrade pip
+```
+### 1.2，更新 pip 下载源
+
+在下载安装好 `python3+pip` 或 `anconda3` 的基础上，建议更新为清华/阿里镜像源（默认的 `pip` 和 `conda`下载源速度很慢）。
+
+1，`Linux/Mac` 系统，`pip` **全局更新下载源为清华源和和查看下载源地址的命令**如下:
+
+```bash
+# 更新 pip 下载源为清华镜像
+pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+# 查看下载源地址
+pip3 config list
+```
+
+![image](https://user-images.githubusercontent.com/37138671/201299043-36fe3684-844e-4755-b499-188d2f01fda7.png)
+
+2，`Windows` 系统，需要当前在当前用户目录下手动创建配置文件，然后修改。
+
+- 资源管理器的地址栏输入 `%appdata%` 后回车，切换到用户路径下的 `appdata` 目录；
+- 进入到 `pip` 文件夹中（没有则手动创建），并创建文件 `pip.ini`，此文件的完整路径为 `%APPDATA%/pip/pip.ini`；
+- 在 `pip.ini` 文件中添加以下内容后，再次使用 `pip`，即会使用新下载源。
+
+```shell
+[global]
+timeout = 8000
+index-url = https://pypi.tuna.tsinghua.edu.cn/simple
+trusted-host = pypi.tuna.tsinghua.edu.cn/simple
+```
+
+`Linux/Mac` 也可通过直接修改配置文件（可能需要 `root` 权限）的方式直接更新下载源，`vim ~/.pip/pip.conf`，修改如下:
+```shell
+global.index-url='https://pypi.tuna.tsinghua.edu.cn/simple'
+```
+
+### 1.3，更新 conda 下载源
+
+1，`conda` **更新源的方法**：
+
+各系统都可以通过修改用户目录下的 `.condarc` 文件。`Windows` 用户无法直接创建名为 `.condarc` 的文件，可先执行 `conda config --set show_channel_urls yes` 生成该文件。`Linux/Mac` 系统一般自带 `.condarc` 文件，文件地址为 `~/.condarc`。
+
+2，之后再修改`.condarc` 文件内容如下: 
+
+```bash
+channels:
+  - defaults
+show_channel_urls: true
+default_channels:
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/r
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/msys2
+custom_channels:
+  conda-forge: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+  msys2: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+  bioconda: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+  menpo: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+  pytorch: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+  pytorch-lts: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+  simpleitk: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+```
+
 ### 安装问题
 
 - KeyError: "xxx: 'yyy is not in the zzz registry'"
