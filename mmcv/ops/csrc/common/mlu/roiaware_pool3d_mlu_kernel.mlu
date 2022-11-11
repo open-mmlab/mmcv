@@ -255,8 +255,8 @@ __mlu_global__ void MLUUnion1KernelPtsIdxOfVoxels(
       } else {
         __bang_half2float((float *)temp_buffer4, (half *)nram_pts_in_flag,
                           compute_pts_num);
-        __bang_move((void *)fp_nram_pts_in_flag, (void *)temp_buffer4,
-                    compute_pts_num * sizeof(float));
+        // __bang_move((void *)fp_nram_pts_in_flag, (void *)temp_buffer4,
+        //             compute_pts_num * sizeof(float));
 #if __BANG_ARCH__ >= 322
         __bang_half2int32_tz((int *)temp_buffer1, (half *)local_X,
                              compute_pts_num, 0);
@@ -324,8 +324,9 @@ __mlu_global__ void MLUUnion1KernelPtsIdxOfVoxels(
       }
       __bang_collect((float *)temp_buffer4, (float *)nram_pts_idx_seq,
                      (float *)fp_nram_pts_in_flag, compute_pts_num);
-      int pts_num_in_cur_roi =
-          (int)__bang_count((float *)fp_nram_pts_in_flag, compute_pts_num);
+      // int pts_num_in_cur_roi =
+          // (int)__bang_count((float *)fp_nram_pts_in_flag, compute_pts_num);
+      int pts_num_in_cur_roi = 1;  // just for declare placeholder
       int *pts_idx_cur_voxels =
           (int *)pts_idx_of_voxels +
           roi_index * out_x * out_y * out_z * max_pts_each_voxel;
@@ -454,8 +455,9 @@ __mlu_global__ void MLUUnion1KernelRoiawarePool3dForward(
                           channel_idx * align_max_pts_each_voxel,
                       (float *)nram_max_pts_feature_tmp,
                       align_max_pts_each_voxel);
-            int max_idx = (int)__bang_findfirst1(
-                (float *)nram_max_pts_feature_tmp, align_max_pts_each_voxel);
+            // int max_idx = (int)__bang_findfirst1(
+                // (float *)nram_max_pts_feature_tmp, align_max_pts_each_voxel);
+            int max_idx = 1; // juse declare placeholder
             nram_pooled_features_cur_voxel[channel_idx] =
                 (max_val == -INFINITY) ? 0 : max_val;
             nram_argmax_cur_voxel[channel_idx] =
