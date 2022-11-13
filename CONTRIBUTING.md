@@ -97,26 +97,65 @@ We follow the [Google C++ Style Guide](https://google.github.io/styleguide/cppgu
 
    Make sure your changes pass through pre-commit.
 
-    ```bash
-    # coding
-    git add [files]
-    git commit -m 'messages'
-    ```
+   ```bash
+   # coding
+   git add [files]
+   git commit -m 'messages'
+   ```
 
 7. push your code to remote
-    ```shell
-    git push -u upstream {branch_name}
-    ```
 
-7. Create a PR
-    
-    (1). create a PR on github
-    ![image](https://user-images.githubusercontent.com/57566630/201533288-516f7ac4-0b14-4dc8-afbd-912475c368b5.png)
-    
-    (2). Revise PR message template to describe your motivation and modifications made in this PR. You can also link the related issue to the PR manually in the PR message (For more information, checkout the [official guidance](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)).
+   ```shell
+   git push -u upstream {branch_name}
+   ```
 
-    (3). If you create for the first time, CLA should be assigned
-    ![image](https://user-images.githubusercontent.com/57566630/167307569-a794b967-6e28-4eac-a942-00deb657815f.png)
+8. Create a PR
 
-    (4). Consider CI/CD will build mmcv in different platform, you can check your building status in:
-    ![image](https://user-images.githubusercontent.com/57566630/167307490-f9ebf9fa-63c0-4d83-8ba1-081ea169eb3a.png)
+   (What is PR? See definition [here](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests))
+
+   (1). Create a PR on github:
+   ![image](https://user-images.githubusercontent.com/57566630/201533288-516f7ac4-0b14-4dc8-afbd-912475c368b5.png)
+
+   (2). Revise PR message template to describe your motivation and modifications made in this PR.
+
+   ![image](https://user-images.githubusercontent.com/57566630/201533716-aa2a2c30-e3e7-489c-998b-6723f92e2328.png)
+
+   The PR tile should starts with the following prefix:
+
+   - \[Feature\]: add new feature
+   - \[Fix\] Fix bug
+   - \[Docs\] Related to documents
+   - \[WIP\] In developing(which will not be reviewed temporarily)
+
+   The PR description should introduce main changes, results and influences on other modules in short description, and associate related issues and pull requests with a milestone. You can also link the related issue to the PR manually in the PR message (For more information, checkout the
+   [official guidance](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)).
+
+   ```{note}
+   1. One short-time branch should be matched with only one PR. A single-function PR is more likely to be merged.
+
+   2. Accomplish a detailed change in one PR. Avoid large PR
+
+      Bad: Support Faster R-CNN
+      Acceptable: Add a box head to Faster R-CNN
+      Good: Add a parameter to box head to support custom conv-layer number
+   ```
+
+   (3). After creating a PR, if you create for the first time, CLA should be assigned
+   ![image](https://user-images.githubusercontent.com/57566630/167307569-a794b967-6e28-4eac-a942-00deb657815f.png)
+
+   (4). Consider CI/CD will build mmcv in different platform, you can check your building status in:
+   ![image](https://user-images.githubusercontent.com/57566630/167307490-f9ebf9fa-63c0-4d83-8ba1-081ea169eb3a.png). You'll find the detail error information by clicking the `Details`
+
+   (5). Resolve conflicts
+
+9. Resolve conflicts
+
+Sometimes your modification may conflict with the latest code of the master branch. You can resolve the conflict by the following steps:
+
+```shell
+git fetch --all --prune
+git merge upstream/master
+git push
+```
+
+We use `merge` rather than `rebase` here since it will produce less conflicts. If you are very confident in conflict-handling skills, we strongly recommend using rebase to maintain a linear commit history.
