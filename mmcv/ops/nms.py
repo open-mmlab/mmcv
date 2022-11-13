@@ -246,10 +246,9 @@ def soft_nms(boxes: array_like_type,
         }
         inds = ext_module.softnms(*indata_list, **indata_dict)
     else:
-        dets, inds = SoftNMSop.apply(boxes, scores,
-                                     float(iou_threshold), float(sigma),
-                                     float(min_score), method_dict[method],
-                                     int(offset))
+        dets, inds = SoftNMSop.apply(boxes, scores, float(iou_threshold),
+                                     float(sigma), float(min_score),
+                                     method_dict[method], int(offset))
 
     dets = dets[:inds.size(0)]
 

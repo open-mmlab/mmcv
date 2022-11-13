@@ -52,6 +52,6 @@ REGISTER_DEVICE_IMPL(softmax_focal_loss_backward_impl, CPU,
 
 REGISTER_DEVICE_IMPL(sigmoid_focal_loss_forward_impl, CPU,
                      sigmoid_focal_loss_forward_cpu);
-                     
+
 REGISTER_DEVICE_IMPL(sigmoid_focal_loss_backward_impl, CPU,
                      sigmoid_focal_loss_backward_cpu);

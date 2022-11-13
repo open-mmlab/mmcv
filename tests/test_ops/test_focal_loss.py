@@ -39,19 +39,16 @@ sigmoid_outputs = [(0.13562961, [[-0.00657264, 0.11185755],
 
 class Testfocalloss:
 
-    @pytest.mark.parametrize('device', 'dtype'[
-        [
-            'cpu',
-            pytest.param(
-                'cuda',
-                marks=pytest.mark.
-                skipif(not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
-        ],
-        [
-            torch.float,
-            torch.half,
-        ]
-    ])
+    @pytest.mark.parametrize('device', 'dtype'[[
+        'cpu',
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.
+            skipif(not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    ], [
+        torch.float,
+        torch.half,
+    ]])
     def test_softmax(self, device, dtype):
         from mmcv.ops import softmax_focal_loss
         alpha = 0.25
@@ -104,18 +101,15 @@ class Testfocalloss:
             assert np.allclose(loss.data.cpu().numpy(), output[0], 1e-2)
             assert np.allclose(x.grad.data.cpu(), np_x_grad, 1e-2)
 
-    @pytest.mark.parametrize('device', 'dtype'[
-        [
-            'cpu',
-            pytest.param(
-                'cuda',
-                marks=pytest.mark.
-                skipif(not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
-        ],
-        [
-            torch.float,
-        ]
-    ])
+    @pytest.mark.parametrize('device', 'dtype'[[
+        'cpu',
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.
+            skipif(not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    ], [
+        torch.float,
+    ]])
     def test_grad_softmax(self, device, dtype):
         from mmcv.ops import SoftmaxFocalLoss
         alpha = 0.25

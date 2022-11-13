@@ -36,7 +36,7 @@ Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
 }
 
 Tensor SoftNMSCUDAKernelLauncher(Tensor boxes, Tensor scores, Tensor dets,
-                                 float iou_threshold, float sigma, 
+                                 float iou_threshold, float sigma,
                                  float min_score, int method, int offset)
 {
   printf("Please implement softnms_cuda\n");

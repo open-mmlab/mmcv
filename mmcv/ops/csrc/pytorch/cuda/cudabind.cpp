@@ -768,7 +768,7 @@ Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
                              int offset);
 
 Tensor SoftNMSCUDAKernelLauncher(Tensor boxes, Tensor scores, Tensor dets,
-                                 float iou_threshold, float sigma, 
+                                 float iou_threshold, float sigma,
                                  float min_score, int method, int offset);
 
 Tensor nms_cuda(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
