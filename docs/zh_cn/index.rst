@@ -10,6 +10,7 @@
    get_started/introduction.md
    get_started/installation.md
    get_started/build.md
+   get_started/article.md
 
 .. toctree::
    :maxdepth: 2
@@ -34,6 +35,11 @@
    deployment/onnxruntime_custom_ops.md
    deployment/tensorrt_plugin.md
    deployment/tensorrt_custom_ops.md
+
+.. toctree::
+   :caption: 语言切换
+
+   switch_language.md
 
 .. toctree::
    :maxdepth: 2

@@ -13,6 +13,10 @@
 // limitations under the License.
 
 #include <ATen/ATen.h>
+// clang-format off
+// TODO: make spconv_utils.h order agnostic
+#include "../spconv_utils.h"
+// clang-format on
 #include <utils/spconv/spconv/indice.h>
 #include <utils/spconv/spconv/mp_helper.h>
 #include <utils/spconv/tensorview/helper_launch.h>
@@ -23,7 +27,6 @@
 #include <spconv/indice.cuh>
 #include <type_traits>
 
-#include "../spconv_utils.h"
 #include "pytorch_cuda_helper.hpp"
 
 namespace functor {

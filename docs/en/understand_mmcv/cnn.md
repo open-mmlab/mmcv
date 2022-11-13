@@ -271,7 +271,7 @@ Let us introduce the usage of `initialize` in detail.
           self.cls = nn.Sequential(nn.Conv1d(3, 1, 3), nn.Linear(1,2))
 
   # if we would like to initialize model's weights as 1 and bias as 2
-  # but weight in `cls` as 3 and bias 4, we can use override key
+  # but weight in `reg` as 3 and bias 4, we can use override key
   model = FooNet()
   init_cfg = dict(type='Constant', layer=['Conv1d','Conv2d'], val=1, bias=2,
                   override=dict(type='Constant', name='reg', val=3, bias=4))

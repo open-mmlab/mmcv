@@ -1,4 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Any, Optional, Tuple, Union
+
+import torch
 import torch.nn as nn
 from torch.autograd import Function
 
@@ -11,14 +14,14 @@ ext_module = ext_loader.load_ext(
 class RiRoIAlignRotatedFunction(Function):
 
     @staticmethod
-    def forward(ctx,
-                features,
-                rois,
-                out_size,
-                spatial_scale,
-                num_samples=0,
-                num_orientations=8,
-                clockwise=False):
+    def forward(ctx: Any,
+                features: torch.Tensor,
+                rois: torch.Tensor,
+                out_size: Union[int, tuple],
+                spatial_scale: float,
+                num_samples: int = 0,
+                num_orientations: int = 8,
+                clockwise: bool = False) -> torch.Tensor:
         if isinstance(out_size, int):
             out_h = out_size
             out_w = out_size
@@ -54,7 +57,9 @@ class RiRoIAlignRotatedFunction(Function):
         return output
 
     @staticmethod
-    def backward(ctx, grad_output):
+    def backward(
+        ctx: Any, grad_output: torch.Tensor
+    ) -> Optional[Tuple[torch.Tensor, None, None, None, None, None, None]]:
         feature_size = ctx.feature_size
         spatial_scale = ctx.spatial_scale
         num_orientations = ctx.num_orientations
@@ -67,7 +72,7 @@ class RiRoIAlignRotatedFunction(Function):
         out_w = grad_output.size(3)
         out_h = grad_output.size(2)
 
-        grad_input = grad_rois = None
+        grad_input = None
 
         if ctx.needs_input_grad[0]:
             grad_input = rois.new_zeros(batch_size, num_channels, feature_h,
@@ -83,7 +88,8 @@ class RiRoIAlignRotatedFunction(Function):
                 num_orientations=num_orientations,
                 clockwise=clockwise)
 
-            return grad_input, grad_rois, None, None, None, None, None
+            return grad_input, None, None, None, None, None, None
+        return None
 
 
 riroi_align_rotated = RiRoIAlignRotatedFunction.apply
@@ -111,11 +117,11 @@ class RiRoIAlignRotated(nn.Module):
     """
 
     def __init__(self,
-                 out_size,
-                 spatial_scale,
-                 num_samples=0,
-                 num_orientations=8,
-                 clockwise=False):
+                 out_size: tuple,
+                 spatial_scale: float,
+                 num_samples: int = 0,
+                 num_orientations: int = 8,
+                 clockwise: bool = False):
         super().__init__()
 
         self.out_size = out_size
@@ -124,7 +130,8 @@ class RiRoIAlignRotated(nn.Module):
         self.num_orientations = int(num_orientations)
         self.clockwise = clockwise
 
-    def forward(self, features, rois):
+    def forward(self, features: torch.Tensor,
+                rois: torch.Tensor) -> torch.Tensor:
         return RiRoIAlignRotatedFunction.apply(features, rois, self.out_size,
                                                self.spatial_scale,
                                                self.num_samples,

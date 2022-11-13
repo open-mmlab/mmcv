@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2021 by Cambricon.
+ * Copyright (C) 2021 Cambricon.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
@@ -16,9 +16,9 @@
 void KernelNms(cnrtDim3_t k_dim, cnrtFunctionType_t k_type, cnrtQueue_t queue,
                const cnrtDataType_t data_type_input, const void *boxes_ptr,
                const void *scores_ptr, const int input_num_boxes,
-               const int input_stride, const int max_output_boxes,
-               const float iou_threshold, const float offset,
-               void *workspace_ptr, void *output_size_ptr, void *output_ptr);
+               const int max_output_boxes, const float iou_threshold,
+               const float offset, void *workspace_ptr, void *output_size_ptr,
+               void *output_ptr);
 
 int selectUnionType(uint32_t use_job, int box_num_per_core) {
   // the box_num_per_core should be at least 256, otherwise the real IO
@@ -28,6 +28,46 @@ int selectUnionType(uint32_t use_job, int box_num_per_core) {
     use_job /= 2;
   }
   return use_job;
+}
+
+static cnnlStatus_t policyFunc(cnrtDim3_t *k_dim, cnrtFunctionType_t *k_type,
+                               int &core_num_per_class,
+                               const int input_box_num) {
+  uint32_t core_dim = torch_mlu::getDeviceAttr(cnrtAttrMcorePerCluster);
+  uint32_t cluster_number = torch_mlu::getDeviceAttr(cnrtAttrClusterCount);
+  uint32_t job_limit = getJobLimitCapability();
+  uint32_t core_number = job_limit;
+
+  int box_num_per_core = (input_box_num + core_number - 1) / core_number;
+  int use_job = selectUnionType(job_limit, box_num_per_core);
+  // initiate k_type as Union1
+  k_dim->x = core_dim;
+  k_dim->y = 1;
+  k_dim->z = 1;
+  *k_type = CNRT_FUNC_TYPE_UNION1;
+  switch (job_limit) {
+    case CN_KERNEL_CLASS_BLOCK:
+    case CN_KERNEL_CLASS_UNION:
+    case CN_KERNEL_CLASS_UNION2:
+    case CN_KERNEL_CLASS_UNION4:
+    case CN_KERNEL_CLASS_UNION8:
+    case CN_KERNEL_CLASS_UNION16: {
+      if (use_job < 4) {
+        k_dim->x = 1;
+        *k_type = CNRT_FUNC_TYPE_BLOCK;
+      } else if (use_job == 4) {
+        k_dim->x = core_dim;
+        *k_type = CNRT_FUNC_TYPE_UNION1;
+      } else {
+        k_dim->x = use_job;
+        *k_type = (cnrtFunctionType_t)use_job;
+      }
+    }; break;
+    default:
+      LOG(WARNING) << "[cnnlNms_v2]: got unsupported job limit number."
+                   << " Use default CN_KERNEL_CLASS_UNION1 with UNION1 task.";
+  }
+  return CNNL_STATUS_SUCCESS;
 }
 
 Tensor NMSMLUKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
@@ -53,33 +93,14 @@ Tensor NMSMLUKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
   }
 
   int input_num_boxes = boxes.size(0);
-  int input_stride = boxes.size(0);
   int max_output_boxes = boxes.size(0);
 
   cnrtDataType_t data_type_input = torch_mlu::toCnrtDtype(boxes.dtype());
   cnrtDim3_t k_dim;
   cnrtJobType_t k_type;
-  uint32_t union_number = torch_mlu::getDeviceAttr(cnrtAttrClusterCount);
-  uint32_t core_dim = torch_mlu::getDeviceAttr(cnrtAttrMcorePerCluster);
-  uint32_t job_limit = union_number * core_dim;
-  uint32_t core_number = union_number * core_dim;
-  int box_num_per_core = (input_num_boxes + core_number - 1) / core_number;
-  // initiate k_type as Union1
-  k_dim.x = core_dim;
-  k_dim.y = 1;
-  k_dim.z = 1;
-  k_type = CNRT_FUNC_TYPE_UNION1;
-  int use_job = selectUnionType(job_limit, box_num_per_core);
-  if (use_job < 4) {
-    k_dim.x = 1;
-    k_type = CNRT_FUNC_TYPE_BLOCK;
-  } else if (use_job == 4) {
-    k_dim.x = core_dim;
-    k_type = CNRT_FUNC_TYPE_UNION1;
-  } else {
-    k_dim.x = use_job;
-    k_type = (cnrtFunctionType_t)use_job;
-  }
+
+  int core_num_per_class;
+  policyFunc(&k_dim, &k_type, core_num_per_class, input_num_boxes);
 
   // transpose boxes (n, 4) to (4, n) for better performance
   auto boxes_t = boxes.transpose(0, 1);
@@ -96,6 +117,11 @@ Tensor NMSMLUKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
   } else {
     space_size = input_num_boxes * sizeof(float) * info_num + sizeof(float);
   }
+#if __BANG_ARCH__ > 370
+  int cluster_num = getCoreNumOfJobLimitCapability() /
+                    torch_mlu::getDeviceAttr(cnrtAttrMcorePerCluster);
+  space_size += cluster_number * sizeof(float) * 7;
+#endif
   auto workspace = at::empty(space_size, boxes.options().dtype(at::kByte));
 
   // get compute queue
@@ -112,12 +138,12 @@ Tensor NMSMLUKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
   auto output_size_impl = torch_mlu::getMluTensorImpl(output_size);
   auto output_size_ptr = output_size_impl->cnnlMalloc();
 
+  uint32_t core_dim = torch_mlu::getDeviceAttr(cnrtAttrMcorePerCluster);
   CNLOG(INFO) << "Launch Kernel MLUUnionX NMS<<<Union" << k_type / core_dim
               << ", " << k_dim.x << ", " << k_dim.y << ", " << k_dim.z << ">>>";
   KernelNms(k_dim, k_type, queue, data_type_input, boxes_ptr, scores_ptr,
-            input_num_boxes, input_stride, max_output_boxes, iou_threshold,
-            offset, workspace_ptr, output_size_ptr, output_ptr);
-
+            input_num_boxes, max_output_boxes, iou_threshold, offset,
+            workspace_ptr, output_size_ptr, output_ptr);
   int output_num = *static_cast<int *>(output_size.cpu().data_ptr());
   return output.slice(0, 0, output_num);
 }

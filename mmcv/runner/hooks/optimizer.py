@@ -3,10 +3,14 @@ import copy
 import logging
 from collections import defaultdict
 from itertools import chain
+from typing import Optional, Union
 
+import torch.nn as nn
+from torch import Tensor
 from torch.nn.utils import clip_grad
 
-from mmcv.utils import TORCH_VERSION, _BatchNorm, digit_version
+from mmcv.utils import (IS_NPU_AVAILABLE, TORCH_VERSION, _BatchNorm,
+                        digit_version)
 from ..dist_utils import allreduce_grads
 from ..fp16_utils import LossScaler, wrap_fp16_model
 from .hook import HOOKS, Hook
@@ -14,7 +18,10 @@ from .hook import HOOKS, Hook
 try:
     # If PyTorch version >= 1.6.0, torch.cuda.amp.GradScaler would be imported
     # and used; otherwise, auto fp16 will adopt mmcv's implementation.
-    from torch.cuda.amp import GradScaler
+    if IS_NPU_AVAILABLE:
+        from torch.npu.amp import GradScaler
+    else:
+        from torch.cuda.amp import GradScaler
 except ImportError:
     pass
 
@@ -39,7 +46,9 @@ class OptimizerHook(Hook):
             Default: False.
     """
 
-    def __init__(self, grad_clip=None, detect_anomalous_params=False):
+    def __init__(self,
+                 grad_clip: Optional[dict] = None,
+                 detect_anomalous_params: bool = False):
         self.grad_clip = grad_clip
         self.detect_anomalous_params = detect_anomalous_params
 
@@ -63,7 +72,7 @@ class OptimizerHook(Hook):
                                          runner.outputs['num_samples'])
         runner.optimizer.step()
 
-    def detect_anomalous_parameters(self, loss, runner):
+    def detect_anomalous_parameters(self, loss: Tensor, runner) -> None:
         logger = runner.logger
         parameters_in_graph = set()
         visited = set()
@@ -109,7 +118,7 @@ class GradientCumulativeOptimizerHook(OptimizerHook):
         >>> optim_hook = OptimizerHook()
     """
 
-    def __init__(self, cumulative_iters=1, **kwargs):
+    def __init__(self, cumulative_iters: int = 1, **kwargs):
         super().__init__(**kwargs)
 
         assert isinstance(cumulative_iters, int) and cumulative_iters > 0, \
@@ -121,7 +130,7 @@ class GradientCumulativeOptimizerHook(OptimizerHook):
         self.remainder_iters = 0
         self.initialized = False
 
-    def has_batch_norm(self, module):
+    def has_batch_norm(self, module: nn.Module) -> bool:
         if isinstance(module, _BatchNorm):
             return True
         for m in module.children():
@@ -142,24 +151,31 @@ class GradientCumulativeOptimizerHook(OptimizerHook):
                 'GradientCumulativeOptimizerHook may slightly decrease '
                 'performance if the model has BatchNorm layers.')
 
-        residual_iters = runner.max_iters - runner.iter
-
         self.divisible_iters = (
-            residual_iters // self.cumulative_iters * self.cumulative_iters)
-        self.remainder_iters = residual_iters - self.divisible_iters
+            runner.max_iters // self.cumulative_iters * self.cumulative_iters)
+        self.remainder_iters = runner.max_iters - self.divisible_iters
 
         self.initialized = True
+
+    def _get_loss_factor(self, runner):
+        """Get loss division factor for the current iteration."""
+        if runner.iter < runner.max_iters - self.remainder_iters:
+            loss_factor = self.cumulative_iters
+        else:
+            loss_factor = self.remainder_iters
+            runner.logger.warning(
+                f'Loss will be divided by {loss_factor} in the last '
+                f'{self.remainder_iters} iterations because they are not '
+                f'enough for {self.cumulative_iters} cumulative_iters.')
+            assert loss_factor > 0
+
+        return loss_factor
 
     def after_train_iter(self, runner):
         if not self.initialized:
             self._init(runner)
 
-        if runner.iter < self.divisible_iters:
-            loss_factor = self.cumulative_iters
-        else:
-            loss_factor = self.remainder_iters
-        loss = runner.outputs['loss']
-        loss = loss / loss_factor
+        loss = runner.outputs['loss'] / self._get_loss_factor(runner)
         loss.backward()
 
         if (self.every_n_iters(runner, self.cumulative_iters)
@@ -208,11 +224,11 @@ if (TORCH_VERSION != 'parrots'
         """
 
         def __init__(self,
-                     grad_clip=None,
-                     coalesce=True,
-                     bucket_size_mb=-1,
-                     loss_scale=512.,
-                     distributed=True):
+                     grad_clip: Optional[dict] = None,
+                     coalesce: bool = True,
+                     bucket_size_mb: int = -1,
+                     loss_scale: Union[float, str, dict] = 512.,
+                     distributed: bool = True):
             self.grad_clip = grad_clip
             self.coalesce = coalesce
             self.bucket_size_mb = bucket_size_mb
@@ -229,7 +245,7 @@ if (TORCH_VERSION != 'parrots'
                 raise ValueError('loss_scale must be of type float, dict, or '
                                  f'"dynamic", got {loss_scale}')
 
-        def before_run(self, runner):
+        def before_run(self, runner) -> None:
             """Preparing steps before Mixed Precision Training."""
             # wrap model mode to fp16
             wrap_fp16_model(runner.model)
@@ -238,7 +254,8 @@ if (TORCH_VERSION != 'parrots'
                 scaler_state_dict = runner.meta['fp16']['loss_scaler']
                 self.loss_scaler.load_state_dict(scaler_state_dict)
 
-        def copy_grads_to_fp32(self, fp16_net, fp32_weights):
+        def copy_grads_to_fp32(self, fp16_net: nn.Module,
+                               fp32_weights: Tensor) -> None:
             """Copy gradients from fp16 model to fp32 weight copy."""
             for fp32_param, fp16_param in zip(fp32_weights,
                                               fp16_net.parameters()):
@@ -248,13 +265,14 @@ if (TORCH_VERSION != 'parrots'
                             fp32_param.size())
                     fp32_param.grad.copy_(fp16_param.grad)
 
-        def copy_params_to_fp16(self, fp16_net, fp32_weights):
+        def copy_params_to_fp16(self, fp16_net: nn.Module,
+                                fp32_weights: Tensor) -> None:
             """Copy updated params from fp32 weight copy to fp16 model."""
             for fp16_param, fp32_param in zip(fp16_net.parameters(),
                                               fp32_weights):
                 fp16_param.data.copy_(fp32_param.data)
 
-        def after_train_iter(self, runner):
+        def after_train_iter(self, runner) -> None:
             """Backward optimization steps for Mixed Precision Training. For
             dynamic loss scaling, please refer to
             https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler.
@@ -299,17 +317,11 @@ if (TORCH_VERSION != 'parrots'
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
 
-        def after_train_iter(self, runner):
+        def after_train_iter(self, runner) -> None:
             if not self.initialized:
                 self._init(runner)
 
-            if runner.iter < self.divisible_iters:
-                loss_factor = self.cumulative_iters
-            else:
-                loss_factor = self.remainder_iters
-            loss = runner.outputs['loss']
-            loss = loss / loss_factor
-
+            loss = runner.outputs['loss'] / self._get_loss_factor(runner)
             self.loss_scaler.scale(loss).backward()
 
             if (self.every_n_iters(runner, self.cumulative_iters)
@@ -363,11 +375,11 @@ else:
         """
 
         def __init__(self,
-                     grad_clip=None,
-                     coalesce=True,
-                     bucket_size_mb=-1,
-                     loss_scale=512.,
-                     distributed=True):
+                     grad_clip: Optional[dict] = None,
+                     coalesce: bool = True,
+                     bucket_size_mb: int = -1,
+                     loss_scale: Union[float, str, dict] = 512.,
+                     distributed: bool = True):
             self.grad_clip = grad_clip
             self.coalesce = coalesce
             self.bucket_size_mb = bucket_size_mb
@@ -383,7 +395,7 @@ else:
                 raise ValueError('loss_scale must be of type float, dict, or '
                                  f'"dynamic", got {loss_scale}')
 
-        def before_run(self, runner):
+        def before_run(self, runner) -> None:
             """Preparing steps before Mixed Precision Training.
 
             1. Make a master copy of fp32 weights for optimization.
@@ -393,7 +405,7 @@ else:
             old_groups = runner.optimizer.param_groups
             runner.optimizer.param_groups = copy.deepcopy(
                 runner.optimizer.param_groups)
-            state = defaultdict(dict)
+            state: defaultdict = defaultdict(dict)
             p_map = {
                 old_p: p
                 for old_p, p in zip(
@@ -411,7 +423,8 @@ else:
                 scaler_state_dict = runner.meta['fp16']['loss_scaler']
                 self.loss_scaler.load_state_dict(scaler_state_dict)
 
-        def copy_grads_to_fp32(self, fp16_net, fp32_weights):
+        def copy_grads_to_fp32(self, fp16_net: nn.Module,
+                               fp32_weights: Tensor) -> None:
             """Copy gradients from fp16 model to fp32 weight copy."""
             for fp32_param, fp16_param in zip(fp32_weights,
                                               fp16_net.parameters()):
@@ -421,13 +434,14 @@ else:
                             fp32_param.size())
                     fp32_param.grad.copy_(fp16_param.grad)
 
-        def copy_params_to_fp16(self, fp16_net, fp32_weights):
+        def copy_params_to_fp16(self, fp16_net: nn.Module,
+                                fp32_weights: Tensor) -> None:
             """Copy updated params from fp32 weight copy to fp16 model."""
             for fp16_param, fp32_param in zip(fp16_net.parameters(),
                                               fp32_weights):
                 fp16_param.data.copy_(fp32_param.data)
 
-        def after_train_iter(self, runner):
+        def after_train_iter(self, runner) -> None:
             """Backward optimization steps for Mixed Precision Training. For
             dynamic loss scaling, please refer `loss_scalar.py`
 
@@ -491,19 +505,11 @@ else:
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
 
-        def after_train_iter(self, runner):
+        def after_train_iter(self, runner) -> None:
             if not self.initialized:
                 self._init(runner)
 
-            if runner.iter < self.divisible_iters:
-                loss_factor = self.cumulative_iters
-            else:
-                loss_factor = self.remainder_iters
-
-            loss = runner.outputs['loss']
-            loss = loss / loss_factor
-
-            # scale the loss value
+            loss = runner.outputs['loss'] / self._get_loss_factor(runner)
             scaled_loss = loss * self.loss_scaler.loss_scale
             scaled_loss.backward()
 

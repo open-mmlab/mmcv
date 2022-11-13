@@ -1,7 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # Adapted from https://github.com/lilanxiao/Rotated_IoU/blob/master/box_intersection_2d.py  # noqa
 # Adapted from https://github.com/lilanxiao/Rotated_IoU/blob/master/oriented_iou_loss.py  # noqa
+from typing import Tuple
+
 import torch
+from torch import Tensor
 from torch.autograd import Function
 
 from ..utils import ext_loader
@@ -26,7 +29,8 @@ class SortVertices(Function):
         return ()
 
 
-def box_intersection(corners1, corners2):
+def box_intersection(corners1: Tensor,
+                     corners2: Tensor) -> Tuple[Tensor, Tensor]:
     """Find intersection points of rectangles.
     Convention: if two edges are collinear, there is no intersection point.
 
@@ -68,7 +72,7 @@ def box_intersection(corners1, corners2):
     return intersections, mask
 
 
-def box1_in_box2(corners1, corners2):
+def box1_in_box2(corners1: Tensor, corners2: Tensor) -> Tensor:
     """Check if corners of box1 lie in box2.
     Convention: if a corner is exactly on the edge of the other box,
     it's also a valid point.
@@ -101,7 +105,7 @@ def box1_in_box2(corners1, corners2):
     return cond1 * cond2
 
 
-def box_in_box(corners1, corners2):
+def box_in_box(corners1: Tensor, corners2: Tensor) -> Tuple[Tensor, Tensor]:
     """Check if corners of two boxes lie in each other.
 
     Args:
@@ -118,8 +122,9 @@ def box_in_box(corners1, corners2):
     return c1_in_2, c2_in_1
 
 
-def build_vertices(corners1, corners2, c1_in_2, c2_in_1, intersections,
-                   valid_mask):
+def build_vertices(corners1: Tensor, corners2: Tensor, c1_in_2: Tensor,
+                   c2_in_1: Tensor, intersections: Tensor,
+                   valid_mask: Tensor) -> Tuple[Tensor, Tensor]:
     """Find vertices of intersection area.
 
     Args:
@@ -149,7 +154,7 @@ def build_vertices(corners1, corners2, c1_in_2, c2_in_1, intersections,
     return vertices, mask
 
 
-def sort_indices(vertices, mask):
+def sort_indices(vertices: Tensor, mask: Tensor) -> Tensor:
     """Sort indices.
     Note:
         why 9? the polygon has maximal 8 vertices.
@@ -176,7 +181,8 @@ def sort_indices(vertices, mask):
     return SortVertices.apply(vertices_normalized, mask, num_valid).long()
 
 
-def calculate_area(idx_sorted, vertices):
+def calculate_area(idx_sorted: Tensor,
+                   vertices: Tensor) -> Tuple[Tensor, Tensor]:
     """Calculate area of intersection.
 
     Args:
@@ -197,7 +203,8 @@ def calculate_area(idx_sorted, vertices):
     return area, selected
 
 
-def oriented_box_intersection_2d(corners1, corners2):
+def oriented_box_intersection_2d(corners1: Tensor,
+                                 corners2: Tensor) -> Tuple[Tensor, Tensor]:
     """Calculate intersection area of 2d rotated boxes.
 
     Args:
@@ -217,7 +224,7 @@ def oriented_box_intersection_2d(corners1, corners2):
     return calculate_area(sorted_indices, vertices)
 
 
-def box2corners(box):
+def box2corners(box: Tensor) -> Tensor:
     """Convert rotated 2d box coordinate to corners.
 
     Args:
@@ -228,9 +235,9 @@ def box2corners(box):
     """
     B = box.size()[0]
     x, y, w, h, alpha = box.split([1, 1, 1, 1, 1], dim=-1)
-    x4 = torch.FloatTensor([0.5, -0.5, -0.5, 0.5]).to(box.device)
+    x4 = box.new_tensor([0.5, -0.5, -0.5, 0.5]).to(box.device)
     x4 = x4 * w  # (B, N, 4)
-    y4 = torch.FloatTensor([0.5, 0.5, -0.5, -0.5]).to(box.device)
+    y4 = box.new_tensor([0.5, 0.5, -0.5, -0.5]).to(box.device)
     y4 = y4 * h  # (B, N, 4)
     corners = torch.stack([x4, y4], dim=-1)  # (B, N, 4, 2)
     sin = torch.sin(alpha)
@@ -245,7 +252,7 @@ def box2corners(box):
     return rotated
 
 
-def diff_iou_rotated_2d(box1, box2):
+def diff_iou_rotated_2d(box1: Tensor, box2: Tensor) -> Tensor:
     """Calculate differentiable iou of rotated 2d boxes.
 
     Args:
@@ -266,7 +273,7 @@ def diff_iou_rotated_2d(box1, box2):
     return iou
 
 
-def diff_iou_rotated_3d(box3d1, box3d2):
+def diff_iou_rotated_3d(box3d1: Tensor, box3d2: Tensor) -> Tensor:
     """Calculate differentiable iou of rotated 3d boxes.
 
     Args:

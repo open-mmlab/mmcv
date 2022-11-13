@@ -22,7 +22,6 @@ except ImportError:
             not torch.cuda.is_available(), reason='requires CUDA support'))
 ])
 def test_multiscale_deformable_attention(device_type):
-
     with pytest.raises(ValueError):
         # embed_dims must be divisible by num_heads,
         MultiScaleDeformableAttention(

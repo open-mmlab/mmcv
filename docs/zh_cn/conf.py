@@ -27,7 +27,7 @@ __version__ = locals()['__version__']
 # -- Project information -----------------------------------------------------
 
 project = 'mmcv'
-copyright = '2018-2021, OpenMMLab'
+copyright = '2018-2022, OpenMMLab'
 author = 'MMCV Authors'
 
 # The short X.Y version
@@ -56,6 +56,8 @@ extensions = [
 ]  # yapf: disable
 
 myst_heading_anchors = 4
+
+myst_enable_extensions = ['colon_fence']
 
 autodoc_mock_imports = ['mmcv._ext', 'mmcv.utils.ext_loader', 'torchvision']
 autosectionlabel_prefix_document = True

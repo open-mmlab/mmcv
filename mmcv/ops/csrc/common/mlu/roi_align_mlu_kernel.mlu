@@ -130,10 +130,10 @@ __mlu_func__ void computeChannel(T *input_core, T *nram_in, T *output_core,
           __memcpy(tmp_cyc4, input4, real_size, GDRAM2NRAM);
 
           // interpolation value = w1 * p1 + w2 * p2 + w3 * p3 + w4 * p4
-          __bang_mul_const(tmp_cyc1, tmp_cyc1, w1, align_channel);
-          __bang_mul_const(tmp_cyc2, tmp_cyc2, w2, align_channel);
-          __bang_mul_const(tmp_cyc3, tmp_cyc3, w3, align_channel);
-          __bang_mul_const(tmp_cyc4, tmp_cyc4, w4, align_channel);
+          __bang_mul_scalar(tmp_cyc1, tmp_cyc1, w1, align_channel);
+          __bang_mul_scalar(tmp_cyc2, tmp_cyc2, w2, align_channel);
+          __bang_mul_scalar(tmp_cyc3, tmp_cyc3, w3, align_channel);
+          __bang_mul_scalar(tmp_cyc4, tmp_cyc4, w4, align_channel);
 
           __bang_add(nram_in, tmp_cyc1, nram_in, align_channel);
           __bang_add(nram_in, tmp_cyc2, nram_in, align_channel);
@@ -146,7 +146,7 @@ __mlu_func__ void computeChannel(T *input_core, T *nram_in, T *output_core,
       }  // loop_roi_grid_w
     }    // loop_roi_grid_h
     T count_value = (T)(1.0 / count);
-    __bang_mul_const(nram_out, nram_out, count_value, align_channel);
+    __bang_mul_scalar(nram_out, nram_out, count_value, align_channel);
     __memcpy(output_core + i * cyc_channel, nram_out, real_size, NRAM2GDRAM);
   }  // loop_cyc_num
 }
@@ -242,8 +242,8 @@ __mlu_global__ void MLUUnion1KernelRoiAlignAvg(
     case CNRT_FLOAT16: {
       roialignForwardAvg((half *)input, (half *)rois, (half *)output, aligned,
                          channels, pooled_height, pooled_width, input_height,
-                         input_width, sampling_ratio,
-                         (half)spatial_scale, num_rois);
+                         input_width, sampling_ratio, (half)spatial_scale,
+                         num_rois);
     }; break;
     case CNRT_FLOAT32: {
       roialignForwardAvg((float *)input, (float *)rois, (float *)output,
@@ -346,31 +346,31 @@ __mlu_func__ void unionRoiAlignBp(
                                       &x_high, &y_low, &y_high);
           if (x_low >= 0 && y_low >= 0) {
             __memcpy(buffer, grads_, c * sizeof(T), GDRAM2NRAM);
-            __bang_mul_const((T *)buffer + c_align, (T *)buffer, (T)w1,
-                             c_align);
-            __bang_mul_const((T *)buffer + c_align, (T *)buffer + c_align,
-                             1 / count, c_align);
+            __bang_mul_scalar((T *)buffer + c_align, (T *)buffer, (T)w1,
+                              c_align);
+            __bang_mul_scalar((T *)buffer + c_align, (T *)buffer + c_align,
+                              1 / count, c_align);
             __bang_atomic_add((T *)buffer + c_align,
                               image_offset + y_low * wo * c + x_low * c,
                               (T *)buffer + c_align, c);
-            __bang_mul_const((T *)buffer + c_align, (T *)buffer, (T)w2,
-                             c_align);
-            __bang_mul_const((T *)buffer + c_align, (T *)buffer + c_align,
-                             1 / count, c_align);
+            __bang_mul_scalar((T *)buffer + c_align, (T *)buffer, (T)w2,
+                              c_align);
+            __bang_mul_scalar((T *)buffer + c_align, (T *)buffer + c_align,
+                              1 / count, c_align);
             __bang_atomic_add((T *)buffer + c_align,
                               image_offset + y_low * wo * c + x_high * c,
                               (T *)buffer + c_align, c);
-            __bang_mul_const((T *)buffer + c_align, (T *)buffer, (T)w3,
-                             c_align);
-            __bang_mul_const((T *)buffer + c_align, (T *)buffer + c_align,
-                             1 / count, c_align);
+            __bang_mul_scalar((T *)buffer + c_align, (T *)buffer, (T)w3,
+                              c_align);
+            __bang_mul_scalar((T *)buffer + c_align, (T *)buffer + c_align,
+                              1 / count, c_align);
             __bang_atomic_add((T *)buffer + c_align,
                               image_offset + y_high * wo * c + x_low * c,
                               (T *)buffer + c_align, c);
-            __bang_mul_const((T *)buffer + c_align, (T *)buffer, (T)w4,
-                             c_align);
-            __bang_mul_const((T *)buffer + c_align, (T *)buffer + c_align,
-                             1 / count, c_align);
+            __bang_mul_scalar((T *)buffer + c_align, (T *)buffer, (T)w4,
+                              c_align);
+            __bang_mul_scalar((T *)buffer + c_align, (T *)buffer + c_align,
+                              1 / count, c_align);
             __bang_atomic_add((T *)buffer + c_align,
                               image_offset + y_high * wo * c + x_high * c,
                               (T *)buffer + c_align, c);
@@ -401,34 +401,34 @@ __mlu_func__ void unionRoiAlignBp(
               }
               __memcpy(buffer, grads_ + i * deal_once, deal_c * sizeof(T),
                        GDRAM2NRAM);
-              __bang_mul_const((T *)buffer + align_c, (T *)buffer, (T)w1,
-                               align_c);
-              __bang_mul_const((T *)buffer + align_c, (T *)buffer + align_c,
-                               1 / count, align_c);
+              __bang_mul_scalar((T *)buffer + align_c, (T *)buffer, (T)w1,
+                                align_c);
+              __bang_mul_scalar((T *)buffer + align_c, (T *)buffer + align_c,
+                                1 / count, align_c);
               __bang_atomic_add(
                   (T *)buffer + align_c,
                   image_offset + y_low * wo * c + x_low * c + i * deal_once,
                   (T *)buffer + align_c, deal_c);
-              __bang_mul_const((T *)buffer + align_c, (T *)buffer, (T)w2,
-                               align_c);
-              __bang_mul_const((T *)buffer + align_c, (T *)buffer + align_c,
-                               1 / count, align_c);
+              __bang_mul_scalar((T *)buffer + align_c, (T *)buffer, (T)w2,
+                                align_c);
+              __bang_mul_scalar((T *)buffer + align_c, (T *)buffer + align_c,
+                                1 / count, align_c);
               __bang_atomic_add(
                   (T *)buffer + align_c,
                   image_offset + y_low * wo * c + x_high * c + i * deal_once,
                   (T *)buffer + align_c, deal_c);
-              __bang_mul_const((T *)buffer + align_c, (T *)buffer, (T)w3,
-                               align_c);
-              __bang_mul_const((T *)buffer + align_c, (T *)buffer + align_c,
-                               1 / count, align_c);
+              __bang_mul_scalar((T *)buffer + align_c, (T *)buffer, (T)w3,
+                                align_c);
+              __bang_mul_scalar((T *)buffer + align_c, (T *)buffer + align_c,
+                                1 / count, align_c);
               __bang_atomic_add(
                   (T *)buffer + align_c,
                   image_offset + y_high * wo * c + x_low * c + i * deal_once,
                   (T *)buffer + align_c, deal_c);
-              __bang_mul_const((T *)buffer + align_c, (T *)buffer, (T)w4,
-                               align_c);
-              __bang_mul_const((T *)buffer + align_c, (T *)buffer + align_c,
-                               1 / count, align_c);
+              __bang_mul_scalar((T *)buffer + align_c, (T *)buffer, (T)w4,
+                                align_c);
+              __bang_mul_scalar((T *)buffer + align_c, (T *)buffer + align_c,
+                                1 / count, align_c);
               __bang_atomic_add(
                   (T *)buffer + align_c,
                   image_offset + y_high * wo * c + x_high * c + i * deal_once,

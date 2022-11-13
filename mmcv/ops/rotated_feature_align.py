@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Any
+
 import torch
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
@@ -31,7 +33,8 @@ class RotatedFeatureAlignFunction(Function):
             points_i=points)
 
     @staticmethod
-    def forward(ctx, features, best_rbboxes, spatial_scale, points):
+    def forward(ctx: Any, features: torch.Tensor, best_rbboxes: torch.Tensor,
+                spatial_scale: float, points: int) -> torch.Tensor:
         """
         Args:
             features (torch.Tensor): Input features with shape [N,C,H,W].
@@ -60,14 +63,14 @@ class RotatedFeatureAlignFunction(Function):
 
     @staticmethod
     @once_differentiable
-    def backward(ctx, grad_output):
+    def backward(ctx: Any, grad_output: torch.Tensor) -> tuple:
         """
         Args:
-            grad_output (torch.Tensor): The gradiant of output features
+            grad_output (torch.Tensor): The gradient of output features
                 with shape [N,C,H,W].
 
         Returns:
-            torch.Tensor: The gradiant of input features with shape [N,C,H,W].
+            torch.Tensor: The gradient of input features with shape [N,C,H,W].
         """
         best_rbboxes = ctx.saved_tensors[0]
         points = ctx.points
@@ -84,9 +87,9 @@ class RotatedFeatureAlignFunction(Function):
         return grad_input, None, None, None
 
 
-def rotated_feature_align(features,
-                          best_rbboxes,
-                          spatial_scale=1 / 8,
-                          points=1):
+def rotated_feature_align(features: torch.Tensor,
+                          best_rbboxes: torch.Tensor,
+                          spatial_scale: float = 1 / 8,
+                          points: int = 1) -> torch.Tensor:
     return RotatedFeatureAlignFunction.apply(features, best_rbboxes,
                                              spatial_scale, points)

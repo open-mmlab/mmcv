@@ -42,7 +42,7 @@ class Cache:
 class VideoReader:
     """Video class with similar usage to a list object.
 
-    This video warpper class provides convenient apis to access frames.
+    This video wrapper class provides convenient apis to access frames.
     There exists an issue of OpenCV's VideoCapture class that jumping to a
     certain frame may be inaccurate. It is fixed in this class by checking
     the position after jumping each time.
