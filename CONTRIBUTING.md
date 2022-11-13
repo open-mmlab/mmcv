@@ -37,16 +37,18 @@ We follow the [Google C++ Style Guide](https://google.github.io/styleguide/cppgu
 
 ### Workflow
 
-1. fork and pull the latest OpenMMLab repository
+1. Fork and pull the latest OpenMMLab repository
    ![image](https://user-images.githubusercontent.com/57566630/167305749-43c7f4e9-449b-4e98-ade5-0c9276d5c9ce.png)
 
    ```shell
    git clone https://github.com/{username}/mmcv.git
+   cd mmcv
+   git remote add upstream git@github.com:open-mmlab/mmcv.git
    ```
 
 2. Configure pre-commit for the first time
 
-   After you clone the repository, you will need to install initialize pre-commit hook.
+   After you clone the repository, you need to initialize the pre-commit hook.
 
    ```shell
    pip install -U pre-commit
@@ -71,15 +73,15 @@ We follow the [Google C++ Style Guide](https://google.github.io/styleguide/cppgu
    git commit -m "xxx" --no-verify
    ```
 
-3. checkout a new branch (do not use master branch for PRs)
+3. Checkout a new branch (do not use master branch for PRs)
 
    It is recommended to name your branch with 'username/pr_name'
 
    ```shell
-   git checkout -b username/refactor_contributing_doc
+   git checkout -b username/{pr_name}
    ```
 
-4. make changes and add unit test if necessary
+4. Make changes and add unit test if necessary
 
    If your pr add some features or affect the logic of the previous implementation, a corresponding unit test should be added to the directory `tests`.
 
@@ -91,16 +93,30 @@ We follow the [Google C++ Style Guide](https://google.github.io/styleguide/cppgu
    pytest tests/test_runner/test_runner.py
    ```
 
-6. commit your changes
+6. Commit your changes
 
    Make sure your changes pass through pre-commit.
 
-7. create a PR
+    ```bash
+    # coding
+    git add [files]
+    git commit -m 'messages'
+    ```
 
-   If you create for the first time, CLA should be assigned
+7. push your code to remote
+    ```shell
+    git push -u upstream {branch_name}
+    ```
 
-   ![image](https://user-images.githubusercontent.com/57566630/167307569-a794b967-6e28-4eac-a942-00deb657815f.png)
+7. Create a PR
+    
+    (1). create a PR on github
+    ![image](https://user-images.githubusercontent.com/57566630/201533288-516f7ac4-0b14-4dc8-afbd-912475c368b5.png)
+    
+    (2). Revise PR message template to describe your motivation and modifications made in this PR. You can also link the related issue to the PR manually in the PR message (For more information, checkout the [official guidance](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)).
 
-   Consider CI/CD will build mmcv in different platform, you can check your building status in:
+    (3). If you create for the first time, CLA should be assigned
+    ![image](https://user-images.githubusercontent.com/57566630/167307569-a794b967-6e28-4eac-a942-00deb657815f.png)
 
-   ![image](https://user-images.githubusercontent.com/57566630/167307490-f9ebf9fa-63c0-4d83-8ba1-081ea169eb3a.png)
+    (4). Consider CI/CD will build mmcv in different platform, you can check your building status in:
+    ![image](https://user-images.githubusercontent.com/57566630/167307490-f9ebf9fa-63c0-4d83-8ba1-081ea169eb3a.png)
