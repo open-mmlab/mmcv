@@ -8,9 +8,12 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair, _single
 
-from mmcv.utils import deprecated_api_warning
+from mmcv.utils import IS_MLU_AVAILABLE, deprecated_api_warning
 from ..cnn import CONV_LAYERS
 from ..utils import ext_loader, print_log
+
+if IS_MLU_AVAILABLE:
+    from torchvision.ops import deform_conv2d as tv_deform_conv2d
 
 ext_module = ext_loader.load_ext(
     '_ext',
@@ -352,3 +355,69 @@ class ModulatedDeformConv2dPack(ModulatedDeformConv2d):
         super()._load_from_state_dict(state_dict, prefix, local_metadata,
                                       strict, missing_keys, unexpected_keys,
                                       error_msgs)
+
+
+@CONV_LAYERS.register_module(
+    'DCNv2' if IS_MLU_AVAILABLE else 'DCNv2_disabled',
+    force=True if IS_MLU_AVAILABLE else False)
+class ModulatedDeformConv2dPack_MLU(nn.modules.Module):
+
+    def __init__(self,
+                 in_channels: int,
+                 out_channels: int,
+                 kernel_size: Union[int, Tuple[int]],
+                 stride: int = 1,
+                 padding: int = 0,
+                 dilation: int = 1,
+                 groups: int = 1,
+                 deform_groups: int = 1,
+                 bias: Union[bool, str] = True):
+        super().__init__()
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.kernel_size = _pair(kernel_size)
+        self.stride = _pair(stride)
+        self.padding = _pair(padding)
+        self.dilation = _pair(dilation)
+        self.groups = groups
+        self.deform_groups = deform_groups
+        self.weight = nn.Parameter(
+            torch.Tensor(out_channels, in_channels, *self.kernel_size))
+        if bias:
+            self.bias = nn.Parameter(torch.Tensor(out_channels))
+        else:
+            self.register_parameter('bias', None)
+        self.conv_offset = nn.Conv2d(
+            self.in_channels,
+            self.deform_groups * 3 * self.kernel_size[0] * self.kernel_size[1],
+            kernel_size=self.kernel_size,
+            stride=self.stride,
+            padding=self.padding,
+            bias=True)
+        self.init_weights()
+
+    def init_weights(self):
+        n = self.in_channels
+        for k in self.kernel_size:
+            n *= k
+        stdv = 1. / math.sqrt(n)
+        self.weight.data.uniform_(-stdv, stdv)
+        if self.bias is not None:
+            self.bias.data.zero_()
+        self.conv_offset.weight.data.zero_()
+        self.conv_offset.bias.data.zero_()
+
+    def forward(self, x):
+        out = self.conv_offset(x)
+        o1, o2, mask = torch.chunk(out, 3, dim=1)
+        offset = torch.cat((o1, o2), dim=1)
+        mask = torch.sigmoid(mask)
+        return tv_deform_conv2d(
+            x,
+            offset,
+            self.weight,
+            bias=self.bias,
+            stride=self.stride,
+            padding=self.padding,
+            dilation=self.dilation,
+            mask=mask)

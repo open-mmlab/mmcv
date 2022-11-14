@@ -5,7 +5,7 @@ import numpy
 import pytest
 import torch
 
-from mmcv.utils import TORCH_VERSION, digit_version
+from mmcv.utils import IS_MLU_AVAILABLE, TORCH_VERSION, digit_version
 
 try:
     # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast
@@ -39,13 +39,21 @@ dcn_offset_b_grad = [
 
 class TestMdconv:
 
-    def _test_mdconv(self, dtype=torch.float, device='cuda'):
+    def _test_mdconv(self,
+                     dtype=torch.float,
+                     device='mlu' if IS_MLU_AVAILABLE else 'cuda'):
         if not torch.cuda.is_available() and device == 'cuda':
             pytest.skip('test requires GPU')
-        from mmcv.ops import ModulatedDeformConv2dPack
+        if not torch.mlu.is_available() and device == 'mlu':
+            pytest.skip('test requires MLU')
+        if device == 'mlu':
+            from mmcv.ops import \
+                ModulatedDeformConv2dPack_MLU as ModulatedDeformConv2dPack
+        else:
+            from mmcv.ops import ModulatedDeformConv2dPack
+
         input = torch.tensor(input_t, dtype=dtype, device=device)
         input.requires_grad = True
-
         dcn = ModulatedDeformConv2dPack(
             1,
             1,
@@ -53,10 +61,7 @@ class TestMdconv:
             stride=1,
             padding=1,
             deform_groups=1,
-            bias=False)
-
-        if device == 'cuda':
-            dcn.cuda()
+            bias=False).to(device)
 
         dcn.weight.data.fill_(1.)
         dcn.type(dtype)
