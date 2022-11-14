@@ -584,9 +584,11 @@ Python 没有对类型做强制限制，类型注解只起到一个提示作用�
        return x if len(x) >= len(y) else y
    ```
 
+更多关于类型注解的写法请参考 [typing](https://docs.python.org/3/library/typing.html)。
+
 #### 类型注解检查工具
 
-Mypy 是一个 Python 静态类型检查工具。根据你的类型注解，mypy 会检查传参、赋值等操作是否符合类型注解，从而避免可能出现的 bug。
+[mypy](https://mypy.readthedocs.io/en/stable/) 是一个 Python 静态类型检查工具。根据你的类型注解，mypy 会检查传参、赋值等操作是否符合类型注解，从而避免可能出现的 bug。
 
 例如如下的一个  Python 脚本文件 test.py:
 
