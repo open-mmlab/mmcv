@@ -12,11 +12,10 @@
 # source: https://github.com/open-mmlab/mmediting/blob/dev-1.x/mmedit/models/editors/stylegan3/stylegan3_ops/ops/bias_act.py # noqa
 """Custom PyTorch ops for efficient bias and activation."""
 
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 import numpy as np
 import torch
-
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', ['bias_act'])
@@ -119,13 +118,13 @@ _null_tensor = torch.empty([0])
 
 
 def bias_act(x,
-             b=None,
-             dim=1,
-             act='linear',
-             alpha=None,
-             gain=None,
-             clamp=None,
-             impl='cuda'):
+             b=None: torch.Tensor,
+             dim=1: int,
+             act='linear': str,
+             alpha=None: Union[float, int],
+             gain=None: float,
+             clamp=None: float,
+             impl='cuda': str):
     r"""Fused bias and activation function.
     Adds bias `b` to activation tensor `x`, evaluates activation function
     `act`, and scales the result by `gain`. Each of the steps is optional.
