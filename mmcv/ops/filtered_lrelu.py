@@ -121,7 +121,7 @@ def filtered_lrelu(x,
     """
     assert isinstance(x, torch.Tensor)
     assert impl in ['ref', 'cuda']
-    if impl == 'cuda' and x.device.type == 'cuda':
+    if impl == 'cuda' and x.is_cuda:
         return _filtered_lrelu_cuda(
             up=up,
             down=down,
