@@ -58,7 +58,8 @@ class MaskedConv2dFunction(Function):
             if mask.size()[1:] != output.size()[2:]:
                 raise ValueError(
                     'The mask is inconsistent with the shape of output_conv.')
-            output = output * mask
+            mask_bool = mask > 0
+            output = output * mask_bool
             return output
 
         batch_size = features.size(0)

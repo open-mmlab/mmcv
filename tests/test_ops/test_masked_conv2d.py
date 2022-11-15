@@ -42,4 +42,4 @@ class TestMaskedConv2d:
         conv.weight = torch.nn.Parameter(weight)
         conv.bias = torch.nn.Parameter(bias)
         output = conv(input, mask)
-        assert np.allclose(output.data.cpu().numpy(), np_output, 1e-3)
+        assert np.allclose(output.data.cpu().numpy(), np_output, 1e-2)
