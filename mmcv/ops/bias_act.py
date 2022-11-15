@@ -126,6 +126,7 @@ def bias_act(x,
              clamp=None: float,
              impl='cuda': str):
     r"""Fused bias and activation function.
+
     Adds bias `b` to activation tensor `x`, evaluates activation function
     `act`, and scales the result by `gain`. Each of the steps is optional.
     In most cases, the fused op is considerably more efficient than performing
