@@ -9,7 +9,7 @@ import torch.nn as nn
 import mmcv
 from mmcv.runner import HOOKS, Hook
 from .operator import Conv2dRFSearchOp, ConvRFSearchOp  # noqa
-from .utils import write_to_json
+from .utils import write_to_json, get_padding
 
 logging.basicConfig(
     format='[%(asctime)s-%(filename)s-%(levelname)s:%(message)s]',
@@ -28,27 +28,34 @@ class RFSearchHook(Hook):
             https://arxiv.org/abs/2206.06637
 
     Args:
-        mode (str, optional):
-                mode can be set to the following types:
-                 search/fixed_single_branch/fixed_multi_branch.
+        mode (str, optional): It can be set to the following types:
+            'search', 'fixed_single_branch', or 'fixed_multi_branch'.
         config (Dict, optional): config dict of search.
-        rfstructure_file (str, optional):
-                searched recptive fields of the model.
+        rfstructure_file (str, optional): Searched receptive fields of the model.
+        by_epoch (bool, optional): Determine perform step by epoch or by iteration.
+            If set to True, it will step by epoch. Otherwise, by iteration.
+            Default: True.
+        verbose (bool): Determines whether to print rf-next related logging messages. 
+            Defaults to True.
     """
 
     def __init__(self,
                  mode: str = 'search',
                  config: Dict = {},
-                 rfstructure_file: str = None):
+                 rfstructure_file: str = None,
+                 by_epoch: bool = True,
+                 verbose: bool = True):
         assert mode in ['search', 'fixed_single_branch', 'fixed_multi_branch']
         assert config is not None
         self.config = config
         self.config['structure'] = {}
+        self.verbose = verbose
         if rfstructure_file is not None:
             rfstructure = mmcv.load(rfstructure_file)['structure']
             self.config['structure'] = rfstructure
         self.mode = mode
-        self.s = self.config['search']['S']
+        self.num_branches = self.config['search']['num_branches']
+        self.by_epoch = by_epoch
 
     def model_init(self, model: nn.Module):
         """init model with search ability.
@@ -61,7 +68,8 @@ class RFSearchHook(Hook):
                 only support three modes:
                     search/fixed_single_branch/fixed_multi_branch
         """
-        print('RFSearch init begin.')
+        if self.verbose:
+            logger.info('RFSearch init begin.')
         if self.mode == 'search':
             if self.config['structure']:
                 self.set_model(model, self.config, search_op='Conv2d')
@@ -73,8 +81,8 @@ class RFSearchHook(Hook):
             self.wrap_model(model, self.config, search_op='Conv2d')
         else:
             raise NotImplementedError
-        print('RFSearch init end.')
-        pass
+        if self.verbose:
+            logger.info('RFSearch init end.')
 
     def after_epoch(self, runner):
         """Do search after one training epoch.
@@ -82,11 +90,17 @@ class RFSearchHook(Hook):
         Args:
             runner (_type_): MMCV runner
         """
-        if self.mode == 'search':
-            print('Local-Search step begin.')
+        if self.by_epoch and self.mode == 'search':
             self.step(runner.model, runner.work_dir)
-            print('Local-Search step end.')
-        pass
+        
+    def after_iter(self, runner):
+        """Do search after one training iteration.
+
+        Args:
+            runner (_type_): MMCV runner
+        """
+        if not self.by_epoch and self.mode == 'search':
+            self.step(runner.model, runner.work_dir)
 
     def step(self, model: nn.Module, work_dir: str):
         """do one step of dilation search.
@@ -149,15 +163,14 @@ class RFSearchHook(Hook):
         op = 'torch.nn.' + search_op
         for name, module in model.named_children():
             if isinstance(module, eval(op)):
-                if (1 < module.kernel_size[0]
-                        and 0 != module.kernel_size[0] % 2):
+                if (1 < module.kernel_size[0] and 0 != module.kernel_size[0] % 2) or \
+                    (1 < module.kernel_size[1] and 0 != module.kernel_size[1] % 2):
                     moduleWrap = eval(search_op + 'RFSearchOp')(
-                        module, init_rates, config['search'], self.s)
+                        module, init_rates, config['search'], self.verbose)
                     moduleWrap = moduleWrap.cuda()
-                    logger.info('Wrap model %s to %s.' %
-                                (str(module), str(moduleWrap)))
-                    print('Wrap model %s to %s.' %
-                          (str(module), str(moduleWrap)))
+                    if self.verbose:
+                        logger.info('Wrap model %s to %s.' %
+                                    (str(module), str(moduleWrap)))
                     setattr(model, name, moduleWrap)
             elif isinstance(module, ConvRFSearchOp):
                 pass
@@ -195,25 +208,24 @@ class RFSearchHook(Hook):
             else:
                 fullname = prefix + '.' + name
             if isinstance(module, eval(op)):
-                if 1 < module.kernel_size[0] and \
-                     0 != module.kernel_size[0] % 2:
+                if (1 < module.kernel_size[0] and 0 != module.kernel_size[0] % 2) or \
+                    (1 < module.kernel_size[1] and 0 != module.kernel_size[1] % 2):
                     if isinstance(config['structure'][fullname], int):
                         config['structure'][fullname] = [
+                            config['structure'][fullname],
                             config['structure'][fullname]
                         ]
                     module.dilation = (
                         config['structure'][fullname][0],
-                        config['structure'][fullname][0],
+                        config['structure'][fullname][1],
                     )
                     module.padding = (
-                        config['structure'][fullname][0] *
-                        (module.kernel_size[0] - 1) // 2,
-                        config['structure'][fullname][0] *
-                        (module.kernel_size[0] - 1) // 2,
-                    )
+                            get_padding(module.kernel_size[0], module.stride[0], config['structure'][fullname][0]),
+                            get_padding(module.kernel_size[1], module.stride[1], config['structure'][fullname][1]))
                     setattr(model, name, module)
-                    logger.info('Set module %s dilation as: [%d]' %
-                                (fullname, module.dilation[0]))
+                    if self.verbose:
+                        logger.info('Set module %s dilation as: [%d %d]' %
+                                    (fullname, module.dilation[0], module.dilation[1]))
             elif isinstance(module, ConvRFSearchOp):
                 pass
             else:

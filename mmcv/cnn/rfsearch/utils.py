@@ -28,10 +28,31 @@ def expands_rate(d: int, config: dict) -> list:
     """
     exp_rate = config['exp_rate']
 
-    return [
-        np.clip(
-            int(round((1 - exp_rate) * d)), config['mmin'], config['mmax']),
-        np.clip(d, config['mmin'], config['mmax']),
-        np.clip(
-            int(round((1 + exp_rate) * d)), config['mmin'], config['mmax']),
-    ]
+    large_rates = []
+    small_rates = []
+    for _ in range(config['num_branches'] // 2):
+        large_rates.append(
+            tuple([
+                np.clip(int(round((1 + exp_rate) * d[0])), config['mmin'], config['mmax']).item(),
+                np.clip(int(round((1 + exp_rate) * d[1])), config['mmin'], config['mmax']).item()]))
+        small_rates.append(
+            tuple([
+                np.clip(int(round((1 - exp_rate) * d[0])), config['mmin'], config['mmax']).item(),
+                np.clip(int(round((1 - exp_rate) * d[1])), config['mmin'], config['mmax']).item()]))
+
+    small_rates.reverse()
+
+    if config['num_branches'] % 2 == 0:
+        rate_list = small_rates + large_rates
+    else:
+        rate_list = small_rates + [d] + large_rates
+
+    unique_rate_list = list(set(rate_list))
+    unique_rate_list.sort(key=rate_list.index)
+    return unique_rate_list
+
+
+def get_padding(kernel_size: int, stride: int = 1, dilation: int = 1) -> int:
+    padding = ((stride - 1) + dilation * (kernel_size - 1)) // 2
+    return padding
+
