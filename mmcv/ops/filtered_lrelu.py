@@ -8,7 +8,7 @@
 
 # source: https://github.com/NVlabs/stylegan3/blob/main/torch_utils/ops/filtered_lrelu.py # noqa
 import warnings
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 import numpy as np
 import torch
@@ -45,17 +45,17 @@ def _parse_padding(padding):
 
 
 def filtered_lrelu(x: torch.Tensor,
-                   fu=None: Optional[torch.Tensor],
-                   fd=None: Optional[torch.Tensor],
-                   b=None: Optional[torch.Tensor],
-                   up=1: int,
-                   down=1: int,
-                   padding=0: int,
-                   gain=np.sqrt(2): float,
-                   slope=0.2: float,
-                   clamp=None: Optional[Union[float, int]],
-                   flip_filter=False: bool,
-                   impl='cuda': str):
+                   fu: Optional[torch.Tensor] = None,
+                   fd: Optional[torch.Tensor] = None,
+                   b: Optional[torch.Tensor] = None,
+                   up: int = 1,
+                   down: int = 1,
+                   padding: int = 0,
+                   gain: float = np.sqrt(2),
+                   slope: float = 0.2,
+                   clamp: Optional[Union[float, int]] = None,
+                   flip_filter: bool = False,
+                   impl: str = 'cuda'):
     """Filtered leaky ReLU for a batch of 2D images.
 
     Performs the following sequence of operations for each channel:
@@ -94,24 +94,25 @@ def filtered_lrelu(x: torch.Tensor,
         fu (Optional[torch.Tensor]): Float32 upsampling FIR filter of the shape
             `[filter_height, filter_width]` (non-separable), `[filter_taps]`
             (separable), or `None` (identity). Defaults to None.
-        fd (Optional[torch.Tensor]): Float32 downsampling FIR filter of the shape
-            `[filter_height, filter_width]` (non-separable), `[filter_taps]`
-            (separable), or `None` (identity). Defaults to None.
-        b (Optional[torch.Tensor]): Bias vector, or `None` to disable. Must be 
+        fd (Optional[torch.Tensor]): Float32 downsampling FIR filter of the
+            shape `[filter_height, filter_width]` (non-separable),
+            `[filter_taps]` (separable), or `None` (identity).
+            Defaults to None.
+        b (Optional[torch.Tensor]): Bias vector, or `None` to disable. Must be
             a 1D tensor of the same type as `x`. The length of vector must must
             match the channel dimension of `x`. Defaults to None.
         up (int): Integer upsampling factor. Defaults to 1.
         down (int): Integer downsampling factor. Defaults to 1.
-        padding (int): Padding with respect to the upsampled image. Can be a 
-            single number or a list/tuple `[x, y]` or `[x_before, x_after, 
+        padding (int): Padding with respect to the upsampled image. Can be a
+            single number or a list/tuple `[x, y]` or `[x_before, x_after,
             y_before, y_after]`. Defaults to 0.
         gain (float): Overall scaling factor for signal magnitude.
             Defaults to np.sqrt(2).
         slope (float): Slope on the negative side of leaky ReLU.
             Defaults to 0.2.
-        clamp (Optional[Union[float, int]]): Maximum magnitude for leaky ReLU 
+        clamp (Optional[Union[float, int]]): Maximum magnitude for leaky ReLU
             output. Defaults to None.
-        flip_filter (bool): False = convolution, True = correlation. 
+        flip_filter (bool): False = convolution, True = correlation.
             Defaults to False.
         impl (str): Implementation to use. Can be `'ref'` or `'cuda'`.
             Defaults to 'cuda'.
@@ -145,17 +146,17 @@ def filtered_lrelu(x: torch.Tensor,
         flip_filter=flip_filter)
 
 
-def _filtered_lrelu_ref(x:torch.Tensor,
-                        fu=None:Optional[torch.Tensor],
-                        fd=None:Optional[torch.Tensor],
-                        b=None:Optional[torch.Tensor],
-                        up=1:int,
-                        down=1:int,
-                        padding=0:int,
-                        gain=np.sqrt(2):float,
-                        slope=0.2:float,
-                        clamp=None:Optional[Union[float, int]],
-                        flip_filter=False:bool):
+def _filtered_lrelu_ref(x: torch.Tensor,
+                        fu: Optional[torch.Tensor] = None,
+                        fd: Optional[torch.Tensor] = None,
+                        b: Optional[torch.Tensor] = None,
+                        up: int = 1,
+                        down: int = 1,
+                        padding: int = 0,
+                        gain: float = np.sqrt(2),
+                        slope: float = 0.2,
+                        clamp: Optional[Union[float, int]] = None,
+                        flip_filter: bool = False):
     """Slow and memory-inefficient reference implementation of
     `filtered_lrelu()` using existing `upfirdn2n()` and `bias_act()` ops.
 
@@ -165,24 +166,25 @@ def _filtered_lrelu_ref(x:torch.Tensor,
         fu (Optional[torch.Tensor]): Float32 upsampling FIR filter of the shape
             `[filter_height, filter_width]` (non-separable), `[filter_taps]`
             (separable), or `None` (identity). Defaults to None.
-        fd (Optional[torch.Tensor]): Float32 downsampling FIR filter of the shape
-            `[filter_height, filter_width]` (non-separable), `[filter_taps]`
-            (separable), or `None` (identity). Defaults to None.
-        b (Optional[torch.Tensor]): Bias vector, or `None` to disable. Must be 
+        fd (Optional[torch.Tensor]): Float32 downsampling FIR filter of the
+            shape `[filter_height, filter_width]` (non-separable),
+            `[filter_taps]` (separable), or `None` (identity).
+            Defaults to None.
+        b (Optional[torch.Tensor]): Bias vector, or `None` to disable. Must be
             a 1D tensor of the same type as `x`. The length of vector must must
             match the channel dimension of `x`. Defaults to None.
         up (int): Integer upsampling factor. Defaults to 1.
         down (int): Integer downsampling factor. Defaults to 1.
-        padding (int): Padding with respect to the upsampled image. Can be a 
-            single number or a list/tuple `[x, y]` or `[x_before, x_after, 
+        padding (int): Padding with respect to the upsampled image. Can be a
+            single number or a list/tuple `[x, y]` or `[x_before, x_after,
             y_before, y_after]`. Defaults to 0.
         gain (float): Overall scaling factor for signal magnitude.
             Defaults to np.sqrt(2).
         slope (float): Slope on the negative side of leaky ReLU.
             Defaults to 0.2.
-        clamp (Optional[Union[float, int]]): Maximum magnitude for leaky ReLU 
+        clamp (Optional[Union[float, int]]): Maximum magnitude for leaky ReLU
             output. Defaults to None.
-        flip_filter (bool): False = convolution, True = correlation. 
+        flip_filter (bool): False = convolution, True = correlation.
             Defaults to False.
 
     Returns:
@@ -246,24 +248,25 @@ def _filtered_lrelu_cuda(up=1,
         fu (Optional[torch.Tensor]): Float32 upsampling FIR filter of the shape
             `[filter_height, filter_width]` (non-separable), `[filter_taps]`
             (separable), or `None` (identity). Defaults to None.
-        fd (Optional[torch.Tensor]): Float32 downsampling FIR filter of the shape
-            `[filter_height, filter_width]` (non-separable), `[filter_taps]`
-            (separable), or `None` (identity). Defaults to None.
-        b (Optional[torch.Tensor]): Bias vector, or `None` to disable. Must be 
+        fd (Optional[torch.Tensor]): Float32 downsampling FIR filter of the
+            shape `[filter_height, filter_width]` (non-separable),
+            `[filter_taps]` (separable), or `None` (identity).
+            Defaults to None.
+        b (Optional[torch.Tensor]): Bias vector, or `None` to disable. Must be
             a 1D tensor of the same type as `x`. The length of vector must must
             match the channel dimension of `x`. Defaults to None.
         up (int): Integer upsampling factor. Defaults to 1.
         down (int): Integer downsampling factor. Defaults to 1.
-        padding (int): Padding with respect to the upsampled image. Can be a 
-            single number or a list/tuple `[x, y]` or `[x_before, x_after, 
+        padding (int): Padding with respect to the upsampled image. Can be a
+            single number or a list/tuple `[x, y]` or `[x_before, x_after,
             y_before, y_after]`. Defaults to 0.
         gain (float): Overall scaling factor for signal magnitude.
             Defaults to np.sqrt(2).
         slope (float): Slope on the negative side of leaky ReLU.
             Defaults to 0.2.
-        clamp (Optional[Union[float, int]]): Maximum magnitude for leaky ReLU 
+        clamp (Optional[Union[float, int]]): Maximum magnitude for leaky ReLU
             output. Defaults to None.
-        flip_filter (bool): False = convolution, True = correlation. 
+        flip_filter (bool): False = convolution, True = correlation.
             Defaults to False.
 
     Returns:

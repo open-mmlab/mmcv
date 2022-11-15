@@ -8,7 +8,7 @@
 
 # source: https://github.com/NVlabs/stylegan3/blob/main/torch_utils/ops/upfirdn2d.py # noqa
 """Custom PyTorch ops for efficient resampling of 2D images."""
-from typing import Dict, Any, Union, Optional, List
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import torch
@@ -66,14 +66,14 @@ def setup_filter(f: torch.Tensor,
 
     Args:
         f (torch.Tensor): Torch tensor, numpy array, or python list
-            of the shape `[filter_height, filter_width]` 
-            (non-separable), `[filter_taps]` (separable), `[]` 
+            of the shape `[filter_height, filter_width]`
+            (non-separable), `[filter_taps]` (separable), `[]`
             (impulse), or `None`.
         device (Any): Result device. Defaults to torch.device('cpu').
-        normalize (bool): Normalize the filter so that it retains the 
+        normalize (bool): Normalize the filter so that it retains the
             magnitude for constant input signal (DC). Defaults to True.
         flip_filter (bool): Flip the filter? Defaults to False.
-        gain (Union[float, int]): Overall scaling factor for signal 
+        gain (Union[float, int]): Overall scaling factor for signal
             magnitude. Defaults to 1.
         separable (Optional[bool]): Return a separable filter?
             Defaults to None.
@@ -115,7 +115,7 @@ def upfirdn2d(x: torch.Tensor,
               down: int = 1,
               padding: Union[int, List[int]] = 0,
               flip_filter: bool = False,
-              gain: int = 1,
+              gain: Union[float, int] = 1,
               impl: str = 'cuda'):
     """Pad, upsample, filter, and downsample a batch of 2D images.
 
@@ -126,7 +126,7 @@ def upfirdn2d(x: torch.Tensor,
     2. Pad the image with the specified number of zeros on each side
     (`padding`). Negative padding corresponds to cropping the image.
 
-    3. Convolve the image with the specified 2D FIR filter (`f`), 
+    3. Convolve the image with the specified 2D FIR filter (`f`),
     shrinking it so that the footprint of all output pixels lies within
     the input image.
 
@@ -156,7 +156,7 @@ def upfirdn2d(x: torch.Tensor,
             Defaults to False.
         gain (int, optional): Overall scaling factor for signal magnitude.
             Defaults to 1.
-        impl (str, optional): Implementation to use. Can be `'ref'` or 
+        impl (str, optional): Implementation to use. Can be `'ref'` or
             `'cuda'`. Defaults to 'cuda'.
 
     Returns:
@@ -181,7 +181,13 @@ def upfirdn2d(x: torch.Tensor,
         gain=gain)
 
 
-def _upfirdn2d_ref(x, f, up=1, down=1, padding=0, flip_filter=False, gain=1):
+def _upfirdn2d_ref(x: torch.Tensor,
+                   f: torch.Tensor,
+                   up: int = 1,
+                   down: int = 1,
+                   padding: Union[int, List[int]] = 0,
+                   flip_filter: bool = False,
+                   gain: Union[float, int] = 1):
     """Slow reference implementation of `upfirdn2d()` using standard PyTorch
     ops.
 
@@ -202,7 +208,7 @@ def _upfirdn2d_ref(x, f, up=1, down=1, padding=0, flip_filter=False, gain=1):
             Defaults to False.
         gain (int, optional): Overall scaling factor for signal magnitude.
             Defaults to 1.
-            
+
     Returns:
         torch.Tensor: Tensor of the shape `[batch_size, num_channels,
             out_height, out_width]`.
@@ -281,7 +287,7 @@ def _upfirdn2d_cuda(up: int = 1,
             Defaults to 1.
 
     Returns:
-        torch.Tensor: Tensor of the shape `[batch_size, num_channels, 
+        torch.Tensor: Tensor of the shape `[batch_size, num_channels,
             out_height, out_width]`
     """
     # Parse arguments.
@@ -367,21 +373,21 @@ def filter2d(x: torch.Tensor,
     Args:
         x (torch.Tensor): Float32/float64/float16 input tensor of the shape
             `[batch_size, num_channels, in_height, in_width]`.
-        f (torch.Tensor): Float32 FIR filter of the shape `[filter_height, 
-            filter_width]` (non-separable), `[filter_taps]` (separable), or 
+        f (torch.Tensor): Float32 FIR filter of the shape `[filter_height,
+            filter_width]` (non-separable), `[filter_taps]` (separable), or
             `None`.
-        padding (int, optional): Padding with respect to the output. Can be a 
-            single number or a list/tuple `[x, y]` or `[x_before, x_after, 
+        padding (int, optional): Padding with respect to the output. Can be a
+            single number or a list/tuple `[x, y]` or `[x_before, x_after,
             y_before, y_after]`. Defaults to 0.
         flip_filter (bool, optional): False = convolution, True = correlation.
             Defaults to False.
-        gain (int, optional): Overall scaling factor for signal magnitude. 
+        gain (int, optional): Overall scaling factor for signal magnitude.
             Defaults to 1.
-        impl (str, optional): Implementation to use. Can be `'ref'` or 
+        impl (str, optional): Implementation to use. Can be `'ref'` or
             `'cuda'`. Defaults to 'cuda'.
 
     Returns:
-        Tensor of the shape `[batch_size, num_channels, out_height, 
+        Tensor of the shape `[batch_size, num_channels, out_height,
             out_width]`.
     """
     padx0, padx1, pady0, pady1 = _parse_padding(padding)
@@ -413,22 +419,22 @@ def upsample2d(x: torch.Tensor,
     Args:
         x (torch.Tensor): Float32/float64/float16 input tensor of the shape
             `[batch_size, num_channels, in_height, in_width]`.
-        f (torch.Tensor): Float32 FIR filter of the shape `[filter_height, 
+        f (torch.Tensor): Float32 FIR filter of the shape `[filter_height,
             filter_width]` (non-separable), `[filter_taps]` (separable), or
             `None` (identity).
         up (int): Integer upsampling factor. Can be a single int or a
-                     list/tuple `[x, y]`. Defaults to 2.
-        padding (Union[int, List[int]]): Padding with respect to the output. Can be a single 
-            number or a list/tuple `[x, y]` or `[x_before, x_after, y_before,
-            y_after]`. Defaults to 0.
-        flip_filter (bool): False = convolution, True = correlation. Defaults 
+            list/tuple `[x, y]`. Defaults to 2.
+        padding (Union[int, List[int]]): Padding with respect to the output.
+            Can be a single number or a list/tuple `[x, y]` or `[x_before,
+            x_after, y_before, y_after]`. Defaults to 0.
+        flip_filter (bool): False = convolution, True = correlation. Defaults
             to False.
         gain (int): Overall scaling factor for signal magnitude. Defaults to 1.
         impl (str): Implementation to use. Can be `'ref'` or `'cuda'`. Defaults
             to 'cuda'.
 
     Returns:
-        torch.Tensor: Tensor of the shape `[batch_size, num_channels, 
+        torch.Tensor: Tensor of the shape `[batch_size, num_channels,
             out_height, out_width]`
     """
     upx, upy = _parse_scaling(up)
@@ -455,7 +461,7 @@ def downsample2d(x: torch.Tensor,
                  down: int = 2,
                  padding: Union[int, List[int]] = 0,
                  flip_filter: bool = False,
-                 gain: int = 1,
+                 gain: Union[float, int] = 1,
                  impl: str = 'cuda'):
     """Downsample a batch of 2D images using the given 2D FIR filter.
 
@@ -468,22 +474,22 @@ def downsample2d(x: torch.Tensor,
         x (torch.Tensor): Float32/float64/float16 input tensor of the shape
             `[batch_size, num_channels, in_height, in_width]`.
         f (torch.Tensor): Float32 FIR filter of the shape `[filter_height,
-            filter_width]` (non-separable), `[filter_taps]` (separable), or 
+            filter_width]` (non-separable), `[filter_taps]` (separable), or
             `None` (identity).
         down (int): Integer downsampling factor. Can be a single int or a
                      list/tuple `[x, y]` (default: 1). Defaults to 2.
-        padding (Union[int, List[int]]): Padding with respect to the input. Can be a single 
-            number or a list/tuple `[x, y]` or `[x_before, x_after, y_before,
-            y_after]`. Defaults to 0.
-        flip_filter (bool): False = convolution, True = correlation. Defaults 
+        padding (Union[int, List[int]]): Padding with respect to the input.
+            Can be a single number or a list/tuple `[x, y]` or `[x_before,
+            x_after, y_before, y_after]`. Defaults to 0.
+        flip_filter (bool): False = convolution, True = correlation. Defaults
             to False.
         gain (int): Overall scaling factor for signal magnitude. Defaults to 1.
-        impl (str): Implementation to use. Can be `'ref'` or `'cuda'`. 
+        impl (str): Implementation to use. Can be `'ref'` or `'cuda'`.
             Defaults to 'cuda'.
 
     Returns:
-        torch.Tensor: Tensor of the shape `[batch_size, num_channels, 
-            out_height, out_width]`. 
+        torch.Tensor: Tensor of the shape `[batch_size, num_channels,
+            out_height, out_width]`.
     """
     downx, downy = _parse_scaling(down)
     padx0, padx1, pady0, pady1 = _parse_padding(padding)

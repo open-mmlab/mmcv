@@ -12,10 +12,11 @@
 # source: https://github.com/open-mmlab/mmediting/blob/dev-1.x/mmedit/models/editors/stylegan3/stylegan3_ops/ops/bias_act.py # noqa
 """Custom PyTorch ops for efficient bias and activation."""
 
-from typing import Any, Dict, Union, Optional
+from typing import Any, Dict, Optional, Union
 
 import numpy as np
 import torch
+
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', ['bias_act'])
@@ -118,13 +119,13 @@ _null_tensor = torch.empty([0])
 
 
 def bias_act(x: torch.Tensor,
-             b=None: Optional[torch.Tensor],
-             dim=1: int,
-             act='linear': str,
-             alpha=None:Optional[Union[float, int]],
-             gain=None: Optional[float],
-             clamp=None: Optional[float],
-             impl='cuda': str):
+             b: Optional[torch.Tensor] = None,
+             dim: int = 1,
+             act: str = 'linear',
+             alpha: Optional[Union[float, int]] = None,
+             gain: Optional[float] = None,
+             clamp: Optional[float] = None,
+             impl: str = 'cuda'):
     r"""Fused bias and activation function.
 
     Adds bias `b` to activation tensor `x`, evaluates activation function
@@ -135,30 +136,31 @@ def bias_act(x: torch.Tensor,
 
     Args:
         x (torch.Tensor): Input activation tensor. Can be of any shape.
-        b (Optional[torch.Tensor]): Bias vector, or `None` to disable. 
-            Must be a 1D tensor of the same type as `x`. The shape must be known,
-            and it must match the dimension of `x` corresponding to `dim`.
-            Defaults to None.
+        b (Optional[torch.Tensor]): Bias vector, or `None` to disable.
+            Must be a 1D tensor of the same type as `x`. The shape must be
+            known, and it must match the dimension of `x` corresponding to
+            `dim`. Defaults to None.
         dim (int): The dimension in `x` corresponding to the elements of `b`.
             The value of `dim` is ignored if `b` is not specified.
             Defaults to 1.
-        act (str): Name of the activation function to evaluate, or `"linear"` to
-            disable. Can be e.g. "relu", "lrelu", "tanh", "sigmoid", "swish", etc.
-            See `activation_funcs` for a full list. `None` is not allowed.
-            Defaults to `linear`.
-        alpha (Optional[Union[float, int]]):  Shape parameter for the activation 
+        act (str): Name of the activation function to evaluate, or `"linear"`
+            to disable. Can be e.g. "relu", "lrelu", "tanh", "sigmoid",
+            "swish", etc. See `activation_funcs` for a full list. `None` is not
+            allowed. Defaults to `linear`.
+        alpha (Optional[Union[float, int]]): Shape parameter for the activation
             function, or `None` to use the default. Defaults to None.
         gain (Optional[float]): Scaling factor for the output tensor, or `None`
-            to use default. See `activation_funcs` for the default scaling of each
-            activation function. If unsure, consider specifying 1. Defaults to None.
-        clamp (Optional[float]):  Clamp the output values to `[-clamp, +clamp]`, or 
-            `None` to disable the clamping (default). Defaults to None.
-        impl (str): Name of the implementation to use. Can be `"ref"` or `"cuda"`.
-            Defaults to "cuda".
+            to use default. See `activation_funcs` for the default scaling of
+            each activation function. If unsure, consider specifying 1.
+            Defaults to None.
+        clamp (Optional[float]):  Clamp the output values to `[-clamp, +clamp]`
+            , or `None` to disable the clamping (default). Defaults to None.
+        impl (str): Name of the implementation to use. Can be `"ref"` or
+            `"cuda"`. Defaults to "cuda".
 
     Returns:
         torch.Tensor: Tensor of the same shape and datatype as `x`.
-    """    
+    """
     assert isinstance(x, torch.Tensor)
     assert impl in ['ref', 'cuda']
     if impl == 'cuda' and x.is_cuda:
@@ -169,14 +171,14 @@ def bias_act(x: torch.Tensor,
 
 
 def _bias_act_ref(x: torch.Tensor,
-                  b=None: Optional[torch.Tensor],
-                  dim=1: int,
-                  act='linear': str,
-                  alpha=None:Optional[Union[float, int]],
-                  gain=None: Optional[float],
-                  clamp=None: str):
+                  b: Optional[torch.Tensor] = None,
+                  dim: int = 1,
+                  act: str = 'linear',
+                  alpha: Optional[Union[float, int]] = None,
+                  gain: Optional[float] = None,
+                  clamp: Optional[float] = None):
     """Slow reference implementation of `bias_act()` using standard PyTorch
-        ops.
+    ops.
 
     Adds bias `b` to activation tensor `x`, evaluates activation function
     `act`, and scales the result by `gain`. Each of the steps is optional.
@@ -186,25 +188,27 @@ def _bias_act_ref(x: torch.Tensor,
 
     Args:
         x (torch.Tensor): Input activation tensor. Can be of any shape.
-        b (Optional[torch.Tensor]): Bias vector, or `None` to disable. 
-            Must be a 1D tensor of the same type as `x`. The shape must be known,
-            and it must match the dimension of `x` corresponding to `dim`.
-            Defaults to None.
+        b (Optional[torch.Tensor]): Bias vector, or `None` to disable.
+            Must be a 1D tensor of the same type as `x`. The shape must be
+            known, and it must match the dimension of `x` corresponding to
+            `dim`. Defaults to None.
         dim (int): The dimension in `x` corresponding to the elements of `b`.
             The value of `dim` is ignored if `b` is not specified.
             Defaults to 1.
-        act (str): Name of the activation function to evaluate, or `"linear"` to
-            disable. Can be e.g. "relu", "lrelu", "tanh", "sigmoid", "swish", etc.
-            See `activation_funcs` for a full list. `None` is not allowed.
-            Defaults to `linear`.
-        alpha (Optional[Union[float, int]]):  Shape parameter for the activation 
+        act (str): Name of the activation function to evaluate, or `"linear"`
+            to disable. Can be e.g. "relu", "lrelu", "tanh", "sigmoid",
+            "swish", etc. See `activation_funcs` for a full list. `None` is not
+            allowed. Defaults to `linear`.
+        alpha (Optional[Union[float, int]]): Shape parameter for the activation
             function, or `None` to use the default. Defaults to None.
         gain (Optional[float]): Scaling factor for the output tensor, or `None`
-            to use default. See `activation_funcs` for the default scaling of each
-            activation function. If unsure, consider specifying 1. Defaults to None.
-        clamp (Optional[float]):  Clamp the output values to `[-clamp, +clamp]`, or 
-            `None` to disable the clamping (default). Defaults to None.
-            
+            to use default. See `activation_funcs` for the default scaling of
+            each activation function. If unsure, consider specifying 1.
+            Defaults to None.
+        clamp (Optional[float]):  Clamp the output values to
+            `[-clamp, +clamp]`, or `None` to disable the clamping (default).
+            Defaults to None.
+
     Returns:
         torch.Tensor: Tensor of the same shape and datatype as `x`.
     """
@@ -241,24 +245,29 @@ def _bias_act_ref(x: torch.Tensor,
 _bias_act_cuda_cache: Dict = dict()
 
 
-def _bias_act_cuda(dim=1:int, act='linear': str, alpha=None:Optional[Union[float, int]] , gain=None: Optional[float], clamp=None: Optional[float]):
+def _bias_act_cuda(dim: int = 1,
+                   act: str = 'linear',
+                   alpha: Optional[Union[float, int]] = None,
+                   gain: Optional[float] = None,
+                   clamp: Optional[float] = None):
     """"Fast CUDA implementation of `bias_act()` using custom ops.
 
     Args:
         dim (int): The dimension in `x` corresponding to the elements of `b`.
             The value of `dim` is ignored if `b` is not specified.
             Defaults to 1.
-        act (str): Name of the activation function to evaluate, or `"linear"` to
-            disable. Can be e.g. "relu", "lrelu", "tanh", "sigmoid", "swish", etc.
-            See `activation_funcs` for a full list. `None` is not allowed.
-            Defaults to `linear`.
-        alpha (Optional[Union[float, int]]):  Shape parameter for the activation 
+        act (str): Name of the activation function to evaluate, or `"linear"`
+            to disable. Can be e.g. "relu", "lrelu", "tanh", "sigmoid",
+            "swish", etc. See `activation_funcs` for a full list. `None` is not
+            allowed. Defaults to `linear`.
+        alpha (Optional[Union[float, int]]): Shape parameter for the activation
             function, or `None` to use the default. Defaults to None.
         gain (Optional[float]): Scaling factor for the output tensor, or `None`
-            to use default. See `activation_funcs` for the default scaling of each
-            activation function. If unsure, consider specifying 1. Defaults to None.
-        clamp (Optional[float]):  Clamp the output values to `[-clamp, +clamp]`, or 
-            `None` to disable the clamping (default). Defaults to None.
+            to use default. See `activation_funcs` for the default scaling of
+            each activation function. If unsure, consider specifying 1.
+            Defaults to None.
+        clamp (Optional[float]): Clamp the output values to `[-clamp, +clamp]`,
+            or `None` to disable the clamping (default). Defaults to None.
 
     Returns:
         torch.Tensor: Tensor of the same shape and datatype as `x`.
