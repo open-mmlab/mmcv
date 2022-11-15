@@ -220,4 +220,4 @@ def test_gradient_numerical(channels,
             func, (value.to(dtype), shapes, level_start_index,
                    sampling_locations.to(dtype), attention_weights.to(dtype),
                    im2col_step),
-            eps=eps, atol = 1e-2)
+            eps=eps, atol=1e-2)
