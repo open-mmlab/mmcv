@@ -1,5 +1,4 @@
-from functools import partial
-
+# Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
 import torch.nn as nn
