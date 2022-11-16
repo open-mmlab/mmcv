@@ -14,6 +14,7 @@ import contextlib
 from typing import Dict
 
 import torch
+import warnings
 
 enabled = True
 weight_gradients_disabled = False
@@ -36,7 +37,14 @@ def conv2d(input,
            padding=0,
            dilation=1,
            groups=1):
-    if _should_use_custom_op(input):
+    flag = True
+    if torch.__version__ >= '1.10.0':
+        warnings.warn('Since '
+                      'aten:cudnn_convolution_backward_weight is '
+                      f'not supported in torch=={torch.__version__},'
+                      ' rolloing back to `torch.nn.functional.conv2d`')
+        flag = False
+    if _should_use_custom_op(input) and flag:
         return _conv2d_gradfix(
             transpose=False,
             weight_shape=weight.shape,
