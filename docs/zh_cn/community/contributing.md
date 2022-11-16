@@ -148,7 +148,7 @@ git push -u origin {branch_name}
 
 (2) 根据指引修改 PR 描述，以便于其他开发者更好地理解你的修改
 
-<img src="https://user-images.githubusercontent.com/57566630/201533716-aa2a2c30-e3e7-489c-998b-6723f92e2328.png" width="1200">
+<img src="https://user-images.githubusercontent.com/57566630/202242953-c91a18ff-e388-4ff9-8591-5fae0ead6c1e.png" width="1200">
 
 描述规范详见[指引](#指引)的拉取请求规范部分
 
