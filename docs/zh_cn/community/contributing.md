@@ -143,10 +143,10 @@ git push -u origin {branch_name}
 
 #### 6. 提交拉取请求（PR）
 
-（1） 在 GitHub 的 Pull request 界面创建拉取请求
+(1) 在 GitHub 的 Pull request 界面创建拉取请求
 <img src="https://user-images.githubusercontent.com/57566630/201533288-516f7ac4-0b14-4dc8-afbd-912475c368b5.png" width="1200">
 
-（2） 根据指引修改 PR 描述，以便于其他开发者更好地理解你的修改
+(2) 根据指引修改 PR 描述，以便于其他开发者更好地理解你的修改
 
 <img src="https://user-images.githubusercontent.com/57566630/201533716-aa2a2c30-e3e7-489c-998b-6723f92e2328.png" width="1200">
 
@@ -154,15 +154,15 @@ git push -u origin {branch_name}
 
 &#160;
 
-**注意事项**\*
+**注意事项**
 
 (a) PR 描述应该包含修改理由、修改内容以及修改后带来的影响，并关联相关 Issue（具体方式见[文档](<(https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)>)）
 
-(b). 如果是第一次为 OpenMMLab 做贡献，需要签署 CLA
+(b) 如果是第一次为 OpenMMLab 做贡献，需要签署 CLA
 
 <img src="https://user-images.githubusercontent.com/57566630/167307569-a794b967-6e28-4eac-a942-00deb657815f.png" width="1200">
 
-(c). 检查提交的 PR 是否通过 CI（集成测试）
+(c) 检查提交的 PR 是否通过 CI（集成测试）
 
 <img src="https://user-images.githubusercontent.com/57566630/167307490-f9ebf9fa-63c0-4d83-8ba1-081ea169eb3a.png" width="1200">
 
@@ -170,7 +170,7 @@ MMCV 会不同的平台（Linux、Window、Mac）,基于不同版本的 Python�
 
 更多内容详见[拉取请求规范](#拉取请求规范)
 
-（3）如果 PR 通过了 CI，那么就可以等待其他开发者的 review 了，我们根据 reviewer 的意见，修改代码，并重复 [4](#4-提交代码并本地通过单元测试)-[5](#5-推送代码到远程) 步骤，直到 reviewer 通过 PR。所有 reviewer approve 后
+(3) 如果 PR 通过了 CI，那么就可以等待其他开发者的 review 了，我们根据 reviewer 的意见，修改代码，并重复 [4](#4-提交代码并本地通过单元测试)-[5](#5-推送代码到远程) 步骤，直到 reviewer 通过 PR。所有 reviewer approve 后
 
 <img src="https://user-images.githubusercontent.com/57566630/202145400-cc2cd8c4-10b0-472f-ba37-07e6f50acc67.png" width="1200">
 
