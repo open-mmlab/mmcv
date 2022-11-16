@@ -362,4 +362,37 @@ __mlu_func__ inline void convertFloat2half(half *dst, float *src,
 #endif
 }
 
+/*!
+ * @brief recursiveSumPool.
+ * @param[in,out] dst
+ *     Pointer to NRAM that stores the input and output data.
+ * @param[in] low_dim
+ *     Which is the number of low dim.
+ * @param[in] high_dim
+ *     Which is the number of high dim.
+ * @param[in] kernel_limit
+ *     Which is the high_dim of sumpool per time.
+ ******************************************************************************/
+template <typename T>
+__mlu_func__ void recursiveSumPool(T *dst, int low_dim, int high_dim,
+                                   int kernel_limit) {
+  for (; high_dim > 1;) {
+    int repeat_s = high_dim / kernel_limit;
+    int remain_s = high_dim % kernel_limit;
+
+    if (remain_s) {
+      __bang_sumpool((T *)dst, (T *)dst, low_dim, 1, remain_s, 1, remain_s, 1,
+                     1);
+    }
+    if (repeat_s) {
+      __bang_sumpool((T *)dst + (remain_s > 0 ? low_dim : 0),
+                     (T *)dst + remain_s * low_dim, low_dim,
+                     kernel_limit * repeat_s, 1, kernel_limit, 1, 1,
+                     kernel_limit);
+    }
+    high_dim = repeat_s + (bool)remain_s;
+  }
+  return;
+}
+
 #endif  // COMMON_MLU_HELPER_HPP_

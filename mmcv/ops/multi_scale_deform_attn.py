@@ -12,6 +12,7 @@ from mmengine.registry import MODELS
 from mmengine.utils import deprecated_api_warning
 from torch.autograd.function import Function, once_differentiable
 
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
@@ -26,7 +27,7 @@ class MultiScaleDeformableAttnFunction(Function):
                 sampling_locations: torch.Tensor,
                 attention_weights: torch.Tensor,
                 im2col_step: torch.Tensor) -> torch.Tensor:
-        """GPU version of multi-scale deformable attention.
+        """GPU/MLU version of multi-scale deformable attention.
 
         Args:
             value (torch.Tensor): The value has shape
@@ -63,7 +64,7 @@ class MultiScaleDeformableAttnFunction(Function):
     @staticmethod
     @once_differentiable
     def backward(ctx, grad_output: torch.Tensor) -> tuple:
-        """GPU version of backward function.
+        """GPU/MLU version of backward function.
 
         Args:
             grad_output (torch.Tensor): Gradient of output tensor of forward.
@@ -346,7 +347,8 @@ class MultiScaleDeformableAttention(BaseModule):
             raise ValueError(
                 f'Last dim of reference_points must be'
                 f' 2 or 4, but get {reference_points.shape[-1]} instead.')
-        if torch.cuda.is_available() and value.is_cuda:
+        if ((IS_CUDA_AVAILABLE and value.is_cuda)
+                or (IS_MLU_AVAILABLE and value.is_mlu)):
             output = MultiScaleDeformableAttnFunction.apply(
                 value, spatial_shapes, level_start_index, sampling_locations,
                 attention_weights, self.im2col_step)
