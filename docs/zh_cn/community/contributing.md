@@ -1,10 +1,10 @@
 ## 贡献代码
 
-欢迎加入 MMCV 社区，我们致力于打造最前沿的计算机视觉的基础库，我们欢迎任何类型的贡献，包括但不限于
+欢迎加入 MMCV 社区，我们致力于打造最前沿的计算机视觉基础库，我们欢迎任何类型的贡献，包括但不限于
 
 **修复错误**
 
-代码或文档的拼写错误可以直接提交拉取请求(PR)。
+代码或文档的拼写错误可以直接提交拉取请求（Pull Request）。
 
 修复代码错误的步骤如下：
 
@@ -56,7 +56,7 @@ upstream	git@github.com:open-mmlab/mmcv (fetch)
 upstream	git@github.com:open-mmlab/mmcv (push)
 ```
 
-> 这里对 origin 和 upstream 进行一个简单的介绍，当我们使用 git clone 来克隆代码时，会默认创建一个 origin 的 remote，它指向我们克隆的代码库地址，而 upstream 则是我们自己添加的，用来指向原始代码库地址。当然如果你不喜欢他叫 upstream，也可以自己修改，比如叫 mmdet。我们通常向 origin 提交代码（即 fork 下来的远程仓库），然后向 upstream 提交一个 pull request。如果提交的代码和最新的代码发生冲突，再从 upstream 拉取最新的代码，和本地分支解决冲突，再提交到 origin。
+> 这里对 origin 和 upstream 进行一个简单的介绍，当我们使用 git clone 来克隆代码时，会默认创建一个 origin 的 remote，它指向我们克隆的代码库地址，而 upstream 则是我们自己添加的，用来指向原始代码库地址。当然如果你不喜欢他叫 upstream，也可以自己修改，比如叫 open-mmlab。我们通常向 origin 提交代码（即 fork 下来的远程仓库），然后向 upstream 提交一个 pull request。如果提交的代码和最新的代码发生冲突，再从 upstream 拉取最新的代码，和本地分支解决冲突，再提交到 origin。
 
 #### 2. 配置 pre-commit
 
@@ -98,10 +98,16 @@ git commit -m "xxx" --no-verify
 
 #### 3. 创建开发分支
 
-安装完 pre-commit 之后，我们需要创建开发分支，建议的分支命名规则为 `username/pr_name`
+安装完 pre-commit 之后，我们需要基于 master 创建开发分支，建议的分支命名规则为 `username/pr_name`。
 
 ```shell
 git checkout -b username/refactor_contributing_doc
+```
+
+在后续的开发中，如果本地仓库的 master 分支落于 upstream 的 master 分支，我们需要在先做同步，再执行上述代码
+
+```shell
+git pull upstream master
 ```
 
 #### 4. 提交代码并本地通过单元测试
@@ -180,7 +186,7 @@ git fetch --all --prune
 git merge upstream/master
 ```
 
-如果你是非常善于处理冲突，那么可以使用 rebase 的方式来解决冲突，因为者能够保证你的 commit log 的整洁。如果你不太熟悉 `rebase` 的使用，那么可以使用 `merge` 的方式来解决冲突。
+如果你非常善于处理冲突，那么可以使用 rebase 的方式来解决冲突，因为者能够保证你的 commit log 的整洁。如果你不太熟悉 `rebase` 的使用，那么可以使用 `merge` 的方式来解决冲突。
 
 ### 指引
 
