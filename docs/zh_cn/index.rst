@@ -59,6 +59,7 @@
 
    community/contributing.md
    community/pr.md
+   community/code_style.md
 
 .. toctree::
    :maxdepth: 2

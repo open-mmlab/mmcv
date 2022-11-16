@@ -75,9 +75,9 @@ void ModulatedDeformConvForwardCUDAKernelLauncher(
 
   const size_t input_step = channels * height * width;
   const size_t offset_step =
-      deformable_group * kernel_h * kernel_w * 2 * height * width;
+      deformable_group * kernel_h * kernel_w * 2 * height_out * width_out;
   const size_t mask_step =
-      deformable_group * kernel_h * kernel_w * height * width;
+      deformable_group * kernel_h * kernel_w * height_out * width_out;
   const size_t out_step = channels_out * height_out * width_out;
   const size_t out_group_step = out_step / group;
   const size_t col_g_step =
