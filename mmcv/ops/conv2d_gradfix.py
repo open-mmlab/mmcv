@@ -11,10 +11,10 @@
 arbitrarily high order gradients with zero performance penalty."""
 
 import contextlib
+import warnings
 from typing import Dict
 
 import torch
-import warnings
 
 enabled = True
 weight_gradients_disabled = False
