@@ -58,7 +58,6 @@ You can switch between Chinese and English documents in the lower-left corner of
    :caption: Community
 
    community/contributing.md
-   community/pr.md
 
 .. toctree::
    :maxdepth: 2

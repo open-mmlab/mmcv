@@ -6,72 +6,57 @@ All kinds of contributions are welcome, including but not limited to the followi
 - Add documentation or translate the documentation into other languages
 - Add new features and components
 
-```{note}
-If you plan to add some new features that involve large changes, it is encouraged to open an issue for discussion first.
-```
-
-### Code style
-
-#### Python
-
-We adopt [PEP8](https://www.python.org/dev/peps/pep-0008/) as the preferred code style.
-
-We use the following tools for linting and formatting:
-
-- [flake8](https://github.com/PyCQA/flake8): A wrapper around some linter tools.
-- [isort](https://github.com/timothycrosley/isort): A Python utility to sort imports.
-- [yapf](https://github.com/google/yapf): A formatter for Python files.
-- [codespell](https://github.com/codespell-project/codespell): A Python utility to fix common misspellings in text files.
-- [mdformat](https://github.com/executablebooks/mdformat): Mdformat is an opinionated Markdown formatter that can be used to enforce a consistent style in Markdown files.
-- [docformatter](https://github.com/myint/docformatter): A formatter to format docstring.
-
-Style configurations of yapf and isort can be found in [setup.cfg](./setup.cfg).
-
-We use [pre-commit hook](https://pre-commit.com/) that checks and formats for `flake8`, `yapf`, `isort`, `trailing whitespaces`, `markdown files`,
-fixes `end-of-files`, `double-quoted-strings`, `python-encoding-pragma`, `mixed-line-ending`, sorts `requirments.txt` automatically on every commit.
-The config for a pre-commit hook is stored in [.pre-commit-config](./.pre-commit-config.yaml).
-
-#### C++ and CUDA
-
-We follow the [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html).
+> If you plan to add some new features that involve large changes, it is encouraged to open an issue for discussion first.
 
 ### Workflow
 
-1. Fork and pull the latest OpenMMLab repository
-   ![image](https://user-images.githubusercontent.com/57566630/167305749-43c7f4e9-449b-4e98-ade5-0c9276d5c9ce.png)
+**step1: fork**
 
-   ```shell
-   git clone https://github.com/{username}/mmcv.git
-   cd mmcv
-   git remote add upstream git@github.com:open-mmlab/mmcv.git
-   ```
+Fork and pull the latest OpenMMLab repository
+![image](https://user-images.githubusercontent.com/57566630/167305749-43c7f4e9-449b-4e98-ade5-0c9276d5c9ce.png)
 
-2. Configure pre-commit for the first time
+```shell
+git clone https://github.com/{username}/mmcv.git
+cd mmcv
+git remote add upstream git@github.com:open-mmlab/mmcv.git
+```
 
-   After you clone the repository, you need to initialize the pre-commit hook.
+**step2: prepare pre-commit**
 
-   ```shell
-   pip install -U pre-commit
-   pre-commit install
-   ```
+Configure pre-commit for the first time
 
-   After this on every commit check code linters and formatter will be enforced.
+After you clone the repository, you need to initialize the pre-commit hook.
 
-   > Before you create a PR, make sure that your code lints and is formatted by yapf.
+```shell
+pip install -U pre-commit
+pre-commit install
+```
 
-   **pre-commit failed**(some code will be fixed automatically)
+After this on every commit check code linters and formatter will be enforced.
 
-   ![image](https://user-images.githubusercontent.com/57566630/167306461-3cb3b5bf-d9b3-4d5a-9c0a-34cfded8dbbc.png)
+> Before you create a PR, make sure that your code lints and is formatted by yapf.
 
-   **pre-commit success**
+Check whether pre-commit has been configured successfully:
 
-   ![image](https://user-images.githubusercontent.com/57566630/167306496-d2b8daf7-d72c-4129-a0e8-175f8a32cc47.png)
+```shell
+pre-commit run --all-files
+```
 
-   If you are bothered by pre-commit when commit temporally change, you can commit your change with `--no-verify`
+> For Chinese users, if you are stuck in the above command, you can temporarily replace `.pre-commit-config.yaml` with `.pre-commit-config-zh-cn.yaml`. After all pre-commit hooks have been installed, and then replace it back.
 
-   ```shell
-   git commit -m "xxx" --no-verify
-   ```
+**pre-commit failed**(some code will be fixed automatically)
+
+![image](https://user-images.githubusercontent.com/57566630/167306461-3cb3b5bf-d9b3-4d5a-9c0a-34cfded8dbbc.png)
+
+**pre-commit success**
+
+![image](https://user-images.githubusercontent.com/57566630/167306496-d2b8daf7-d72c-4129-a0e8-175f8a32cc47.png)
+
+If you are bothered by pre-commit when commit temporally change, you can commit your change with `--no-verify`
+
+```shell
+git commit -m "xxx" --no-verify
+```
 
 3. Checkout a new branch (do not use master branch for PRs)
 
@@ -146,8 +131,6 @@ We follow the [Google C++ Style Guide](https://google.github.io/styleguide/cppgu
    (4). Consider CI/CD will build mmcv in different platform, you can check your building status in:
    ![image](https://user-images.githubusercontent.com/57566630/167307490-f9ebf9fa-63c0-4d83-8ba1-081ea169eb3a.png). You'll find the detail error information by clicking the `Details`
 
-   (5). Resolve conflicts
-
 9. Resolve conflicts
 
 Sometimes your modification may conflict with the latest code of the master branch. You can resolve the conflict by the following steps:
@@ -159,3 +142,28 @@ git push
 ```
 
 We use `merge` rather than `rebase` here since it will produce less conflicts. If you are very confident in conflict-handling skills, we strongly recommend using rebase to maintain a linear commit history.
+
+### Code style
+
+#### Python
+
+We adopt [PEP8](https://www.python.org/dev/peps/pep-0008/) as the preferred code style.
+
+We use the following tools for linting and formatting:
+
+- [flake8](https://github.com/PyCQA/flake8): A wrapper around some linter tools.
+- [isort](https://github.com/timothycrosley/isort): A Python utility to sort imports.
+- [yapf](https://github.com/google/yapf): A formatter for Python files.
+- [codespell](https://github.com/codespell-project/codespell): A Python utility to fix common misspellings in text files.
+- [mdformat](https://github.com/executablebooks/mdformat): Mdformat is an opinionated Markdown formatter that can be used to enforce a consistent style in Markdown files.
+- [docformatter](https://github.com/myint/docformatter): A formatter to format docstring.
+
+Style configurations of yapf and isort can be found in [setup.cfg](./setup.cfg).
+
+We use [pre-commit hook](https://pre-commit.com/) that checks and formats for `flake8`, `yapf`, `isort`, `trailing whitespaces`, `markdown files`,
+fixes `end-of-files`, `double-quoted-strings`, `python-encoding-pragma`, `mixed-line-ending`, sorts `requirments.txt` automatically on every commit.
+The config for a pre-commit hook is stored in [.pre-commit-config](./.pre-commit-config.yaml).
+
+#### C++ and CUDA
+
+We follow the [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html).

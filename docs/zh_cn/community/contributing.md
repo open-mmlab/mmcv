@@ -1,12 +1,8 @@
 ## 贡献代码
 
-欢迎加入 MMCV 社区，我们致力于打造最前沿的计算机视觉的基础库，如果您是第一次参与开源活动，可以参考 [MMCV PR 全流程](<>)
+欢迎加入 MMCV 社区，我们致力于打造最前沿的计算机视觉的基础库，我们欢迎任何类型的贡献，包括但不限于
 
-### 贡献类型
-
-欢迎任何类型的贡献，包括但不限于
-
-#### 修复错误
+**修复错误**
 
 代码或文档的拼写错误可以直接提交[拉取请求（Pull Request）](#%E6%8B%89%E5%8F%96%E8%AF%B7%E6%B1%82)
 
@@ -15,7 +11,7 @@
 1. 如果提交的代码改动较大，建议先提交 issue，并正确描述 issue 的现象、原因和复现方式，讨论后确认修复方案
 2. 提交拉取请求，并补充相应的单元测试，以确保修复代码的正确性
 
-#### 文档补充
+**文档补充**
 
 修复文档错误可以直接提交拉取请求
 
@@ -24,10 +20,178 @@
 1. 提交 issue，确认添加文档的必要性
 2. 提交拉取请求
 
-#### 新增功能或组件
+**新增功能或组件**
 
 1. 如果新功能或模块涉及较大的代码改动，建议先提交 issue，确认功能的必要性。
 2. 提交拉取请求，并添加新功能/组件的单元测试。
+
+### 拉取请求工作流
+
+如果你对拉取请求不了解，没关系，接下来的内容将会从零开始，一步一步地指引你如何创建一个拉取请求。如果你想深入了解拉取请求的开发模式，可以参考 github [官方文档](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests))
+
+#### 1. 复刻仓库
+
+当你第一次提交拉取请求时，先复刻 OpenMMLab 原代码库，点击 GitHub 页面右上角的 **Fork** 按钮即可
+
+![image](https://user-images.githubusercontent.com/57566630/167305749-43c7f4e9-449b-4e98-ade5-0c9276d5c9ce.png)
+
+将代码克隆到本地
+
+```shell
+git@github.com:{username}/mmcv.git
+```
+
+添加原代码库为上游代码库
+
+```bash
+git remote add upstream git@github.com:open-mmlab/mmcv
+```
+
+检查 remote 是否添加成功，在终端输入 `git remote -v`
+
+```bash
+origin	git@github.com:{username}/mmcv.git (fetch)
+origin	git@github.com:{username}/mmcv.git (push)
+upstream	git@github.com:open-mmlab/mmcv (fetch)
+upstream	git@github.com:open-mmlab/mmcv (push)
+```
+
+> 这里对 origin 和 upstream 进行一个简单的介绍，当我们使用 git clone 来克隆代码时，会默认创建一个 origin 的 remote，它指向我们克隆的代码库地址，而 upstream 则是我们自己添加的，用来指向原始代码库地址。如果你不喜欢他叫 upstream，可以自己修改，比如叫 mmdet-{username}，只要你记得就行。我们通常向 origin 提交代码（即 fork 下来的远程仓库），然后向 upstream 提交一个 pull request。如果提交的代码和最新的代码发生冲突，再从 upstream 拉取最新的代码，然后和本地分支解决冲突，再提交到 origin。
+
+#### 2. 配置 pre-commit
+
+在本地开发环境中，我们使用 [pre-commit](https://pre-commit.com/#intro) 来检查代码风格，以确保代码风格的统一。在提交代码，需要先安装 pre-commit:
+
+```shell
+pip install -U pre-commit
+pre-commit install
+```
+
+检查 pre-commit 是否配置成功，并安装 `.pre-commit-config.yaml` 中的钩子：
+
+```shell
+pre-commit run --all-files
+```
+
+![image](https://user-images.githubusercontent.com/57566630/173660750-3df20a63-cb66-4d33-a986-1f643f1d8aaf.png)
+
+![image](https://user-images.githubusercontent.com/57566630/167306496-d2b8daf7-d72c-4129-a0e8-175f8a32cc47.png)
+
+> 如果你是中国用户，由于网络原因，可能会出现安装失败的情况，这时可以使用国内源安装和校验
+
+```shell
+pre-commit install -c .pre-commit-config-zh-cn.yaml
+pre-commit run --all-files -c .pre-commit-config-zh-cn.yaml
+```
+
+如果安装过程被中断，可以重复执行 `pre-commit run ...` 继续安装。
+
+如果提交的代码不符合代码风格规范，pre-commit 会发出警告，并自动修复部分错误。
+
+![image](https://user-images.githubusercontent.com/57566630/167306461-3cb3b5bf-d9b3-4d5a-9c0a-34cfded8dbbc.png)
+
+如果我们想临时绕开 pre-commit 的检查提交一次代码，可以在 `git commit` 时加上 `--no-verify`
+
+```shell
+git commit -m "xxx" --no-verify
+```
+
+#### 3. 创建开发分支
+
+安装完 pre-commit 之后，我们需要创建开发分支，建议的分支命名规则为 `username/pr_name`
+
+```shell
+git checkout -b username/refactor_contributing_doc
+```
+
+#### 4. 提交代码并本地通过单元测试
+
+- MMCV 引入了 mypy 来做静态类型检查，以增加代码的鲁棒性。因此我们在提交代码时，需要补充 Type Hints。具体规则可以参考[教程](https://zhuanlan.zhihu.com/p/519335398%E3%80%82)。
+
+- 提交的代码同样需要通过单元测试（安装单元测试依赖详见[指引](#指引)）
+
+  ```shell
+  # 通过全量单元测试
+  pytest tests
+
+  # 如果你的设备由于环境原因，无法正常运行全量的单元测试，
+  # 则至少需要保证能够通过修改模块的单元测试，以 runner 为例
+  pytest tests/test_runner/test_runner.py
+  ```
+
+#### 5. 推送代码到远程
+
+代码通过单元测试和 pre-commit 检查后，将代码推送到远程仓库，如果是第一次推送。需要可以在 `git push` 后加上 `-u` 参数以关联远程分支
+
+```shell
+git push -u origin {branch_name}
+```
+
+这样下次就可以直接使用 `git push` 命令推送代码了，而无需指定分支和远程仓库。
+
+#### 6. 提交拉取请求（PR）
+
+1. 在 GitHub 的 Pull request 界面创建拉取请求
+   ![image](https://user-images.githubusercontent.com/57566630/201533288-516f7ac4-0b14-4dc8-afbd-912475c368b5.png)
+
+2. 根据指引修改 PR 描述，以便于其他开发者更好地理解你的修改
+
+   ![image](https://user-images.githubusercontent.com/57566630/201533716-aa2a2c30-e3e7-489c-998b-6723f92e2328.png)
+
+   描述规范详见[指引](#指引)的拉取请求规范部分
+
+   &#160;
+
+   **注意事项**\*
+
+   (1) PR 描述应该包含修改理由、修改内容以及修改后带来的影响，并关联相关 Issue（具体方式见[文档](<(https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)>)）
+
+   (2). 如果是第一次为 OpenMMLab 做贡献，需要签署 CLA
+   ![image](https://user-images.githubusercontent.com/57566630/167307569-a794b967-6e28-4eac-a942-00deb657815f.png)
+
+   (3). 检查提交的 PR 是否通过 CI（集成测试）
+   ![image](https://user-images.githubusercontent.com/57566630/167307490-f9ebf9fa-63c0-4d83-8ba1-081ea169eb3a.png)
+
+   MMCV 会不同的平台（Linux、Window、Mac）,基于不同版本的 Python、PyTorch、CUDA对提交的代码进行单元测试，以保证代码的正确性，如果有任何一个。我们可通过点击上图中的 `Details` 来查看具体的测试信息，以便于我们修改代码。
+
+3. 如果 PR 通过了 CI，那么就可以等待其他开发者的 review 了，我们根据 reviewer 的意见，修改代码，并重复 [4](#4-提交代码并本地通过单元测试)-[6](#5-推送代码到远程) 步骤，直到 reviewer 通过 PR。所有 reviewer approve 后
+
+![image](https://user-images.githubusercontent.com/57566630/202145400-cc2cd8c4-10b0-472f-ba37-07e6f50acc67.png)
+
+我们会尽快将 PR 合并到主分支。
+
+### 指引
+
+- 单元测试
+
+  如果您的系统环境没有安装 libturbojpeg 和 ffmpeg 请先执行
+
+  ```shell
+  sudo apt-get update -y
+  sudo apt-get install -y libturbojpeg
+  sudo apt-get install -y ffmpeg
+  ```
+
+  在提交修复代码错误或新增特性的拉取请求时，我们应该尽可能的让单元测试覆盖所有提交的代码，计算单元测试覆盖率的方法如下
+
+  ```shell
+  python -m coverage run -m pytest /path/to/test_file
+  python -m coverage html
+  # check file in htmlcov/index.html
+  ```
+
+- 文档渲染
+
+  在提交修复代码错误或新增特性的拉取请求时，可能会需要修改/新增模块的 docstring。我们需要确认渲染后的文档样式是正确的。
+  本地生成渲染后的文档的方法如下
+
+  ```shell
+  pip install -r requirements/docs.txt
+  cd cd docs/zh_cn/
+  # or docs/en
+  make html
+  # check file in ./docs/zh_cn/_build/html/index.html
+  ```
 
 ### 代码风格
 
@@ -53,136 +217,6 @@ pre-commit 具体的安装使用方式见[拉取请求](#%E6%8B%89%E5%8F%96%E8%A
 #### C++ and CUDA
 
 C++ 和 CUDA 的代码规范遵从 [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
-
-### 拉取请求
-
-#### 1.复刻仓库
-
-当你第一次提交拉取请求时，先复刻 OpenMMLab 原代码库，点击 GitHub 页面右上角的 **Fork** 按钮即可
-
-![image](https://user-images.githubusercontent.com/57566630/167305749-43c7f4e9-449b-4e98-ade5-0c9276d5c9ce.png)
-
-将代码克隆到本地
-
-```shell
-git clone https://github.com/{username}/mmcv.git
-```
-
-添加原代码库为上游代码库
-
-```bash
-git remote add upstream git@github.com:open-mmlab/mmcv
-```
-
-建议每次提交拉取请求之前，先检出到 master 分支，将最新的远程代码更新到本地。
-
-```bash
-git checkout master
-git pull upstream master
-```
-
-开发过程中, 如果 `master` 分支更新导致和开发分支出现冲突，建议使用 `rebase` 解决冲突
-
-```shell
-git rebase master
-# follow git instructions to resolve conflicts
-git push -f
-```
-
-#### 2. 创建开发分支
-
-建议的分支命名规则 `username/pr_name`
-
-```shell
-git checkout -b username/refactor_contributing_doc
-```
-
-#### 3. 第一次配置 pre-commit
-
-3.1. 在本地仓库中执行
-
-```shell
-pip install -U pre-commit
-pre-commit install
-```
-
-3.2. 此后第一次提交代码时，会自动安装代码风格检查的依赖库：
-
-![image](https://user-images.githubusercontent.com/57566630/173660750-3df20a63-cb66-4d33-a986-1f643f1d8aaf.png)
-如果本地网络状态不佳，可能会导致代码检查的三方库安装失败，建议重复执行 `git commit -m xxx`，继续下载三方库，或者让
-git 走代理。初始化完 pre-commit 后，提交会继续进行。如果提交的代码不符合代码风格规范，pre-commit 会发出警告，并自动修复部分错误。
-
-![image](https://user-images.githubusercontent.com/57566630/167306461-3cb3b5bf-d9b3-4d5a-9c0a-34cfded8dbbc.png)
-
-修改后提交符合规范的代码
-
-![image](https://user-images.githubusercontent.com/57566630/167306496-d2b8daf7-d72c-4129-a0e8-175f8a32cc47.png)
-
-3.3. 如果你想临时提交一些内容，并绕开 pre-commit 的检查
-
-```shell
-git commit -m "xxx" --no-verify
-```
-
-#### 4. 确认提交代码能够在本地通过单元测试，以修复 runner 为例
-
-```shell
-pytest tests/test_runner/test_runner.py
-```
-
-#### 5. 提交代码，确认代码能够通过 pre-commit
-
-新增模块或修改函数接口时，需要补充参数的 Type Hints 和 docstring，具体规则参考 Type Hints 教程
-https://zhuanlan.zhihu.com/p/519335398%E3%80%82
-
-#### 6. 提交拉取请求
-
-6.1. 创建拉取请求 ![avatar](../../en/_static/community/2.png)
-修改`拉取请求`信息模板，描述修改原因和修改内容。还可以在 PR 描述中，手动关联到相关的`议题` (issue),（更多细节，请参考\[官方文档\]
-(https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)）。
-
-6.2. 如果是第一次提交拉取请求，需要签名 CLA，并确认本地的 git 邮箱和
-
-![image](https://user-images.githubusercontent.com/57566630/167307569-a794b967-6e28-4eac-a942-00deb657815f.png)
-
-6.3. 检查 是否通过 CI/CD
-
-![image](https://user-images.githubusercontent.com/57566630/167307490-f9ebf9fa-63c0-4d83-8ba1-081ea169eb3a.png)
-
-可以点击 Details 查看具体的错误信息
-
-### 指引
-
-- 单元测试
-
-  如果您的系统环境没有安装 libturbojpeg 和 ffmpeg 请先执行
-  ```shell
-  sudo apt-get update -y
-  sudo apt-get install -y libturbojpeg
-  sudo apt-get install -y ffmpeg
-  ```
-
-  在提交修复代码错误或新增特性的拉取请求时，我们应该尽可能的让单元测试覆盖所有提交的代码，计算单元测试覆盖率的方法如下
-
-  ```shell
-  python -m coverage run -m pytest /path/to/test_file
-  python -m coverage html
-  # check file in htmlcov/index.html
-  ```
-
-
-- 文档渲染
-
-  在提交修复代码错误或新增特性的拉取请求时，可能会需要修改/新增模块的 docstring。我们需要确认渲染后的文档样式是正确的。
-  本地生成渲染后的文档的方法如下
-
-  ```shell
-  pip install -r requirements/docs.txt
-  cd cd docs/zh_cn/
-  # or docs/en
-  make html
-  # check file in ./docs/zh_cn/_build/html/index.html
-  ```
 
 ### 拉取请求规范
 
