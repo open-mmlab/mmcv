@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import gradgradcheck
 
-from mmgen.ops import conv2d, conv_transpose2d
+from mmcv.ops import conv2d, conv_transpose2d
 
 
 class TestCond2d:
@@ -21,7 +21,7 @@ class TestCond2d:
         weight = self.weight.cuda()
         res = conv2d(x, weight, None, 1, 1)
         assert res.shape == (1, 1, 32, 32)
-        gradgradcheck(partial(conv2d, weight=weight, padding=1, stride=1), x)
+        gradgradcheck(conv2d, (x, weight, None, 1, 1), eps=1e-2, atol=1e-2)
 
 
 class TestCond2dTansposed:
@@ -38,4 +38,4 @@ class TestCond2dTansposed:
         res = conv_transpose2d(x, weight, None, 1, 1)
         assert res.shape == (1, 1, 32, 32)
         gradgradcheck(
-            partial(conv_transpose2d, weight=weight, padding=1, stride=1), x)
+            conv_transpose2d, (x, weight, None, 1, 1), eps=1e-2, atol=1e-2)
