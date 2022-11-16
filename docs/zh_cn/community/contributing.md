@@ -56,7 +56,9 @@ upstream	git@github.com:open-mmlab/mmcv (fetch)
 upstream	git@github.com:open-mmlab/mmcv (push)
 ```
 
-> 这里对 origin 和 upstream 进行一个简单的介绍，当我们使用 git clone 来克隆代码时，会默认创建一个 origin 的 remote，它指向我们克隆的代码库地址，而 upstream 则是我们自己添加的，用来指向原始代码库地址。当然如果你不喜欢他叫 upstream，也可以自己修改，比如叫 open-mmlab。我们通常向 origin 提交代码（即 fork 下来的远程仓库），然后向 upstream 提交一个 pull request。如果提交的代码和最新的代码发生冲突，再从 upstream 拉取最新的代码，和本地分支解决冲突，再提交到 origin。
+```{note}
+这里对 origin 和 upstream 进行一个简单的介绍，当我们使用 git clone 来克隆代码时，会默认创建一个 origin 的 remote，它指向我们克隆的代码库地址，而 upstream 则是我们自己添加的，用来指向原始代码库地址。当然如果你不喜欢他叫 upstream，也可以自己修改，比如叫 open-mmlab。我们通常向 origin 提交代码（即 fork 下来的远程仓库），然后向 upstream 提交一个 pull request。如果提交的代码和最新的代码发生冲突，再从 upstream 拉取最新的代码，和本地分支解决冲突，再提交到 origin。
+```
 
 #### 2. 配置 pre-commit
 
@@ -77,11 +79,12 @@ pre-commit run --all-files
 
 ![image](https://user-images.githubusercontent.com/57566630/167306496-d2b8daf7-d72c-4129-a0e8-175f8a32cc47.png)
 
-> 如果你是中国用户，由于网络原因，可能会出现安装失败的情况，这时可以使用国内源安装和校验
+```note
+如果你是中国用户，由于网络原因，可能会出现安装失败的情况，这时可以使用国内源
 
-```shell
 pre-commit install -c .pre-commit-config-zh-cn.yaml
 pre-commit run --all-files -c .pre-commit-config-zh-cn.yaml
+
 ```
 
 如果安装过程被中断，可以重复执行 `pre-commit run ...` 继续安装。
@@ -104,7 +107,7 @@ git commit -m "xxx" --no-verify
 git checkout -b username/refactor_contributing_doc
 ```
 
-在后续的开发中，如果本地仓库的 master 分支落于 upstream 的 master 分支，我们需要在先做同步，再执行上述代码
+在后续的开发中，如果本地仓库的 master 分支落后于 upstream 的 master 分支，我们需要先拉取 upstream 的代码进行同步，再执行上面的命令
 
 ```shell
 git pull upstream master
@@ -112,18 +115,19 @@ git pull upstream master
 
 #### 4. 提交代码并本地通过单元测试
 
-- MMCV 引入了 mypy 来做静态类型检查，以增加代码的鲁棒性。因此我们在提交代码时，需要补充 Type Hints。具体规则可以参考[教程](https://zhuanlan.zhihu.com/p/519335398%E3%80%82)。
+- MMCV 引入了 mypy 来做静态类型检查，以增加代码的鲁棒性。因此我们在提交代码时，需要补充 Type Hints。具体规则可以参考[教程](https://zhuanlan.zhihu.com/p/519335398)。
 
-- 提交的代码同样需要通过单元测试（安装单元测试依赖详见[指引](#单元测试)）
+- 提交的代码同样需要通过单元测试
 
   ```shell
   # 通过全量单元测试
   pytest tests
 
-  # 如果你的设备由于环境原因，无法正常运行全量的单元测试，
-  # 则至少需要保证能够通过修改模块的单元测试，以 runner 为例
+  # 我们需要保证提交的代码能够通过修改模块的单元测试，以 runner 为例
   pytest tests/test_runner/test_runner.py
   ```
+
+  如果你由于缺少依赖无法运行修改模块的单元测试，可以参考[指引-单元测试](#单元测试)
 
 - 如果修改/添加了文档，参考[指引](#文档渲染)确认文档渲染正常。
 
@@ -139,32 +143,32 @@ git push -u origin {branch_name}
 
 #### 6. 提交拉取请求（PR）
 
-1. 在 GitHub 的 Pull request 界面创建拉取请求
-   ![image](https://user-images.githubusercontent.com/57566630/201533288-516f7ac4-0b14-4dc8-afbd-912475c368b5.png)
+（1） 在 GitHub 的 Pull request 界面创建拉取请求
+![image](https://user-images.githubusercontent.com/57566630/201533288-516f7ac4-0b14-4dc8-afbd-912475c368b5.png)
 
-2. 根据指引修改 PR 描述，以便于其他开发者更好地理解你的修改
+（2） 根据指引修改 PR 描述，以便于其他开发者更好地理解你的修改
 
-   ![image](https://user-images.githubusercontent.com/57566630/201533716-aa2a2c30-e3e7-489c-998b-6723f92e2328.png)
+![image](https://user-images.githubusercontent.com/57566630/201533716-aa2a2c30-e3e7-489c-998b-6723f92e2328.png)
 
-   描述规范详见[指引](#指引)的拉取请求规范部分
+描述规范详见[指引](#指引)的拉取请求规范部分
 
-   &#160;
+&#160;
 
-   **注意事项**\*
+**注意事项**\*
 
-   (1) PR 描述应该包含修改理由、修改内容以及修改后带来的影响，并关联相关 Issue（具体方式见[文档](<(https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)>)）
+(a) PR 描述应该包含修改理由、修改内容以及修改后带来的影响，并关联相关 Issue（具体方式见[文档](<(https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)>)）
 
-   (2). 如果是第一次为 OpenMMLab 做贡献，需要签署 CLA
-   ![image](https://user-images.githubusercontent.com/57566630/167307569-a794b967-6e28-4eac-a942-00deb657815f.png)
+(b). 如果是第一次为 OpenMMLab 做贡献，需要签署 CLA
+![image](https://user-images.githubusercontent.com/57566630/167307569-a794b967-6e28-4eac-a942-00deb657815f.png)
 
-   (3). 检查提交的 PR 是否通过 CI（集成测试）
-   ![image](https://user-images.githubusercontent.com/57566630/167307490-f9ebf9fa-63c0-4d83-8ba1-081ea169eb3a.png)
+(c). 检查提交的 PR 是否通过 CI（集成测试）
+![image](https://user-images.githubusercontent.com/57566630/167307490-f9ebf9fa-63c0-4d83-8ba1-081ea169eb3a.png)
 
-   MMCV 会不同的平台（Linux、Window、Mac）,基于不同版本的 Python、PyTorch、CUDA对提交的代码进行单元测试，以保证代码的正确性，如果有任何一个。我们可通过点击上图中的 `Details` 来查看具体的测试信息，以便于我们修改代码。
+MMCV 会不同的平台（Linux、Window、Mac）,基于不同版本的 Python、PyTorch、CUDA对提交的代码进行单元测试，以保证代码的正确性，如果有任何一个。我们可通过点击上图中的 `Details` 来查看具体的测试信息，以便于我们修改代码。
 
-   更多内容详见[拉取请求规范](#拉取请求规范)
+更多内容详见[拉取请求规范](#拉取请求规范)
 
-3. 如果 PR 通过了 CI，那么就可以等待其他开发者的 review 了，我们根据 reviewer 的意见，修改代码，并重复 [4](#4-提交代码并本地通过单元测试)-[5](#5-推送代码到远程) 步骤，直到 reviewer 通过 PR。所有 reviewer approve 后
+（3）如果 PR 通过了 CI，那么就可以等待其他开发者的 review 了，我们根据 reviewer 的意见，修改代码，并重复 [4](#4-提交代码并本地通过单元测试)-[5](#5-推送代码到远程) 步骤，直到 reviewer 通过 PR。所有 reviewer approve 后
 
 ![image](https://user-images.githubusercontent.com/57566630/202145400-cc2cd8c4-10b0-472f-ba37-07e6f50acc67.png)
 
@@ -186,18 +190,22 @@ git fetch --all --prune
 git merge upstream/master
 ```
 
-如果你非常善于处理冲突，那么可以使用 rebase 的方式来解决冲突，因为者能够保证你的 commit log 的整洁。如果你不太熟悉 `rebase` 的使用，那么可以使用 `merge` 的方式来解决冲突。
+如果你非常善于处理冲突，那么可以使用 rebase 的方式来解决冲突，因为这能够保证你的 commit log 的整洁。如果你不太熟悉 `rebase` 的使用，那么可以使用 `merge` 的方式来解决冲突。
 
 ### 指引
 
 #### 单元测试
 
-如果您的系统环境没有安装 libturbojpeg 和 ffmpeg 请先执行
+如果你无法正常执行部分模块的单元测试，例如 [video](https://github.com/open-mmlab/mmcv/tree/master/mmcv/video) 模块，可能是你的当前环境没有安装以下依赖
 
 ```shell
+# Linux
 sudo apt-get update -y
 sudo apt-get install -y libturbojpeg
 sudo apt-get install -y ffmpeg
+
+# Windows
+conda install ffmpeg
 ```
 
 在提交修复代码错误或新增特性的拉取请求时，我们应该尽可能的让单元测试覆盖所有提交的代码，计算单元测试覆盖率的方法如下
@@ -240,7 +248,9 @@ yapf 和 isort 的配置可以在 [setup.cfg](./setup.cfg) 找到
 修复 `end-of-files`、`double-quoted-strings`、`python-encoding-pragma`、`mixed-line-ending`，调整 `requirments.txt` 的包顺序。
 pre-commit 钩子的配置可以在 [.pre-commit-config](./.pre-commit-config.yaml) 找到。
 
-pre-commit 具体的安装使用方式见[拉取请求](#%E6%8B%89%E5%8F%96%E8%AF%B7%E6%B1%82)。
+pre-commit 具体的安装使用方式见[拉取请求](#2-配置-pre-commit)。
+
+更具体的规范请参考 [OpenMMLab 代码规范](code_style.md)。
 
 #### C++ and CUDA
 

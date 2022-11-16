@@ -103,7 +103,7 @@ git commit -m "xxx" --no-verify
 
    (2). Revise PR message template to describe your motivation and modifications made in this PR.
 
-   ![image](https://user-images.githubusercontent.com/57566630/201533716-aa2a2c30-e3e7-489c-998b-6723f92e2328.png)
+   ![image](https://user-images.githubusercontent.com/57566630/202242953-c91a18ff-e388-4ff9-8591-5fae0ead6c1e.png)
 
    The PR tile should starts with the following prefix:
 
