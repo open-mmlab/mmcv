@@ -4,12 +4,17 @@
 
 **修复错误**
 
-代码或文档的拼写错误可以直接提交[拉取请求（Pull Request）](#%E6%8B%89%E5%8F%96%E8%AF%B7%E6%B1%82)
+代码或文档的拼写错误可以直接提交拉取请求(PR)。
 
 修复代码错误的步骤如下：
 
 1. 如果提交的代码改动较大，建议先提交 issue，并正确描述 issue 的现象、原因和复现方式，讨论后确认修复方案
-2. 提交拉取请求，并补充相应的单元测试，以确保修复代码的正确性
+2. 修复错误并补充相应的单元测试，提交拉取请求，
+
+**新增功能或组件**
+
+1. 如果新功能或模块涉及较大的代码改动，建议先提交 issue，确认功能的必要性。
+2. 实现新增功能并添单元测试，提交拉取请求，
 
 **文档补充**
 
@@ -18,12 +23,7 @@
 添加文档或将文档翻译成其他语言步骤如下
 
 1. 提交 issue，确认添加文档的必要性
-2. 提交拉取请求
-
-**新增功能或组件**
-
-1. 如果新功能或模块涉及较大的代码改动，建议先提交 issue，确认功能的必要性。
-2. 提交拉取请求，并添加新功能/组件的单元测试。
+2. 添加文档，提交拉取请求
 
 ### 拉取请求工作流
 
@@ -31,14 +31,14 @@
 
 #### 1. 复刻仓库
 
-当你第一次提交拉取请求时，先复刻 OpenMMLab 原代码库，点击 GitHub 页面右上角的 **Fork** 按钮即可
+当你第一次提交拉取请求时，先复刻 OpenMMLab 原代码库，点击 GitHub 页面右上角的 **Fork** 按钮，复刻后的代码库将会出现在你的 GitHub 个人主页下。
 
 ![image](https://user-images.githubusercontent.com/57566630/167305749-43c7f4e9-449b-4e98-ade5-0c9276d5c9ce.png)
 
 将代码克隆到本地
 
 ```shell
-git@github.com:{username}/mmcv.git
+git clone git@github.com:{username}/mmcv.git
 ```
 
 添加原代码库为上游代码库
@@ -56,7 +56,7 @@ upstream	git@github.com:open-mmlab/mmcv (fetch)
 upstream	git@github.com:open-mmlab/mmcv (push)
 ```
 
-> 这里对 origin 和 upstream 进行一个简单的介绍，当我们使用 git clone 来克隆代码时，会默认创建一个 origin 的 remote，它指向我们克隆的代码库地址，而 upstream 则是我们自己添加的，用来指向原始代码库地址。如果你不喜欢他叫 upstream，可以自己修改，比如叫 mmdet-{username}，只要你记得就行。我们通常向 origin 提交代码（即 fork 下来的远程仓库），然后向 upstream 提交一个 pull request。如果提交的代码和最新的代码发生冲突，再从 upstream 拉取最新的代码，然后和本地分支解决冲突，再提交到 origin。
+> 这里对 origin 和 upstream 进行一个简单的介绍，当我们使用 git clone 来克隆代码时，会默认创建一个 origin 的 remote，它指向我们克隆的代码库地址，而 upstream 则是我们自己添加的，用来指向原始代码库地址。当然如果你不喜欢他叫 upstream，也可以自己修改，比如叫 mmdet。我们通常向 origin 提交代码（即 fork 下来的远程仓库），然后向 upstream 提交一个 pull request。如果提交的代码和最新的代码发生冲突，再从 upstream 拉取最新的代码，和本地分支解决冲突，再提交到 origin。
 
 #### 2. 配置 pre-commit
 
@@ -108,7 +108,7 @@ git checkout -b username/refactor_contributing_doc
 
 - MMCV 引入了 mypy 来做静态类型检查，以增加代码的鲁棒性。因此我们在提交代码时，需要补充 Type Hints。具体规则可以参考[教程](https://zhuanlan.zhihu.com/p/519335398%E3%80%82)。
 
-- 提交的代码同样需要通过单元测试（安装单元测试依赖详见[指引](#指引)）
+- 提交的代码同样需要通过单元测试（安装单元测试依赖详见[指引](#单元测试)）
 
   ```shell
   # 通过全量单元测试
@@ -118,6 +118,8 @@ git checkout -b username/refactor_contributing_doc
   # 则至少需要保证能够通过修改模块的单元测试，以 runner 为例
   pytest tests/test_runner/test_runner.py
   ```
+
+- 如果修改/添加了文档，参考[指引](#文档渲染)确认文档渲染正常。
 
 #### 5. 推送代码到远程
 
@@ -154,44 +156,64 @@ git push -u origin {branch_name}
 
    MMCV 会不同的平台（Linux、Window、Mac）,基于不同版本的 Python、PyTorch、CUDA对提交的代码进行单元测试，以保证代码的正确性，如果有任何一个。我们可通过点击上图中的 `Details` 来查看具体的测试信息，以便于我们修改代码。
 
-3. 如果 PR 通过了 CI，那么就可以等待其他开发者的 review 了，我们根据 reviewer 的意见，修改代码，并重复 [4](#4-提交代码并本地通过单元测试)-[6](#5-推送代码到远程) 步骤，直到 reviewer 通过 PR。所有 reviewer approve 后
+   更多内容详见[拉取请求规范](#拉取请求规范)
+
+3. 如果 PR 通过了 CI，那么就可以等待其他开发者的 review 了，我们根据 reviewer 的意见，修改代码，并重复 [4](#4-提交代码并本地通过单元测试)-[5](#5-推送代码到远程) 步骤，直到 reviewer 通过 PR。所有 reviewer approve 后
 
 ![image](https://user-images.githubusercontent.com/57566630/202145400-cc2cd8c4-10b0-472f-ba37-07e6f50acc67.png)
 
 我们会尽快将 PR 合并到主分支。
 
+#### 7. 解决冲突
+
+随着时间的推移，我们的代码库会不断更新，这时候，如果你的 PR 与主分支存在冲突，你需要解决冲突，解决冲突的方式有两种：
+
+```shell
+git fetch --all --prune
+git rebase upstream/master
+```
+
+或者
+
+```shell
+git fetch --all --prune
+git merge upstream/master
+```
+
+如果你是非常善于处理冲突，那么可以使用 rebase 的方式来解决冲突，因为者能够保证你的 commit log 的整洁。如果你不太熟悉 `rebase` 的使用，那么可以使用 `merge` 的方式来解决冲突。
+
 ### 指引
 
-- 单元测试
+#### 单元测试
 
-  如果您的系统环境没有安装 libturbojpeg 和 ffmpeg 请先执行
+如果您的系统环境没有安装 libturbojpeg 和 ffmpeg 请先执行
 
-  ```shell
-  sudo apt-get update -y
-  sudo apt-get install -y libturbojpeg
-  sudo apt-get install -y ffmpeg
-  ```
+```shell
+sudo apt-get update -y
+sudo apt-get install -y libturbojpeg
+sudo apt-get install -y ffmpeg
+```
 
-  在提交修复代码错误或新增特性的拉取请求时，我们应该尽可能的让单元测试覆盖所有提交的代码，计算单元测试覆盖率的方法如下
+在提交修复代码错误或新增特性的拉取请求时，我们应该尽可能的让单元测试覆盖所有提交的代码，计算单元测试覆盖率的方法如下
 
-  ```shell
-  python -m coverage run -m pytest /path/to/test_file
-  python -m coverage html
-  # check file in htmlcov/index.html
-  ```
+```shell
+python -m coverage run -m pytest /path/to/test_file
+python -m coverage html
+# check file in htmlcov/index.html
+```
 
-- 文档渲染
+#### 文档渲染
 
-  在提交修复代码错误或新增特性的拉取请求时，可能会需要修改/新增模块的 docstring。我们需要确认渲染后的文档样式是正确的。
-  本地生成渲染后的文档的方法如下
+在提交修复代码错误或新增特性的拉取请求时，可能会需要修改/新增模块的 docstring。我们需要确认渲染后的文档样式是正确的。
+本地生成渲染后的文档的方法如下
 
-  ```shell
-  pip install -r requirements/docs.txt
-  cd cd docs/zh_cn/
-  # or docs/en
-  make html
-  # check file in ./docs/zh_cn/_build/html/index.html
-  ```
+```shell
+pip install -r requirements/docs.txt
+cd cd docs/zh_cn/
+# or docs/en
+make html
+# check file in ./docs/zh_cn/_build/html/index.html
+```
 
 ### 代码风格
 
