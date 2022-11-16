@@ -33,7 +33,7 @@
 
 当你第一次提交拉取请求时，先复刻 OpenMMLab 原代码库，点击 GitHub 页面右上角的 **Fork** 按钮，复刻后的代码库将会出现在你的 GitHub 个人主页下。
 
-![image](https://user-images.githubusercontent.com/57566630/167305749-43c7f4e9-449b-4e98-ade5-0c9276d5c9ce.png)
+<img src="https://user-images.githubusercontent.com/57566630/167305749-43c7f4e9-449b-4e98-ade5-0c9276d5c9ce.png" width="1200">
 
 将代码克隆到本地
 
@@ -75,9 +75,9 @@ pre-commit install
 pre-commit run --all-files
 ```
 
-![image](https://user-images.githubusercontent.com/57566630/173660750-3df20a63-cb66-4d33-a986-1f643f1d8aaf.png)
+<img src="https://user-images.githubusercontent.com/57566630/173660750-3df20a63-cb66-4d33-a986-1f643f1d8aaf.png" width="1200">
 
-![image](https://user-images.githubusercontent.com/57566630/167306496-d2b8daf7-d72c-4129-a0e8-175f8a32cc47.png)
+<img src="https://user-images.githubusercontent.com/57566630/167306496-d2b8daf7-d72c-4129-a0e8-175f8a32cc47.png" width="1200">
 
 ```note
 如果你是中国用户，由于网络原因，可能会出现安装失败的情况，这时可以使用国内源
@@ -91,7 +91,7 @@ pre-commit run --all-files -c .pre-commit-config-zh-cn.yaml
 
 如果提交的代码不符合代码风格规范，pre-commit 会发出警告，并自动修复部分错误。
 
-![image](https://user-images.githubusercontent.com/57566630/167306461-3cb3b5bf-d9b3-4d5a-9c0a-34cfded8dbbc.png)
+<img src="https://user-images.githubusercontent.com/57566630/167306461-3cb3b5bf-d9b3-4d5a-9c0a-34cfded8dbbc.png" width="1200">
 
 如果我们想临时绕开 pre-commit 的检查提交一次代码，可以在 `git commit` 时加上 `--no-verify`
 
@@ -144,11 +144,11 @@ git push -u origin {branch_name}
 #### 6. 提交拉取请求（PR）
 
 （1） 在 GitHub 的 Pull request 界面创建拉取请求
-![image](https://user-images.githubusercontent.com/57566630/201533288-516f7ac4-0b14-4dc8-afbd-912475c368b5.png)
+<img src="https://user-images.githubusercontent.com/57566630/201533288-516f7ac4-0b14-4dc8-afbd-912475c368b5.png" width="1200">
 
 （2） 根据指引修改 PR 描述，以便于其他开发者更好地理解你的修改
 
-![image](https://user-images.githubusercontent.com/57566630/201533716-aa2a2c30-e3e7-489c-998b-6723f92e2328.png)
+<img src="https://user-images.githubusercontent.com/57566630/201533716-aa2a2c30-e3e7-489c-998b-6723f92e2328.png" width="1200">
 
 描述规范详见[指引](#指引)的拉取请求规范部分
 
@@ -159,10 +159,12 @@ git push -u origin {branch_name}
 (a) PR 描述应该包含修改理由、修改内容以及修改后带来的影响，并关联相关 Issue（具体方式见[文档](<(https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)>)）
 
 (b). 如果是第一次为 OpenMMLab 做贡献，需要签署 CLA
-![image](https://user-images.githubusercontent.com/57566630/167307569-a794b967-6e28-4eac-a942-00deb657815f.png)
+
+<img src="https://user-images.githubusercontent.com/57566630/167307569-a794b967-6e28-4eac-a942-00deb657815f.png" width="1200">
 
 (c). 检查提交的 PR 是否通过 CI（集成测试）
-![image](https://user-images.githubusercontent.com/57566630/167307490-f9ebf9fa-63c0-4d83-8ba1-081ea169eb3a.png)
+
+<img src="https://user-images.githubusercontent.com/57566630/167307490-f9ebf9fa-63c0-4d83-8ba1-081ea169eb3a.png" width="1200">
 
 MMCV 会不同的平台（Linux、Window、Mac）,基于不同版本的 Python、PyTorch、CUDA对提交的代码进行单元测试，以保证代码的正确性，如果有任何一个。我们可通过点击上图中的 `Details` 来查看具体的测试信息，以便于我们修改代码。
 
@@ -170,7 +172,7 @@ MMCV 会不同的平台（Linux、Window、Mac）,基于不同版本的 Python�
 
 （3）如果 PR 通过了 CI，那么就可以等待其他开发者的 review 了，我们根据 reviewer 的意见，修改代码，并重复 [4](#4-提交代码并本地通过单元测试)-[5](#5-推送代码到远程) 步骤，直到 reviewer 通过 PR。所有 reviewer approve 后
 
-![image](https://user-images.githubusercontent.com/57566630/202145400-cc2cd8c4-10b0-472f-ba37-07e6f50acc67.png)
+<img src="https://user-images.githubusercontent.com/57566630/202145400-cc2cd8c4-10b0-472f-ba37-07e6f50acc67.png" width="1200">
 
 我们会尽快将 PR 合并到主分支。
 
