@@ -16,7 +16,7 @@ def write_to_json(dicts, filename: str):
         mmcv.dump(dicts, f, file_format='json')
 
 
-def expands_rate(d: int, config: dict) -> list:
+def expands_rate(d: list, config: dict) -> list:
     """expand dilation rate according to config.
 
     Args:
@@ -31,14 +31,22 @@ def expands_rate(d: int, config: dict) -> list:
     large_rates = []
     small_rates = []
     for _ in range(config['num_branches'] // 2):
-        large_rates.append(
-            tuple([
-                np.clip(int(round((1 + exp_rate) * d[0])), config['mmin'], config['mmax']).item(),
-                np.clip(int(round((1 + exp_rate) * d[1])), config['mmin'], config['mmax']).item()]))
-        small_rates.append(
-            tuple([
-                np.clip(int(round((1 - exp_rate) * d[0])), config['mmin'], config['mmax']).item(),
-                np.clip(int(round((1 - exp_rate) * d[1])), config['mmin'], config['mmax']).item()]))
+        large_rates.append([
+            np.clip(
+                int(round((1 + exp_rate) * d[0])), config['mmin'],
+                config['mmax']).item(),
+            np.clip(
+                int(round((1 + exp_rate) * d[1])), config['mmin'],
+                config['mmax']).item()
+        ])
+        small_rates.append([
+            np.clip(
+                int(round((1 - exp_rate) * d[0])), config['mmin'],
+                config['mmax']).item(),
+            np.clip(
+                int(round((1 - exp_rate) * d[1])), config['mmin'],
+                config['mmax']).item()
+        ])
 
     small_rates.reverse()
 
@@ -52,7 +60,8 @@ def expands_rate(d: int, config: dict) -> list:
     return unique_rate_list
 
 
-def get_padding(kernel_size: int, stride: int = 1, dilation: int = 1) -> int:
+def get_single_padding(kernel_size: int,
+                       stride: int = 1,
+                       dilation: int = 1) -> int:
     padding = ((stride - 1) + dilation * (kernel_size - 1)) // 2
     return padding
-

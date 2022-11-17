@@ -1,15 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
-from typing import Dict
+from typing import Dict, Optional
 
 import numpy as np
 import torch
 import torch.nn as nn
 from torch import Tensor
 
+from mmcv.cnn.rfsearch.utils import expands_rate, get_single_padding
 from mmcv.runner import BaseModule
 from mmcv.utils.logging import get_logger
-from .utils import expands_rate, get_padding
 
 logger = get_logger('Operators')
 
@@ -22,7 +22,7 @@ class ConvRFSearchOp(BaseModule):
         global_config (Dict): config dict.
     """
 
-    def __init__(self, op_layer: nn.Module, global_config: Dict):
+    def __init__(self, op_layer: nn.Module, global_config: Optional[Dict]):
 
         super().__init__()
         self.op_layer = op_layer
@@ -47,40 +47,46 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
 
     Args:
         op_layer (nn.Module): pytorch module, e,g, Conv2d
-        init_dilation (int, optional): init dilation rate. Defaults to None.
-        global_config (dict): config dict. Defaults to None. By default this must includes:
+        init_dilation (list, optional): init dilation rate. Defaults to None.
+        global_config (dict): config dict. Defaults to None.
+            By default this must includes:
             - "init_alphas": The value for initializing weights of each branch.
-            - "num_branches": The controller of the size of search space (the number of branches).
+            - "num_branches": The controller of the size of
+                search space (the number of branches).
             - "exp_rate": The controller of the sparsity of search space.
             - "mmin": The minimum dilation rate.
             - "mmax": The maximum dilation rate.
-            Extra keys may exist, but are used by RFSearchHook, e.g., "step", 
+            Extra keys may exist, but are used by RFSearchHook, e.g., "step",
             "max_step", "search_interval", and "skip_layer".
         num_branches (int, optional): Number of branches. Defaults to 3.
-        verbose (bool): Determines whether to print rf-next related logging messages. 
+        verbose (bool): Determines whether to print rf-next
+            related logging messages.
             Defaults to True.
     """
 
     def __init__(self,
                  op_layer: nn.Module,
-                 init_dilation: int = None,
-                 global_config: Dict = None,
+                 init_dilation: list = None,
+                 global_config: Optional[Dict] = None,
                  verbose: bool = True):
         super().__init__(op_layer, global_config)
+        assert global_config is not None, 'global_config is None'
         self.num_branches = global_config['num_branches']
         assert self.num_branches in [2, 3]
         self.verbose = verbose
         if init_dilation is None:
             init_dilation = op_layer.dilation
         self.rates = expands_rate(init_dilation, global_config)
-        if self.op_layer.kernel_size[0] == 1 or self.op_layer.kernel_size[0] % 2 == 0:
+        if self.op_layer.kernel_size[
+                0] == 1 or self.op_layer.kernel_size[0] % 2 == 0:
             self.rates = [(op_layer.dilation[0], r[1]) for r in self.rates]
-        if self.op_layer.kernel_size[1] == 1 or self.op_layer.kernel_size[1] % 2 == 0:
+        if self.op_layer.kernel_size[
+                1] == 1 or self.op_layer.kernel_size[1] % 2 == 0:
             self.rates = [(r[0], op_layer.dilation[1]) for r in self.rates]
 
-        self.weights = nn.Parameter(torch.Tensor(2 * (self.num_branches // 2) + 1))
+        self.weights = nn.Parameter(torch.Tensor(self.num_branches))
         if self.verbose:
-            logger.info('Expand as {}'.format(self.rates))
+            logger.info(f'Expand as {self.rates}')
         nn.init.constant_(self.weights, global_config['init_alphas'])
 
     def forward(self, x: Tensor) -> Tensor:
@@ -119,7 +125,8 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
         norm_w = self.normlize(self.weights[:len(self.rates)])
         if self.verbose:
             logger.info('Estimate dilation {} with weight {}.'.format(
-                self.rates, norm_w.detach().cpu().numpy().tolist()))
+                self.rates,
+                norm_w.detach().cpu().numpy().tolist()))
 
         sum0, sum1, w_sum = 0, 0, 0
         for i in range(len(self.rates)):
@@ -128,35 +135,37 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
             w_sum += norm_w[i].item()
         estimated = [
             np.clip(
-                int(round(sum0 / w_sum)),
-                self.global_config['mmin'],
-                self.global_config['mmax']).item(), 
+                int(round(sum0 / w_sum)), self.global_config['mmin'],
+                self.global_config['mmax']).item(),
             np.clip(
-                int(round(sum1 / w_sum)),
-                self.global_config['mmin'],
-                self.global_config['mmax']).item()]
+                int(round(sum1 / w_sum)), self.global_config['mmin'],
+                self.global_config['mmax']).item()
+        ]
         self.op_layer.dilation = tuple(estimated)
         self.op_layer.padding = self.get_padding(self.op_layer.dilation)
         self.rates = [tuple(estimated)]
         if self.verbose:
-            logger.info('Estimate as {}'.format(tuple(estimated)))
+            logger.info(f'Estimate as {tuple(estimated)}')
 
     def expand(self):
         """expand dilation rate."""
         d = self.op_layer.dilation
         rates = expands_rate(d, self.global_config)
-        if self.op_layer.kernel_size[0] == 1 or self.op_layer.kernel_size[0] % 2 == 0:
+        if self.op_layer.kernel_size[
+                0] == 1 or self.op_layer.kernel_size[0] % 2 == 0:
             rates = [(d[0], r[1]) for r in rates]
-        if self.op_layer.kernel_size[1] == 1 or self.op_layer.kernel_size[1] % 2 == 0:
+        if self.op_layer.kernel_size[
+                1] == 1 or self.op_layer.kernel_size[1] % 2 == 0:
             rates = [(r[0], d[1]) for r in rates]
 
         self.rates = copy.deepcopy(rates)
         if self.verbose:
-            logger.info('Expand as {}'.format(self.rates))
+            logger.info(f'Expand as {self.rates}')
         nn.init.constant_(self.weights, self.global_config['init_alphas'])
 
     def get_padding(self, dilation):
-        padding = (
-            get_padding(self.op_layer.kernel_size[0], self.op_layer.stride[0], dilation[0]),
-            get_padding(self.op_layer.kernel_size[1], self.op_layer.stride[1], dilation[1]))
+        padding = (get_single_padding(self.op_layer.kernel_size[0],
+                                      self.op_layer.stride[0], dilation[0]),
+                   get_single_padding(self.op_layer.kernel_size[1],
+                                      self.op_layer.stride[1], dilation[1]))
         return padding
