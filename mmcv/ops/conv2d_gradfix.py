@@ -12,7 +12,7 @@ arbitrarily high order gradients with zero performance penalty."""
 
 import contextlib
 import warnings
-from typing import Dict
+from typing import Dict, Optional, Tuple, Union
 
 import torch
 
@@ -30,13 +30,13 @@ def no_weight_gradients(disable=True):
     weight_gradients_disabled = old
 
 
-def conv2d(input,
-           weight,
-           bias=None,
-           stride=1,
-           padding=0,
-           dilation=1,
-           groups=1):
+def conv2d(input: torch.Tensor,
+           weight: torch.Tensor,
+           bias: Optional[torch.Tensor] = None,
+           stride: Union[int, Tuple[int, ...]] = 1,
+           padding: Union[int, Tuple[int, ...]] = 0,
+           dilation: Union[int, Tuple[int, ...]] = 1,
+           groups: int = 1):
     flag = True
     if torch.__version__ >= '1.10.0':
         warnings.warn('Since '
@@ -63,14 +63,14 @@ def conv2d(input,
         groups=groups)
 
 
-def conv_transpose2d(input,
-                     weight,
-                     bias=None,
-                     stride=1,
-                     padding=0,
-                     output_padding=0,
-                     groups=1,
-                     dilation=1):
+def conv_transpose2d(input: torch.Tensor,
+                     weight: torch.Tensor,
+                     bias: Optional[torch.Tensor] = None,
+                     stride: Union[int, Tuple[int, ...]] = 1,
+                     padding: Union[int, Tuple[int, ...]] = 0,
+                     output_padding: Union[int, Tuple[int, ...]] = 0,
+                     groups: int = 1,
+                     dilation: Union[int, Tuple[int, ...]] = 1):
     if _should_use_custom_op(input):
         return _conv2d_gradfix(
             transpose=True,
@@ -111,8 +111,13 @@ _conv2d_gradfix_cache: Dict = dict()
 _null_tensor = torch.empty([0])
 
 
-def _conv2d_gradfix(transpose, weight_shape, stride, padding, output_padding,
-                    dilation, groups):
+def _conv2d_gradfix(transpose: bool, weight_shape: Tuple[int, ...],
+                    stride: Union[int, Tuple[int,
+                                             ...]], padding: Union[int,
+                                                                   Tuple[int,
+                                                                         ...]],
+                    output_padding: Union[int, Tuple[int, ...]],
+                    dilation: Union[int, Tuple[int, ...]], groups: int):
     # Parse arguments.
     ndim = 2
     weight_shape = tuple(weight_shape)
@@ -131,13 +136,15 @@ def _conv2d_gradfix(transpose, weight_shape, stride, padding, output_padding,
 
     assert groups >= 1
     assert len(weight_shape) == ndim + 2
-    assert all(stride[i] >= 1 for i in range(ndim))
-    assert all(padding[i] >= 0 for i in range(ndim))
-    assert all(dilation[i] >= 0 for i in range(ndim))
+    assert all(stride[i] >= 1 for i in range(ndim))  # type: ignore
+    assert all(padding[i] >= 0 for i in range(ndim))  # type: ignore
+    assert all(dilation[i] >= 0 for i in range(ndim))  # type: ignore
     if not transpose:
-        assert all(output_padding[i] == 0 for i in range(ndim))
+        assert all(output_padding[i] == 0 for i in range(ndim))  # type: ignore
     else:  # transpose
-        assert all(0 <= output_padding[i] < max(stride[i], dilation[i])
+        assert all(0 <= output_padding[i] < max(  # type: ignore
+            stride[i],  # type: ignore
+            dilation[i])  # type: ignore
                    for i in range(ndim))
 
     # Helpers.

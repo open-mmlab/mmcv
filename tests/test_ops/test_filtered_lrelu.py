@@ -15,12 +15,12 @@ class TestFilteredLrelu:
         cls.fd = torch.randn((2, 2))
 
     def test_filtered_lrelu_cpu(self):
-        out = filtered_lrelu(self.input_tensor, b=self.bias)
+        out = filtered_lrelu(self.input_tensor, bias=self.bias)
         assert out.shape == (1, 3, 16, 16)
 
         out = filtered_lrelu(
             self.input_tensor,
-            b=self.bias,
+            bias=self.bias,
             fu=self.fu,
             fd=self.fd,
             up=2,
@@ -33,7 +33,7 @@ class TestFilteredLrelu:
         fu = torch.randn((4, 4))
         out = filtered_lrelu(
             self.input_tensor,
-            b=self.bias,
+            bias=self.bias,
             fu=fu,
             fd=self.fd,
             up=2,
@@ -46,7 +46,7 @@ class TestFilteredLrelu:
         fd = torch.randn((4, 4))
         out = filtered_lrelu(
             self.input_tensor,
-            b=self.bias,
+            bias=self.bias,
             fu=self.fu,
             fd=fd,
             up=2,
@@ -60,7 +60,7 @@ class TestFilteredLrelu:
         bias = torch.randn(4, requires_grad=True)
         out = filtered_lrelu(
             input_tensor,
-            b=bias,
+            bias=bias,
             fu=self.fu,
             fd=self.fd,
             up=2,
@@ -72,7 +72,7 @@ class TestFilteredLrelu:
         # test with different up
         out = filtered_lrelu(
             self.input_tensor,
-            b=self.bias,
+            bias=self.bias,
             fu=self.fu,
             fd=self.fd,
             up=4,
@@ -84,7 +84,7 @@ class TestFilteredLrelu:
         # test with different down
         out = filtered_lrelu(
             self.input_tensor,
-            b=self.bias,
+            bias=self.bias,
             fu=self.fu,
             fd=self.fd,
             up=2,
@@ -94,32 +94,33 @@ class TestFilteredLrelu:
         assert out.shape == (1, 3, 8, 8)
 
         # test with different gain
-        out1 = filtered_lrelu(self.input_tensor, b=self.bias, gain=0.2)
-        out2 = filtered_lrelu(self.input_tensor, b=self.bias, gain=0.1)
+        out1 = filtered_lrelu(self.input_tensor, bias=self.bias, gain=0.2)
+        out2 = filtered_lrelu(self.input_tensor, bias=self.bias, gain=0.1)
         assert torch.allclose(out1, 2 * out2)
 
         # test with different slope
-        out = filtered_lrelu(self.input_tensor, b=self.bias, slope=0.2)
+        out = filtered_lrelu(self.input_tensor, bias=self.bias, slope=0.2)
         assert out.shape == (1, 3, 16, 16)
 
         # test with different clamp
-        out1 = filtered_lrelu(self.input_tensor, b=self.bias, clamp=0.2)
-        out2 = filtered_lrelu(self.input_tensor, b=self.bias, clamp=0.1)
+        out1 = filtered_lrelu(self.input_tensor, bias=self.bias, clamp=0.2)
+        out2 = filtered_lrelu(self.input_tensor, bias=self.bias, clamp=0.1)
         assert out1.max() <= 0.2
         assert out2.max() <= 0.1
 
         # test with different flip_filter
-        out1 = filtered_lrelu(self.input_tensor, b=self.bias, flip_filter=True)
+        out1 = filtered_lrelu(
+            self.input_tensor, bias=self.bias, flip_filter=True)
         assert out.shape == (1, 3, 16, 16)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason='requires cuda')
     def test_filtered_lrelu_cuda(self):
-        out = filtered_lrelu(self.input_tensor.cuda(), b=self.bias.cuda())
+        out = filtered_lrelu(self.input_tensor.cuda(), bias=self.bias.cuda())
         assert out.shape == (1, 3, 16, 16)
 
         out = filtered_lrelu(
             self.input_tensor.cuda(),
-            b=self.bias.cuda(),
+            bias=self.bias.cuda(),
             fu=self.fu.cuda(),
             fd=self.fd.cuda(),
             up=2,
@@ -132,7 +133,7 @@ class TestFilteredLrelu:
         fu = torch.randn((4, 4))
         out = filtered_lrelu(
             self.input_tensor.cuda(),
-            b=self.bias.cuda(),
+            bias=self.bias.cuda(),
             fu=fu.cuda(),
             fd=self.fd.cuda(),
             up=2,
@@ -145,7 +146,7 @@ class TestFilteredLrelu:
         fd = torch.randn((4, 4))
         out = filtered_lrelu(
             self.input_tensor.cuda(),
-            b=self.bias.cuda(),
+            bias=self.bias.cuda(),
             fu=self.fu.cuda(),
             fd=fd.cuda(),
             up=2,
@@ -159,7 +160,7 @@ class TestFilteredLrelu:
         bias = torch.randn(4, requires_grad=True)
         out = filtered_lrelu(
             input_tensor.cuda(),
-            b=bias.cuda(),
+            bias=bias.cuda(),
             fu=self.fu.cuda(),
             fd=self.fd.cuda(),
             up=2,
@@ -171,7 +172,7 @@ class TestFilteredLrelu:
         # test with different up
         out = filtered_lrelu(
             self.input_tensor.cuda(),
-            b=self.bias.cuda(),
+            bias=self.bias.cuda(),
             fu=self.fu.cuda(),
             fd=self.fd.cuda(),
             up=4,
@@ -183,7 +184,7 @@ class TestFilteredLrelu:
         # test with different down
         out = filtered_lrelu(
             self.input_tensor.cuda(),
-            b=self.bias.cuda(),
+            bias=self.bias.cuda(),
             fu=self.fu.cuda(),
             fd=self.fd.cuda(),
             up=2,
@@ -194,25 +195,25 @@ class TestFilteredLrelu:
 
         # test with different gain
         out1 = filtered_lrelu(
-            self.input_tensor.cuda(), b=self.bias.cuda(), gain=0.2)
+            self.input_tensor.cuda(), bias=self.bias.cuda(), gain=0.2)
         out2 = filtered_lrelu(
-            self.input_tensor.cuda(), b=self.bias.cuda(), gain=0.1)
+            self.input_tensor.cuda(), bias=self.bias.cuda(), gain=0.1)
         assert torch.allclose(out1, 2 * out2)
 
         # test with different slope
         out = filtered_lrelu(
-            self.input_tensor.cuda(), b=self.bias.cuda(), slope=0.2)
+            self.input_tensor.cuda(), bias=self.bias.cuda(), slope=0.2)
         assert out.shape == (1, 3, 16, 16)
 
         # test with different clamp
         out1 = filtered_lrelu(
-            self.input_tensor.cuda(), b=self.bias.cuda(), clamp=0.2)
+            self.input_tensor.cuda(), bias=self.bias.cuda(), clamp=0.2)
         out2 = filtered_lrelu(
-            self.input_tensor.cuda(), b=self.bias.cuda(), clamp=0.1)
+            self.input_tensor.cuda(), bias=self.bias.cuda(), clamp=0.1)
         assert out1.max() <= 0.2
         assert out2.max() <= 0.1
 
         # test with different flip_filter
         out1 = filtered_lrelu(
-            self.input_tensor.cuda(), b=self.bias.cuda(), flip_filter=True)
+            self.input_tensor.cuda(), bias=self.bias.cuda(), flip_filter=True)
         assert out.shape == (1, 3, 16, 16)

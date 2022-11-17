@@ -118,8 +118,8 @@ _plugin = None
 _null_tensor = torch.empty([0])
 
 
-def bias_act(x: torch.Tensor,
-             b: Optional[torch.Tensor] = None,
+def bias_act(input: torch.Tensor,
+             bias: Optional[torch.Tensor] = None,
              dim: int = 1,
              act: str = 'linear',
              alpha: Optional[Union[float, int]] = None,
@@ -135,8 +135,8 @@ def bias_act(x: torch.Tensor,
     second order gradients, but not third order gradients.
 
     Args:
-        x (torch.Tensor): Input activation tensor. Can be of any shape.
-        b (Optional[torch.Tensor]): Bias vector, or `None` to disable.
+        input (torch.Tensor): Input activation tensor. Can be of any shape.
+        bias (torch.Tensor): Bias vector, or `None` to disable.
             Must be a 1D tensor of the same type as `x`. The shape must be
             known, and it must match the dimension of `x` corresponding to
             `dim`. Defaults to None.
@@ -147,31 +147,41 @@ def bias_act(x: torch.Tensor,
             to disable. Can be e.g. "relu", "lrelu", "tanh", "sigmoid",
             "swish", etc. See `activation_funcs` for a full list. `None` is not
             allowed. Defaults to `linear`.
-        alpha (Optional[Union[float, int]]): Shape parameter for the activation
+        alpha (float | int): Shape parameter for the activation
             function, or `None` to use the default. Defaults to None.
-        gain (Optional[float]): Scaling factor for the output tensor, or `None`
+        gain (float): Scaling factor for the output tensor, or `None`
             to use default. See `activation_funcs` for the default scaling of
             each activation function. If unsure, consider specifying 1.
             Defaults to None.
-        clamp (Optional[float]):  Clamp the output values to `[-clamp, +clamp]`
+        clamp (float):  Clamp the output values to `[-clamp, +clamp]`
             , or `None` to disable the clamping (default). Defaults to None.
-        impl (str): Name of the implementation to use. Can be `"ref"` or
-            `"cuda"`. Defaults to "cuda".
+        impl (str): Implementation to use. Can be `'ref'` or
+            `'cuda'`. If set to `'cuda'`, fast CUDA implementation of
+            `upfirdn2d()` using custom ops will be used. If set to `'ref'`,
+            slow reference implementation of `bias_act()` using standard
+            PyTorch will be used. Defaults to 'cuda'.
 
     Returns:
         torch.Tensor: Tensor of the same shape and datatype as `x`.
     """
-    assert isinstance(x, torch.Tensor)
+    assert isinstance(input, torch.Tensor)
     assert impl in ['ref', 'cuda']
-    if impl == 'cuda' and x.is_cuda:
+    if impl == 'cuda' and input.is_cuda:
         return _bias_act_cuda(
-            dim=dim, act=act, alpha=alpha, gain=gain, clamp=clamp).apply(x, b)
+            dim=dim, act=act, alpha=alpha, gain=gain,
+            clamp=clamp).apply(input, bias)
     return _bias_act_ref(
-        x=x, b=b, dim=dim, act=act, alpha=alpha, gain=gain, clamp=clamp)
+        input=input,
+        bias=bias,
+        dim=dim,
+        act=act,
+        alpha=alpha,
+        gain=gain,
+        clamp=clamp)
 
 
-def _bias_act_ref(x: torch.Tensor,
-                  b: Optional[torch.Tensor] = None,
+def _bias_act_ref(input: torch.Tensor,
+                  bias: Optional[torch.Tensor] = None,
                   dim: int = 1,
                   act: str = 'linear',
                   alpha: Optional[Union[float, int]] = None,
@@ -187,8 +197,8 @@ def _bias_act_ref(x: torch.Tensor,
     second order gradients, but not third order gradients.
 
     Args:
-        x (torch.Tensor): Input activation tensor. Can be of any shape.
-        b (Optional[torch.Tensor]): Bias vector, or `None` to disable.
+        input (torch.Tensor): Input activation tensor. Can be of any shape.
+        bias (torch.Tensor): Bias vector, or `None` to disable.
             Must be a 1D tensor of the same type as `x`. The shape must be
             known, and it must match the dimension of `x` corresponding to
             `dim`. Defaults to None.
@@ -199,20 +209,20 @@ def _bias_act_ref(x: torch.Tensor,
             to disable. Can be e.g. "relu", "lrelu", "tanh", "sigmoid",
             "swish", etc. See `activation_funcs` for a full list. `None` is not
             allowed. Defaults to `linear`.
-        alpha (Optional[Union[float, int]]): Shape parameter for the activation
+        alpha (float | int): Shape parameter for the activation
             function, or `None` to use the default. Defaults to None.
-        gain (Optional[float]): Scaling factor for the output tensor, or `None`
+        gain (float): Scaling factor for the output tensor, or `None`
             to use default. See `activation_funcs` for the default scaling of
             each activation function. If unsure, consider specifying 1.
             Defaults to None.
-        clamp (Optional[float]):  Clamp the output values to
+        clamp (float):  Clamp the output values to
             `[-clamp, +clamp]`, or `None` to disable the clamping (default).
             Defaults to None.
 
     Returns:
         torch.Tensor: Tensor of the same shape and datatype as `x`.
     """
-    assert isinstance(x, torch.Tensor)
+    assert isinstance(input, torch.Tensor)
     assert clamp is None or clamp >= 0
     spec = activation_funcs[act]
     alpha = float(alpha if alpha is not None else spec.def_alpha)
@@ -220,15 +230,16 @@ def _bias_act_ref(x: torch.Tensor,
     clamp = float(clamp if clamp is not None else -1)
 
     # Add bias.
-    if b is not None:
-        assert isinstance(b, torch.Tensor) and b.ndim == 1
-        assert 0 <= dim < x.ndim
-        assert b.shape[0] == x.shape[dim]
-        x = x + b.reshape([-1 if i == dim else 1 for i in range(x.ndim)])
+    if bias is not None:
+        assert isinstance(bias, torch.Tensor) and bias.ndim == 1
+        assert 0 <= dim < input.ndim
+        assert bias.shape[0] == input.shape[dim]
+        x = input + bias.reshape(
+            [-1 if i == dim else 1 for i in range(input.ndim)])
 
     # Evaluate activation function.
     alpha = float(alpha)
-    x = spec.func(x, alpha=alpha)
+    x = spec.func(input, alpha=alpha)
 
     # Scale by gain.
     gain = float(gain)
@@ -260,13 +271,13 @@ def _bias_act_cuda(dim: int = 1,
             to disable. Can be e.g. "relu", "lrelu", "tanh", "sigmoid",
             "swish", etc. See `activation_funcs` for a full list. `None` is not
             allowed. Defaults to `linear`.
-        alpha (Optional[Union[float, int]]): Shape parameter for the activation
+        alpha (float | int): Shape parameter for the activation
             function, or `None` to use the default. Defaults to None.
-        gain (Optional[float]): Scaling factor for the output tensor, or `None`
+        gain (float): Scaling factor for the output tensor, or `None`
             to use default. See `activation_funcs` for the default scaling of
             each activation function. If unsure, consider specifying 1.
             Defaults to None.
-        clamp (Optional[float]): Clamp the output values to `[-clamp, +clamp]`,
+        clamp (float): Clamp the output values to `[-clamp, +clamp]`,
             or `None` to disable the clamping (default). Defaults to None.
 
     Returns:
