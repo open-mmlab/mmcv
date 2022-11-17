@@ -139,8 +139,6 @@ This will allow you to use the `git push` command to push code directly next tim
 
 Find more details about Pull Request description in [pull request guidelines](#pr-specs).
 
-&#160;
-
 **note**
 
 (a) The Pull Request description should contain the reason for the change, the content of the change, and the impact of the change, and be associated with the relevant Issue (see [documentation](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)
