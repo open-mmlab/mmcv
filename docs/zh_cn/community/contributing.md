@@ -77,13 +77,11 @@ pre-commit run --all-files
 
 <img src="https://user-images.githubusercontent.com/57566630/202368856-0465a90d-8fce-4345-918e-67b8b9c82614.png" width="1200">
 
-```note
-如果你是中国用户，由于网络原因，可能会出现安装失败的情况，这时可以使用国内源
+> Chinese users may fail to download the pre-commit hooks due to the network issue. In this case, you could download these hooks from gitee by setting the .pre-commit-config-zh-cn.yaml
 
-pre-commit install -c .pre-commit-config-zh-cn.yaml
-pre-commit run --all-files -c .pre-commit-config-zh-cn.yaml
+> pre-commit install -c .pre-commit-config-zh-cn.yaml
 
-```
+> pre-commit run --all-files -c .pre-commit-config-zh-cn.yaml
 
 如果安装过程被中断，可以重复执行 `pre-commit run ...` 继续安装。
 
