@@ -77,7 +77,7 @@ pre-commit run --all-files
 
 <img src="https://user-images.githubusercontent.com/57566630/173660750-3df20a63-cb66-4d33-a986-1f643f1d8aaf.png" width="1200">
 
-<img src="https://user-images.githubusercontent.com/57566630/167306496-d2b8daf7-d72c-4129-a0e8-175f8a32cc47.png" width="1200">
+<img src="https://user-images.githubusercontent.com/57566630/202368856-0465a90d-8fce-4345-918e-67b8b9c82614.png" width="1200">
 
 ```note
 如果你是中国用户，由于网络原因，可能会出现安装失败的情况，这时可以使用国内源
@@ -91,7 +91,7 @@ pre-commit run --all-files -c .pre-commit-config-zh-cn.yaml
 
 如果提交的代码不符合代码风格规范，pre-commit 会发出警告，并自动修复部分错误。
 
-<img src="https://user-images.githubusercontent.com/57566630/167306461-3cb3b5bf-d9b3-4d5a-9c0a-34cfded8dbbc.png" width="1200">
+<img src="https://user-images.githubusercontent.com/57566630/202369176-67642454-0025-4023-a095-263529107aa3.png" width="1200">
 
 如果我们想临时绕开 pre-commit 的检查提交一次代码，可以在 `git commit` 时加上 `--no-verify`
 
@@ -225,7 +225,7 @@ python -m coverage html
 
 ```shell
 pip install -r requirements/docs.txt
-cd cd docs/zh_cn/
+cd docs/zh_cn/
 # or docs/en
 make html
 # check file in ./docs/zh_cn/_build/html/index.html
