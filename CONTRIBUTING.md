@@ -1,6 +1,6 @@
 ## Contributing to OpenMMLab
 
-Welcome to the MMCV community, we are committed to building a cutting-edge computer vision foundation library and all kinds of contributions are welcomed, including but not limited to
+Welcome to the MMCV community, we are committed to building a cutting-edge computer vision foundational library and all kinds of contributions are welcomed, including but not limited to
 
 **Fix bug**
 
@@ -52,15 +52,15 @@ upstream	git@github.com:open-mmlab/mmcv (fetch)
 upstream	git@github.com:open-mmlab/mmcv (push)
 ```
 
-> Here's a brief introduction to origin and upstream. When we use "git clone", we create an "origin" remote by default, which points to the repository cloned from. As for "upstream", which we add it ourselves to point to the target repository. Of course, if you don't like the name "upstream", you could name it as you wish. Usually, we'll push the code to "origin". If the pushed code conflicts with the latest code in official("upstream"), we should pull the latest code from upstream to resolve the conflicts, and then push to "origin" again. The posted Pull Request will be updated automatically.
+> Here's a brief introduction to origin and upstream. When we use "git clone", we create an "origin" remote by default, which points to the repository cloned from. As for "upstream", we add it ourselves to point to the target repository. Of course, if you don't like the name "upstream", you could name it as you wish. Usually, we'll push the code to "origin". If the pushed code conflicts with the latest code in official("upstream"), we should pull the latest code from upstream to resolve the conflicts, and then push to "origin" again. The posted Pull Request will be updated automatically.
 
 #### 2. Configure pre-commit
 
-You should configure [pre-commit](https://pre-commit.com/#intro) in the local development environment to make sure the code style matches that of OpenMMLab.
+You should configure [pre-commit](https://pre-commit.com/#intro) in the local development environment to make sure the code style matches that of OpenMMLab(The following code should be executed under the MMCV directory).
 
 ```shell
 pip install -U pre-commit
-pre-com
+pre-commit install
 ```
 
 Check that pre-commit is configured successfully, and install the hooks defined in `.pre-commit-config.yaml`.
@@ -73,7 +73,7 @@ pre-commit run --all-files
 
 <img src="https://user-images.githubusercontent.com/57566630/202368856-0465a90d-8fce-4345-918e-67b8b9c82614.png" width="1200">
 
-If the installation process is interrupted, you can repeatedly run`pre-commit run ... ` to continue the installation.
+If the installation process is interrupted, you can repeatedly run `pre-commit run ... ` to continue the installation.
 
 If the code does not conform to the code style specification, pre-commit will raise a warning and  fixes some of the errors automatically.
 
@@ -151,7 +151,7 @@ Find more details about Pull Request description in [pull request guidelines](#p
 
 <img src="https://user-images.githubusercontent.com/57566630/167307490-f9ebf9fa-63c0-4d83-8ba1-081ea169eb3a.png" width="1200">
 
-MMCV will run unit test for the posted Pull Request on different platforms (Linux, Window, Mac),based on different versions of Python, PyTorch, CUDA to make sure the code is correct. We can see the specific test information by clicking `Details` in the above image so that we can modify the code.
+MMCV will run unit test for the posted Pull Request on different platforms (Linux, Window, Mac), based on different versions of Python, PyTorch, CUDA to make sure the code is correct. We can see the specific test information by clicking `Details` in the above image so that we can modify the code.
 
 (3) If the Pull Request passes the CI, then you can wait for the review from other developers. You'll modify the code based on the reviewer's comments, and repeat the steps [4](#4-commit-the-code-and-pass-the-unit-test)-[5](#5-push-the-code-to-remote) until all reviewers approve it. Then, we will merge it ASAP.
 

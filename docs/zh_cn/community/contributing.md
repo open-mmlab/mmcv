@@ -60,7 +60,7 @@ upstream	git@github.com:open-mmlab/mmcv (push)
 
 #### 2. 配置 pre-commit
 
-在本地开发环境中，我们使用 [pre-commit](https://pre-commit.com/#intro) 来检查代码风格，以确保代码风格的统一。在提交代码，需要先安装 pre-commit:
+在本地开发环境中，我们使用 [pre-commit](https://pre-commit.com/#intro) 来检查代码风格，以确保代码风格的统一。在提交代码，需要先安装 pre-commit（需要在 MMCV 目录下执行）:
 
 ```shell
 pip install -U pre-commit
