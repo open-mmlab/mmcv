@@ -5,7 +5,7 @@
 #include <parrots_mlu_helper.hpp>
 using namespace parrots;
 
-#define USE_CPU_ROI_ALIGN
+// #define USE_CPU_ROI_ALIGN
 
 #ifdef USE_CPU_ROI_ALIGN
 using at::Tensor;
