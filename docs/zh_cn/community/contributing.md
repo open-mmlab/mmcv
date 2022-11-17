@@ -4,9 +4,7 @@
 
 **修复错误**
 
-代码或文档的拼写错误可以直接提交拉取请求（Pull Request）。
-
-修复代码错误的步骤如下：
+修复代码实现错误的步骤如下：
 
 1. 如果提交的代码改动较大，建议先提交 issue，并正确描述 issue 的现象、原因和复现方式，讨论后确认修复方案
 2. 修复错误并补充相应的单元测试，提交拉取请求，
@@ -18,7 +16,7 @@
 
 **文档补充**
 
-修复文档错误可以直接提交拉取请求
+修复文档可以直接提交拉取请求
 
 添加文档或将文档翻译成其他语言步骤如下
 
@@ -27,7 +25,7 @@
 
 ### 拉取请求工作流
 
-如果你对拉取请求不了解，没关系，接下来的内容将会从零开始，一步一步地指引你如何创建一个拉取请求。如果你想深入了解拉取请求的开发模式，可以参考 github [官方文档](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests))
+如果你对拉取请求不了解，没关系，接下来的内容将会从零开始，一步一步地指引你如何创建一个拉取请求。如果你想深入了解拉取请求的开发模式，可以参考 github [官方文档](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests)
 
 #### 1. 复刻仓库
 
@@ -150,13 +148,13 @@ git push -u origin {branch_name}
 
 <img src="https://user-images.githubusercontent.com/57566630/202242953-c91a18ff-e388-4ff9-8591-5fae0ead6c1e.png" width="1200">
 
-描述规范详见[指引](#指引)的拉取请求规范部分
+描述规范详见[拉取请求规范](#拉取请求规范)
 
 &#160;
 
 **注意事项**
 
-(a) PR 描述应该包含修改理由、修改内容以及修改后带来的影响，并关联相关 Issue（具体方式见[文档](<(https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)>)）
+(a) PR 描述应该包含修改理由、修改内容以及修改后带来的影响，并关联相关 Issue（具体方式见[文档](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)
 
 (b) 如果是第一次为 OpenMMLab 做贡献，需要签署 CLA
 
@@ -166,15 +164,13 @@ git push -u origin {branch_name}
 
 <img src="https://user-images.githubusercontent.com/57566630/167307490-f9ebf9fa-63c0-4d83-8ba1-081ea169eb3a.png" width="1200">
 
-MMCV 会不同的平台（Linux、Window、Mac）,基于不同版本的 Python、PyTorch、CUDA对提交的代码进行单元测试，以保证代码的正确性，如果有任何一个。我们可通过点击上图中的 `Details` 来查看具体的测试信息，以便于我们修改代码。
+MMCV 会在不同的平台（Linux、Window、Mac）,基于不同版本的 Python、PyTorch、CUDA对提交的代码进行单元测试，以保证代码的正确性，如果有任何一个。我们可通过点击上图中的 `Details` 来查看具体的测试信息，以便于我们修改代码。
 
-更多内容详见[拉取请求规范](#拉取请求规范)
-
-(3) 如果 PR 通过了 CI，那么就可以等待其他开发者的 review 了，我们根据 reviewer 的意见，修改代码，并重复 [4](#4-提交代码并本地通过单元测试)-[5](#5-推送代码到远程) 步骤，直到 reviewer 通过 PR。所有 reviewer approve 后
+(3) 如果 PR 通过了 CI，那么就可以等待其他开发者的 review 了，我们根据 reviewer 的意见，修改代码，并重复 [4](#4-提交代码并本地通过单元测试)-[5](#5-推送代码到远程) 步骤，直到 reviewer 通过 PR。
 
 <img src="https://user-images.githubusercontent.com/57566630/202145400-cc2cd8c4-10b0-472f-ba37-07e6f50acc67.png" width="1200">
 
-我们会尽快将 PR 合并到主分支。
+所有 reviewer approve 后，我们会尽快将 PR 合并到主分支。
 
 #### 7. 解决冲突
 
