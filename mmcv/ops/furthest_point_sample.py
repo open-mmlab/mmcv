@@ -5,6 +5,7 @@ from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', [
     'furthest_point_sampling_forward',
+    'stack_furthest_point_sampling_forward',
     'furthest_point_sampling_with_dist_forward'
 ])
 
@@ -15,7 +16,8 @@ class FurthestPointSampling(Function):
 
     @staticmethod
     def forward(ctx, points_xyz: torch.Tensor,
-                num_points: int) -> torch.Tensor:
+                num_points: int,
+                points_batch_cnt = None) -> torch.Tensor:
         """
         Args:
             points_xyz (torch.Tensor): (B, N, 3) where N > num_points.
@@ -25,19 +27,30 @@ class FurthestPointSampling(Function):
             torch.Tensor: (B, num_points) indices of the sampled points.
         """
         assert points_xyz.is_contiguous()
+        if points_batch_cnt is not None:
+            assert points_xyz.shape[1] == 3
+            B = len(points_batch_cnt)
+            if not isinstance(num_points, torch.Tensor):
+                if not isinstance(num_points, list):
+                    num_points = [num_points for i in range(B)]
+            num_points = torch.tensor(num_points, device=points_xyz.device).int()
+            N, _ = points_xyz.size()
+            temp = torch.cuda.FloatTensor(N).fill_(1e10)
+            output = torch.cuda.IntTensor(num_points.sum().item())
+            ext_module.stack_furthest_point_sampling_forward(points_xyz, temp, points_batch_cnt, output, num_points)
+        else:
+            B, N = points_xyz.size()[:2]
+            output = torch.cuda.IntTensor(B, num_points)
+            temp = torch.cuda.FloatTensor(B, N).fill_(1e10)
 
-        B, N = points_xyz.size()[:2]
-        output = torch.cuda.IntTensor(B, num_points)
-        temp = torch.cuda.FloatTensor(B, N).fill_(1e10)
-
-        ext_module.furthest_point_sampling_forward(
-            points_xyz,
-            temp,
-            output,
-            b=B,
-            n=N,
-            m=num_points,
-        )
+            ext_module.furthest_point_sampling_forward(
+                points_xyz,
+                temp,
+                output,
+                b=B,
+                n=N,
+                m=num_points,
+            )
         if torch.__version__ != 'parrots':
             ctx.mark_non_differentiable(output)
         return output

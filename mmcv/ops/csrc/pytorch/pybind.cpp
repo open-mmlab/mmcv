@@ -117,6 +117,11 @@ void three_interpolate_forward(Tensor points_tensor, Tensor idx_tensor,
 void three_interpolate_backward(Tensor grad_out_tensor, Tensor idx_tensor,
                                 Tensor weight_tensor, Tensor grad_points_tensor,
                                 int b, int c, int n, int m);
+void stack_three_interpolate_forward(Tensor points_tensor, Tensor idx_tensor,
+                               Tensor weight_tensor, Tensor out_tensor);
+
+void stack_three_interpolate_backward(Tensor grad_out_tensor, Tensor idx_tensor,
+                                Tensor weight_tensor, Tensor grad_points_tensor);
 
 void three_nn_forward(Tensor unknown_tensor, Tensor known_tensor,
                       Tensor dist2_tensor, Tensor idx_tensor, int b, int n,
@@ -139,7 +144,12 @@ void iou3d_nms3d_normal_forward(Tensor boxes, Tensor keep, Tensor keep_num,
 
 void furthest_point_sampling_forward(Tensor points_tensor, Tensor temp_tensor,
                                      Tensor idx_tensor, int b, int n, int m);
-
+void stack_furthest_point_sampling_forward(Tensor points_tensor,
+                                            Tensor temp_tensor,
+                                            Tensor xyz_batch_cnt_tensor,
+                                               Tensor idx_tensor,
+                                               Tensor num_sampled_points_tensor
+                                               );
 void furthest_point_sampling_with_dist_forward(Tensor points_tensor,
                                                Tensor temp_tensor,
                                                Tensor idx_tensor, int b, int n,
@@ -459,7 +469,15 @@ void stack_query_three_nn_local_idxs(
     const Tensor new_xyz_grid_centers_tensor, Tensor new_xyz_grid_idxs_tensor,
     Tensor new_xyz_grid_dist2_tensor, Tensor stack_neighbor_idxs_tensor,
     Tensor start_len_tensor, const int M, const int num_total_grids);
-
+int stack_vector_pool_forward(const Tensor support_xyz_tensor, const Tensor xyz_batch_cnt_tensor,
+    const Tensor support_features_tensor, const Tensor new_xyz_tensor, const Tensor new_xyz_batch_cnt_tensor,
+    Tensor new_features_tensor, Tensor new_local_xyz_tensor,
+    Tensor point_cnt_of_grid_tensor, Tensor grouped_idxs_tensor,
+    const int num_grid_x, const int num_grid_y, const int num_grid_z, const float max_neighbour_distance, const int use_xyz,
+    const int num_max_sum_points, const int nsample, const int neighbor_type, const int pooling_type);
+void stack_vector_pool_backward(const Tensor grad_new_features_tensor,
+    const Tensor point_cnt_of_grid_tensor, const Tensor grouped_idxs_tensor,
+    Tensor grad_support_features_tensor);
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
         py::arg("kernel"), py::arg("up_x"), py::arg("up_y"), py::arg("down_x"),
@@ -572,6 +590,14 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("idx_tensor"), py::arg("weight_tensor"),
         py::arg("grad_points_tensor"), py::arg("b"), py::arg("c"), py::arg("n"),
         py::arg("m"));
+
+  m.def("stack_three_interpolate_forward", &stack_three_interpolate_forward,
+        "stack_three_interpolate_forward", py::arg("points_tensor"),
+        py::arg("idx_tensor"), py::arg("weight_tensor"), py::arg("out_tensor"));
+  m.def("stack_three_interpolate_backward", &stack_three_interpolate_backward,
+        "stack_three_interpolate_backward", py::arg("grad_out_tensor"),
+        py::arg("idx_tensor"), py::arg("weight_tensor"),
+        py::arg("grad_points_tensor"));
   m.def("three_nn_forward", &three_nn_forward, "three_nn_forward",
         py::arg("unknown_tensor"), py::arg("known_tensor"),
         py::arg("dist2_tensor"), py::arg("idx_tensor"), py::arg("b"),
@@ -620,6 +646,11 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         "furthest_point_sampling_with_dist_forward", py::arg("points_tensor"),
         py::arg("temp_tensor"), py::arg("idx_tensor"), py::arg("b"),
         py::arg("n"), py::arg("m"));
+  m.def("stack_furthest_point_sampling_forward",
+        &stack_furthest_point_sampling_forward,
+        "stack_furthest_point_sampling_forward", py::arg("points_tensor"),
+        py::arg("temp_tensor"), py::arg("xyz_batch_cnt_tensor"), py::arg("idx_tensor"),
+        py::arg("num_sampled_points_tensor"));
   m.def("masked_im2col_forward", &masked_im2col_forward,
         "masked_im2col_forward", py::arg("im"), py::arg("mask_h_idx"),
         py::arg("mask_w_idx"), py::arg("col"), py::arg("kernel_h"),
@@ -928,4 +959,18 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("new_xyz_grid_dist2_tensor"),
         py::arg("stack_neighbor_idxs_tensor"), py::arg("start_len_tensor"),
         py::arg("M"), py::arg("num_total_grids"));
+    m.def("stack_vector_pool_forward", &stack_vector_pool_forward,
+        "stack vector pool forward", py::arg("support_xyz_tensor"),
+        py::arg("xyz_batch_cnt_tensor"), py::arg("support_features_tensor"),
+        py::arg("new_xyz_tensor"),
+        py::arg("new_xyz_batch_cnt_tensor"),
+        py::arg("new_features_tensor"), py::arg("new_local_xyz_tensor"),
+        py::arg("point_cnt_of_grid_tensor"), py::arg("grouped_idxs_tensor"),
+        py::arg("num_grid_x"),py::arg("num_grid_y"),
+        py::arg("num_grid_z"),py::arg("max_neighbour_distance"),
+        py::arg("use_xyz"),py::arg("num_max_sum_points"),py::arg("nsample"),py::arg("neighbor_type"),py::arg("pooling_type"));
+      m.def("stack_vector_pool_backward", &stack_vector_pool_backward,
+        "stack vector pool backward", py::arg("grad_new_features_tensor"),
+        py::arg("point_cnt_of_grid_tensor"), py::arg("grouped_idxs_tensor"),
+        py::arg("grad_support_features_tensor"));
 }

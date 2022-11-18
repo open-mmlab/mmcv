@@ -512,6 +512,29 @@ REGISTER_DEVICE_IMPL(furthest_point_sampling_forward_impl, CUDA,
 REGISTER_DEVICE_IMPL(furthest_point_sampling_with_dist_forward_impl, CUDA,
                      furthest_point_sampling_with_dist_forward_cuda);
 
+void StackFurthestPointSamplingForwardCUDALauncher(Tensor points_tensor,
+                                            Tensor temp_tensor,
+                                            Tensor xyz_batch_cnt_tensor,
+                                               Tensor idx_tensor,
+                                               Tensor num_sampled_points_tensor);
+
+void stack_furthest_point_sampling_forward_cuda(Tensor points_tensor,
+                                            Tensor temp_tensor,
+                                            Tensor xyz_batch_cnt_tensor,
+                                               Tensor idx_tensor,
+                                               Tensor num_sampled_points_tensor){
+StackFurthestPointSamplingForwardCUDALauncher(points_tensor, temp_tensor,xyz_batch_cnt_tensor,
+                                              idx_tensor,num_sampled_points_tensor);
+                                               }
+void stack_furthest_point_sampling_forward_impl(Tensor points_tensor,
+                                            Tensor temp_tensor,
+                                            Tensor xyz_batch_cnt_tensor,
+                                               Tensor idx_tensor,
+                                               Tensor num_sampled_points_tensor);
+REGISTER_DEVICE_IMPL(stack_furthest_point_sampling_forward_impl, CUDA,
+                     stack_furthest_point_sampling_forward_cuda);
+
+
 torch::Tensor fused_bias_leakyrelu_op(const torch::Tensor& input,
                                       const torch::Tensor& bias,
                                       const torch::Tensor& refer, int act,
@@ -1409,6 +1432,43 @@ REGISTER_DEVICE_IMPL(three_interpolate_forward_impl, CUDA,
 REGISTER_DEVICE_IMPL(three_interpolate_backward_impl, CUDA,
                      three_interpolate_backward_cuda);
 
+void StackThreeInterpolateForwardCUDAKernelLauncher(
+                                               const Tensor points,
+                                               const Tensor idx,
+                                               const Tensor weight, Tensor out);
+
+void StackThreeInterpolateBackwardCUDAKernelLauncher(
+                                                const Tensor grad_out,
+                                                const Tensor idx,
+                                                const Tensor weight,
+                                                Tensor grad_points);
+
+void stack_three_interpolate_forward_cuda(
+                                    const Tensor points, const Tensor idx,
+                                    const Tensor weight, Tensor out) {
+  StackThreeInterpolateForwardCUDAKernelLauncher(points, idx, weight,
+                                            out);
+};
+
+void stack_three_interpolate_backward_cuda(
+                                     const Tensor grad_out, const Tensor idx,
+                                     const Tensor weight, Tensor grad_points) {
+  StackThreeInterpolateBackwardCUDAKernelLauncher(grad_out, idx, weight,
+                                             grad_points);
+};
+
+void stack_three_interpolate_forward_impl(
+                                    const Tensor points, const Tensor idx,
+                                    const Tensor weight, Tensor out);
+
+void stack_three_interpolate_backward_impl(
+                                     const Tensor grad_out, const Tensor idx,
+                                     const Tensor weight, Tensor grad_points);
+REGISTER_DEVICE_IMPL(stack_three_interpolate_forward_impl, CUDA,
+                     stack_three_interpolate_forward_cuda);
+REGISTER_DEVICE_IMPL(stack_three_interpolate_backward_impl, CUDA,
+                     stack_three_interpolate_backward_cuda);
+
 void ThreeNNForwardCUDAKernelLauncher(int b, int n, int m, const Tensor unknown,
                                       const Tensor known, Tensor dist2,
                                       Tensor idx);
@@ -1924,3 +1984,43 @@ REGISTER_DEVICE_IMPL(stack_query_three_nn_local_idxs_impl, CUDA,
                      stack_query_three_nn_local_idxs_cuda);
 REGISTER_DEVICE_IMPL(stack_query_local_neighbor_idxs_impl, CUDA,
                      stack_query_local_neighbor_idxs_cuda);
+int StackVectorPoolForwardCUDAKernelLauncher(const Tensor support_xyz_tensor, const Tensor xyz_batch_cnt_tensor,
+    const Tensor support_features_tensor, const Tensor new_xyz_tensor, const Tensor new_xyz_batch_cnt_tensor,
+    Tensor new_features_tensor, Tensor new_local_xyz_tensor,
+    Tensor point_cnt_of_grid_tensor, Tensor grouped_idxs_tensor,
+    const int num_grid_x, const int num_grid_y, const int num_grid_z, const float max_neighbour_distance, const int use_xyz,
+    const int num_max_sum_points, const int nsample, const int neighbor_type, const int pooling_type);
+int stack_vector_pool_forward_cuda(const Tensor support_xyz_tensor, const Tensor xyz_batch_cnt_tensor,
+    const Tensor support_features_tensor, const Tensor new_xyz_tensor, const Tensor new_xyz_batch_cnt_tensor,
+    Tensor new_features_tensor, Tensor new_local_xyz_tensor,
+    Tensor point_cnt_of_grid_tensor, Tensor grouped_idxs_tensor,
+    const int num_grid_x, const int num_grid_y, const int num_grid_z, const float max_neighbour_distance, const int use_xyz,
+    const int num_max_sum_points, const int nsample, const int neighbor_type, const int pooling_type){
+    StackVectorPoolForwardCUDAKernelLauncher(support_xyz_tensor, xyz_batch_cnt_tensor,
+            support_features_tensor, new_xyz_tensor, new_xyz_batch_cnt_tensor,
+            new_features_tensor, new_local_xyz_tensor,
+            point_cnt_of_grid_tensor, grouped_idxs_tensor,
+            num_grid_x, num_grid_y, num_grid_z, max_neighbour_distance, use_xyz,
+            num_max_sum_points, nsample, neighbor_type, pooling_type);
+    }
+int stack_vector_pool_forward_impl(const Tensor support_xyz_tensor, const Tensor xyz_batch_cnt_tensor,
+    const Tensor support_features_tensor, const Tensor new_xyz_tensor, const Tensor new_xyz_batch_cnt_tensor,
+    Tensor new_features_tensor, Tensor new_local_xyz_tensor,
+    Tensor point_cnt_of_grid_tensor, Tensor grouped_idxs_tensor,
+    const int num_grid_x, const int num_grid_y, const int num_grid_z, const float max_neighbour_distance, const int use_xyz,
+    const int num_max_sum_points, const int nsample, const int neighbor_type, const int pooling_type);
+void StackVectorPoolBackwardCUDAKernelLauncher(const Tensor grad_new_features_tensor,
+    const Tensor point_cnt_of_grid_tensor, const Tensor grouped_idxs_tensor,
+    Tensor grad_support_features_tensor);
+void stack_vector_pool_backward_impl(const Tensor grad_new_features_tensor,
+    const Tensor point_cnt_of_grid_tensor, const Tensor grouped_idxs_tensor,
+    Tensor grad_support_features_tensor);
+void stack_vector_pool_backward_cuda(const Tensor grad_new_features_tensor,
+    const Tensor point_cnt_of_grid_tensor, const Tensor grouped_idxs_tensor,
+    Tensor grad_support_features_tensor){
+    StackVectorPoolBackwardCUDAKernelLauncher(grad_new_features_tensor,point_cnt_of_grid_tensor,grouped_idxs_tensor,grad_support_features_tensor);
+    }
+REGISTER_DEVICE_IMPL(stack_vector_pool_forward_impl, CUDA,
+                     stack_vector_pool_forward_cuda);
+REGISTER_DEVICE_IMPL(stack_vector_pool_backward_impl, CUDA,
+                     stack_vector_pool_backward_cuda);

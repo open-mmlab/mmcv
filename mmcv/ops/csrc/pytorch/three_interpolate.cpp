@@ -31,3 +31,30 @@ void three_interpolate_backward(Tensor grad_out_tensor, Tensor idx_tensor,
   three_interpolate_backward_impl(b, c, n, m, grad_out_tensor, idx_tensor,
                                   weight_tensor, grad_points_tensor);
 }
+
+
+void stack_three_interpolate_forward_impl(
+                                    const Tensor points, const Tensor idx,
+                                    const Tensor weight, Tensor out) {
+  DISPATCH_DEVICE_IMPL(stack_three_interpolate_forward_impl, points, idx,
+                       weight, out);
+}
+
+void stack_three_interpolate_backward_impl(
+                                     const Tensor grad_out, const Tensor idx,
+                                     const Tensor weight, Tensor grad_points) {
+  DISPATCH_DEVICE_IMPL(stack_three_interpolate_backward_impl,grad_out,
+                       idx, weight, grad_points);
+}
+
+void stack_three_interpolate_forward(Tensor points_tensor, Tensor idx_tensor,
+                               Tensor weight_tensor, Tensor out_tensor) {
+  stack_three_interpolate_forward_impl(points_tensor, idx_tensor,
+                                 weight_tensor, out_tensor);
+}
+
+void stack_three_interpolate_backward(Tensor grad_out_tensor, Tensor idx_tensor,
+                                Tensor weight_tensor, Tensor grad_points_tensor) {
+  stack_three_interpolate_backward_impl(grad_out_tensor, idx_tensor,
+                                  weight_tensor, grad_points_tensor);
+}
