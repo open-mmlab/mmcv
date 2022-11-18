@@ -1,3 +1,3 @@
 ## 拉取请求
 
-内容已经迁移到 [contributing guidance](contributing.md)。
+本文档的内容已迁移到[贡献指南](contributing.md)。
