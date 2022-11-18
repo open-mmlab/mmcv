@@ -6,13 +6,13 @@
 
 修复代码实现错误的步骤如下：
 
-1. 如果提交的代码改动较大，建议先提交 issue，并正确描述 issue 的现象、原因和复现方式，讨论后确认修复方案
-2. 修复错误并补充相应的单元测试，提交拉取请求，
+1. 如果提交的代码改动较大，建议先提交 issue，并正确描述 issue 的现象、原因和复现方式，讨论后确认修复方案。
+2. 修复错误并补充相应的单元测试，提交拉取请求。
 
 **新增功能或组件**
 
 1. 如果新功能或模块涉及较大的代码改动，建议先提交 issue，确认功能的必要性。
-2. 实现新增功能并添单元测试，提交拉取请求，
+2. 实现新增功能并添单元测试，提交拉取请求。
 
 **文档补充**
 
@@ -20,8 +20,8 @@
 
 添加文档或将文档翻译成其他语言步骤如下
 
-1. 提交 issue，确认添加文档的必要性
-2. 添加文档，提交拉取请求
+1. 提交 issue，确认添加文档的必要性。
+2. 添加文档，提交拉取请求。
 
 ### 拉取请求工作流
 
@@ -91,7 +91,7 @@ pre-commit run --all-files -c .pre-commit-config-zh-cn.yaml
 
 <img src="https://user-images.githubusercontent.com/57566630/202369176-67642454-0025-4023-a095-263529107aa3.png" width="1200">
 
-如果我们想临时绕开 pre-commit 的检查提交一次代码，可以在 `git commit` 时加上 `--no-verify`
+如果我们想临时绕开 pre-commit 的检查提交一次代码，可以在 `git commit` 时加上 `--no-verify`（需要保证最后推送至远程仓库的代码能够通过 pre-commit 检查）。
 
 ```shell
 git commit -m "xxx" --no-verify
@@ -102,7 +102,7 @@ git commit -m "xxx" --no-verify
 安装完 pre-commit 之后，我们需要基于 master 创建开发分支，建议的分支命名规则为 `username/pr_name`。
 
 ```shell
-git checkout -b username/refactor_contributing_doc
+git checkout -b yhc/refactor_contributing_doc
 ```
 
 在后续的开发中，如果本地仓库的 master 分支落后于 upstream 的 master 分支，我们需要先拉取 upstream 的代码进行同步，再执行上面的命令

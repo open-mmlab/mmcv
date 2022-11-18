@@ -58,7 +58,7 @@ Here's a brief introduction to origin and upstream. When we use "git clone", we 
 
 #### 2. Configure pre-commit
 
-You should configure [pre-commit](https://pre-commit.com/#intro) in the local development environment to make sure the code style matches that of OpenMMLab(The following code should be executed under the MMCV directory).
+You should configure [pre-commit](https://pre-commit.com/#intro) in the local development environment to make sure the code style matches that of OpenMMLab. **Note**: The following code should be executed under the MMCV directory.
 
 ```shell
 pip install -U pre-commit
@@ -88,7 +88,7 @@ If the code does not conform to the code style specification, pre-commit will ra
 
 <img src="https://user-images.githubusercontent.com/57566630/202369176-67642454-0025-4023-a095-263529107aa3.png" width="1200">
 
-If we want to commit our code bypassing the pre-commit hook, we can use the `--no-verify` option.
+If we want to commit our code bypassing the pre-commit hook, we can use the `--no-verify` option(**only for temporarily commit**.
 
 ```shell
 git commit -m "xxx" --no-verify
@@ -99,7 +99,7 @@ git commit -m "xxx" --no-verify
 After configuring the pre-commit, we should create a branch based on the master branch to develop the new feature or fix the bug. The proposed branch name is `username/pr_name`
 
 ```shell
-git checkout -b username/refactor_contributing_doc
+git checkout -b yhc/refactor_contributing_doc
 ```
 
 In subsequent development, if the master branch of the local repository is behind the master branch of "upstream", we need to pull the upstream for synchronization, and then execute the above command:
