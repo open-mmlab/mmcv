@@ -116,7 +116,7 @@ def upfirdn2d(input: torch.Tensor,
               padding: Union[int, List[int]] = 0,
               flip_filter: bool = False,
               gain: Union[float, int] = 1,
-              impl: str = 'cuda'):
+              use_custom_op: bool = True):
     """Pad, upsample, filter, and downsample a batch of 2D images.
 
     Performs the following sequence of operations for each channel:
@@ -156,18 +156,14 @@ def upfirdn2d(input: torch.Tensor,
             Defaults to False.
         gain (int): Overall scaling factor for signal magnitude.
             Defaults to 1.
-        impl (str): Implementation to use. Can be `'ref'` or
-            `'cuda'`. If set to `'cuda'`, fast CUDA implementation of
-            `upfirdn2d()` using custom ops will be used. If set to `'ref'`,
-            slow reference implementation of `upfirdn2d()` using standard
-            PyTorch ops will be used. Defaults to 'cuda'.
+        use_custom_op (bool): Whether to use customized op.
+            Defaults to True.
 
     Returns:
         Tensor of the shape `[batch_size, num_channels, out_height, out_width]`
     """
     assert isinstance(input, torch.Tensor)
-    assert impl in ['ref', 'cuda']
-    if impl == 'cuda' and input.device.type == 'cuda':
+    if use_custom_op and input.device.type == 'cuda':
         return _upfirdn2d_cuda(
             up=up,
             down=down,
@@ -366,7 +362,7 @@ def filter2d(input: torch.Tensor,
              padding: Union[int, List[int]] = 0,
              flip_filter: bool = False,
              gain: Union[float, int] = 1,
-             impl: str = 'cuda'):
+             use_custom_op: bool = True):
     """Filter a batch of 2D images using the given 2D FIR filter.
 
     By default, the result is padded so that its shape matches the input.
@@ -386,7 +382,8 @@ def filter2d(input: torch.Tensor,
             Defaults to False.
         gain (int): Overall scaling factor for signal magnitude.
             Defaults to 1.
-        impl (str): Implementation to use for `upfirdn2d`. Defaults to 'cuda'.
+        use_custom_op (bool): Whether to use customized op.
+            Defaults to True.
 
     Returns:
         Tensor of the shape `[batch_size, num_channels, out_height,
@@ -401,7 +398,12 @@ def filter2d(input: torch.Tensor,
         pady1 + (fh - 1) // 2,
     ]
     return upfirdn2d(
-        input, f, padding=p, flip_filter=flip_filter, gain=gain, impl=impl)
+        input,
+        f,
+        padding=p,
+        flip_filter=flip_filter,
+        gain=gain,
+        use_custom_op=use_custom_op)
 
 
 def upsample2d(input: torch.Tensor,
@@ -410,7 +412,7 @@ def upsample2d(input: torch.Tensor,
                padding: Union[int, List[int]] = 0,
                flip_filter: bool = False,
                gain: Union[float, int] = 1,
-               impl: str = 'cuda'):
+               use_custom_op: bool = True):
     """Upsample a batch of 2D images using the given 2D FIR filter.
 
     By default, the result is padded so that its shape is a multiple of the
@@ -432,7 +434,8 @@ def upsample2d(input: torch.Tensor,
         flip_filter (bool): False = convolution, True = correlation. Defaults
             to False.
         gain (int): Overall scaling factor for signal magnitude. Defaults to 1.
-        impl (str): Implementation to use for `upfirdn2d`. Defaults to 'cuda'.
+        use_custom_op (bool): Whether to use customized op.
+            Defaults to True.
 
     Returns:
         torch.Tensor: Tensor of the shape `[batch_size, num_channels,
@@ -454,7 +457,7 @@ def upsample2d(input: torch.Tensor,
         padding=p,
         flip_filter=flip_filter,
         gain=gain * upx * upy,
-        impl=impl)
+        use_custom_op=use_custom_op)
 
 
 def downsample2d(input: torch.Tensor,
@@ -463,7 +466,7 @@ def downsample2d(input: torch.Tensor,
                  padding: Union[int, List[int]] = 0,
                  flip_filter: bool = False,
                  gain: Union[float, int] = 1,
-                 impl: str = 'cuda'):
+                 use_custom_op: bool = True):
     """Downsample a batch of 2D images using the given 2D FIR filter.
 
     By default, the result is padded so that its shape is a fraction of the
@@ -485,7 +488,8 @@ def downsample2d(input: torch.Tensor,
         flip_filter (bool): False = convolution, True = correlation. Defaults
             to False.
         gain (int): Overall scaling factor for signal magnitude. Defaults to 1.
-        impl (str): Implementation to use for `upfirdn2d`. Defaults to 'cuda'.
+        use_custom_op (bool): Whether to use customized op.
+            Defaults to True.
 
     Returns:
         torch.Tensor: Tensor of the shape `[batch_size, num_channels,
@@ -507,4 +511,4 @@ def downsample2d(input: torch.Tensor,
         padding=p,
         flip_filter=flip_filter,
         gain=gain,
-        impl=impl)
+        use_custom_op=use_custom_op)

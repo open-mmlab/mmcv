@@ -125,7 +125,7 @@ def bias_act(input: torch.Tensor,
              alpha: Optional[Union[float, int]] = None,
              gain: Optional[float] = None,
              clamp: Optional[float] = None,
-             impl: str = 'cuda'):
+             use_custom_op: bool = True):
     r"""Fused bias and activation function.
 
     Adds bias `b` to activation tensor `x`, evaluates activation function
@@ -155,18 +155,14 @@ def bias_act(input: torch.Tensor,
             Defaults to None.
         clamp (float):  Clamp the output values to `[-clamp, +clamp]`
             , or `None` to disable the clamping (default). Defaults to None.
-        impl (str): Implementation to use. Can be `'ref'` or
-            `'cuda'`. If set to `'cuda'`, fast CUDA implementation of
-            `upfirdn2d()` using custom ops will be used. If set to `'ref'`,
-            slow reference implementation of `bias_act()` using standard
-            PyTorch will be used. Defaults to 'cuda'.
+        use_custom_op (bool): Whether to use customized op.
+            Defaults to True.
 
     Returns:
         torch.Tensor: Tensor of the same shape and datatype as `x`.
     """
     assert isinstance(input, torch.Tensor)
-    assert impl in ['ref', 'cuda']
-    if impl == 'cuda' and input.is_cuda:
+    if use_custom_op and input.is_cuda:
         return _bias_act_cuda(
             dim=dim, act=act, alpha=alpha, gain=gain,
             clamp=clamp).apply(input, bias)

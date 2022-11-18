@@ -55,7 +55,7 @@ def filtered_lrelu(input: torch.Tensor,
                    slope: float = 0.2,
                    clamp: Optional[Union[float, int]] = None,
                    flip_filter: bool = False,
-                   impl: str = 'cuda'):
+                   use_custom_op: bool = True):
     """Filtered leaky ReLU for a batch of 2D images.
 
     Performs the following sequence of operations for each channel:
@@ -114,20 +114,15 @@ def filtered_lrelu(input: torch.Tensor,
             output. Defaults to None.
         flip_filter (bool): False = convolution, True = correlation.
             Defaults to False.
-        impl (str): Implementation to use. Can be `'ref'` or
-            `'cuda'`. If set to `'cuda'`, fast CUDA implementation of
-            `upfirdn2d()` using custom ops will be used. If set to `'ref'`,
-            slow and memory-inefficient reference implementation of
-            `filtered_lrelu()` using existing `upfirdn2n()` and `bias_act()`
-            ops will be used. Defaults to 'cuda'.
+        use_custom_op (bool): Whether to use customized op.
+            Defaults to True.
 
     Returns:
         Tensor of the shape `[batch_size, num_channels, out_height,
                 out_width]`.
     """
     assert isinstance(input, torch.Tensor)
-    assert impl in ['ref', 'cuda']
-    if impl == 'cuda' and input.is_cuda:
+    if use_custom_op and input.is_cuda:
         return _filtered_lrelu_cuda(
             up=up,
             down=down,
