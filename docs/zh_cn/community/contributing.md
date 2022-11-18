@@ -111,7 +111,7 @@ git checkout -b username/refactor_contributing_doc
 git pull upstream master
 ```
 
-#### 4. 提交代码并本地通过单元测试
+#### 4. 提交代码并在本地通过单元测试
 
 - MMCV 引入了 mypy 来做静态类型检查，以增加代码的鲁棒性。因此我们在提交代码时，需要补充 Type Hints。具体规则可以参考[教程](https://zhuanlan.zhihu.com/p/519335398)。
 
@@ -131,7 +131,7 @@ git pull upstream master
 
 #### 5. 推送代码到远程
 
-代码通过单元测试和 pre-commit 检查后，将代码推送到远程仓库，如果是第一次推送。需要可以在 `git push` 后加上 `-u` 参数以关联远程分支
+代码通过单元测试和 pre-commit 检查后，将代码推送到远程仓库，如果是第一次推送，可以在 `git push` 后加上 `-u` 参数以关联远程分支
 
 ```shell
 git push -u origin {branch_name}
@@ -154,7 +154,7 @@ git push -u origin {branch_name}
 
 **注意事项**
 
-(a) PR 描述应该包含修改理由、修改内容以及修改后带来的影响，并关联相关 Issue（具体方式见[文档](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)
+(a) PR 描述应该包含修改理由、修改内容以及修改后带来的影响，并关联相关 Issue（具体方式见[文档](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)）
 
 (b) 如果是第一次为 OpenMMLab 做贡献，需要签署 CLA
 
@@ -164,13 +164,13 @@ git push -u origin {branch_name}
 
 <img src="https://user-images.githubusercontent.com/57566630/167307490-f9ebf9fa-63c0-4d83-8ba1-081ea169eb3a.png" width="1200">
 
-MMCV 会在不同的平台（Linux、Window、Mac）,基于不同版本的 Python、PyTorch、CUDA对提交的代码进行单元测试，以保证代码的正确性，如果有任何一个。我们可通过点击上图中的 `Details` 来查看具体的测试信息，以便于我们修改代码。
+MMCV 会在不同的平台（Linux、Window、Mac），基于不同版本的 Python、PyTorch、CUDA 对提交的代码进行单元测试，以保证代码的正确性，如果有任何一个没有通过，我们可点击上图中的 `Details` 来查看具体的测试信息，以便于我们修改代码。
 
-(3) 如果 PR 通过了 CI，那么就可以等待其他开发者的 review 了，我们根据 reviewer 的意见，修改代码，并重复 [4](#4-提交代码并本地通过单元测试)-[5](#5-推送代码到远程) 步骤，直到 reviewer 通过 PR。
+(3) 如果 PR 通过了 CI，那么就可以等待其他开发者的 review，并根据 reviewer 的意见，修改代码，并重复 [4](#4-提交代码并本地通过单元测试)-[5](#5-推送代码到远程) 步骤，直到 reviewer 同意合入 PR。
 
 <img src="https://user-images.githubusercontent.com/57566630/202145400-cc2cd8c4-10b0-472f-ba37-07e6f50acc67.png" width="1200">
 
-所有 reviewer approve 后，我们会尽快将 PR 合并到主分支。
+所有 reviewer 同意合入 PR 后，我们会尽快将 PR 合并到主分支。
 
 #### 7. 解决冲突
 
