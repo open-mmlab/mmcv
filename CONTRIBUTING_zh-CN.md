@@ -54,9 +54,7 @@ upstream	git@github.com:open-mmlab/mmcv (fetch)
 upstream	git@github.com:open-mmlab/mmcv (push)
 ```
 
-```{note}
-这里对 origin 和 upstream 进行一个简单的介绍，当我们使用 git clone 来克隆代码时，会默认创建一个 origin 的 remote，它指向我们克隆的代码库地址，而 upstream 则是我们自己添加的，用来指向原始代码库地址。当然如果你不喜欢他叫 upstream，也可以自己修改，比如叫 open-mmlab。我们通常向 origin 提交代码（即 fork 下来的远程仓库），然后向 upstream 提交一个 pull request。如果提交的代码和最新的代码发生冲突，再从 upstream 拉取最新的代码，和本地分支解决冲突，再提交到 origin。
-```
+> 这里对 origin 和 upstream 进行一个简单的介绍，当我们使用 git clone 来克隆代码时，会默认创建一个 origin 的 remote，它指向我们克隆的代码库地址，而 upstream 则是我们自己添加的，用来指向原始代码库地址。当然如果你不喜欢他叫 upstream，也可以自己修改，比如叫 open-mmlab。我们通常向 origin 提交代码（即 fork 下来的远程仓库），然后向 upstream 提交一个 pull request。如果提交的代码和最新的代码发生冲突，再从 upstream 拉取最新的代码，和本地分支解决冲突，再提交到 origin。
 
 #### 2. 配置 pre-commit
 
@@ -77,13 +75,11 @@ pre-commit run --all-files
 
 <img src="https://user-images.githubusercontent.com/57566630/202368856-0465a90d-8fce-4345-918e-67b8b9c82614.png" width="1200">
 
-```{note}
-如果你是中国用户，由于网络原因，可能会出现安装失败的情况，这时可以使用国内源
+> 如果你是中国用户，由于网络原因，可能会出现安装失败的情况，这时可以使用国内源
 
-pre-commit install -c .pre-commit-config-zh-cn.yaml
+> pre-commit install -c .pre-commit-config-zh-cn.yaml
 
-pre-commit run --all-files -c .pre-commit-config-zh-cn.yaml
-```
+> pre-commit run --all-files -c .pre-commit-config-zh-cn.yaml
 
 如果安装过程被中断，可以重复执行 `pre-commit run ...` 继续安装。
 
