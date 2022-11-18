@@ -4,7 +4,9 @@
 
 **修复错误**
 
-修复代码实现错误的步骤如下：
+代码或文档的拼写错误可以直接提交拉取请求（Pull Request）。
+
+修复代码错误的步骤如下：
 
 1. 如果提交的代码改动较大，建议先提交 issue，并正确描述 issue 的现象、原因和复现方式，讨论后确认修复方案
 2. 修复错误并补充相应的单元测试，提交拉取请求，
@@ -16,7 +18,7 @@
 
 **文档补充**
 
-修复文档可以直接提交拉取请求
+修复文档错误可以直接提交拉取请求
 
 添加文档或将文档翻译成其他语言步骤如下
 
@@ -25,7 +27,7 @@
 
 ### 拉取请求工作流
 
-如果你对拉取请求不了解，没关系，接下来的内容将会从零开始，一步一步地指引你如何创建一个拉取请求。如果你想深入了解拉取请求的开发模式，可以参考 github [官方文档](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests)
+如果你对拉取请求不了解，没关系，接下来的内容将会从零开始，一步一步地指引你如何创建一个拉取请求。如果你想深入了解拉取请求的开发模式，可以参考 github [官方文档](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests))
 
 #### 1. 复刻仓库
 
@@ -37,6 +39,7 @@
 
 ```shell
 git clone git@github.com:{username}/mmcv.git
+cd mmcv
 ```
 
 添加原代码库为上游代码库
@@ -54,9 +57,7 @@ upstream	git@github.com:open-mmlab/mmcv (fetch)
 upstream	git@github.com:open-mmlab/mmcv (push)
 ```
 
-```{note}
-这里对 origin 和 upstream 进行一个简单的介绍，当我们使用 git clone 来克隆代码时，会默认创建一个 origin 的 remote，它指向我们克隆的代码库地址，而 upstream 则是我们自己添加的，用来指向原始代码库地址。当然如果你不喜欢他叫 upstream，也可以自己修改，比如叫 open-mmlab。我们通常向 origin 提交代码（即 fork 下来的远程仓库），然后向 upstream 提交一个 pull request。如果提交的代码和最新的代码发生冲突，再从 upstream 拉取最新的代码，和本地分支解决冲突，再提交到 origin。
-```
+> 这里对 origin 和 upstream 进行一个简单的介绍，当我们使用 git clone 来克隆代码时，会默认创建一个 origin 的 remote，它指向我们克隆的代码库地址，而 upstream 则是我们自己添加的，用来指向原始代码库地址。当然如果你不喜欢他叫 upstream，也可以自己修改，比如叫 open-mmlab。我们通常向 origin 提交代码（即 fork 下来的远程仓库），然后向 upstream 提交一个 pull request。如果提交的代码和最新的代码发生冲突，再从 upstream 拉取最新的代码，和本地分支解决冲突，再提交到 origin。
 
 #### 2. 配置 pre-commit
 
@@ -75,21 +76,19 @@ pre-commit run --all-files
 
 <img src="https://user-images.githubusercontent.com/57566630/173660750-3df20a63-cb66-4d33-a986-1f643f1d8aaf.png" width="1200">
 
-<img src="https://user-images.githubusercontent.com/57566630/202368856-0465a90d-8fce-4345-918e-67b8b9c82614.png" width="1200">
+<img src="https://user-images.githubusercontent.com/57566630/167306496-d2b8daf7-d72c-4129-a0e8-175f8a32cc47.png" width="1200">
 
-```{note}
-如果你是中国用户，由于网络原因，可能会出现安装失败的情况，这时可以使用国内源
+> 如果你是中国用户，由于网络原因，可能会出现安装失败的情况，这时可以使用国内源
 
-pre-commit install -c .pre-commit-config-zh-cn.yaml
+> pre-commit install -c .pre-commit-config-zh-cn.yaml
 
-pre-commit run --all-files -c .pre-commit-config-zh-cn.yaml
-```
+> pre-commit run --all-files -c .pre-commit-config-zh-cn.yaml
 
 如果安装过程被中断，可以重复执行 `pre-commit run ...` 继续安装。
 
 如果提交的代码不符合代码风格规范，pre-commit 会发出警告，并自动修复部分错误。
 
-<img src="https://user-images.githubusercontent.com/57566630/202369176-67642454-0025-4023-a095-263529107aa3.png" width="1200">
+<img src="https://user-images.githubusercontent.com/57566630/167306461-3cb3b5bf-d9b3-4d5a-9c0a-34cfded8dbbc.png" width="1200">
 
 如果我们想临时绕开 pre-commit 的检查提交一次代码，可以在 `git commit` 时加上 `--no-verify`
 
@@ -148,13 +147,13 @@ git push -u origin {branch_name}
 
 <img src="https://user-images.githubusercontent.com/57566630/202242953-c91a18ff-e388-4ff9-8591-5fae0ead6c1e.png" width="1200">
 
-描述规范详见[拉取请求规范](#拉取请求规范)
+描述规范详见[指引](#指引)的拉取请求规范部分
 
 &#160;
 
 **注意事项**
 
-(a) PR 描述应该包含修改理由、修改内容以及修改后带来的影响，并关联相关 Issue（具体方式见[文档](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)
+(a) PR 描述应该包含修改理由、修改内容以及修改后带来的影响，并关联相关 Issue（具体方式见[文档](<(https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)>)）
 
 (b) 如果是第一次为 OpenMMLab 做贡献，需要签署 CLA
 
@@ -164,13 +163,15 @@ git push -u origin {branch_name}
 
 <img src="https://user-images.githubusercontent.com/57566630/167307490-f9ebf9fa-63c0-4d83-8ba1-081ea169eb3a.png" width="1200">
 
-MMCV 会在不同的平台（Linux、Window、Mac）,基于不同版本的 Python、PyTorch、CUDA对提交的代码进行单元测试，以保证代码的正确性，如果有任何一个。我们可通过点击上图中的 `Details` 来查看具体的测试信息，以便于我们修改代码。
+MMCV 会不同的平台（Linux、Window、Mac）,基于不同版本的 Python、PyTorch、CUDA对提交的代码进行单元测试，以保证代码的正确性，如果有任何一个。我们可通过点击上图中的 `Details` 来查看具体的测试信息，以便于我们修改代码。
 
-(3) 如果 PR 通过了 CI，那么就可以等待其他开发者的 review 了，我们根据 reviewer 的意见，修改代码，并重复 [4](#4-提交代码并本地通过单元测试)-[5](#5-推送代码到远程) 步骤，直到 reviewer 通过 PR。
+更多内容详见[拉取请求规范](#拉取请求规范)
+
+(3) 如果 PR 通过了 CI，那么就可以等待其他开发者的 review 了，我们根据 reviewer 的意见，修改代码，并重复 [4](#4-提交代码并本地通过单元测试)-[5](#5-推送代码到远程) 步骤，直到 reviewer 通过 PR。所有 reviewer approve 后
 
 <img src="https://user-images.githubusercontent.com/57566630/202145400-cc2cd8c4-10b0-472f-ba37-07e6f50acc67.png" width="1200">
 
-所有 reviewer approve 后，我们会尽快将 PR 合并到主分支。
+我们会尽快将 PR 合并到主分支。
 
 #### 7. 解决冲突
 
