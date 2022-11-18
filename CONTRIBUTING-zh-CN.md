@@ -76,6 +76,7 @@ pre-commit run --all-files
 > Chinese users may fail to download the pre-commit hooks due to the network issue. In this case, you could download these hooks from gitee by setting the .pre-commit-config-zh-cn.yaml
 
 > pre-commit install -c .pre-commit-config-zh-cn.yaml
+
 > pre-commit run --all-files -c .pre-commit-config-zh-cn.yaml
 
 If the installation process is interrupted, you can repeatedly run `pre-commit run ... ` to continue the installation.
