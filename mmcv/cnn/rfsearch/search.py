@@ -23,19 +23,34 @@ logger.setLevel(logging.ERROR)
 @HOOKS.register_module()
 class RFSearchHook(Hook):
     """Rcecptive field search via dilation rates.
-    
+
     Please refer to `RF-Next: Efficient Receptive Field
-    Search for Convolutional Neural Networks 
+    Search for Convolutional Neural Networks
     <https://arxiv.org/abs/2206.06637>`_ for more details.
-           
+
 
     Args:
         mode (str, optional): It can be set to the following types:
             'search', 'fixed_single_branch', or 'fixed_multi_branch'.
             Defaults to 'search'.
         config (Dict, optional): config dict of search.
-        rfstructure_file (str, optional): Path to load searched receptive fields
-            of the model. Defaults to None.
+            By default this config contains "search",
+            and config["search"] must includes:
+            - "step": recording the current searching step.
+            - "max_step": The maximum number of searching steps
+                to update the structures.
+            - "search_interval": The interval (epoch/iteration)
+                between two updates.
+            - "exp_rate": The controller of the sparsity of search space.
+            - "init_alphas": The value for initializing weights of each branch.
+            - "mmin": The minimum dilation rate.
+            - "mmax": The maximum dilation rate.
+            - "num_branches": The controller of the size of
+                search space (the number of branches).
+            - "skip_layer": The modules in skip_layer will be ignored
+                during the receptive field search.
+        rfstructure_file (str, optional): Path to load searched receptive
+            fields of the model. Defaults to None.
         by_epoch (bool, optional): Determine to perform step by epoch or
             by iteration. If set to True, it will step by epoch. Otherwise, by
             iteration. Defaults to True.
@@ -75,13 +90,13 @@ class RFSearchHook(Hook):
             logger.info('RFSearch init begin.')
         if self.mode == 'search':
             if self.config['structure']:
-                self.set_model(model, self.config, search_op='Conv2d')
-            self.wrap_model(model, self.config, search_op='Conv2d')
+                self.set_model(model, search_op='Conv2d')
+            self.wrap_model(model, search_op='Conv2d')
         elif self.mode == 'fixed_single_branch':
-            self.set_model(model, self.config, search_op='Conv2d')
+            self.set_model(model, search_op='Conv2d')
         elif self.mode == 'fixed_multi_branch':
-            self.set_model(model, self.config, search_op='Conv2d')
-            self.wrap_model(model, self.config, search_op='Conv2d')
+            self.set_model(model, search_op='Conv2d')
+            self.wrap_model(model, search_op='Conv2d')
         else:
             raise NotImplementedError
         if self.verbose:
@@ -150,14 +165,12 @@ class RFSearchHook(Hook):
 
     def wrap_model(self,
                    model: nn.Module,
-                   config: Dict,
                    search_op: str = 'Conv2d',
                    init_rates: Optional[int] = None):
         """wrap model to support searchable conv op.
 
         Args:
             model (nn.Module): pytorch model
-            config (Dict): search config file
             search_op (str):
                 the module that uses RF search. Defaults to 'Conv2d'.
             init_rates (int, optional):
@@ -171,7 +184,8 @@ class RFSearchHook(Hook):
                     1 < module.kernel_size[1] and \
                         0 != module.kernel_size[1] % 2:
                     moduleWrap = eval(search_op + 'RFSearchOp')(
-                        module, init_rates, config['search'], self.verbose)
+                        module, init_rates, self.config['search'],
+                        self.verbose)
                     moduleWrap = moduleWrap.cuda()
                     if self.verbose:
                         logger.info('Wrap model %s to %s.' %
@@ -186,11 +200,10 @@ class RFSearchHook(Hook):
                             for each in self.config['search']['skip_layer']
                     ]):
                         continue
-                self.wrap_model(module, config, search_op, init_rates)
+                self.wrap_model(module, search_op, init_rates)
 
     def set_model(self,
                   model: nn.Module,
-                  config: Dict,
                   search_op: str = 'Conv2d',
                   init_rates: int = None,
                   prefix: str = ''):
@@ -217,22 +230,22 @@ class RFSearchHook(Hook):
                     0 != module.kernel_size[0] % 2 or \
                     1 < module.kernel_size[1] and \
                         0 != module.kernel_size[1] % 2:
-                    if isinstance(config['structure'][fullname], int):
-                        config['structure'][fullname] = [
-                            config['structure'][fullname],
-                            config['structure'][fullname]
+                    if isinstance(self.config['structure'][fullname], int):
+                        self.config['structure'][fullname] = [
+                            self.config['structure'][fullname],
+                            self.config['structure'][fullname]
                         ]
                     module.dilation = (
-                        config['structure'][fullname][0],
-                        config['structure'][fullname][1],
+                        self.config['structure'][fullname][0],
+                        self.config['structure'][fullname][1],
                     )
-                    module.padding = (get_single_padding(
-                        module.kernel_size[0], module.stride[0],
-                        config['structure'][fullname][0]),
-                                      get_single_padding(
-                                          module.kernel_size[1],
-                                          module.stride[1],
-                                          config['structure'][fullname][1]))
+                    module.padding = (
+                        get_single_padding(
+                            module.kernel_size[0], module.stride[0],
+                            self.config['structure'][fullname][0]),
+                        get_single_padding(
+                            module.kernel_size[1], module.stride[1],
+                            self.config['structure'][fullname][1]))
                     setattr(model, name, module)
                     if self.verbose:
                         logger.info(
@@ -247,4 +260,4 @@ class RFSearchHook(Hook):
                             for each in self.config['search']['skip_layer']
                     ]):
                         continue
-                self.set_model(module, config, search_op, init_rates, fullname)
+                self.set_model(module, search_op, init_rates, fullname)
