@@ -23,23 +23,24 @@ logger.setLevel(logging.ERROR)
 @HOOKS.register_module()
 class RFSearchHook(Hook):
     """Rcecptive field search via dilation rates.
-        Paper: RF-Next: Efficient Receptive Field
-            Search for Convolutional Neural Networks, TPAMI2022 (CVPR2021)
-            https://arxiv.org/abs/2206.06637
+    
+    Please refer to `RF-Next: Efficient Receptive Field
+    Search for Convolutional Neural Networks 
+    <https://arxiv.org/abs/2206.06637>`_ for more details.
+           
 
     Args:
         mode (str, optional): It can be set to the following types:
             'search', 'fixed_single_branch', or 'fixed_multi_branch'.
+            Defaults to 'search'.
         config (Dict, optional): config dict of search.
-        rfstructure_file (str, optional):
-            Searched receptive fields of the model.
-        by_epoch (bool, optional):
-            Determine perform step by epoch or by iteration.
-            If set to True, it will step by epoch. Otherwise, by iteration.
-            Default: True.
-        verbose (bool):
-            Determines whether to print rf-next related logging messages.
-            Defaults to True.
+        rfstructure_file (str, optional): Path to load searched receptive fields
+            of the model. Defaults to None.
+        by_epoch (bool, optional): Determine to perform step by epoch or
+            by iteration. If set to True, it will step by epoch. Otherwise, by
+            iteration. Defaults to True.
+        verbose (bool): Determines whether to print rf-next related logging
+            messages. Defaults to True.
     """
 
     def __init__(self,
@@ -60,16 +61,15 @@ class RFSearchHook(Hook):
         self.num_branches = self.config['search']['num_branches']
         self.by_epoch = by_epoch
 
-    def model_init(self, model: nn.Module):
+    def init_model(self, model: nn.Module):
         """init model with search ability.
 
         Args:
             model (nn.Module): pytorch model
 
         Raises:
-            NotImplementedError:
-                only support three modes:
-                    search/fixed_single_branch/fixed_multi_branch
+            NotImplementedError: only support three modes:
+                search/fixed_single_branch/fixed_multi_branch
         """
         if self.verbose:
             logger.info('RFSearch init begin.')
@@ -87,7 +87,7 @@ class RFSearchHook(Hook):
         if self.verbose:
             logger.info('RFSearch init end.')
 
-    def after_epoch(self, runner):
+    def after_train_epoch(self, runner):
         """Do search after one training epoch.
 
         Args:
@@ -96,7 +96,7 @@ class RFSearchHook(Hook):
         if self.by_epoch and self.mode == 'search':
             self.step(runner.model, runner.work_dir)
 
-    def after_iter(self, runner):
+    def after_train_iter(self, runner):
         """Do search after one training iteration.
 
         Args:
@@ -106,7 +106,7 @@ class RFSearchHook(Hook):
             self.step(runner.model, runner.work_dir)
 
     def step(self, model: nn.Module, work_dir: str):
-        """do one step of dilation search.
+        """Performs a dilation searching step.
 
         Args:
             model (nn.Module): pytorch model
@@ -138,7 +138,7 @@ class RFSearchHook(Hook):
         Args:
             model (nn.Module): pytorch model
         """
-        for _, module in model.named_modules():
+        for module in model.modules():
             if isinstance(module, ConvRFSearchOp):
                 module.estimate()
                 module.expand()
