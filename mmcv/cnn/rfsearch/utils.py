@@ -16,11 +16,11 @@ def write_to_json(dicts, filename: str):
         mmcv.dump(dicts, f, file_format='json')
 
 
-def expands_rate(d: list, config: dict) -> list:
+def expand_rates(dilation: list, config: dict) -> list:
     """expand dilation rate according to config.
 
     Args:
-        d (int): _description_
+        dilation (int): _description_
         config (dict): config dict
 
     Returns:
@@ -33,18 +33,18 @@ def expands_rate(d: list, config: dict) -> list:
     for _ in range(config['num_branches'] // 2):
         large_rates.append([
             np.clip(
-                int(round((1 + exp_rate) * d[0])), config['mmin'],
+                int(round((1 + exp_rate) * dilation[0])), config['mmin'],
                 config['mmax']).item(),
             np.clip(
-                int(round((1 + exp_rate) * d[1])), config['mmin'],
+                int(round((1 + exp_rate) * dilation[1])), config['mmin'],
                 config['mmax']).item()
         ])
         small_rates.append([
             np.clip(
-                int(round((1 - exp_rate) * d[0])), config['mmin'],
+                int(round((1 - exp_rate) * dilation[0])), config['mmin'],
                 config['mmax']).item(),
             np.clip(
-                int(round((1 - exp_rate) * d[1])), config['mmin'],
+                int(round((1 - exp_rate) * dilation[1])), config['mmin'],
                 config['mmax']).item()
         ])
 
@@ -53,7 +53,7 @@ def expands_rate(d: list, config: dict) -> list:
     if config['num_branches'] % 2 == 0:
         rate_list = small_rates + large_rates
     else:
-        rate_list = small_rates + [d] + large_rates
+        rate_list = small_rates + [dilation] + large_rates
 
     unique_rate_list = list(set(rate_list))
     unique_rate_list.sort(key=rate_list.index)

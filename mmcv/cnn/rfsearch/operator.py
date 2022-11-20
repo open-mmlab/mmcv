@@ -8,7 +8,7 @@ from torch import Tensor
 
 from mmcv.runner import BaseModule
 from mmcv.utils.logging import get_logger
-from .utils import expands_rate, get_single_padding
+from .utils import expand_rates, get_single_padding
 
 logger = get_logger('Operators')
 
@@ -76,62 +76,64 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
         self.verbose = verbose
         if init_dilation is None:
             init_dilation = op_layer.dilation
-        self.rates = expands_rate(init_dilation, global_config)
+        self.dilation_rates = expand_rates(init_dilation, global_config)
         if self.op_layer.kernel_size[
                 0] == 1 or self.op_layer.kernel_size[0] % 2 == 0:
-            self.rates = [(op_layer.dilation[0], r[1]) for r in self.rates]
+            self.dilation_rates = [(op_layer.dilation[0], r[1])
+                                   for r in self.dilation_rates]
         if self.op_layer.kernel_size[
                 1] == 1 or self.op_layer.kernel_size[1] % 2 == 0:
-            self.rates = [(r[0], op_layer.dilation[1]) for r in self.rates]
+            self.dilation_rates = [(r[0], op_layer.dilation[1])
+                                   for r in self.dilation_rates]
 
         self.branch_weights = nn.Parameter(torch.Tensor(self.num_branches))
         if self.verbose:
-            logger.info(f'Expand as {self.rates}')
+            logger.info(f'Expand as {self.dilation_rates}')
         nn.init.constant_(self.branch_weights, global_config['init_alphas'])
 
-    def forward(self, x: Tensor) -> Tensor:
-        norm_w = self.normlize(self.branch_weights[:len(self.rates)])
-        if len(self.rates) == 1:
-            xx = [
+    def forward(self, input: Tensor) -> Tensor:
+        norm_w = self.normlize(self.branch_weights[:len(self.dilation_rates)])
+        if len(self.dilation_rates) == 1:
+            outputs = [
                 nn.functional.conv2d(
-                    x,
+                    input,
                     weight=self.op_layer.weight,
                     bias=self.op_layer.bias,
                     stride=self.op_layer.stride,
-                    padding=self.get_padding(self.rates[0]),
-                    dilation=self.rates[0],
+                    padding=self.get_padding(self.dilation_rates[0]),
+                    dilation=self.dilation_rates[0],
                     groups=self.op_layer.groups,
                 )
             ]
         else:
-            xx = [
+            outputs = [
                 nn.functional.conv2d(
-                    x,
+                    input,
                     weight=self.op_layer.weight,
                     bias=self.op_layer.bias,
                     stride=self.op_layer.stride,
                     padding=self.get_padding(r),
                     dilation=r,
                     groups=self.op_layer.groups,
-                ) * norm_w[i] for i, r in enumerate(self.rates)
+                ) * norm_w[i] for i, r in enumerate(self.dilation_rates)
             ]
-        x = xx[0]
-        for i in range(1, len(self.rates)):
-            x += xx[i]
-        return x
+        output = outputs[0]
+        for i in range(1, len(self.dilation_rates)):
+            output += outputs[i]
+        return output
 
     def estimate(self):
-        """estimate new dilation rate based on trained branch_weights."""
-        norm_w = self.normlize(self.branch_weights[:len(self.rates)])
+        """Estimate new dilation rate based on trained branch_weights."""
+        norm_w = self.normlize(self.branch_weights[:len(self.dilation_rates)])
         if self.verbose:
             logger.info('Estimate dilation {} with weight {}.'.format(
-                self.rates,
+                self.dilation_rates,
                 norm_w.detach().cpu().numpy().tolist()))
 
         sum0, sum1, w_sum = 0, 0, 0
-        for i in range(len(self.rates)):
-            sum0 += norm_w[i].item() * self.rates[i][0]
-            sum1 += norm_w[i].item() * self.rates[i][1]
+        for i in range(len(self.dilation_rates)):
+            sum0 += norm_w[i].item() * self.dilation_rates[i][0]
+            sum1 += norm_w[i].item() * self.dilation_rates[i][1]
             w_sum += norm_w[i].item()
         estimated = [
             np.clip(
@@ -143,24 +145,24 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
         ]
         self.op_layer.dilation = tuple(estimated)
         self.op_layer.padding = self.get_padding(self.op_layer.dilation)
-        self.rates = [tuple(estimated)]
+        self.dilation_rates = [tuple(estimated)]
         if self.verbose:
             logger.info(f'Estimate as {tuple(estimated)}')
 
     def expand(self):
-        """expand dilation rate."""
-        d = self.op_layer.dilation
-        rates = expands_rate(d, self.global_config)
+        """Expand dilation rate."""
+        dilation = self.op_layer.dilation
+        dilation_rates = expand_rates(dilation, self.global_config)
         if self.op_layer.kernel_size[
                 0] == 1 or self.op_layer.kernel_size[0] % 2 == 0:
-            rates = [(d[0], r[1]) for r in rates]
+            dilation_rates = [(dilation[0], r[1]) for r in dilation_rates]
         if self.op_layer.kernel_size[
                 1] == 1 or self.op_layer.kernel_size[1] % 2 == 0:
-            rates = [(r[0], d[1]) for r in rates]
+            dilation_rates = [(r[0], dilation[1]) for r in dilation_rates]
 
-        self.rates = copy.deepcopy(rates)
+        self.dilation_rates = copy.deepcopy(dilation_rates)
         if self.verbose:
-            logger.info(f'Expand as {self.rates}')
+            logger.info(f'Expand as {self.dilation_rates}')
         nn.init.constant_(self.branch_weights,
                           self.global_config['init_alphas'])
 
