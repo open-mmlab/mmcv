@@ -35,20 +35,21 @@ class RFSearchHook(Hook):
             Defaults to 'search'.
         config (Dict, optional): config dict of search.
             By default this config contains "search",
-            and config["search"] must includes:
+            and config["search"] must include:
+
             - "step": recording the current searching step.
             - "max_step": The maximum number of searching steps
-                to update the structures.
+              to update the structures.
             - "search_interval": The interval (epoch/iteration)
-                between two updates.
+              between two updates.
             - "exp_rate": The controller of the sparsity of search space.
             - "init_alphas": The value for initializing weights of each branch.
             - "mmin": The minimum dilation rate.
             - "mmax": The maximum dilation rate.
             - "num_branches": The controller of the size of
-                search space (the number of branches).
+              search space (the number of branches).
             - "skip_layer": The modules in skip_layer will be ignored
-                during the receptive field search.
+              during the receptive field search.
         rfstructure_file (str, optional): Path to load searched receptive
             fields of the model. Defaults to None.
         by_epoch (bool, optional): Determine to perform step by epoch or
@@ -61,7 +62,7 @@ class RFSearchHook(Hook):
     def __init__(self,
                  mode: str = 'search',
                  config: Dict = {},
-                 rfstructure_file: str = None,
+                 rfstructure_file: Optional[str] = None,
                  by_epoch: bool = True,
                  verbose: bool = True):
         assert mode in ['search', 'fixed_single_branch', 'fixed_multi_branch']
@@ -103,20 +104,12 @@ class RFSearchHook(Hook):
             logger.info('RFSearch init end.')
 
     def after_train_epoch(self, runner):
-        """Do search after one training epoch.
-
-        Args:
-            runner (_type_): MMCV runner
-        """
+        """Performs a dilation searching step after one training epoch."""
         if self.by_epoch and self.mode == 'search':
             self.step(runner.model, runner.work_dir)
 
     def after_train_iter(self, runner):
-        """Do search after one training iteration.
-
-        Args:
-            runner (_type_): MMCV runner
-        """
+        """Performs a dilation searching step after one training iteration."""
         if not self.by_epoch and self.mode == 'search':
             self.step(runner.model, runner.work_dir)
 
@@ -125,7 +118,7 @@ class RFSearchHook(Hook):
 
         Args:
             model (nn.Module): pytorch model
-            work_dir (str): save path
+            work_dir (str): Directory to save the searching results.
         """
         self.config['search']['step'] += 1
         if (self.config['search']['step']
@@ -171,10 +164,10 @@ class RFSearchHook(Hook):
 
         Args:
             model (nn.Module): pytorch model
-            search_op (str):
-                the module that uses RF search. Defaults to 'Conv2d'.
-            init_rates (int, optional):
-                Set to other initial dilation rates. Defaults to None.
+            search_op (str): The module that uses RF search.
+                Defaults to 'Conv2d'.
+            init_rates (int, optional): Set to other initial dilation rates.
+                Defaults to None.
         """
         op = 'torch.nn.' + search_op
         for name, module in model.named_children():
@@ -195,27 +188,27 @@ class RFSearchHook(Hook):
                 pass
             else:
                 if self.config['search']['skip_layer'] is not None:
-                    if any([
-                            each in name
-                            for each in self.config['search']['skip_layer']
-                    ]):
+                    if any(
+                            layer in name
+                            for layer in self.config['search']['skip_layer']
+                    ):
                         continue
                 self.wrap_model(module, search_op, init_rates)
 
     def set_model(self,
                   model: nn.Module,
                   search_op: str = 'Conv2d',
-                  init_rates: int = None,
+                  init_rates: Optional[int] = None,
                   prefix: str = ''):
         """set model based on config.
 
         Args:
             model (nn.Module): pytorch model
             config (Dict): config file
-            search_op (str):
-                the module that uses RF search. Defaults to 'Conv2d'.
-            init_rates (int, optional):
-                Set to other initial dilation rates. Defaults to None.
+            search_op (str): The module that uses RF search.
+                Defaults to 'Conv2d'.
+            init_rates (int, optional):  Set to other initial dilation rates.
+                Defaults to None.
             prefix (str):
                 prefix for function recursion. Defaults to ''.
         """
@@ -255,9 +248,9 @@ class RFSearchHook(Hook):
                 pass
             else:
                 if self.config['search']['skip_layer'] is not None:
-                    if any([
-                            each in fullname
-                            for each in self.config['search']['skip_layer']
-                    ]):
+                    if any(
+                            layer in fullname
+                            for layer in self.config['search']['skip_layer']
+                    ):
                         continue
                 self.set_model(module, search_op, init_rates, fullname)
