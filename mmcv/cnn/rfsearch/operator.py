@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
-from mmcv.cnn.rfsearch.utils import expands_rate, get_single_padding
+from .utils import expands_rate, get_single_padding
 from mmcv.runner import BaseModule
 from mmcv.utils.logging import get_logger
 
@@ -22,40 +22,41 @@ class ConvRFSearchOp(BaseModule):
         global_config (Dict): config dict.
     """
 
-    def __init__(self, op_layer: nn.Module, global_config: Optional[Dict]):
-
+    def __init__(self, op_layer: nn.Module, global_config: dict):
         super().__init__()
         self.op_layer = op_layer
         self.global_config = global_config
 
-    def normlize(self, weight: nn.Parameter) -> nn.Parameter:
+    def normlize(self, weights: nn.Parameter) -> nn.Parameter:
         """Normalize weights.
 
         Args:
-            w (nn.Parameter): unnormed weights
+            weights (nn.Parameter): Weights to be normalized.
 
         Returns:
-            nn.Parameters: normed weights
+            nn.Parameters: Normalized weights.
         """
-        abs_weight = torch.abs(weight)
-        norm_weight = abs_weight / torch.sum(abs_weight)
-        return norm_weight
+        abs_weights = torch.abs(weights)
+        normalized_weights = abs_weights / torch.sum(abs_weights)
+        return normalized_weights
 
 
 class Conv2dRFSearchOp(ConvRFSearchOp):
-    """Enable Conv2d with rf search ability.
+    """Enable Conv2d with receptive field searching ability.
 
     Args:
         op_layer (nn.Module): pytorch module, e,g, Conv2d
-        init_dilation (list, optional): init dilation rate. Defaults to None.
+        init_dilation (list, optional): Initial dilation rate. Defaults to None.
         global_config (dict): config dict. Defaults to None.
-            By default this must includes:
+            By default this must include:
+
             - "init_alphas": The value for initializing weights of each branch.
             - "num_branches": The controller of the size of
-                search space (the number of branches).
+              search space (the number of branches).
             - "exp_rate": The controller of the sparsity of search space.
             - "mmin": The minimum dilation rate.
             - "mmax": The maximum dilation rate.
+
             Extra keys may exist, but are used by RFSearchHook, e.g., "step",
             "max_step", "search_interval", and "skip_layer".
         num_branches (int, optional): Number of branches. Defaults to 3.
