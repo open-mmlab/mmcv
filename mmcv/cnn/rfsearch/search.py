@@ -184,7 +184,7 @@ class RFSearchHook(Hook):
                     1 < module.kernel_size[1] and \
                         0 != module.kernel_size[1] % 2:
                     moduleWrap = eval(search_op + 'RFSearchOp')(
-                        module, init_rates, self.config['search'],
+                        module, self.config['search'], init_rates,
                         self.verbose)
                     moduleWrap = moduleWrap.cuda()
                     if self.verbose:

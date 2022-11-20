@@ -1,15 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
-from typing import Dict, Optional
 
 import numpy as np
 import torch
 import torch.nn as nn
 from torch import Tensor
 
-from .utils import expands_rate, get_single_padding
 from mmcv.runner import BaseModule
 from mmcv.utils.logging import get_logger
+from .utils import expands_rate, get_single_padding
 
 logger = get_logger('Operators')
 
@@ -46,7 +45,6 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
 
     Args:
         op_layer (nn.Module): pytorch module, e,g, Conv2d
-        init_dilation (list, optional): Initial dilation rate. Defaults to None.
         global_config (dict): config dict. Defaults to None.
             By default this must include:
 
@@ -59,7 +57,8 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
 
             Extra keys may exist, but are used by RFSearchHook, e.g., "step",
             "max_step", "search_interval", and "skip_layer".
-        num_branches (int, optional): Number of branches. Defaults to 3.
+        init_dilation (list, optional): Initial dilation rate.
+            Defaults to None.
         verbose (bool): Determines whether to print rf-next
             related logging messages.
             Defaults to True.
@@ -67,8 +66,8 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
 
     def __init__(self,
                  op_layer: nn.Module,
+                 global_config: dict,
                  init_dilation: list = None,
-                 global_config: Optional[Dict] = None,
                  verbose: bool = True):
         super().__init__(op_layer, global_config)
         assert global_config is not None, 'global_config is None'
@@ -85,13 +84,13 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
                 1] == 1 or self.op_layer.kernel_size[1] % 2 == 0:
             self.rates = [(r[0], op_layer.dilation[1]) for r in self.rates]
 
-        self.weights = nn.Parameter(torch.Tensor(self.num_branches))
+        self.branch_weights = nn.Parameter(torch.Tensor(self.num_branches))
         if self.verbose:
             logger.info(f'Expand as {self.rates}')
-        nn.init.constant_(self.weights, global_config['init_alphas'])
+        nn.init.constant_(self.branch_weights, global_config['init_alphas'])
 
     def forward(self, x: Tensor) -> Tensor:
-        norm_w = self.normlize(self.weights[:len(self.rates)])
+        norm_w = self.normlize(self.branch_weights[:len(self.rates)])
         if len(self.rates) == 1:
             xx = [
                 nn.functional.conv2d(
@@ -122,8 +121,8 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
         return x
 
     def estimate(self):
-        """estimate new dilation rate based on trained weights."""
-        norm_w = self.normlize(self.weights[:len(self.rates)])
+        """estimate new dilation rate based on trained branch_weights."""
+        norm_w = self.normlize(self.branch_weights[:len(self.rates)])
         if self.verbose:
             logger.info('Estimate dilation {} with weight {}.'.format(
                 self.rates,
@@ -162,7 +161,8 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
         self.rates = copy.deepcopy(rates)
         if self.verbose:
             logger.info(f'Expand as {self.rates}')
-        nn.init.constant_(self.weights, self.global_config['init_alphas'])
+        nn.init.constant_(self.branch_weights,
+                          self.global_config['init_alphas'])
 
     def get_padding(self, dilation):
         padding = (get_single_padding(self.op_layer.kernel_size[0],
