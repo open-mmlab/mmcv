@@ -128,6 +128,7 @@ class RFSearchHook(Hook):
             for name, module in model.named_modules():
                 if isinstance(module, ConvRFSearchOp):
                     self.config['structure'][name] = module.op_layer.dilation
+
             write_to_json(
                 self.config,
                 os.path.join(
@@ -188,10 +189,8 @@ class RFSearchHook(Hook):
                 pass
             else:
                 if self.config['search']['skip_layer'] is not None:
-                    if any(
-                            layer in name
-                            for layer in self.config['search']['skip_layer']
-                    ):
+                    if any(layer in name
+                           for layer in self.config['search']['skip_layer']):
                         continue
                 self.wrap_model(module, search_op, init_rates)
 
@@ -248,9 +247,7 @@ class RFSearchHook(Hook):
                 pass
             else:
                 if self.config['search']['skip_layer'] is not None:
-                    if any(
-                            layer in fullname
-                            for layer in self.config['search']['skip_layer']
-                    ):
+                    if any(layer in fullname
+                           for layer in self.config['search']['skip_layer']):
                         continue
                 self.set_model(module, search_op, init_rates, fullname)
