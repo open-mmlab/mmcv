@@ -20,16 +20,25 @@ class RoIAlignFunction(Function):
     def symbolic(g, input, rois, output_size, spatial_scale, sampling_ratio,
                  pool_mode, aligned):
         from torch.onnx import TensorProtoDataType
-        from torch.onnx.symbolic_helper import _slice_helper
-        from torch.onnx.symbolic_opset9 import squeeze, sub
+        from torch.onnx.symbolic_opset9 import sub
+
+        def _select(g, self, dim, index):
+            return g.op("Gather", self, index, axis_i=dim)
 
         # batch_indices = rois[:, 0].long()
-        batch_indices = _slice_helper(g, rois, axes=[1], starts=[0], ends=[1])
-        batch_indices = squeeze(g, batch_indices, 1)
+        batch_indices = _select(
+            g, rois, 1,
+            g.op("Constant", value_t=torch.tensor([0], dtype=torch.long)))
+        batch_indices = g.op('Squeeze', batch_indices, axes_i=[1])
         batch_indices = g.op(
             'Cast', batch_indices, to_i=TensorProtoDataType.INT64)
         # rois = rois[:, 1:]
-        rois = _slice_helper(g, rois, axes=[1], starts=[1], ends=[5])
+        rois = _select(
+            g, rois, 1,
+            g.op(
+                "Constant",
+                value_t=torch.tensor([1, 2, 3, 4], dtype=torch.long)))
+
         if aligned:
             # rois -= 0.5/spatial_scale
             aligned_offset = g.op(
