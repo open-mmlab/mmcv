@@ -204,8 +204,7 @@ class RFSearchHook(Hook):
                 Defaults to 'Conv2d'.
             init_rates (int, optional):  Set to other initial dilation rates.
                 Defaults to None.
-            prefix (str):
-                prefix for function recursion. Defaults to ''.
+            prefix (str): Prefix for function recursion. Defaults to ''.
         """
         op = 'torch.nn.' + search_op
         for name, module in model.named_children():

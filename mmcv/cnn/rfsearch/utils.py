@@ -4,16 +4,16 @@ import numpy as np
 import mmcv
 
 
-def write_to_json(dicts, filename: str):
+def write_to_json(config: dict, filename: str):
     """save config to json file.
 
     Args:
-        dicts (_type_): dict files
-        filename (str): save path
+        config (dict): Config to be saved.
+        filename (str): Path to save config.
     """
 
     with open(filename, 'w', encoding='utf-8') as f:
-        mmcv.dump(dicts, f, file_format='json')
+        mmcv.dump(config, f, file_format='json')
 
 
 def expand_rates(dilation: tuple, config: dict) -> list:
