@@ -47,7 +47,7 @@ class MaskedConv2dFunction(Function):
 
         if features.device.type == 'npu':
             import torch_npu
-            output = torch_npu.npu_conv2d(
+            conv = torch_npu.npu_conv2d(
                 features,
                 weight,
                 bias,
@@ -55,10 +55,15 @@ class MaskedConv2dFunction(Function):
                 padding=(pad_h, pad_w),
                 dilation=(1, 1),
                 groups=1)
-            if mask.size()[1:] != output.size()[2:]:
+
+            if mask.size()[1:] != conv.size()[2:]:
                 raise ValueError(
                     'The mask is inconsistent with the shape of output_conv.')
-            output = output * mask
+            conv_h, conv_w = conv.size()[2:]
+            mask_reshape = mask.reshape(1, 1, conv_h, conv_w)
+            mask_bool = mask_reshape > 0
+            output = conv * mask_bool
+
             return output
 
         batch_size = features.size(0)
