@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .operator import Conv2dRFSearchOp, ConvRFSearchOp
+from .operator import BaseConvRFSearchOp, Conv2dRFSearchOp
 from .search import RFSearchHook
 
-__all__ = ['ConvRFSearchOp', 'Conv2dRFSearchOp', 'RFSearchHook']
+__all__ = ['BaseConvRFSearchOp', 'Conv2dRFSearchOp', 'RFSearchHook']

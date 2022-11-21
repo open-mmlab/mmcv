@@ -9,7 +9,7 @@ import torch.nn as nn
 import mmcv
 from mmcv.cnn.rfsearch.utils import get_single_padding, write_to_json
 from mmcv.runner import HOOKS, Hook
-from .operator import Conv2dRFSearchOp, ConvRFSearchOp  # noqa
+from .operator import BaseConvRFSearchOp, Conv2dRFSearchOp  # noqa
 
 logging.basicConfig(
     format='[%(asctime)s-%(filename)s-%(levelname)s:%(message)s]',
@@ -124,9 +124,9 @@ class RFSearchHook(Hook):
         if (self.config['search']['step']
             ) % self.config['search']['search_interval'] == 0 and (self.config[
                 'search']['step']) < self.config['search']['max_step']:
-            self.search(model)
+            self.estimate_and_expand(model)
             for name, module in model.named_modules():
-                if isinstance(module, ConvRFSearchOp):
+                if isinstance(module, BaseConvRFSearchOp):
                     self.config['structure'][name] = module.op_layer.dilation
 
             write_to_json(
@@ -137,25 +137,17 @@ class RFSearchHook(Hook):
                     self.config['search']['step'],
                 ),
             )
-        elif (self.config['search']['step'] +
-              1) == self.config['search']['max_step']:
-            self.search_estimate_only(model)
 
-    def search(self, model: nn.Module):
+    def estimate_and_expand(self, model: nn.Module):
         """estimate and search for RFConvOp.
 
         Args:
             model (nn.Module): pytorch model
         """
         for module in model.modules():
-            if isinstance(module, ConvRFSearchOp):
-                module.estimate()
-                module.expand()
-
-    def search_estimate_only(self, model):
-        for module in model.modules():
-            if isinstance(module, ConvRFSearchOp):
-                module.estimate()
+            if isinstance(module, BaseConvRFSearchOp):
+                module.estimate_rates()
+                module.expand_rates()
 
     def wrap_model(self, model: nn.Module, search_op: str = 'Conv2d'):
         """wrap model to support searchable conv op.
@@ -181,7 +173,7 @@ class RFSearchHook(Hook):
                         logger.info('Wrap model %s to %s.' %
                                     (str(module), str(moduleWrap)))
                     setattr(model, name, moduleWrap)
-            elif isinstance(module, ConvRFSearchOp):
+            elif isinstance(module, BaseConvRFSearchOp):
                 pass
             else:
                 if self.config['search']['skip_layer'] is not None:
@@ -238,7 +230,7 @@ class RFSearchHook(Hook):
                         logger.info(
                             'Set module %s dilation as: [%d %d]' %
                             (fullname, module.dilation[0], module.dilation[1]))
-            elif isinstance(module, ConvRFSearchOp):
+            elif isinstance(module, BaseConvRFSearchOp):
                 pass
             else:
                 if self.config['search']['skip_layer'] is not None:

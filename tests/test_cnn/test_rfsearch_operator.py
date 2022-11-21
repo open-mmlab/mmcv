@@ -37,7 +37,7 @@ def test_rfsearch_operator_3x3():
         assert operator(x).shape == (1, 3, 32, 32)
 
         # After estimate: (2, 2) with branch_weights of [0.5 0.5]
-        operator.estimate()
+        operator.estimate_rates()
         assert len(operator.dilation_rates) == 1
         assert operator.dilation_rates[0] == (2, 2)
         assert operator.op_layer.dilation == (2, 2)
@@ -46,7 +46,7 @@ def test_rfsearch_operator_3x3():
         assert operator(x).shape == (1, 3, 32, 32)
 
         # After expand: (1, 1) (3, 3)
-        operator.expand()
+        operator.expand_rates()
         assert len(operator.dilation_rates) == 2
         assert operator.dilation_rates[0] == (1, 1)
         assert operator.dilation_rates[1] == (3, 3)
@@ -58,7 +58,7 @@ def test_rfsearch_operator_3x3():
         operator.branch_weights[0] = 0.1
         operator.branch_weights[1] = 0.4
         # After estimate: (3, 3) with branch_weights of [0.2 0.8]
-        operator.estimate()
+        operator.estimate_rates()
         assert len(operator.dilation_rates) == 1
         assert operator.dilation_rates[0] == (3, 3)
         assert operator.op_layer.dilation == (3, 3)
@@ -85,7 +85,7 @@ def test_rfsearch_operator_5x5():
         assert operator(x).shape == (1, 3, 32, 32)
 
         # After estimate: (2, 2) with branch_weights of [0.5 0.5]
-        operator.estimate()
+        operator.estimate_rates()
         assert len(operator.dilation_rates) == 1
         assert operator.dilation_rates[0] == (2, 2)
         assert operator.op_layer.dilation == (2, 2)
@@ -94,7 +94,7 @@ def test_rfsearch_operator_5x5():
         assert operator(x).shape == (1, 3, 32, 32)
 
         # After expand: (1, 1) (3, 3)
-        operator.expand()
+        operator.expand_rates()
         assert len(operator.dilation_rates) == 2
         assert operator.dilation_rates[0] == (1, 1)
         assert operator.dilation_rates[1] == (3, 3)
@@ -106,7 +106,7 @@ def test_rfsearch_operator_5x5():
         operator.branch_weights[0] = 0.1
         operator.branch_weights[1] = 0.4
         # After estimate: (3, 3) with branch_weights of [0.2 0.8]
-        operator.estimate()
+        operator.estimate_rates()
         assert len(operator.dilation_rates) == 1
         assert operator.dilation_rates[0] == (3, 3)
         assert operator.op_layer.dilation == (3, 3)
@@ -135,7 +135,7 @@ def test_rfsearch_operator_5x5_branch3():
         assert operator(x).shape == (1, 3, 32, 32)
 
         # After estimate: (2, 2) with branch_weights of [0.5 0.5]
-        operator.estimate()
+        operator.estimate_rates()
         assert len(operator.dilation_rates) == 1
         assert operator.dilation_rates[0] == (2, 2)
         assert operator.op_layer.dilation == (2, 2)
@@ -144,7 +144,7 @@ def test_rfsearch_operator_5x5_branch3():
         assert operator(x).shape == (1, 3, 32, 32)
 
         # After expand: (1, 1) (2, 2) (3, 3)
-        operator.expand()
+        operator.expand_rates()
         assert len(operator.dilation_rates) == 3
         assert operator.dilation_rates[0] == (1, 1)
         assert operator.dilation_rates[1] == (2, 2)
@@ -158,7 +158,7 @@ def test_rfsearch_operator_5x5_branch3():
         operator.branch_weights[1] = 0.3
         operator.branch_weights[2] = 0.6
         # After estimate: (3, 3) with branch_weights of [0.1 0.3 0.6]
-        operator.estimate()
+        operator.estimate_rates()
         assert len(operator.dilation_rates) == 1
         assert operator.dilation_rates[0] == (3, 3)
         assert operator.op_layer.dilation == (3, 3)
@@ -189,7 +189,7 @@ def test_rfsearch_operator_1x5():
 
     with torch.no_grad():
         # After estimate: (1, 2) with branch_weights of [0.5 0.5]
-        operator.estimate()
+        operator.estimate_rates()
         assert len(operator.dilation_rates) == 1
         assert operator.dilation_rates[0] == (1, 2)
         assert operator.op_layer.dilation == (1, 2)
@@ -198,7 +198,7 @@ def test_rfsearch_operator_1x5():
         assert operator(x).shape == (1, 3, 32, 32)
 
         # After expand: (1, 1) (1, 3)
-        operator.expand()
+        operator.expand_rates()
         assert len(operator.dilation_rates) == 2
         assert operator.dilation_rates[0] == (1, 1)
         assert operator.dilation_rates[1] == (1, 3)
@@ -210,7 +210,7 @@ def test_rfsearch_operator_1x5():
         operator.branch_weights[0] = 0.2
         operator.branch_weights[1] = 0.8
         # After estimate: (3, 3) with branch_weights of [0.2 0.8]
-        operator.estimate()
+        operator.estimate_rates()
         assert len(operator.dilation_rates) == 1
         assert operator.dilation_rates[0] == (1, 3)
         assert operator.op_layer.dilation == (1, 3)
@@ -242,7 +242,7 @@ def test_rfsearch_operator_5x5_d2x2():
         assert operator(x).shape == (1, 3, 32, 32)
 
         # After estimate: (2, 2) with branch_weights of [0.5 0.5]
-        operator.estimate()
+        operator.estimate_rates()
         assert len(operator.dilation_rates) == 1
         assert operator.dilation_rates[0] == (2, 2)
         assert operator.op_layer.dilation == (2, 2)
@@ -251,7 +251,7 @@ def test_rfsearch_operator_5x5_d2x2():
         assert operator(x).shape == (1, 3, 32, 32)
 
         # After expand: (1, 1) (3, 3)
-        operator.expand()
+        operator.expand_rates()
         assert len(operator.dilation_rates) == 2
         assert operator.dilation_rates[0] == (1, 1)
         assert operator.dilation_rates[1] == (3, 3)
@@ -263,7 +263,7 @@ def test_rfsearch_operator_5x5_d2x2():
         operator.branch_weights[0] = 0.8
         operator.branch_weights[1] = 0.2
         # After estimate: (3, 3) with branch_weights of [0.8 0.2]
-        operator.estimate()
+        operator.estimate_rates()
         assert len(operator.dilation_rates) == 1
         assert operator.dilation_rates[0] == (1, 1)
         assert operator.op_layer.dilation == (1, 1)
@@ -295,7 +295,7 @@ def test_rfsearch_operator_5x5_d1x2():
         assert operator(x).shape == (1, 3, 32, 32)
 
         # After estimate: (2, 2) with branch_weights of [0.5 0.5]
-        operator.estimate()
+        operator.estimate_rates()
         assert len(operator.dilation_rates) == 1
         assert operator.dilation_rates[0] == (2, 2)
         assert operator.op_layer.dilation == (2, 2)
@@ -304,7 +304,7 @@ def test_rfsearch_operator_5x5_d1x2():
         assert operator(x).shape == (1, 3, 32, 32)
 
         # After expand: (1, 1) (3, 3)
-        operator.expand()
+        operator.expand_rates()
         assert len(operator.dilation_rates) == 2
         assert operator.dilation_rates[0] == (1, 1)
         assert operator.dilation_rates[1] == (3, 3)
@@ -316,7 +316,7 @@ def test_rfsearch_operator_5x5_d1x2():
         operator.branch_weights[0] = 0.1
         operator.branch_weights[1] = 0.8
         # After estimate: (3, 3) with branch_weights of [0.1 0.8]
-        operator.estimate()
+        operator.estimate_rates()
         assert len(operator.dilation_rates) == 1
         assert operator.dilation_rates[0] == (3, 3)
         assert operator.op_layer.dilation == (3, 3)

@@ -13,7 +13,7 @@ from .utils import expand_rates, get_single_padding
 logger = get_logger('Operators')
 
 
-class ConvRFSearchOp(BaseModule):
+class BaseConvRFSearchOp(BaseModule):
     """Based class of ConvRFSearchOp.
 
     Args:
@@ -40,7 +40,7 @@ class ConvRFSearchOp(BaseModule):
         return normalized_weights
 
 
-class Conv2dRFSearchOp(ConvRFSearchOp):
+class Conv2dRFSearchOp(BaseConvRFSearchOp):
     """Enable Conv2d with receptive field searching ability.
 
     Args:
@@ -118,7 +118,7 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
             output += outputs[i]
         return output
 
-    def estimate(self):
+    def estimate_rates(self):
         """Estimate new dilation rate based on trained branch_weights."""
         norm_w = self.normlize(self.branch_weights[:len(self.dilation_rates)])
         if self.verbose:
@@ -145,7 +145,7 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
         if self.verbose:
             logger.info(f'Estimate as {tuple(estimated)}')
 
-    def expand(self):
+    def expand_rates(self):
         """Expand dilation rate."""
         dilation = self.op_layer.dilation
         dilation_rates = expand_rates(dilation, self.global_config)
