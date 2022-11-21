@@ -16,7 +16,7 @@ def write_to_json(dicts, filename: str):
         mmcv.dump(dicts, f, file_format='json')
 
 
-def expand_rates(dilation: list, config: dict) -> list:
+def expand_rates(dilation: tuple, config: dict) -> list:
     """expand dilation rate according to config.
 
     Args:
@@ -31,22 +31,24 @@ def expand_rates(dilation: list, config: dict) -> list:
     large_rates = []
     small_rates = []
     for _ in range(config['num_branches'] // 2):
-        large_rates.append([
-            np.clip(
-                int(round((1 + exp_rate) * dilation[0])), config['mmin'],
-                config['mmax']).item(),
-            np.clip(
-                int(round((1 + exp_rate) * dilation[1])), config['mmin'],
-                config['mmax']).item()
-        ])
-        small_rates.append([
-            np.clip(
-                int(round((1 - exp_rate) * dilation[0])), config['mmin'],
-                config['mmax']).item(),
-            np.clip(
-                int(round((1 - exp_rate) * dilation[1])), config['mmin'],
-                config['mmax']).item()
-        ])
+        large_rates.append(
+            tuple([
+                np.clip(
+                    int(round((1 + exp_rate) * dilation[0])), config['mmin'],
+                    config['mmax']).item(),
+                np.clip(
+                    int(round((1 + exp_rate) * dilation[1])), config['mmin'],
+                    config['mmax']).item()
+            ]))
+        small_rates.append(
+            tuple([
+                np.clip(
+                    int(round((1 - exp_rate) * dilation[0])), config['mmin'],
+                    config['mmax']).item(),
+                np.clip(
+                    int(round((1 - exp_rate) * dilation[1])), config['mmin'],
+                    config['mmax']).item()
+            ]))
 
     small_rates.reverse()
 

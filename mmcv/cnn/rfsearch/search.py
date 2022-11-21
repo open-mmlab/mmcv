@@ -157,10 +157,7 @@ class RFSearchHook(Hook):
             if isinstance(module, ConvRFSearchOp):
                 module.estimate()
 
-    def wrap_model(self,
-                   model: nn.Module,
-                   search_op: str = 'Conv2d',
-                   init_rates: Optional[int] = None):
+    def wrap_model(self, model: nn.Module, search_op: str = 'Conv2d'):
         """wrap model to support searchable conv op.
 
         Args:
@@ -178,8 +175,7 @@ class RFSearchHook(Hook):
                     1 < module.kernel_size[1] and \
                         0 != module.kernel_size[1] % 2:
                     moduleWrap = eval(search_op + 'RFSearchOp')(
-                        module, self.config['search'], init_rates,
-                        self.verbose)
+                        module, self.config['search'], self.verbose)
                     moduleWrap = moduleWrap.cuda()
                     if self.verbose:
                         logger.info('Wrap model %s to %s.' %
@@ -192,7 +188,7 @@ class RFSearchHook(Hook):
                     if any(layer in name
                            for layer in self.config['search']['skip_layer']):
                         continue
-                self.wrap_model(module, search_op, init_rates)
+                self.wrap_model(module, search_op)
 
     def set_model(self,
                   model: nn.Module,

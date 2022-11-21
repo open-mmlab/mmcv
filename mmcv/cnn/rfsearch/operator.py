@@ -57,8 +57,6 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
 
             Extra keys may exist, but are used by RFSearchHook, e.g., "step",
             "max_step", "search_interval", and "skip_layer".
-        init_dilation (list, optional): Initial dilation rate.
-            Defaults to None.
         verbose (bool): Determines whether to print rf-next
             related logging messages.
             Defaults to True.
@@ -67,15 +65,13 @@ class Conv2dRFSearchOp(ConvRFSearchOp):
     def __init__(self,
                  op_layer: nn.Module,
                  global_config: dict,
-                 init_dilation: list = None,
                  verbose: bool = True):
         super().__init__(op_layer, global_config)
         assert global_config is not None, 'global_config is None'
         self.num_branches = global_config['num_branches']
         assert self.num_branches in [2, 3]
         self.verbose = verbose
-        if init_dilation is None:
-            init_dilation = op_layer.dilation
+        init_dilation = op_layer.dilation
         self.dilation_rates = expand_rates(init_dilation, global_config)
         if self.op_layer.kernel_size[
                 0] == 1 or self.op_layer.kernel_size[0] % 2 == 0:
