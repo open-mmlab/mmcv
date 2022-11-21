@@ -176,7 +176,7 @@ class RFSearchHook(Hook):
                         0 != module.kernel_size[1] % 2:
                     moduleWrap = eval(search_op + 'RFSearchOp')(
                         module, self.config['search'], self.verbose)
-                    moduleWrap = moduleWrap.cuda()
+                    moduleWrap = moduleWrap.to(module.weight.device)
                     if self.verbose:
                         logger.info('Wrap model %s to %s.' %
                                     (str(module), str(moduleWrap)))

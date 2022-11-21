@@ -2224,6 +2224,3 @@ def test_rfsearchhook():
     assert isinstance(model.conv3, Conv2dRFSearchOp)
     assert model.conv2.dilation_rates == [(1, 1), (3, 3)]
     assert model.conv3.dilation_rates == [(1, 1), (1, 2)]
-
-
-test_rfsearchhook()
