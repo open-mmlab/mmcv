@@ -18,7 +18,7 @@ global_config = dict(
     skip_layer=['stem', 'layer1'])
 
 
-# test with 1x1 conv
+# test with 3x3 conv
 def test_rfsearch_operator_3x3():
     conv = nn.Conv2d(
         in_channels=3, out_channels=3, kernel_size=3, stride=1, padding=1)
