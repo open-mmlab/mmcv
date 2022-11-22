@@ -8,7 +8,7 @@
 #include "pytorch_cuda_helper.hpp"
 #endif
 
-#ifdef HIP_DIFF
+#ifdef MMCV_WITH_HIP
 #define WARP_SIZE 64
 #else
 #define WARP_SIZE 32
@@ -29,7 +29,7 @@ __device__ inline int Loc2Index(const int n, const int c, const int h,
   int index = w + (h + (c + n * channel_num) * height) * width;
   return index;
 }
-#ifndef HIP_DIFF
+#ifndef MMCV_WITH_HIP
 /* TODO: move this to a common place */
 template <typename scalar_t>
 __device__ inline scalar_t min(scalar_t a, scalar_t b) {
@@ -44,7 +44,7 @@ __device__ inline scalar_t max(scalar_t a, scalar_t b) {
 template <typename scalar_t>
 __device__ __forceinline__ scalar_t warpReduceSum(scalar_t val) {
   for (int offset = WARP_SIZE / 2; offset > 0; offset /= 2)
-#ifdef HIP_DIFF
+#ifdef MMCV_WITH_HIP
     val += __shfl_down(val, offset);
 #else
     val += __shfl_down_sync(FULL_MASK, val, offset);
@@ -55,8 +55,8 @@ __device__ __forceinline__ scalar_t warpReduceSum(scalar_t val) {
 template <>
 __device__ __forceinline__ phalf warpReduceSum(phalf val) {
   for (int offset = WARP_SIZE / 2; offset > 0; offset /= 2)
-#ifdef HIP_DIFF
-    __PHALF(val) += __shfl_down(FULL_MASK, val, offset);
+#ifdef MMCV_WITH_HIP
+    __PHALF(val) += __shfl_down(val, offset);
 #else
     __PHALF(val) +=
         __shfl_down_sync(FULL_MASK, static_cast<__half>(__PHALF(val)), offset);
@@ -316,7 +316,7 @@ __global__ void CARAFEBackward_Mask(const int num_kernels,
       output_val += top_diff[top_id] * bottom_data[bottom_id];
     }
   }
-#ifdef HIP_DIFF
+#ifdef MMCV_WITH_HIP
   __syncthreads();
 #else
   __syncwarp();

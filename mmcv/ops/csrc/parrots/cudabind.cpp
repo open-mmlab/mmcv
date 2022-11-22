@@ -570,14 +570,12 @@ void IoU3DBoxesOverlapBevForwardCUDAKernelLauncher(const int num_a,
                                                    const Tensor boxes_b,
                                                    Tensor ans_overlap);
 
-void IoU3DNMS3DForwardCUDAKernelLauncher(const Tensor boxes,
-                                         unsigned long long* mask,
-                                         int boxes_num,
+void IoU3DNMS3DForwardCUDAKernelLauncher(const Tensor boxes, Tensor& keep,
+                                         Tensor& keep_num,
                                          float nms_overlap_thresh);
 
-void IoU3DNMS3DNormalForwardCUDAKernelLauncher(const Tensor boxes,
-                                               unsigned long long* mask,
-                                               int boxes_num,
+void IoU3DNMS3DNormalForwardCUDAKernelLauncher(const Tensor boxes, Tensor& keep,
+                                               Tensor& keep_num,
                                                float nms_overlap_thresh);
 
 void iou3d_boxes_overlap_bev_forward_cuda(const int num_a, const Tensor boxes_a,
@@ -587,16 +585,16 @@ void iou3d_boxes_overlap_bev_forward_cuda(const int num_a, const Tensor boxes_a,
                                                 ans_overlap);
 };
 
-void iou3d_nms3d_forward_cuda(const Tensor boxes, unsigned long long* mask,
-                              int boxes_num, float nms_overlap_thresh) {
-  IoU3DNMS3DForwardCUDAKernelLauncher(boxes, mask, boxes_num,
+void iou3d_nms3d_forward_cuda(const Tensor boxes, Tensor& keep,
+                              Tensor& keep_num, float nms_overlap_thresh) {
+  IoU3DNMS3DForwardCUDAKernelLauncher(boxes, keep, keep_num,
                                       nms_overlap_thresh);
 };
 
-void iou3d_nms3d_normal_forward_cuda(const Tensor boxes,
-                                     unsigned long long* mask, int boxes_num,
+void iou3d_nms3d_normal_forward_cuda(const Tensor boxes, Tensor& keep,
+                                     Tensor& keep_num,
                                      float nms_overlap_thresh) {
-  IoU3DNMS3DNormalForwardCUDAKernelLauncher(boxes, mask, boxes_num,
+  IoU3DNMS3DNormalForwardCUDAKernelLauncher(boxes, keep, keep_num,
                                             nms_overlap_thresh);
 };
 
@@ -604,11 +602,11 @@ void iou3d_boxes_overlap_bev_forward_impl(const int num_a, const Tensor boxes_a,
                                           const int num_b, const Tensor boxes_b,
                                           Tensor ans_overlap);
 
-void iou3d_nms3d_forward_impl(const Tensor boxes, unsigned long long* mask,
-                              int boxes_num, float nms_overlap_thresh);
+void iou3d_nms3d_forward_impl(const Tensor boxes, Tensor& keep,
+                              Tensor& keep_num, float nms_overlap_thresh);
 
-void iou3d_nms3d_normal_forward_impl(const Tensor boxes,
-                                     unsigned long long* mask, int boxes_num,
+void iou3d_nms3d_normal_forward_impl(const Tensor boxes, Tensor& keep,
+                                     Tensor& keep_num,
                                      float nms_overlap_thresh);
 
 REGISTER_DEVICE_IMPL(iou3d_boxes_overlap_bev_forward_impl, CUDA,
@@ -1626,3 +1624,54 @@ REGISTER_DEVICE_IMPL(chamfer_distance_forward_impl, CUDA,
                      chamfer_distance_forward_cuda);
 REGISTER_DEVICE_IMPL(chamfer_distance_backward_impl, CUDA,
                      chamfer_distance_backward_cuda);
+
+void PrROIPoolForwardCUDAKernelLauncher(Tensor input, Tensor rois,
+                                        Tensor output, int pooled_height,
+                                        int pooled_width, float spatial_scale);
+
+void PrROIPoolBackwardCUDAKernelLauncher(Tensor grad_output, Tensor rois,
+                                         Tensor grad_input, int pooled_height,
+                                         int pooled_width, float spatial_scale);
+
+void PrROIPoolCoorBackwardCUDAKernelLauncher(
+    Tensor output, Tensor grad_output, Tensor input, Tensor rois,
+    Tensor grad_rois, int pooled_height, int pooled_width, float spatial_scale);
+
+void prroi_pool_forward_cuda(Tensor input, Tensor rois, Tensor output,
+                             int pooled_height, int pooled_width,
+                             float spatial_scale) {
+  PrROIPoolForwardCUDAKernelLauncher(input, rois, output, pooled_height,
+                                     pooled_width, spatial_scale);
+}
+
+void prroi_pool_backward_cuda(Tensor grad_output, Tensor rois,
+                              Tensor grad_input, int pooled_height,
+                              int pooled_width, float spatial_scale) {
+  PrROIPoolBackwardCUDAKernelLauncher(grad_output, rois, grad_input,
+                                      pooled_height, pooled_width,
+                                      spatial_scale);
+}
+
+void prroi_pool_coor_backward_cuda(Tensor output, Tensor grad_output,
+                                   Tensor input, Tensor rois, Tensor grad_rois,
+                                   int pooled_height, int pooled_width,
+                                   float spatial_scale) {
+  PrROIPoolCoorBackwardCUDAKernelLauncher(output, grad_output, input, rois,
+                                          grad_rois, pooled_height,
+                                          pooled_width, spatial_scale);
+}
+
+void prroi_pool_forward_impl(Tensor input, Tensor rois, Tensor output,
+                             int pooled_height, int pooled_width,
+                             float spatial_scale);
+void prroi_pool_backward_impl(Tensor grad_output, Tensor rois,
+                              Tensor grad_input, int pooled_height,
+                              int pooled_width, float spatial_scale);
+void prroi_pool_coor_backward_impl(Tensor output, Tensor grad_output,
+                                   Tensor input, Tensor rois, Tensor grad_rois,
+                                   int pooled_height, int pooled_width,
+                                   float spatial_scale);
+REGISTER_DEVICE_IMPL(prroi_pool_forward_impl, CUDA, prroi_pool_forward_cuda);
+REGISTER_DEVICE_IMPL(prroi_pool_backward_impl, CUDA, prroi_pool_backward_cuda);
+REGISTER_DEVICE_IMPL(prroi_pool_coor_backward_impl, CUDA,
+                     prroi_pool_coor_backward_cuda);

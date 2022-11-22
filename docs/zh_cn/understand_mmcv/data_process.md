@@ -130,7 +130,7 @@ bboxes = np.array([[10, 10, 100, 120], [0, 0, 50, 50]])
 patches = mmcv.imcrop(img, bboxes)
 
 # 裁剪两个区域并且缩放区域1.2倍
-patches = mmcv.imcrop(img, bboxes, scale_ratio=1.2)
+patches = mmcv.imcrop(img, bboxes, scale=1.2)
 ```
 
 #### 填充
@@ -144,13 +144,13 @@ img = mmcv.imread('tests/data/color.jpg')
 img_ = mmcv.impad(img, shape=(1000, 1200), pad_val=0)
 
 # 用给定值分别填充图像的3个通道至 (1000, 1200)
-img_ = mmcv.impad(img, shape=(1000, 1200), pad_val=[100, 50, 200])
+img_ = mmcv.impad(img, shape=(1000, 1200), pad_val=(100, 50, 200))
 
 # 用给定值填充图像的左、右、上、下四条边
 img_ = mmcv.impad(img, padding=(10, 20, 30, 40), pad_val=0)
 
 # 用3个值分别填充图像的左、右、上、下四条边的3个通道
-img_ = mmcv.impad(img, padding=(10, 20, 30, 40), pad_val=[100, 50, 200])
+img_ = mmcv.impad(img, padding=(10, 20, 30, 40), pad_val=(100, 50, 200))
 
 # 将图像的四条边填充至能够被给定值整除
 img_ = mmcv.impad_to_multiple(img, 32)
@@ -259,7 +259,7 @@ mmcv.flowshow(flow)
 ```python
 img1 = mmcv.imread('img1.jpg')
 flow = mmcv.flowread('flow.flo')
-warpped_img2 = mmcv.flow_warp(img1, flow)
+warped_img2 = mmcv.flow_warp(img1, flow)
 ```
 
 img1 (左) and img2 (右)
@@ -272,4 +272,4 @@ img1 (左) and img2 (右)
 
 变换后的图像和真实图像的差异
 
-![warpped image](../../en/_static/flow_warp_diff.png)
+![warped image](../../en/_static/flow_warp_diff.png)

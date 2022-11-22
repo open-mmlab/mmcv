@@ -16,5 +16,8 @@ RUN apt-get update && apt-get install -y libgl1 libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install mmcv
-ARG MMCV="2.0.0rc1"
-RUN pip install openmim && mim install mmcv==${MMCV} && python -c 'import mmcv;print(mmcv.__version__)'
+ARG MMCV=""
+RUN if [ "${MMCV}" = "" ]; then pip install -U openmim && mim install 'mmcv>=2.0.0rc1'; else pip install -U openmim && mim install mmcv==${MMCV}; fi
+
+# Verify the installation
+RUN python -c 'import mmcv;print(mmcv.__version__)'

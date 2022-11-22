@@ -1,14 +1,11 @@
 #include "MPSLibrary.h"
-#include <c10/util/CallOnce.h>
 #include "MPSDevice.h"
 
-static std::unique_ptr<MPSLibraryManager> mps_library_manager;
-static c10::once_flag mpsdev_init;
+static std::unique_ptr<MPSLibraryManager> mps_library_manager=nullptr;
 
 MPSLibraryManager* MPSLibraryManager::getInstance() {
-  c10::call_once(mpsdev_init, [] {
+  if(!mps_library_manager)
     mps_library_manager = std::unique_ptr<MPSLibraryManager>(new MPSLibraryManager());
-  });
   return mps_library_manager.get();
 }
 

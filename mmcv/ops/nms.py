@@ -8,7 +8,7 @@ from torch import Tensor
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
-    '_ext', ['nms', 'softnms', 'nms_match', 'nms_rotated'])
+    '_ext', ['nms', 'softnms', 'nms_match', 'nms_rotated', 'nms_quadri'])
 
 
 # This function is modified from: https://github.com/pytorch/vision/
@@ -32,38 +32,6 @@ class NMSop(torch.autograd.Function):
         if is_filtering_by_score:
             inds = valid_inds[inds]
         return inds
-
-    @staticmethod
-    def symbolic(g, bboxes, scores, iou_threshold, offset, score_threshold,
-                 max_num):
-        from torch.onnx.symbolic_opset9 import select, squeeze, unsqueeze
-
-        from ..onnx.onnx_utils.symbolic_helper import _size_helper
-
-        boxes = unsqueeze(g, bboxes, 0)
-        scores = unsqueeze(g, unsqueeze(g, scores, 0), 0)
-
-        if max_num > 0:
-            max_num = g.op(
-                'Constant', value_t=torch.tensor(max_num, dtype=torch.long))
-        else:
-            dim = g.op('Constant', value_t=torch.tensor(0))
-            max_num = _size_helper(g, bboxes, dim)
-        max_output_per_class = max_num
-        iou_threshold = g.op(
-            'Constant',
-            value_t=torch.tensor([iou_threshold], dtype=torch.float))
-        score_threshold = g.op(
-            'Constant',
-            value_t=torch.tensor([score_threshold], dtype=torch.float))
-        nms_out = g.op('NonMaxSuppression', boxes, scores,
-                       max_output_per_class, iou_threshold, score_threshold)
-        return squeeze(
-            g,
-            select(
-                g, nms_out, 1,
-                g.op('Constant', value_t=torch.tensor([2], dtype=torch.long))),
-            1)
 
 
 class SoftNMSop(torch.autograd.Function):
@@ -330,7 +298,7 @@ def batched_nms(boxes: Tensor,
 
     split_thr = nms_cfg_.pop('split_thr', 10000)
     # Won't split to multiple nms nodes when exporting to onnx
-    if boxes_for_nms.shape[0] < split_thr or torch.onnx.is_in_onnx_export():
+    if boxes_for_nms.shape[0] < split_thr:
         dets, keep = nms_op(boxes_for_nms, scores, **nms_cfg_)
         boxes = boxes[keep]
 
@@ -456,6 +424,48 @@ def nms_rotated(dets: Tensor,
     else:
         keep_inds = ext_module.nms_rotated(dets_wl, scores, order, dets_sorted,
                                            iou_threshold, multi_label)
+    dets = torch.cat((dets[keep_inds], scores[keep_inds].reshape(-1, 1)),
+                     dim=1)
+    return dets, keep_inds
+
+
+def nms_quadri(dets: Tensor,
+               scores: Tensor,
+               iou_threshold: float,
+               labels: Optional[Tensor] = None) -> Tuple[Tensor, Tensor]:
+    """Performs non-maximum suppression (NMS) on the quadrilateral boxes
+    according to their intersection-over-union (IoU).
+
+    Quadri NMS iteratively removes lower scoring quadrilateral boxes
+    which have an IoU greater than iou_threshold with another (higher
+    scoring) quadrilateral box.
+
+    Args:
+        dets (torch.Tensor):  Quadri boxes in shape (N, 8).
+            They are expected to be in
+            (x1, y1, ..., x4, y4) format.
+        scores (torch.Tensor): scores in shape (N, ).
+        iou_threshold (float): IoU thresh for NMS.
+        labels (torch.Tensor, optional): boxes' label in shape (N,).
+
+    Returns:
+        tuple: kept dets(boxes and scores) and indice, which is always the
+        same data type as the input.
+    """
+    if dets.shape[0] == 0:
+        return dets, None
+
+    multi_label = labels is not None
+    if multi_label:
+        dets_with_lables = \
+            torch.cat((dets, labels.unsqueeze(1)), 1)  # type: ignore
+    else:
+        dets_with_lables = dets
+    _, order = scores.sort(0, descending=True)
+    dets_sorted = dets_with_lables.index_select(0, order)
+
+    keep_inds = ext_module.nms_quadri(dets_with_lables, scores, order,
+                                      dets_sorted, iou_threshold, multi_label)
     dets = torch.cat((dets[keep_inds], scores[keep_inds].reshape(-1, 1)),
                      dim=1)
     return dets, keep_inds
