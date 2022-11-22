@@ -588,15 +588,13 @@ class FFN(BaseModule):
                  ffn_drop=0.,
                  dropout_layer=None,
                  add_identity=True,
-                 init_cfg=None,
-                 **kwargs):
+                 init_cfg=None):
         super().__init__(init_cfg)
         assert num_fcs >= 2, 'num_fcs should be no less ' \
             f'than 2. got {num_fcs}.'
         self.embed_dims = embed_dims
         self.feedforward_channels = feedforward_channels
         self.num_fcs = num_fcs
-        self.act_cfg = act_cfg
 
         layers = []
         in_channels = embed_dims
@@ -604,8 +602,7 @@ class FFN(BaseModule):
             layers.append(
                 Sequential(
                     Linear(in_channels, feedforward_channels),
-                    build_activation_layer(act_cfg),
-                    nn.Dropout(ffn_drop)))
+                    build_activation_layer(act_cfg), nn.Dropout(ffn_drop)))
             in_channels = feedforward_channels
         layers.append(Linear(feedforward_channels, embed_dims))
         layers.append(nn.Dropout(ffn_drop))
