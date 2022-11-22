@@ -10,7 +10,7 @@ from mmcv.runner import BaseModule
 from mmcv.utils.logging import get_logger
 from .utils import expand_rates, get_single_padding
 
-logger = get_logger('Operators')
+logger = get_logger('mmcv')
 
 
 class BaseConvRFSearchOp(BaseModule):
