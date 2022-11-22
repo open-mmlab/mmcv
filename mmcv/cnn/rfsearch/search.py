@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
 import os
 from typing import Dict, Optional
 
@@ -9,15 +8,10 @@ import torch.nn as nn
 import mmcv
 from mmcv.cnn.rfsearch.utils import get_single_padding, write_to_json
 from mmcv.runner import HOOKS, Hook
+from mmcv.utils import get_logger
 from .operator import BaseConvRFSearchOp, Conv2dRFSearchOp  # noqa
 
-logging.basicConfig(
-    format='[%(asctime)s-%(filename)s-%(levelname)s:%(message)s]',
-    level=logging.NOTSET,
-    datefmt='%Y-%m-%d%I:%M:%S %p',
-)
-logger = logging.getLogger('Searcher')
-logger.setLevel(logging.ERROR)
+logger = get_logger('mmcv')
 
 
 @HOOKS.register_module()
