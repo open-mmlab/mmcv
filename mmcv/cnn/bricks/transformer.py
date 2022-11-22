@@ -597,14 +597,14 @@ class FFN(BaseModule):
         self.feedforward_channels = feedforward_channels
         self.num_fcs = num_fcs
         self.act_cfg = act_cfg
-        self.activate = build_activation_layer(act_cfg)
 
         layers = []
         in_channels = embed_dims
         for _ in range(num_fcs - 1):
             layers.append(
                 Sequential(
-                    Linear(in_channels, feedforward_channels), self.activate,
+                    Linear(in_channels, feedforward_channels),
+                    build_activation_layer(act_cfg),
                     nn.Dropout(ffn_drop)))
             in_channels = feedforward_channels
         layers.append(Linear(feedforward_channels, embed_dims))
