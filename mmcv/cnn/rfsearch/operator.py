@@ -18,7 +18,7 @@ class BaseConvRFSearchOp(BaseModule):
 
     Args:
         op_layer (nn.Module): pytorch module, e,g, Conv2d
-        global_config (Dict): config dict.
+        global_config (dict): config dict.
     """
 
     def __init__(self, op_layer: nn.Module, global_config: dict):
