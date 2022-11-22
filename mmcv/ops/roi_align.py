@@ -23,12 +23,12 @@ class RoIAlignFunction(Function):
         from torch.onnx.symbolic_opset9 import sub
 
         def _select(g, self, dim, index):
-            return g.op("Gather", self, index, axis_i=dim)
+            return g.op('Gather', self, index, axis_i=dim)
 
         # batch_indices = rois[:, 0].long()
         batch_indices = _select(
             g, rois, 1,
-            g.op("Constant", value_t=torch.tensor([0], dtype=torch.long)))
+            g.op('Constant', value_t=torch.tensor([0], dtype=torch.long)))
         batch_indices = g.op('Squeeze', batch_indices, axes_i=[1])
         batch_indices = g.op(
             'Cast', batch_indices, to_i=TensorProtoDataType.INT64)
@@ -36,7 +36,7 @@ class RoIAlignFunction(Function):
         rois = _select(
             g, rois, 1,
             g.op(
-                "Constant",
+                'Constant',
                 value_t=torch.tensor([1, 2, 3, 4], dtype=torch.long)))
 
         if aligned:
