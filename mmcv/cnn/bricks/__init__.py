@@ -16,7 +16,6 @@ from .padding import build_padding_layer
 from .plugin import build_plugin_layer
 from .scale import Scale
 from .swish import Swish
-from .transformer import LayerScale
 from .upsample import build_upsample_layer
 from .wrappers import (Conv2d, Conv3d, ConvTranspose2d, ConvTranspose3d,
                        Linear, MaxPool2d, MaxPool3d)
