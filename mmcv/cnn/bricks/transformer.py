@@ -551,6 +551,38 @@ class MultiheadAttention(BaseModule):
         return identity + self.dropout_layer(self.proj_drop(out))
 
 
+class LayerScale(nn.Module):
+    """LayerScale layer.
+
+    Args:
+        dim (int): Dimension of input features.
+        inplace (bool): inplace: can optionally do the
+            operation in-place. Default: `False`.
+        data_format (str): The input data format, could be 'channels_last'
+             or 'channels_first', representing (B, C, H, W) and
+             (B, N, C) format data respectively. Default: 'channels_last'.
+    """
+
+    def __init__(self,
+                 dim: int,
+                 inplace: bool = False,
+                 data_format: str = 'channels_last'):
+        super().__init__()
+        assert data_format in ('channels_last', 'channels_first'), \
+            "'data_format' could only be channels_last or channels_first."
+        self.inplace = inplace
+        self.data_format = data_format
+        self.weight = nn.Parameter(torch.ones(dim) * 1e-5)
+
+    def forward(self, x):
+        if self.data_format == 'channels_first':
+            if self.inplace:
+                return x.mul_(self.weight.view(-1, 1, 1))
+            else:
+                return x * self.weight.view(-1, 1, 1)
+        return x.mul_(self.weight) if self.inplace else x * self.weight
+
+
 @MODELS.register_module()
 class FFN(BaseModule):
     """Implements feed-forward networks (FFNs) with identity connection.
@@ -568,6 +600,8 @@ class FFN(BaseModule):
             zeroed in FFN. Default 0.0.
         add_identity (bool, optional): Whether to add the
             identity connection. Default: `True`.
+        use_layer_scale (bool): Whether to use layer_scale in FFN.
+            Default: `True`.
         dropout_layer (obj:`ConfigDict`): The dropout_layer used
             when adding the shortcut.
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
@@ -588,6 +622,7 @@ class FFN(BaseModule):
                  ffn_drop=0.,
                  dropout_layer=None,
                  add_identity=True,
+                 use_layer_scale=True,
                  init_cfg=None,
                  **kwargs):
         super().__init__(init_cfg)
@@ -614,6 +649,11 @@ class FFN(BaseModule):
             dropout_layer) if dropout_layer else torch.nn.Identity()
         self.add_identity = add_identity
 
+        if use_layer_scale:
+            self.gamma2 = LayerScale(embed_dims)
+        else:
+            self.gamma2 = nn.Identity()
+
     @deprecated_api_warning({'residual': 'identity'}, cls_name='FFN')
     def forward(self, x, identity=None):
         """Forward function for `FFN`.
@@ -621,6 +661,7 @@ class FFN(BaseModule):
         The function would add x to the output tensor if residue is None.
         """
         out = self.layers(x)
+        out = self.gamma2(out)
         if not self.add_identity:
             return self.dropout_layer(out)
         if identity is None:
