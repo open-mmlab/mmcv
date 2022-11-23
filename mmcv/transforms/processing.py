@@ -1063,7 +1063,7 @@ class RandomChoiceResize(BaseTransform):
             self.scales = scales
         else:
             self.scales = [scales]
-        assert mmengine.is_list_of(self.scales, tuple)
+        assert mmengine.is_list_of(self.scales, (tuple, int))
 
         self.resize_cfg = dict(type=resize_type, **resize_kwargs)
         # create a empty Resize object
@@ -1079,7 +1079,7 @@ class RandomChoiceResize(BaseTransform):
             ``scale_idx`` is the selected index in the given candidates.
         """
 
-        assert mmengine.is_list_of(self.scales, tuple)
+        assert mmengine.is_list_of(self.scales, (tuple, int))
         scale_idx = np.random.randint(len(self.scales))
         scale = self.scales[scale_idx]
         return scale, scale_idx
