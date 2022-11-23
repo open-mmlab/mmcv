@@ -1079,7 +1079,6 @@ class RandomChoiceResize(BaseTransform):
             ``scale_idx`` is the selected index in the given candidates.
         """
 
-        assert mmengine.is_list_of(self.scales, (tuple, int))
         scale_idx = np.random.randint(len(self.scales))
         scale = self.scales[scale_idx]
         return scale, scale_idx
