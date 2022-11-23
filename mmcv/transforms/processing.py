@@ -1063,7 +1063,7 @@ class RandomChoiceResize(BaseTransform):
             self.scales = scales
         else:
             self.scales = [scales]
-        assert mmengine.is_list_of(self.scales, (tuple, int))
+        assert mmengine.is_seq_of(self.scales, (tuple, int))
 
         self.resize_cfg = dict(type=resize_type, **resize_kwargs)
         # create a empty Resize object
