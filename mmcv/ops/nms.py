@@ -28,6 +28,10 @@ class NMSop(torch.autograd.Function):
         inds = ext_module.nms(
             bboxes, scores, iou_threshold=float(iou_threshold), offset=offset)
 
+        print(f'inds.size(0): {inds.size(0)}')
+        print(f'inds.size(): {inds.size()}')
+        print(f'inds.shape: {inds.shape}')
+        # print(f'inds.data: {inds.data}')
         if max_num > 0:
             inds = inds[:max_num]
         if is_filtering_by_score:
@@ -163,6 +167,8 @@ def nms(boxes: array_like_type,
     assert isinstance(boxes, (Tensor, np.ndarray))
     assert isinstance(scores, (Tensor, np.ndarray))
     is_numpy = False
+    print(f'boxes from_numpy: {boxes}')
+    print(f'scores from_numpy: {scores}')
     if isinstance(boxes, np.ndarray):
         is_numpy = True
         boxes = torch.from_numpy(boxes)
@@ -174,6 +180,11 @@ def nms(boxes: array_like_type,
 
     inds = NMSop.apply(boxes, scores, iou_threshold, offset, score_threshold,
                        max_num)
+    print("Finish NMSop.apply")
+    # print(f'inds: {inds}') # 无法打印
+    print(f'is_numpy: {is_numpy}')
+    print(f'boxes: {boxes}')
+    print(f'scores: {scores}')
     dets = torch.cat((boxes[inds], scores[inds].reshape(-1, 1)), dim=1)
     if is_numpy:
         dets = dets.cpu().numpy()

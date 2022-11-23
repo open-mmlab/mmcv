@@ -43,7 +43,13 @@ Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
       keep_t.data_ptr<bool>(), (unsigned long long*)mask.data_ptr<int64_t>(),
       boxes_num);
   AT_CUDA_CHECK(cudaGetLastError());
-  return order_t.masked_select(keep_t);
+  auto ret = order_t.masked_select(keep_t);
+  std::cout << "ret.device() = " << ret.device()  << "\n";
+  std::cout << "ret.size(0) = " << ret.size(0)  << "\n";
+  std::cout << "ret = " << ret  << "\n";
+  std::cout << "ret.sizes() = " << ret.sizes()  << "\n";
+  std::cout << "ret.nbytes() = " << ret.nbytes()  << "\n";
+  return ret;
 }
 
 } // namespace diopiops
