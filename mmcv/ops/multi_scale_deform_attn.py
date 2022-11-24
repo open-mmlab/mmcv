@@ -180,6 +180,8 @@ class MultiScaleDeformableAttention(BaseModule):
             or (n, batch, embed_dim). Default to False.
         norm_cfg (dict): Config dict for normalization layer.
             Default: None.
+        value_proj_ratio (float): The expansion ratio of value_proj.
+            Default: 4.
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
             Default: None.
     """
@@ -189,11 +191,11 @@ class MultiScaleDeformableAttention(BaseModule):
                  num_heads: int = 8,
                  num_levels: int = 4,
                  num_points: int = 4,
-                 value_proj_ratio: float = 1.0,
                  im2col_step: int = 64,
                  dropout: float = 0.1,
                  batch_first: bool = False,
                  norm_cfg: Optional[dict] = None,
+                 value_proj_ratio: float = 1.0,
                  init_cfg: Optional[mmengine.ConfigDict] = None):
         super().__init__(init_cfg)
         if embed_dims % num_heads != 0:
