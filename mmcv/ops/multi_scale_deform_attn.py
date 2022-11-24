@@ -229,8 +229,8 @@ class MultiScaleDeformableAttention(BaseModule):
             embed_dims, num_heads * num_levels * num_points * 2)
         self.attention_weights = nn.Linear(embed_dims,
                                            num_heads * num_levels * num_points)
-        self.value_proj_size = int(embed_dims * value_proj_ratio)
-        self.value_proj = nn.Linear(embed_dims, self.value_proj_size)
+        value_proj_size = int(embed_dims * value_proj_ratio)
+        self.value_proj = nn.Linear(embed_dims, value_proj_size)
         self.output_proj = nn.Linear(self.value_proj_size, embed_dims)
         self.init_weights()
 
