@@ -54,6 +54,19 @@ def test_multiscale_deformable_attention(device):
         spatial_shapes=spatial_shapes,
         level_start_index=level_start_index)
 
+    # test with value_spatial_shapes
+    msda = MultiScaleDeformableAttention(
+        embed_dims=3, num_levels=2, num_heads=3, value_spatial_shapes=0.5)
+    msda.init_weights()
+    msda.to(device)
+    msda(
+        query,
+        key,
+        key,
+        reference_points=reference_points,
+        spatial_shapes=spatial_shapes,
+        level_start_index=level_start_index)
+
 
 def test_forward_multi_scale_deformable_attn_pytorch():
     N, M, D = 1, 2, 2
