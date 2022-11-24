@@ -54,7 +54,7 @@ def test_multiscale_deformable_attention(device):
         spatial_shapes=spatial_shapes,
         level_start_index=level_start_index)
 
-    # test with value_spatial_shapes
+    # test with value_proj_ratio
     embed_dims = 6
     value_proj_ratio = 0.5
     query = torch.rand(num_query, bs, embed_dims).to(device)
