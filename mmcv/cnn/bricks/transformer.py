@@ -571,16 +571,16 @@ class LayerScale(nn.Module):
         assert data_format in ('channels_last', 'channels_first'), \
             "'data_format' could only be channels_last or channels_first."
         self.inplace = inplace
-        self.data_format = data_format
-        self.weight = nn.Parameter(torch.ones(dim) * 1e-5)
+        if data_format == 'channels_first':
+            self.weight = nn.Parameter(torch.ones(dim, 1, 1) * 1e-5)
+        else:
+            self.weight = nn.Parameter(torch.ones(dim) * 1e-5)
 
     def forward(self, x):
-        if self.data_format == 'channels_first':
-            if self.inplace:
-                return x.mul_(self.weight.view(-1, 1, 1))
-            else:
-                return x * self.weight.view(-1, 1, 1)
-        return x.mul_(self.weight) if self.inplace else x * self.weight
+        if self.inplace:
+            return x.mul_(self.weight)
+        else:
+            return x * self.weight
 
 
 @MODELS.register_module()
