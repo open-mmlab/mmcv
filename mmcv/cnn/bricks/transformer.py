@@ -15,6 +15,7 @@ from mmengine.utils import deprecated_api_warning, to_2tuple
 from mmcv.cnn import (Linear, build_activation_layer, build_conv_layer,
                       build_norm_layer)
 from .drop import build_dropout
+from .scale import LayerScale
 
 # Avoid BC-breaking of importing MultiScaleDeformableAttention from this file
 try:
@@ -549,38 +550,6 @@ class MultiheadAttention(BaseModule):
             out = out.transpose(0, 1)
 
         return identity + self.dropout_layer(self.proj_drop(out))
-
-
-class LayerScale(nn.Module):
-    """LayerScale layer.
-
-    Args:
-        dim (int): Dimension of input features.
-        inplace (bool): Whether performs operation in-place.
-            Default: `False`.
-        data_format (str): The input data format, could be 'channels_last'
-            or 'channels_first', representing (B, C, H, W) and
-            (B, N, C) format data respectively. Default: 'channels_last'.
-    """
-
-    def __init__(self,
-                 dim: int,
-                 inplace: bool = False,
-                 data_format: str = 'channels_last'):
-        super().__init__()
-        assert data_format in ('channels_last', 'channels_first'), \
-            "'data_format' could only be channels_last or channels_first."
-        self.inplace = inplace
-        if data_format == 'channels_first':
-            self.weight = nn.Parameter(torch.ones(dim, 1, 1) * 1e-5)
-        else:
-            self.weight = nn.Parameter(torch.ones(dim) * 1e-5)
-
-    def forward(self, x):
-        if self.inplace:
-            return x.mul_(self.weight)
-        else:
-            return x * self.weight
 
 
 @MODELS.register_module()
