@@ -64,7 +64,6 @@ def test_multiscale_deformable_attention(device):
         num_levels=2,
         num_heads=3,
         value_proj_ratio=value_proj_ratio)
-    assert msda.value_proj_size == int(embed_dims * value_proj_ratio)
     msda.init_weights()
     msda.to(device)
     msda(
