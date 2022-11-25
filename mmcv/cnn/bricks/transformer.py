@@ -556,11 +556,11 @@ class LayerScale(nn.Module):
 
     Args:
         dim (int): Dimension of input features.
-        inplace (bool): inplace: can optionally do the
-            operation in-place. Default: `False`.
+        inplace (bool): Whether performs operation in-place.
+            Default: `False`.
         data_format (str): The input data format, could be 'channels_last'
-             or 'channels_first', representing (B, C, H, W) and
-             (B, N, C) format data respectively. Default: 'channels_last'.
+            or 'channels_first', representing (B, C, H, W) and
+            (B, N, C) format data respectively. Default: 'channels_last'.
     """
 
     def __init__(self,
