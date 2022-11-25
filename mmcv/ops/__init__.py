@@ -66,7 +66,7 @@ from .sparse_structure import SparseConvTensor, scatter_nd
 from .sync_bn import SyncBatchNorm
 from .three_interpolate import stack_three_interpolate, three_interpolate
 from .three_nn import three_nn
-from .ThreeNNForVectorPoolByTwoStep import three_nn_vector_pool_by_two_step
+from .three_nn_vector_pool import three_nn_vector_pool_by_two_step
 from .tin_shift import TINShift, tin_shift
 from .upfirdn2d import upfirdn2d
 from .vector_pool_and_query import vector_pool_with_voxel_query

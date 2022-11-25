@@ -55,8 +55,8 @@ class ThreeNNVectorPoolByTwoStep(Function):
         num_new_xyz = new_xyz.shape[0]
         new_xyz_grid_dist2 = new_xyz_grid_centers.new_zeros(
             new_xyz_grid_centers.shape)
-        new_xyz_grid_idxs = new_xyz_grid_centers.new_zeros(
-            new_xyz_grid_centers.shape).int().fill_(-1)
+        new_xyz_grid_idxs = new_xyz_grid_centers.new_full(
+            new_xyz_grid_centers.shape, -1).int()
 
         while True:
             num_max_sum_points = avg_length_of_neighbor_idxs * num_new_xyz
@@ -72,8 +72,8 @@ class ThreeNNVectorPoolByTwoStep(Function):
                 cumsum, avg_length_of_neighbor_idxs,
                 max_neighbour_distance * neighbor_distance_multiplier, nsample,
                 neighbor_type)
-            avg_length_of_neighbor_idxs = cumsum[0].item(
-            ) // num_new_xyz + int(cumsum[0].item() % num_new_xyz > 0)
+            avg_length_of_neighbor_idxs = cumsum[0] // num_new_xyz + int(
+                cumsum[0].item() % num_new_xyz > 0)
 
             if cumsum[0] <= num_max_sum_points:
                 break
@@ -84,8 +84,8 @@ class ThreeNNVectorPoolByTwoStep(Function):
             new_xyz_grid_dist2, stack_neighbor_idxs, start_len, num_new_xyz,
             num_total_grids)
 
-        return torch.sqrt(new_xyz_grid_dist2), new_xyz_grid_idxs, torch.tensor(
-            avg_length_of_neighbor_idxs)
+        return torch.sqrt(
+            new_xyz_grid_dist2), new_xyz_grid_idxs, avg_length_of_neighbor_idxs
 
 
 three_nn_vector_pool_by_two_step = ThreeNNVectorPoolByTwoStep.apply
