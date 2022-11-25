@@ -55,8 +55,8 @@ class ThreeNNVectorPoolByTwoStep(Function):
         num_new_xyz = new_xyz.shape[0]
         new_xyz_grid_dist2 = new_xyz_grid_centers.new_zeros(
             new_xyz_grid_centers.shape)
-        new_xyz_grid_idxs = new_xyz_grid_centers.new_zeros(
-            new_xyz_grid_centers.shape).int().fill_(-1)
+        new_xyz_grid_idxs = new_xyz_grid_centers.new_full(
+            new_xyz_grid_centers.shape, -1).int()
 
         while True:
             num_max_sum_points = avg_length_of_neighbor_idxs * num_new_xyz
