@@ -600,12 +600,12 @@ class FFN(BaseModule):
             zeroed in FFN. Default 0.0.
         add_identity (bool, optional): Whether to add the
             identity connection. Default: `True`.
-        use_layer_scale (bool): Whether to use layer_scale in FFN.
-            Default: `True`.
         dropout_layer (obj:`ConfigDict`): The dropout_layer used
             when adding the shortcut.
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
             Default: None.
+        use_layer_scale (bool): Whether to use layer_scale in FFN.
+            Default: `True`.
     """
 
     @deprecated_api_warning(
@@ -622,8 +622,8 @@ class FFN(BaseModule):
                  ffn_drop=0.,
                  dropout_layer=None,
                  add_identity=True,
-                 use_layer_scale=True,
                  init_cfg=None,
+                 use_layer_scale=True,
                  **kwargs):
         super().__init__(init_cfg)
         assert num_fcs >= 2, 'num_fcs should be no less ' \
