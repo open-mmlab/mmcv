@@ -78,7 +78,11 @@ class MockS3Client:
 
 class MockPetrelClient:
 
-    def __init__(self, enable_mc=True, enable_multi_cluster=False):
+    def __init__(self,
+                 conf_path=None,
+                 enable_mc=True,
+                 enable_multi_cluster=False):
+        self.conf_path = conf_path
         self.enable_mc = enable_mc
         self.enable_multi_cluster = enable_multi_cluster
 
