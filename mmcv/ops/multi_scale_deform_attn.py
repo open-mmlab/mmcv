@@ -180,10 +180,10 @@ class MultiScaleDeformableAttention(BaseModule):
             or (n, batch, embed_dim). Default to False.
         norm_cfg (dict): Config dict for normalization layer.
             Default: None.
-        value_proj_ratio (float): The expansion ratio of value_proj.
-            Default: 4.
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
             Default: None.
+        value_proj_ratio (float): The expansion ratio of value_proj.
+            Default: 4.
     """
 
     def __init__(self,
