@@ -195,8 +195,8 @@ class MultiScaleDeformableAttention(BaseModule):
                  dropout: float = 0.1,
                  batch_first: bool = False,
                  norm_cfg: Optional[dict] = None,
-                 value_proj_ratio: float = 1.0,
-                 init_cfg: Optional[mmengine.ConfigDict] = None):
+                 init_cfg: Optional[mmengine.ConfigDict] = None,
+                 value_proj_ratio: float = 1.0):
         super().__init__(init_cfg)
         if embed_dims % num_heads != 0:
             raise ValueError(f'embed_dims must be divisible by num_heads, '
