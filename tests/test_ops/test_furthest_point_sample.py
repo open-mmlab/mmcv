@@ -21,21 +21,22 @@ def test_fps():
     expected_idx = torch.tensor([[0, 2, 4], [0, 2, 1]]).cuda()
     assert torch.all(idx == expected_idx)
 
+
 @pytest.mark.skipif(
     not torch.cuda.is_available(), reason='requires CUDA support')
 def test_stackfps():
     xyz = torch.tensor([[-0.2748, 1.0020, -1.1674], [0.1015, 1.3952, -1.2681],
-                         [-0.8070, 2.4137,
-                          -0.5845], [-1.0001, 2.1982, -0.5859],
-                         [0.3841, 1.8983, -0.7431],
-                        [-1.0696, 3.0758,
-                          -0.1899], [-0.2559, 3.5521, -0.1402],
-                         [0.8164, 4.0081, -0.1839], [-1.1000, 3.0213, -0.8205],
-                         [-0.0518, 3.7251, -0.3950]]).cuda()
+                        [-0.8070, 2.4137, -0.5845], [-1.0001, 2.1982, -0.5859],
+                        [0.3841, 1.8983, -0.7431], [-1.0696, 3.0758, -0.1899],
+                        [-0.2559, 3.5521, -0.1402], [0.8164, 4.0081, -0.1839],
+                        [-1.1000, 3.0213, -0.8205], [-0.0518, 3.7251,
+                                                     -0.3950]]).cuda()
     points_batch_cnt = torch.tensor([5, 5]).int().cuda()
     idx = furthest_point_sample(xyz, 3, points_batch_cnt)
     expected_idx = torch.tensor([0, 2, 4, 5, 7, 6]).cuda()
     assert torch.all(idx == expected_idx)
+
+
 @pytest.mark.skipif(
     not torch.cuda.is_available(), reason='requires CUDA support')
 def test_fps_with_dist():

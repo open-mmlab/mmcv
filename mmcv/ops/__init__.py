@@ -64,13 +64,13 @@ from .sparse_modules import SparseModule, SparseSequential
 from .sparse_pool import SparseMaxPool2d, SparseMaxPool3d
 from .sparse_structure import SparseConvTensor, scatter_nd
 from .sync_bn import SyncBatchNorm
-from .three_interpolate import three_interpolate, stack_three_interpolate
+from .three_interpolate import stack_three_interpolate, three_interpolate
 from .three_nn import three_nn
 from .ThreeNNForVectorPoolByTwoStep import three_nn_vector_pool_by_two_step
 from .tin_shift import TINShift, tin_shift
 from .upfirdn2d import upfirdn2d
-from .voxelize import Voxelization, voxelization
 from .vector_pool_and_query import vector_pool_with_voxel_query
+from .voxelize import Voxelization, voxelization
 
 __all__ = [
     'bbox_overlaps', 'CARAFE', 'CARAFENaive', 'CARAFEPack', 'carafe',
@@ -104,6 +104,6 @@ __all__ = [
     'points_in_boxes_cpu', 'points_in_boxes_all', 'points_in_polygons',
     'min_area_polygons', 'active_rotated_filter', 'convex_iou', 'convex_giou',
     'diff_iou_rotated_2d', 'diff_iou_rotated_3d', 'chamfer_distance',
-    'PrRoIPool', 'prroi_pool', 'three_nn_vector_pool_by_two_step', 'stack_three_interpolate',
-    'vector_pool_with_voxel_query'
+    'PrRoIPool', 'prroi_pool', 'three_nn_vector_pool_by_two_step',
+    'stack_three_interpolate', 'vector_pool_with_voxel_query'
 ]

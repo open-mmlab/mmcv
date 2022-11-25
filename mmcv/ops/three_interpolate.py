@@ -5,9 +5,10 @@ from torch.autograd import Function
 
 from ..utils import ext_loader
 
-ext_module = ext_loader.load_ext(
-    '_ext', ['three_interpolate_forward', 'three_interpolate_backward',
-             'stack_three_interpolate_forward', 'stack_three_interpolate_backward'])
+ext_module = ext_loader.load_ext('_ext', [
+    'three_interpolate_forward', 'three_interpolate_backward',
+    'stack_three_interpolate_forward', 'stack_three_interpolate_backward'
+])
 
 
 class ThreeInterpolate(Function):
@@ -68,6 +69,8 @@ class ThreeInterpolate(Function):
 
 
 three_interpolate = ThreeInterpolate.apply
+
+
 class StackThreeInterpolate(Function):
     """Performs weighted linear interpolation on 3 features.
 
@@ -76,7 +79,8 @@ class StackThreeInterpolate(Function):
     """
 
     @staticmethod
-    def forward(ctx, features: torch.Tensor, idx: torch.Tensor, weight: torch.Tensor):
+    def forward(ctx, features: torch.Tensor, idx: torch.Tensor,
+                weight: torch.Tensor):
         """
         Args:
             ctx:
@@ -87,12 +91,16 @@ class StackThreeInterpolate(Function):
         Returns:
             out_tensor: (N1 + N2 ..., C)
         """
-        assert idx.shape[0] == weight.shape[0] and idx.shape[1] == weight.shape[1] == 3
+        assert idx.shape[0] == weight.shape[
+            0] and idx.shape[1] == weight.shape[1] == 3
 
         ctx.three_interpolate_for_backward = (idx, weight, features.shape[0])
         output = features.new_zeros((idx.shape[0], features.shape[1]))
-        ext_module.stack_three_interpolate_forward(features.contiguous(), idx.contiguous(), weight.contiguous(), output)
+        ext_module.stack_three_interpolate_forward(features.contiguous(),
+                                                   idx.contiguous(),
+                                                   weight.contiguous(), output)
         return output
+
     @staticmethod
     def backward(ctx, grad_out: torch.Tensor):
         """
@@ -105,9 +113,10 @@ class StackThreeInterpolate(Function):
         """
         idx, weight, M = ctx.three_interpolate_for_backward
         grad_features = grad_out.new_zeros((M, grad_out.shape[1]))
-        ext_module.stack_three_interpolate_backward(
-            grad_out.contiguous(), idx.contiguous(), weight.contiguous(), grad_features
-        )
+        ext_module.stack_three_interpolate_backward(grad_out.contiguous(),
+                                                    idx.contiguous(),
+                                                    weight.contiguous(),
+                                                    grad_features)
         return grad_features, None, None
 
 
