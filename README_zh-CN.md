@@ -163,10 +163,10 @@ MMCV 目前有两个分支，分别是 master 和 2.x 分支，它们会经历�
 
 ## 欢迎加入 OpenMMLab 社区
 
-扫描下方的二维码可关注 OpenMMLab 团队的[知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的[官方交流 QQ 群](https://r.vansin.top/?r=join-qq)，或添加微信小助手”OpenMMLabwx“加入官方交流微信群。
+扫描下方的二维码可关注 OpenMMLab 团队的[知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的[官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=K0QI8ByU)，或添加微信小助手”OpenMMLabwx“加入官方交流微信群。
 
 <div align="center">
-<img src="docs/en/_static/zhihu_qrcode.jpg" height="400" />  <img src="https://cdn.vansin.top/OpenMMLab/q3.png" height="400" /> <img src="docs/en/_static/wechat_qrcode.jpg" height="400" />
+<img src="docs/en/_static/zhihu_qrcode.jpg" height="400" />  <img src="https://user-images.githubusercontent.com/25839884/203904835-62392033-02d4-4c73-a68c-c9e4c1e2b07f.jpg" height="400" /> <img src="docs/en/_static/wechat_qrcode.jpg" height="400" />
 </div>
 
 我们会在 OpenMMLab 社区为大家
