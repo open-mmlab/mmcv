@@ -48,7 +48,7 @@ class LayerScale(nn.Module):
         else:
             self.weight = nn.Parameter(torch.ones(dim) * scale)
 
-    def forward(self, x):
+    def forward(self, x) -> torch.Tensor:
         if self.inplace:
             return x.mul_(self.weight)
         else:
