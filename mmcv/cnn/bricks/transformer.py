@@ -573,8 +573,8 @@ class FFN(BaseModule):
             when adding the shortcut.
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
             Default: None.
-        use_layer_scale (bool): Whether to use layer_scale in FFN.
-            Default: `True`.
+        layer_scale_init_value (float): Initial value of scale factor in
+            LayerScale. Default: 1.0
     """
 
     @deprecated_api_warning(
@@ -592,7 +592,7 @@ class FFN(BaseModule):
                  dropout_layer=None,
                  add_identity=True,
                  init_cfg=None,
-                 use_layer_scale=True,
+                 layer_scale_init_value=0.,
                  **kwargs):
         super().__init__(init_cfg)
         assert num_fcs >= 2, 'num_fcs should be no less ' \
@@ -618,8 +618,8 @@ class FFN(BaseModule):
             dropout_layer) if dropout_layer else torch.nn.Identity()
         self.add_identity = add_identity
 
-        if use_layer_scale:
-            self.gamma2 = LayerScale(embed_dims)
+        if layer_scale_init_value > 0:
+            self.gamma2 = LayerScale(embed_dims, scale=layer_scale_init_value)
         else:
             self.gamma2 = nn.Identity()
 
