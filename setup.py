@@ -285,7 +285,8 @@ def get_extensions():
             cuda_args = os.getenv('MMCV_CUDA_ARGS')
             extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
             if is_rocm_pytorch:
-                extra_compile_args['nvcc'] += ['--gpu-max-threads-per-block=1024']
+                extra_compile_args['nvcc'] += \
+                    ['--gpu-max-threads-per-block=1024']
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') + \
