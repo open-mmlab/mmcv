@@ -44,8 +44,6 @@ class TestMdconv:
                      device='mlu' if IS_MLU_AVAILABLE else 'cuda'):
         if not torch.cuda.is_available() and device == 'cuda':
             pytest.skip('test requires GPU')
-        if not torch.mlu.is_available() and device == 'mlu':
-            pytest.skip('test requires MLU')
         if device == 'mlu':
             from mmcv.ops import \
                 ModulatedDeformConv2dPack_MLU as ModulatedDeformConv2dPack
