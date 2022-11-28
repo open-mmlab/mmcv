@@ -182,9 +182,16 @@ def nms(boxes: array_like_type,
                        max_num)
     print("Finish NMSop.apply")
     # print(f'inds: {inds}') # 无法打印
+    # print(f'inds: {inds}')
     print(f'is_numpy: {is_numpy}')
     print(f'boxes: {boxes}')
     print(f'scores: {scores}')
+    print("start boxes[inds]")
+    boxes[inds]
+    print("start scores[inds]")
+    scores[inds]
+    print("start scores[inds].reshape(-1, 1)")
+    scores[inds].reshape(-1, 1)
     dets = torch.cat((boxes[inds], scores[inds].reshape(-1, 1)), dim=1)
     if is_numpy:
         dets = dets.cpu().numpy()
