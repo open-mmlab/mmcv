@@ -11,11 +11,7 @@ Do not install both versions in the same environment, otherwise you may encounte
 
 ### Install mmcv
 
-```{note}
-The following installation steps are for Linux and Windows platforms only. To install mmcv on macOS platform, please refer to [build mmcv from source](build.md#build-on-macos).
-```
-
-Before installing mmcv-full, make sure that PyTorch has been successfully installed following the [PyTorch official installation guide](https://pytorch.org/get-started/locally/#start-locally). This can be verified using the following command
+Before installing mmcv, make sure that PyTorch has been successfully installed following the [PyTorch official installation guide](https://pytorch.org/get-started/locally/#start-locally). This can be verified using the following command
 
 ```bash
 python -c 'import torch;print(torch.__version__)'
@@ -39,7 +35,7 @@ If you find that the above installation command does not use a pre-built package
 
 Looking in links: https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html<br />
 Collecting mmcv<br />
-<b>Downloading https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/mmcv-2.0.0rc1-cp38-cp38-manylinux1_x86_64.whl</b>
+<b>Downloading https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/mmcv-2.0.0rc3-cp38-cp38-manylinux1_x86_64.whl</b>
 
 </details>
 
@@ -47,15 +43,15 @@ Collecting mmcv<br />
 <summary>Installation log using source packages</summary>
 
 Looking in links: https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html<br />
-Collecting mmcv==2.0.0rc1<br />
-<b>Downloading mmcv-2.0.0rc1.tar.gz</b>
+Collecting mmcv==2.0.0rc3<br />
+<b>Downloading mmcv-2.0.0rc3.tar.gz</b>
 
 </details>
 
-To install a specific version of mmcv, for example, mmcv version 2.0.0rc1, you can use the following command
+To install a specific version of mmcv, for example, mmcv version 2.0.0rc3, you can use the following command
 
 ```bash
-mim install mmcv==2.0.0rc1
+mim install mmcv==2.0.0rc3
 ```
 
 :::{note}
@@ -66,7 +62,7 @@ you can first install it before installing MMCV to skip the installation of `ope
 Alternatively, if it takes too long to install a dependency library, you can specify the pypi source
 
 ```bash
-mim install "mmcv>=2.0.0rc1" -i https://pypi.tuna.tsinghua.edu.cn/simple
+mim install "mmcv>=2.0.0rc3" -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 :::
@@ -193,7 +189,12 @@ Select the appropriate installation command depending on the type of system, CUD
         const cmd = document.getElementById("select-cmd");
         let cmdString = "pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/{cu_version}/{torch_version}/index.html";
         // e.g: pip install mmcv==2.0.0rc1 -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9/index.html
-        const cudaVersion = `${cudaVal === "cpu" ? cudaVal : `cu${cudaVal.split(".").join("")}`}`;
+        let cudaVersion;
+        if (cudaVal === "cpu" || cudaVal === "mps") {
+            cudaVersion = "cpu";
+        } else {
+            cudaVersion = `cu${cudaVal.split(".").join("")}`;
+        }
         const torchVersion = `torch${torchVal.substring(0, torchVal.length - 2)}`;
         cmdString = cmdString.replace("{cu_version}", cudaVersion).replace("{mmcv_version}", mmcvVal).replace("{torch_version}", torchVersion);
         cmd.textContent = cmdString;
@@ -208,7 +209,7 @@ Select the appropriate installation command depending on the type of system, CUD
         data.forEach(option => {
             const ele = document.createElement("option");
             let text = `${name} ${option}`;
-            if (name === "os" || option.toUpperCase() === "CPU") {
+            if (name === "os" || option.toUpperCase() === "CPU" || option.toUpperCase() === "MPS") {
                 text = `${option}`;
             }
             ele.textContent = text;
