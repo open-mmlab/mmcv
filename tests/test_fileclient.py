@@ -79,12 +79,12 @@ class MockS3Client:
 class MockPetrelClient:
 
     def __init__(self,
-                 conf_path=None,
                  enable_mc=True,
-                 enable_multi_cluster=False):
-        self.conf_path = conf_path
+                 enable_multi_cluster=False,
+                 conf_path=None):
         self.enable_mc = enable_mc
         self.enable_multi_cluster = enable_multi_cluster
+        self.conf_path = conf_path
 
     def Get(self, filepath):
         with open(filepath, 'rb') as f:

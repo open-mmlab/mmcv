@@ -95,9 +95,10 @@ class PetrelBackend(BaseStorageBackend):
         path_mapping (dict, optional): Path mapping dict from local path to
             Petrel path. When ``path_mapping={'src': 'dst'}``, ``src`` in
             ``filepath`` will be replaced by ``dst``. Default: None.
-        conf_path (str, optional): Petrel client config path. Default: None.
         enable_mc (bool, optional): Whether to enable memcached support.
             Default: True.
+        conf_path (str, optional): Config path of Petrel client. Default: None.
+            `New in version 1.7.1`.
 
     Examples:
         >>> filepath1 = 's3://path/of/file'
@@ -109,8 +110,8 @@ class PetrelBackend(BaseStorageBackend):
 
     def __init__(self,
                  path_mapping: Optional[dict] = None,
-                 conf_path: str = None,
-                 enable_mc: bool = True):
+                 enable_mc: bool = True,
+                 conf_path: str = None):
         try:
             from petrel_client import client
         except ImportError:
