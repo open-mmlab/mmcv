@@ -220,11 +220,11 @@ void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atOut, diopiT
     std::cout << "atOut = " << atOut  << "\n";
     std::cout << "atOut.sizes() = " << atOut.sizes()  << "\n";
     std::cout << "atOut.nbytes() = " << atOut.nbytes()  << "\n";
-    at::Tensor atOutput = buildATen(out);
+    at::Tensor atOutput = std::move(buildATen(out));
     std::cout << "atOutput = " << atOutput  << "\n";
     std::cout << "atOutput.sizes() = " << atOutput.sizes()  << "\n";
     std::cout << "atOutput.nbytes() = " << atOutput.nbytes()  << "\n";
-    atOutput.reshape_as(atOut).copy_(atOut);
+    atOutput.reshape_as(atOut).copy_(atOut, true);
     std::cout << "atOutput = " << atOutput  << "\n";
     std::cout << "atOutput.sizes() = " << atOutput.sizes()  << "\n";
     std::cout << "atOutput.nbytes() = " << atOutput.nbytes()  << "\n";
@@ -283,11 +283,16 @@ void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHa
     diopiSize_t size(const_cast<int64_t*>(atSize.data()), atSize.size());
     diopiSize_t stride(const_cast<int64_t*>(atStride.data()), atStride.size());
     diopiDtype_t dtype = getDIOPITensorType(input);
+    // 获取新的buffer
     diopiRequireTensor(ctx, out, &size, &stride, dtype, diopi_device);
     // diopiGetTensorData
     // (*out)->data_ptr
-    // updateATen2Tensor 已更新
+    // updateATen2Tensor 已更新 更新回out
     updateATen2Tensor(ctx, input, *out);
+
+    // prefer method is: bool bRet = transferAcc(ctx, src, dst);
+    // use directly the at storage
+
 }
 
 c10::optional<c10::string_view> getRoundingMode(diopiRoundMode_t rounding_mode) {
