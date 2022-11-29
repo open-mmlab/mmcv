@@ -140,33 +140,25 @@ at::Tensor buildATen(T tensor) {
 
     diopiDtype_t dtype;
     diopiGetTensorDtype(tensor, &dtype);
-    std::cout << "dtype is " << dtype << "\n";
     caffe2::TypeMeta atType = getATenType(dtype);
     diopiDevice_t device;
     diopiGetTensorDevice(tensor, &device);
-    std::cout << "device is " << device << "\n";
     c10::DeviceType atDevice = getATenDevice(device);
 
     void* data = nullptr;
     diopiGetTensorData(const_cast<diopiTensorHandle_t*>(&tensor), &data);
-    std::cout << "data is " << data << "\n";
 
     diopiSize_t shape;
     diopiGetTensorShape(tensor, &shape);
-    std::cout << "shape.len is " << shape.len << "\n";
-    std::cout << "shape.data is " << shape.data << "\n";
     at::IntArrayRef atDims(shape.data, shape.len);
 
     diopiSize_t stride;
     diopiGetTensorStride(tensor, &stride);
-    std::cout << "stride.data is " << stride.data << "\n";
-    std::cout << "stride.len is " << stride.len << "\n";
     at::IntArrayRef atStrides(stride.data, stride.len);
 
     auto options = at::TensorOptions(atDevice).dtype(atType);
     int64_t numel = 0;
     diopiGetTensorNumel(tensor, &numel);
-    std::cout << "numel is " << numel << "\n";
     if (0 == numel) {
         return at::empty(atDims, options);
     } else {
@@ -206,28 +198,8 @@ decltype(auto) buildATenList(T* tensors, int64_t numTensors) {
 }
 
 void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atOut, diopiTensorHandle_t out) {
-    // // TODO(fengsibo): add device and nbytes check
-    // void* src = atOut.data_ptr();
-    // size_t nbytes = atOut.nbytes();
-    // // print at::Tensor
-    // std::cout << "atOut = " << atOut  << "\n";
-    // std::cout << "atOut.sizes() = " << atOut.sizes()  << "\n";
-    // std::cout << "atOut.nbytes() = " << nbytes  << "\n";
-    // void* dst = nullptr;
-    // diopiGetTensorData(&out, &dst);
-    // cudaMemcpy(dst, src, nbytes, cudaMemcpyDeviceToDevice);
-
-    std::cout << "atOut = " << atOut  << "\n";
-    std::cout << "atOut.sizes() = " << atOut.sizes()  << "\n";
-    std::cout << "atOut.nbytes() = " << atOut.nbytes()  << "\n";
     at::Tensor atOutput = std::move(buildATen(out));
-    std::cout << "atOutput = " << atOutput  << "\n";
-    std::cout << "atOutput.sizes() = " << atOutput.sizes()  << "\n";
-    std::cout << "atOutput.nbytes() = " << atOutput.nbytes()  << "\n";
     atOutput.reshape_as(atOut).copy_(atOut, true);
-    std::cout << "atOutput = " << atOutput  << "\n";
-    std::cout << "atOutput.sizes() = " << atOutput.sizes()  << "\n";
-    std::cout << "atOutput.nbytes() = " << atOutput.nbytes()  << "\n";
     sync(ctx);
 }
 

@@ -18,7 +18,6 @@ diopiError_t diopiNms(diopiContextHandle_t ctx, diopiTensorHandle_t* out, const 
     auto atScores = impl::aten::buildATen(scores);
     auto atOut = mmcv::diopiops::NMSCUDAKernelLauncher(atDets, atScores, iouThreshold, offset);
     impl::aten::buildDiopiTensor(ctx, atOut, out);
-    
 }
 
 }  // extern "C"

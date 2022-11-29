@@ -8,10 +8,7 @@ using namespace at;
 
 Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
                              int64_t offset) {
-  std::cout << "dongkaixing into device_guard\n";
-  // std::cout << "boxes.device() = " << boxes.device()  << "\n";
   at::cuda::CUDAGuard device_guard(boxes.device());
-  std::cout << "dongkaixing out device_guard\n";
   if (boxes.numel() == 0) {
     return at::empty({0}, boxes.options().dtype(at::kLong));
   }
@@ -44,11 +41,6 @@ Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
       boxes_num);
   AT_CUDA_CHECK(cudaGetLastError());
   auto ret = order_t.masked_select(keep_t);
-  std::cout << "ret.device() = " << ret.device()  << "\n";
-  std::cout << "ret.size(0) = " << ret.size(0)  << "\n";
-  std::cout << "ret = " << ret  << "\n";
-  std::cout << "ret.sizes() = " << ret.sizes()  << "\n";
-  std::cout << "ret.nbytes() = " << ret.nbytes()  << "\n";
   return ret;
 }
 
