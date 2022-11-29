@@ -69,7 +69,7 @@ from .three_nn import three_nn
 from .three_nn_vector_pool import three_nn_vector_pool_by_two_step
 from .tin_shift import TINShift, tin_shift
 from .upfirdn2d import upfirdn2d
-from .vector_pool_and_query import vector_pool_with_voxel_query
+from .vector_pool_with_voxel_query import vector_pool_with_voxel_query
 from .voxelize import Voxelization, voxelization
 
 __all__ = [

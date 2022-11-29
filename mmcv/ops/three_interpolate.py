@@ -23,11 +23,11 @@ class ThreeInterpolate(Function):
                 weight: torch.Tensor) -> torch.Tensor:
         """
         Args:
-            features (torch.Tensor): (B, C, M) Features descriptors to be
+            features (torch.Tensor): (B, C, M) features descriptors to be
                 interpolated.
-            indices (torch.Tensor): (B, n, 3) indices of three nearest
+            indices (torch.Tensor): (B, N, 3) indices of three nearest
                 neighbor features for the target features.
-            weight (torch.Tensor): (B, n, 3) weights of three nearest
+            weight (torch.Tensor): (B, N, 3) weights of three nearest
                 neighbor features for the target features.
 
         Returns:
@@ -80,16 +80,19 @@ class StackThreeInterpolate(Function):
 
     @staticmethod
     def forward(ctx, features: torch.Tensor, idx: torch.Tensor,
-                weight: torch.Tensor):
+                weight: torch.Tensor) -> torch.Tensor:
         """
         Args:
             ctx:
-            features: (M1 + M2 ..., C)
-            idx: [N1 + N2 ..., 3]
-            weight: [N1 + N2 ..., 3]
+            features(torch.Tensor): (M1 + M2 ..., C) features descriptors to be
+                interpolated.
+            idx(torch.Tensor): (N1 + N2 ..., 3) indices of three nearest
+                neighbor features for the target features.
+            weight(torch.Tensor): (N1 + N2 ..., 3) weights of three nearest
+                neighbor features for the target features.
 
         Returns:
-            out_tensor: (N1 + N2 ..., C)
+            torch.Tensor: (N1 + N2 ..., C) tensor of the interpolated features.
         """
         assert idx.shape[0] == weight.shape[
             0] and idx.shape[1] == weight.shape[1] == 3
@@ -105,11 +108,11 @@ class StackThreeInterpolate(Function):
     def backward(ctx, grad_out: torch.Tensor):
         """
         Args:
-            ctx:
-            grad_out: (N1 + N2 ..., C)
+            grad_out(torch.Tensor): (N1 + N2 ..., C) tensor with gradients
+                of outputs.
 
         Returns:
-            grad_features: (M1 + M2 ..., C)
+            torch.Tensor: (M1 + M2 ..., C) tensor with gradients of features.
         """
         idx, weight, M = ctx.three_interpolate_for_backward
         grad_features = grad_out.new_zeros((M, grad_out.shape[1]))

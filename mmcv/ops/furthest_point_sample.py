@@ -16,12 +16,15 @@ class FurthestPointSampling(Function):
     @staticmethod
     def forward(ctx,
                 points_xyz: torch.Tensor,
-                num_points: int,
+                num_points,
                 points_batch_cnt=None) -> torch.Tensor:
         """
         Args:
-            points_xyz (torch.Tensor): (B, N, 3) where N > num_points.
+            points_xyz (torch.Tensor): (B, N, 3) where N > num_points
+                or stacked input (N1 + N2..., 3) .
             num_points (int): Number of points in the sampled set.
+            points_batch_cnt (torch.Tensor): Stacked input points nums in
+                each batch, just like (N1, N2, ...). Defaults to None.
 
         Returns:
             torch.Tensor: (B, num_points) indices of the sampled points.
