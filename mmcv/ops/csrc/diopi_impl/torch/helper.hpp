@@ -20,7 +20,7 @@ namespace aten {
 #define TORCH_1_11_MM_VERSION 1110
 #define TORCH_1_12_MM_VERSION 1120
 
-#define LOG_LINE_INFO() std::cerr << __FILE__ << ":" << __LINE__ << ": "; 
+#define LOG_LINE_INFO() std::cerr << __FILE__ << ":" << __LINE__ << ": ";
 
 void logError(){std::cerr << std::endl;}
 
