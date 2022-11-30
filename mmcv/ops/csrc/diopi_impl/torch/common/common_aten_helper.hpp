@@ -1,5 +1,5 @@
-#ifndef COMMON_ATEN_HELPER
-#define COMMON_ATEN_HELPER
+#ifndef DIOPI_IMPL_TORCH_COMMON_ATEN_HELPER
+#define DIOPI_IMPL_TORCH_COMMON_ATEN_HELPER
 
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
@@ -18,6 +18,8 @@ using at::Tensor;
 using phalf = at::Half;
 
 #define __PHALF(x) (x)
+#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
+
 } // namespace diopiops
 } // namespace mmcv
-#endif  // COMMON_ATEN_HELPER
+#endif  // DIOPI_IMPL_TORCH_COMMON_ATEN_HELPER

@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved
-#ifndef NMS_CUDA_KERNEL_CUH
-#define NMS_CUDA_KERNEL_CUH
+#ifndef DIOPI_IMPL_TORCH_NMS_CUDA_KERNEL_CUH
+#define DIOPI_IMPL_TORCH_NMS_CUDA_KERNEL_CUH
 
 #include <float.h>
 #include "common_aten_helper.hpp"
@@ -114,4 +114,4 @@ __global__ void gather_keep_from_mask(bool *keep,
 } // namespace diopiops
 } // namespace mmcv
 
-#endif  // NMS_CUDA_KERNEL_CUH
+#endif  // DIOPI_IMPL_TORCH_NMS_CUDA_KERNEL_CUH

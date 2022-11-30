@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "../common/nms_cuda_kernel.cuh"
-#include<iostream>
+
 namespace mmcv {
 namespace diopiops {
 

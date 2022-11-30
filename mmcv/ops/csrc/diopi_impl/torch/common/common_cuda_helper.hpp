@@ -1,5 +1,5 @@
-#ifndef COMMON_CUDA_HELPER
-#define COMMON_CUDA_HELPER
+#ifndef DIOPI_IMPL_TORCH_COMMON_CUDA_HELPER
+#define DIOPI_IMPL_TORCH_COMMON_CUDA_HELPER
 
 #include <cuda.h>
 
@@ -124,4 +124,4 @@ __device__ void bilinear_interpolate_gradient(
 } // namespace diopiops
 } // namespace mmcv
 
-#endif  // COMMON_CUDA_HELPER
+#endif  // DIOPI_IMPL_TORCH_COMMON_CUDA_HELPER
