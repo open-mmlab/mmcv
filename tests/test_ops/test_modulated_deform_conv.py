@@ -39,9 +39,7 @@ dcn_offset_b_grad = [
 
 class TestMdconv:
 
-    def _test_mdconv(self,
-                     dtype=torch.float,
-                     device='mlu' if IS_MLU_AVAILABLE else 'cuda'):
+    def _test_mdconv(self, dtype=torch.float, device='cuda'):
         if not torch.cuda.is_available() and device == 'cuda':
             pytest.skip('test requires GPU')
         if device == 'mlu':
@@ -117,9 +115,11 @@ class TestMdconv:
     def test_mdconv(self):
         self._test_mdconv(torch.double, device='cpu')
         self._test_mdconv(torch.float, device='cpu')
-        self._test_mdconv(torch.double)
-        self._test_mdconv(torch.float)
-        self._test_mdconv(torch.half)
+
+        device = 'mlu' if IS_MLU_AVAILABLE else 'cuda'
+        self._test_mdconv(torch.double, device=device)
+        self._test_mdconv(torch.float, device=device)
+        self._test_mdconv(torch.half, device=device)
 
         # test amp when torch version >= '1.6.0', the type of
         # input data for mdconv might be torch.float or torch.half
