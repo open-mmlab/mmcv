@@ -12,7 +12,6 @@ from mmcv.utils import IS_MLU_AVAILABLE, deprecated_api_warning
 from ..cnn import CONV_LAYERS
 from ..utils import ext_loader, print_log
 
-
 ext_module = ext_loader.load_ext(
     '_ext',
     ['modulated_deform_conv_forward', 'modulated_deform_conv_backward'])
