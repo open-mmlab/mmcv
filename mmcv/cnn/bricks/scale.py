@@ -50,10 +50,8 @@ class LayerScale(nn.Module):
         if self.data_format == 'channels_first':
             shape = tuple((-1, *(1 for _ in range(x.dim() - 2))))
         else:
-            shape = tuple((*(1 for _ in range(x.dim() - 3)), -1))
+            shape = tuple((*(1 for _ in range(x.dim() - 1)), -1))
         if self.inplace:
             return x.mul_(self.weight.view(*shape))
         else:
-            print(x.shape, self.weight.shape,
-                  self.weight.view(*shape).shape, shape, self.data_format)
             return x * self.weight.view(*shape)
