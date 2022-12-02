@@ -12,8 +12,6 @@ from mmcv.utils import IS_MLU_AVAILABLE, deprecated_api_warning
 from ..cnn import CONV_LAYERS
 from ..utils import ext_loader, print_log
 
-if IS_MLU_AVAILABLE:
-    from torchvision.ops import deform_conv2d as tv_deform_conv2d
 
 ext_module = ext_loader.load_ext(
     '_ext',
@@ -358,6 +356,7 @@ class ModulatedDeformConv2dPack(ModulatedDeformConv2d):
 
 
 if IS_MLU_AVAILABLE:
+    from torchvision.ops import deform_conv2d as tv_deform_conv2d
 
     @CONV_LAYERS.register_module('DCNv2', force=True)
     class ModulatedDeformConv2dPack_MLU(nn.modules.Module):
