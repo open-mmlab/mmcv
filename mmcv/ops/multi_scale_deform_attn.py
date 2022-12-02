@@ -183,7 +183,7 @@ class MultiScaleDeformableAttention(BaseModule):
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
             Default: None.
         value_proj_ratio (float): The expansion ratio of value_proj.
-            Default: 4.
+            Default: 1.0.
     """
 
     def __init__(self,
