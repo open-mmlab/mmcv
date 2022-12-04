@@ -60,6 +60,15 @@ class TestIO:
         # backend cv2
         mmcv.use_backend('cv2')
 
+        # file_client_args and backend_args can not be both set
+        with pytest.raises(
+                ValueError,
+                match='"file_client_args" and "backend_args" cannot be set'):
+            mmcv.imread(
+                self.img_path,
+                file_client_args={'backend': 'disk'},
+                backend_args={'backend': 'disk'})
+
         # HardDiskBackend
         img_cv2_color_bgr = mmcv.imread(self.img_path)
         assert img_cv2_color_bgr.shape == (300, 400, 3)
@@ -103,6 +112,16 @@ class TestIO:
             assert_array_equal(img_cv2_color_bgr_petrel,
                                img_cv2_color_bgr_petrel_with_args)
 
+            mock_method.reset_mock()
+
+            img_cv2_color_bgr_petrel_with_args = mmcv.imread(
+                self.s3_path,
+                backend='cv2',
+                backend_args={'backend': 'petrel'})
+            mock_method.assert_called()
+            assert_array_equal(img_cv2_color_bgr_petrel,
+                               img_cv2_color_bgr_petrel_with_args)
+
         # HTTPBackend
         img_cv2_color_bgr = mmcv.imread(self.img_path)
         with patch.object(
@@ -113,6 +132,16 @@ class TestIO:
                 self.http_path,
                 backend='cv2',
                 file_client_args={'backend': 'http'})
+            mock_method.assert_called()
+            assert_array_equal(img_cv2_color_bgr_http,
+                               img_cv2_color_bgr_http_with_args)
+
+            mock_method.reset_mock()
+
+            img_cv2_color_bgr_http_with_args = mmcv.imread(
+                self.http_path,
+                backend='cv2',
+                backend_args={'backend': 'http'})
             mock_method.assert_called()
             assert_array_equal(img_cv2_color_bgr_http,
                                img_cv2_color_bgr_http_with_args)
@@ -357,6 +386,17 @@ class TestIO:
     def test_imwrite(self):
         img = mmcv.imread(self.img_path)
         out_file = osp.join(tempfile.gettempdir(), 'mmcv_test.jpg')
+
+        # file_client_args and backend_args can not be both set
+        with pytest.raises(
+                ValueError,
+                match='"file_client_args" and "backend_args" cannot be set'):
+            mmcv.imwrite(
+                img,
+                out_file,
+                file_client_args={'backend': 'disk'},
+                backend_args={'backend': 'disk'})
+
         mmcv.imwrite(img, out_file)
         rewrite_img = mmcv.imread(out_file)
         os.remove(out_file)
@@ -369,6 +409,13 @@ class TestIO:
             ret_with_args = mmcv.imwrite(
                 img, self.s3_path, file_client_args={'backend': 'petrel'})
             assert ret
+            assert ret_with_args
+            mock_method.assert_called()
+
+            mock_method.reset_mock()
+
+            ret_with_args = mmcv.imwrite(
+                img, self.s3_path, backend_args={'backend': 'petrel'})
             assert ret_with_args
             mock_method.assert_called()
 
