@@ -27,13 +27,13 @@ We implement common ops used in detection, segmentation, etc.
 | FusedBiasLeakyrelu           |     | √    |     |     |
 | GatherPoints                 |     | √    |     |     |
 | GroupPoints                  |     | √    |     |     |
-| Iou3d                        |     | √    |     |     |
+| Iou3d                        |     | √    | √   |     |
 | KNN                          |     | √    |     |     |
 | MaskedConv                   |     | √    | √   |     |
 | MergeCells                   |     | √    |     |     |
 | MinAreaPolygon               |     | √    |     |     |
 | ModulatedDeformConv2d        | √   | √    |     |     |
-| MultiScaleDeformableAttn     |     | √    |     |     |
+| MultiScaleDeformableAttn     |     | √    | √   |     |
 | NMS                          | √   | √    | √   |     |
 | NMSRotated                   | √   | √    |     |     |
 | NMSQuadri                    | √   | √    |     |     |
@@ -47,7 +47,7 @@ We implement common ops used in detection, segmentation, etc.
 | RoIAlignRotated              | √   | √    | √   |     |
 | RiRoIAlignRotated            |     | √    |     |     |
 | RoIAlign                     | √   | √    | √   |     |
-| RoIAwarePool3d               |     | √    |     |     |
+| RoIAwarePool3d               |     | √    | √   |     |
 | SAConv2d                     |     | √    |     |     |
 | SigmoidFocalLoss             |     | √    | √   |     |
 | SoftmaxFocalLoss             |     | √    |     |     |
