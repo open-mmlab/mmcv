@@ -344,9 +344,9 @@ mmcv-full 有两个版本：
 
 ### 在昇腾 NPU 机器编译 mmcv-full
 
-- torch_npu 完整安装教程详见 [PyTorch安装指南](https://gitee.com/ascend/pytorch/blob/master/docs/zh/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97.md#pytorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97)
+- torch_npu 完整安装教程详见 [PyTorch 安装指南](https://gitee.com/ascend/pytorch/blob/master/docs/zh/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97.md#pytorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97)
 
-#### 选项 1: 使用pip安装npu编译版本的mmcv-full
+#### 选项 1: 使用 pip 安装 npu 编译版本的 mmcv-full
 
 - NPU编译版本的 mmcv-full 在 mmcv >= 1.7.0 时已经支持直接pip安装
 
@@ -354,7 +354,7 @@ mmcv-full 有两个版本：
 pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/npu/torch1.8.0/index.html
 ```
 
-#### 选项 2: 使用NPU设备源码编译安装 mmcv-full
+#### 选项 2: 使用 NPU 设备源码编译安装 mmcv-full
 
 - 拉取 [MMCV 源码](https://github.com/open-mmlab/mmcv/tree/master)
 
