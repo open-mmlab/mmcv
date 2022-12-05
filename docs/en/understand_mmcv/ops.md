@@ -2,7 +2,7 @@
 
 We implement common ops used in detection, segmentation, etc.
 
-| Device                       | CPU | CUDA | MLU | MPS | ASCEND |
+| Device                       | CPU | CUDA | MLU | MPS | Ascend |
 | ---------------------------- | --- | ---- | --- | --- | ------ |
 | ActiveRotatedFilter          | √   | √    |     |     |        |
 | AssignScoreWithK             |     | √    |     |     |        |

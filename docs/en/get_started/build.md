@@ -328,7 +328,7 @@ Firstly, you need to apply for an IPU cloud machine, see [here](https://www.grap
 
 2. Use pip to install sdk according to [IPU PyTorch document](https://docs.graphcore.ai/projects/poptorch-user-guide/en/latest/installation.html). Also, you need to apply for machine and sdk to Graphcore.
 
-### Build mmcv-full on ASCEND NPU machine
+### Build mmcv-full on Ascend NPU machine
 
 - Firstly, see torch_npu for the complete installation tutorial [PyTorch Installation Guide](https://gitee.com/ascend/pytorch/blob/master/docs/en/PyTorch%20Installation%20Guide/PyTorch%20Installation%20Guide.md)
 
@@ -340,7 +340,7 @@ Firstly, you need to apply for an IPU cloud machine, see [here](https://www.grap
 pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/npu/torch1.8.0/index.html
 ```
 
-#### Option 2: Build mmcv-full NPU(ASCEND) from Source
+#### Option 2: Build mmcv-full NPU(Ascend) from Source
 
 - Pull the source code
 
