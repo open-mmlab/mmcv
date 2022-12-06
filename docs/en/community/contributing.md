@@ -4,18 +4,18 @@ Welcome to the MMCV community, we are committed to building a cutting-edge compu
 
 **Fix bug**
 
-You can directly post a Pull Request to fix typo in code or documents
+You can directly post a Pull Request to fix typos in code or documents
 
 The steps to fix the bug of code implementation are as follows.
 
-1. If the modification involve significant changes, you should create an issue first and describe the error information and how to trigger the bug. Other developers will discuss with you and propose an proper solution.
+1. If the modification involves significant changes, you should create an issue first and describe the error information and how to trigger the bug. Other developers will discuss it with you and propose a proper solution.
 
 2. Posting a pull request after fixing the bug and adding corresponding unit test.
 
 **New Feature or Enhancement**
 
-1. If the modification involve significant changes, you should create an issue to discuss with our developers to propose an proper design.
-2. Post a Pull Request after implementing the new feature or enhancement and add corresponding unit test.
+1. If the modification involves significant changes, you should create an issue to discuss with our developers to propose a proper design.
+2. Post a Pull Request after implementing the new feature or enhancement and add the corresponding unit test.
 
 **Document**
 
@@ -23,7 +23,7 @@ You can directly post a pull request to fix documents. If you want to add a docu
 
 ### Pull Request Workflow
 
-If you're not familiar with Pull Request, don't worry! The following guidance will tell you how to create a Pull Request step by step. If you want to dive into the develop mode of Pull Request, you can refer to the [official documents](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests)
+If you're not familiar with Pull Request, don't worry! The following guidance will tell you how to create a Pull Request step by step. If you want to dive into the development mode of Pull Request, you can refer to the [official documents](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests)
 
 #### 1. Fork and clone
 
@@ -37,13 +37,13 @@ Then, you can clone the repositories to local:
 git clone git@github.com:{username}/mmcv.git
 ```
 
-After that, you should ddd official repository as the upstream repository
+After that, you should add the official repository as the upstream repository.
 
 ```bash
 git remote add upstream git@github.com:open-mmlab/mmcv
 ```
 
-Check whether remote repository has been added successfully by `git remote -v`
+Check whether the remote repository has been added successfully by `git remote -v`
 
 ```bash
 origin	git@github.com:{username}/mmcv.git (fetch)
@@ -84,11 +84,11 @@ pre-commit run --all-files -c .pre-commit-config-zh-cn.yaml
 
 If the installation process is interrupted, you can repeatedly run `pre-commit run ... ` to continue the installation.
 
-If the code does not conform to the code style specification, pre-commit will raise a warning and  fixes some of the errors automatically.
+If the code does not conform to the code style specification, pre-commit will raise a warning and fixes some of the errors automatically.
 
 <img src="https://user-images.githubusercontent.com/57566630/202369176-67642454-0025-4023-a095-263529107aa3.png" width="1200">
 
-If we want to commit our code bypassing the pre-commit hook, we can use the `--no-verify` option(**only for temporarily commit**.
+If we want to commit our code bypassing the pre-commit hook, we can use the `--no-verify` option(**only for temporary committing**.
 
 ```shell
 git commit -m "xxx" --no-verify
