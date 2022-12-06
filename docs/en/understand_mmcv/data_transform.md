@@ -19,6 +19,10 @@ In MMCV, we use various callable data transformation classes to manipulate data.
 
 The data transformation class reads some fields of the input dictionary and may add or update some fields. The keys of these fields are mostly fixed. For example, `Resize` will always read fields such as `"img"` in the input dictionary. More information about the conventions for input and output fields could be found in the documentation of the corresponding class.
 
+```{note}
+By convention, the order of image shape which is used as **initialization parameters** in data transformation (such as Resize, Pad) is (width, height). In the dictionary returned by the data transformation, the image related shape, such as `img_shape`, `ori_shape`, `pad_shape`, etc., is (height, width).
+```
+
 MMCV provides a unified base class called `BaseTransform` for all data transformation classes:
 
 ```python
