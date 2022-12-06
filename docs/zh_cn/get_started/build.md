@@ -351,7 +351,7 @@ mmcv-full 有两个版本：
 - NPU编译版本的 mmcv-full 在 mmcv >= 1.7.0 时已经支持直接pip安装
 
 ```bash
-pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/npu/torch1.8.0/index.html
+pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/ascend/torch1.8.0/index.html
 ```
 
 #### 选项 2: 使用 NPU 设备源码编译安装 mmcv-full
