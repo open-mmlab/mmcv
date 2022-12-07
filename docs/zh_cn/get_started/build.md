@@ -348,7 +348,7 @@ mmcv-full 有两个版本：
 
 #### 选项 1: 使用 pip 安装 Ascend 编译版本的 mmcv-full
 
-- Ascend 编译版本的 mmcv-full 在 mmcv >= 1.7.0 时已经支持直接 pip 安装
+Ascend 编译版本的 mmcv-full 在 mmcv >= 1.7.0 时已经支持直接 pip 安装
 
 ```bash
 pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/ascend/torch1.8.0/index.html
