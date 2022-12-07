@@ -330,7 +330,7 @@ Firstly, you need to apply for an IPU cloud machine, see [here](https://www.grap
 
 ### Build mmcv-full on Ascend NPU machine
 
-- Before building mmcv-full, `torch_npu` should be installed. See the complete installation tutorial [PyTorch Installation Guide](https://gitee.com/ascend/pytorch/blob/master/docs/en/PyTorch%20Installation%20Guide/PyTorch%20Installation%20Guide.md)
+Before building mmcv-full, `torch_npu` should be installed. See the complete installation tutorial [PyTorch Installation Guide](https://gitee.com/ascend/pytorch/blob/master/docs/en/PyTorch%20Installation%20Guide/PyTorch%20Installation%20Guide.md)
 
 #### Option 1: Install mmcv-full with pip
 
