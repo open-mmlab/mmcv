@@ -344,41 +344,48 @@ mmcv-full 有两个版本：
 
 ### 在昇腾 NPU 机器编译 mmcv-full
 
-#### 1. 安装 torch_npu
+在编译 mmcv-full 前，需要安装 torch_npu，完整安装教程详见 [PyTorch 安装指南](https://gitee.com/ascend/pytorch/blob/master/docs/zh/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97.md#pytorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97)
 
-- torch_npu 完整安装教程详见 [PyTorch安装指南](https://gitee.com/ascend/pytorch/blob/master/docs/zh/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97.md#pytorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97)
+#### 选项 1: 使用 pip 安装 Ascend 编译版本的 mmcv-full
 
-#### 2. 编译 MMCV NPU
+Ascend 编译版本的 mmcv-full 在 mmcv >= 1.7.0 时已经支持直接 pip 安装
 
-拉取 [MMCV 源码](https://github.com/open-mmlab/mmcv/tree/master) 进行编译安装
+```bash
+pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/ascend/torch1.8.0/index.html
+```
 
-编译：
+#### 选项 2: 使用 NPU 设备源码编译安装 mmcv-full
+
+- 拉取 [MMCV 源码](https://github.com/open-mmlab/mmcv/tree/master)
+
+```bash
+git pull https://github.com/open-mmlab/mmcv/tree/master
+```
+
+- 编译
 
 ```bash
 MMCV_WITH_OPS=1 MAX_JOBS=8 FORCE_NPU=1 python setup.py build_ext
 ```
 
-安装：
+- 安装
 
 ```bash
 MMCV_WITH_OPS=1 FORCE_NPU=1 python setup.py develop
 ```
 
-验证：
+#### 验证
 
 ```python
 import torch
 import torch_npu
 from mmcv.ops import softmax_focal_loss
+
+# Init tensor to the NPU
 x = torch.randn(3, 10).npu()
-x.requires_grad = True
 y = torch.tensor([1, 5, 3]).npu()
 w = torch.ones(10).float().npu()
+
 output = softmax_focal_loss(x, y, 2.0, 0.25, w, 'none')
-```
-
-使用说明：
-
-```{note}
-在 tensor 末尾加上 .npu() 就可以调用到 npu 算子
+print(output)
 ```
