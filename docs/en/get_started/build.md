@@ -340,7 +340,7 @@ Firstly, you need to apply for an IPU cloud machine, see [here](https://www.grap
 pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/ascend/torch1.8.0/index.html
 ```
 
-#### Option 2: Build mmcv-full NPU(Ascend) from Source
+#### Option 2: Build mmcv-full NPU (Ascend) from Source
 
 - Pull the source code
 
