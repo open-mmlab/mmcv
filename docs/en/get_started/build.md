@@ -334,7 +334,7 @@ Firstly, you need to apply for an IPU cloud machine, see [here](https://www.grap
 
 #### Option 1: Install mmcv-full with pip
 
-- The NPU compiled version of mmcv-full is already supported when the version of mmcv >= 1.7.0, we can pip install directly
+The Ascend compiled version of mmcv-full is already supported when the version of mmcv >= 1.7.0, we can pip install directly
 
 ```bash
 pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/ascend/torch1.8.0/index.html
