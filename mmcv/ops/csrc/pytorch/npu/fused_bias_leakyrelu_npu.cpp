@@ -3,12 +3,12 @@
 using namespace NPU_NAME_SPACE;
 using namespace std;
 
-Tensor fused_bias_leakyrelu_op_impl(Tensor& input, Tensor& bias,
-                                    Tensor& refer, int act,
+Tensor fused_bias_leakyrelu_op_impl(const Tensor& input, const Tensor& bias,
+                                    const Tensor& refer, int act,
                                     int grad, float alpha, float scale);
 
-Tensor fused_bias_leakyrelu_npu(Tensor& input, Tensor& bias,
-                                Tensor& refer, int act,
+Tensor fused_bias_leakyrelu_npu(const Tensor& input, const Tensor& bias,
+                                const Tensor& refer, int act,
                                 int grad, float alpha, float scale){
   at::Tensor py = at::empty_like(input);
   //forward
