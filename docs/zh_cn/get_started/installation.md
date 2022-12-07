@@ -11,10 +11,6 @@ MMCV 有两个版本：
 
 ### 安装 mmcv
 
-```{note}
-下述安装步骤仅适用于 Linux 和 Windows 平台，如需在 macOS 平台安装 mmcv，请参考[源码安装 mmcv](build.md#在-macos-上编译-mmcv)。
-```
-
 在安装 mmcv 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://pytorch.org/get-started/locally/#start-locally)。可使用以下命令验证
 
 ```bash
@@ -39,7 +35,7 @@ mim install "mmcv>=2.0.0rc1"
 
 Looking in links: https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html<br />
 Collecting mmcv<br />
-<b>Downloading https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/mmcv-2.0.0rc1-cp38-cp38-manylinux1_x86_64.whl</b>
+<b>Downloading https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/mmcv-2.0.0rc3-cp38-cp38-manylinux1_x86_64.whl</b>
 
 </details>
 
@@ -47,15 +43,15 @@ Collecting mmcv<br />
 <summary>使用源码包的安装日志</summary>
 
 Looking in links: https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html<br />
-Collecting mmcv==2.0.0rc1<br />
-<b>Downloading mmcv-2.0.0rc1.tar.gz</b>
+Collecting mmcv==2.0.0rc3<br />
+<b>Downloading mmcv-2.0.0rc3.tar.gz</b>
 
 </details>
 
-如需安装指定版本的 mmcv，例如安装 2.0.0rc1 版本的 mmcv，可使用以下命令
+如需安装指定版本的 mmcv，例如安装 2.0.0rc3 版本的 mmcv，可使用以下命令
 
 ```bash
-mim install mmcv==2.0.0rc1
+mim install mmcv==2.0.0rc3
 ```
 
 :::{note}
@@ -194,7 +190,12 @@ python -c 'import torch;print(torch.__version__);print(torch.version.cuda)'
         const cmd = document.getElementById("select-cmd");
         let cmdString = "pip install mmcv=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/{cu_version}/{torch_version}/index.html";
         // e.g: pip install mmcv==2.0.0rc1 -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9/index.html
-        const cudaVersion = `${cudaVal === "cpu" ? cudaVal : `cu${cudaVal.split(".").join("")}`}`;
+        let cudaVersion;
+        if (cudaVal === "cpu" || cudaVal === "mps") {
+            cudaVersion = "cpu";
+        } else {
+            cudaVersion = `cu${cudaVal.split(".").join("")}`;
+        }
         const torchVersion = `torch${torchVal.substring(0, torchVal.length - 2)}`;
         cmdString = cmdString.replace("{cu_version}", cudaVersion).replace("{mmcv_version}", mmcvVal).replace("{torch_version}", torchVersion);
         cmd.textContent = cmdString;
@@ -211,7 +212,7 @@ python -c 'import torch;print(torch.__version__);print(torch.version.cuda)'
         data.forEach(option => {
             const ele = document.createElement("option");
             let text = `${name} ${option}`;
-            if (name === "os" || option.toUpperCase() === "CPU") {
+            if (name === "os" || option.toUpperCase() === "CPU" || option.toUpperCase() === "MPS") {
                 text = `${option}`;
             }
             ele.textContent = text;
