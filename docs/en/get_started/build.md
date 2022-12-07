@@ -327,3 +327,51 @@ Firstly, you need to apply for an IPU cloud machine, see [here](https://www.grap
 1. Build MMCV
 
 2. Use pip to install sdk according to [IPU PyTorch document](https://docs.graphcore.ai/projects/poptorch-user-guide/en/latest/installation.html). Also, you need to apply for machine and sdk to Graphcore.
+
+### Build mmcv-full on Ascend NPU machine
+
+Before building mmcv-full, `torch_npu` should be installed. See the complete installation tutorial [PyTorch Installation Guide](https://gitee.com/ascend/pytorch/blob/master/docs/en/PyTorch%20Installation%20Guide/PyTorch%20Installation%20Guide.md)
+
+#### Option 1: Install mmcv-full with pip
+
+The Ascend compiled version of mmcv-full is already supported when the version of mmcv >= 1.7.0, we can pip install directly
+
+```bash
+pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/ascend/torch1.8.0/index.html
+```
+
+#### Option 2: Build mmcv-full NPU (Ascend) from Source
+
+- Pull the source code
+
+```bash
+git pull https://github.com/open-mmlab/mmcv/tree/master
+```
+
+- Build
+
+```bash
+MMCV_WITH_OPS=1 MAX_JOBS=8 FORCE_NPU=1 python setup.py build_ext
+```
+
+- Install
+
+```bash
+MMCV_WITH_OPS=1 FORCE_NPU=1 python setup.py develop
+```
+
+#### Test Case
+
+```python
+import torch
+import torch_npu
+from mmcv.ops import softmax_focal_loss
+
+# Init tensor to the NPU
+x = torch.randn(3, 10).npu()
+y = torch.tensor([1, 5, 3]).npu()
+w = torch.ones(10).float().npu()
+
+output = softmax_focal_loss(x, y, 2.0, 0.25, w, 'none')
+print(output)
+```
