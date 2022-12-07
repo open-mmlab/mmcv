@@ -24,7 +24,7 @@ We implement common ops used in detection, segmentation, etc.
 | DynamicScatter               |     | √    |     |     |     |
 | FurthestPointSample          |     | √    |     |     |     |
 | FurthestPointSampleWithDist  |     | √    |     |     |     |
-| FusedBiasLeakyrelu           |     | √    |     |     |     |
+| FusedBiasLeakyrelu           |     | √    |     |     | √   |
 | GatherPoints                 |     | √    |     |     |     |
 | GroupPoints                  |     | √    |     |     |     |
 | Iou3d                        |     | √    | √   |     |     |
