@@ -12,7 +12,6 @@ MMCV 有两个版本：
 ### 安装 mmcv-full
 
 ```{note}
-- 下述安装步骤仅适用于 Linux 和 Windows 平台，如需在 macOS 平台安装 mmcv-full，请参考[源码安装 mmcv-full](build.md#在-macos-上编译-mmcv-full)。
 - 如需编译 ONNX Runtime 自定义算子，请参考[如何编译ONNX Runtime自定义算子](../deployment/onnxruntime_op.md#如何编译onnx-runtime自定义算子)
 - 如需编译 TensorRT 自定义，请参考[如何编译MMCV中的TensorRT插件](../deployment/tensorrt_plugin.md#如何编译mmcv中的tensorrt插件)
 ```
@@ -54,10 +53,10 @@ Collecting mmcv-full==1.6.0<br />
 
 </details>
 
-如需安装指定版本的 mmcv-full，例如安装 1.6.0 版本的 mmcv-full，可使用以下命令
+如需安装指定版本的 mmcv-full，例如安装 1.7.0 版本的 mmcv-full，可使用以下命令
 
 ```bash
-mim install mmcv-full==1.6.0
+mim install mmcv-full==1.7.0
 ```
 
 :::{note}
@@ -196,7 +195,12 @@ python -c 'import torch;print(torch.__version__);print(torch.version.cuda)'
         const cmd = document.getElementById("select-cmd");
         let cmdString = "pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/{cu_version}/{torch_version}/index.html";
         // e.g: pip install mmcv-full==1.6.0 -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9/index.html
-        const cudaVersion = `${cudaVal === "cpu" ? cudaVal : `cu${cudaVal.split(".").join("")}`}`;
+        let cudaVersion;
+        if (cudaVal === "cpu" || cudaVal === "mps") {
+            cudaVersion = "cpu";
+        } else {
+            cudaVersion = `cu${cudaVal.split(".").join("")}`;
+        }
         const torchVersion = `torch${torchVal.substring(0, torchVal.length - 2)}`;
         cmdString = cmdString.replace("{cu_version}", cudaVersion).replace("{mmcv_version}", mmcvVal).replace("{torch_version}", torchVersion);
         cmd.textContent = cmdString;
@@ -213,7 +217,7 @@ python -c 'import torch;print(torch.__version__);print(torch.version.cuda)'
         data.forEach(option => {
             const ele = document.createElement("option");
             let text = `${name} ${option}`;
-            if (name === "os" || option.toUpperCase() === "CPU") {
+            if (name === "os" || option.toUpperCase() === "CPU" || option.toUpperCase() === "MPS") {
                 text = `${option}`;
             }
             ele.textContent = text;

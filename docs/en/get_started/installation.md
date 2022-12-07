@@ -12,7 +12,6 @@ Do not install both versions in the same environment, otherwise you may encounte
 ### Install mmcv-full
 
 ```{note}
-- The following installation steps are for Linux and Windows platforms only. To install mmcv-full on macOS platform, please refer to [build mmcv-full from source](build.md#build-on-macos).
 - To compile ONNX Runtime custom operators, please refer to [How to build custom operators for ONNX Runtime](../deployment/onnxruntime_op.md#how-to-build-custom-operators-for-onnx-runtime)
 - To compile TensorRT customization, please refer to [How to build TensorRT plugins in MMCV](../deployment/tensorrt_plugin.md#how-to-build-tensorrt-plugins-in-mmcv)
 ```
@@ -54,10 +53,10 @@ Collecting mmcv-full==1.6.0<br />
 
 </details>
 
-To install a specific version of mmcv-full, for example, mmcv-full version 1.6.0, you can use the following command
+To install a specific version of mmcv-full, for example, mmcv-full version 1.7.0, you can use the following command
 
 ```bash
-mim install mmcv-full==1.6.0
+mim install mmcv-full==1.7.0
 ```
 
 :::{note}
@@ -198,7 +197,12 @@ Select the appropriate installation command depending on the type of system, CUD
         const cmd = document.getElementById("select-cmd");
         let cmdString = "pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/{cu_version}/{torch_version}/index.html";
         // e.g: pip install mmcv-full==1.6.0 -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9/index.html
-        const cudaVersion = `${cudaVal === "cpu" ? cudaVal : `cu${cudaVal.split(".").join("")}`}`;
+        let cudaVersion;
+        if (cudaVal === "cpu" || cudaVal === "mps") {
+            cudaVersion = "cpu";
+        } else {
+            cudaVersion = `cu${cudaVal.split(".").join("")}`;
+        }
         const torchVersion = `torch${torchVal.substring(0, torchVal.length - 2)}`;
         cmdString = cmdString.replace("{cu_version}", cudaVersion).replace("{mmcv_version}", mmcvVal).replace("{torch_version}", torchVersion);
         cmd.textContent = cmdString;
@@ -215,7 +219,7 @@ Select the appropriate installation command depending on the type of system, CUD
         data.forEach(option => {
             const ele = document.createElement("option");
             let text = `${name} ${option}`;
-            if (name === "os" || option.toUpperCase() === "CPU") {
+            if (name === "os" || option.toUpperCase() === "CPU" || option.toUpperCase() === "MPS") {
                 text = `${option}`;
             }
             ele.textContent = text;

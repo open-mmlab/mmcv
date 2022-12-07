@@ -22,8 +22,8 @@
 [![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmcv.readthedocs.io/zh_CN/latest/)
 [![platform](https://img.shields.io/badge/platform-Linux%7CWindows%7CmacOS-blue)](https://mmcv.readthedocs.io/zh_CN/latest/get_started/installation.html)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mmcv)](https://pypi.org/project/mmcv/)
-[![pytorch](https://img.shields.io/badge/pytorch-1.5~1.12-orange)](https://pytorch.org/get-started/previous-versions/)
-[![cuda](https://img.shields.io/badge/cuda-9.2~11.6-green)](https://developer.nvidia.com/cuda-downloads)
+[![pytorch](https://img.shields.io/badge/pytorch-1.5~1.13-orange)](https://pytorch.org/get-started/previous-versions/)
+[![cuda](https://img.shields.io/badge/cuda-9.2~11.7-green)](https://developer.nvidia.com/cuda-downloads)
 [![PyPI](https://img.shields.io/pypi/v/mmcv)](https://pypi.org/project/mmcv)
 [![badge](https://github.com/open-mmlab/mmcv/workflows/build/badge.svg)](https://github.com/open-mmlab/mmcv/actions)
 [![codecov](https://codecov.io/gh/open-mmlab/mmcv/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmcv)
@@ -74,7 +74,7 @@ MMCV 有两个版本：
 
 在安装 mmcv-full 之前，请确保 PyTorch 已经成功安装在环境中，可以参考 [PyTorch 官方安装文档](https://github.com/pytorch/pytorch#installation)。
 
-在 Linux 和 Windows 平台安装 mmcv-full 的命令如下（如果你的系统是 macOS，请参考[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html#macos-mmcv-full)）
+安装 mmcv-full 的命令如下：
 
 ```bash
 pip install -U openmim
@@ -84,7 +84,7 @@ mim install mmcv-full
 如果需要指定 mmcv-full 的版本，可以使用以下命令
 
 ```bash
-mim install mmcv-full==1.5.0
+mim install mmcv-full==1.7.0
 ```
 
 如果发现上述的安装命令没有使用预编译包（以 `.whl` 结尾）而是使用源码包（以 `.tar.gz` 结尾）安装，则有可能是我们没有提供和当前环境的 PyTorch 版本、CUDA 版本相匹配的 mmcv-full 预编译包，此时，你可以[源码安装 mmcv-full](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html)。
@@ -163,10 +163,10 @@ MMCV 目前有两个分支，分别是 master 和 2.x 分支，它们会经历�
 
 ## 欢迎加入 OpenMMLab 社区
 
-扫描下方的二维码可关注 OpenMMLab 团队的[知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的[官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=3ijNTqfg)，或添加微信小助手”OpenMMLabwx“加入官方交流微信群。
+扫描下方的二维码可关注 OpenMMLab 团队的[知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的[官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=K0QI8ByU)，或添加微信小助手”OpenMMLabwx“加入官方交流微信群。
 
 <div align="center">
-<img src="docs/en/_static/zhihu_qrcode.jpg" height="400" />  <img src="docs/en/_static/qq_group_qrcode.jpg" height="400" /> <img src="docs/en/_static/wechat_qrcode.jpg" height="400" />
+<img src="https://user-images.githubusercontent.com/25839884/205870927-39f4946d-8751-4219-a4c0-740117558fd7.jpg" height="400" />  <img src="https://user-images.githubusercontent.com/25839884/203904835-62392033-02d4-4c73-a68c-c9e4c1e2b07f.jpg" height="400" /> <img src="https://user-images.githubusercontent.com/25839884/205872898-e2e6009d-c6bb-4d27-8d07-117e697a3da8.jpg" height="400" />
 </div>
 
 我们会在 OpenMMLab 社区为大家

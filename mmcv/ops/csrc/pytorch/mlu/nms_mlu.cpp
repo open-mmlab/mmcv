@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2021 by Cambricon.
+ * Copyright (C) 2021 Cambricon.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
@@ -34,6 +34,7 @@ static cnnlStatus_t policyFunc(cnrtDim3_t *k_dim, cnrtFunctionType_t *k_type,
                                int &core_num_per_class,
                                const int input_box_num) {
   uint32_t core_dim = torch_mlu::getDeviceAttr(cnrtAttrMcorePerCluster);
+  uint32_t cluster_number = torch_mlu::getDeviceAttr(cnrtAttrClusterCount);
   uint32_t job_limit = getJobLimitCapability();
   uint32_t core_number = job_limit;
 
@@ -116,7 +117,11 @@ Tensor NMSMLUKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
   } else {
     space_size = input_num_boxes * sizeof(float) * info_num + sizeof(float);
   }
-
+#if __BANG_ARCH__ > 370
+  int cluster_num = getCoreNumOfJobLimitCapability() /
+                    torch_mlu::getDeviceAttr(cnrtAttrMcorePerCluster);
+  space_size += cluster_number * sizeof(float) * 7;
+#endif
   auto workspace = at::empty(space_size, boxes.options().dtype(at::kByte));
 
   // get compute queue
