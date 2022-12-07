@@ -12,7 +12,7 @@ Tensor fused_bias_leakyrelu_npu(Tensor& input, Tensor& bias,
                                 int grad, float alpha, float scale){
   at::Tensor py = at::empty_like(input);
   //forward
-  if (grad == 1){
+  if (grad == 0){
     auto input_size = input.sizes();
     int input_length = input_size.size();
     c10::SmallVector<int64_t, SIZE> input_size_tmp;
@@ -37,7 +37,7 @@ Tensor fused_bias_leakyrelu_npu(Tensor& input, Tensor& bias,
   }
 
   //backward
-  if (grad == 2){
+  if (grad == 1){
     OpCommand cmd;
     cmd.Name("FusedBiasLeakyReluGrad")
         .Input(input)
