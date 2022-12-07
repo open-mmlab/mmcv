@@ -553,7 +553,7 @@ def test_ffn():
         ffn(input_tensor).sum() + residual.sum() - input_tensor.sum())
 
     # test with layer_scale
-    ffn = FFN(dropout=0, add_identity=True, use_layer_scale=True)
+    ffn = FFN(dropout=0, add_identity=True, layer_scale_init_value=0.1)
 
     input_tensor = torch.rand(2, 20, 256)
     input_tensor_nbc = input_tensor.transpose(0, 1)
