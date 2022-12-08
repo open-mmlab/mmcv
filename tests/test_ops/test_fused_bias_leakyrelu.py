@@ -22,7 +22,7 @@ class TestFusedBiasLeakyReLU:
             cls.input_tensor = torch.randn((2, 2, 2, 2),
                                            requires_grad=True).cuda()
             cls.bias = torch.zeros(2, requires_grad=True).cuda()
-        else:
+        elif IS_NPU_AVAILABLE:
             cls.input_tensor = torch.randn((2, 2, 2, 2),
                                            requires_grad=True).npu()
             cls.bias = torch.zeros(2, requires_grad=True).npu()
@@ -47,7 +47,7 @@ class TestFusedBiasLeakyReLU:
                     self.input_tensor,
                     delta=1e-4,
                     pt_atol=1e-3)
-            else:
+            elif IS_NPU_AVAILABLE:
                 gradcheck(
                     FusedBiasLeakyReLU(2).npu(),
                     self.input_tensor,
@@ -60,7 +60,7 @@ class TestFusedBiasLeakyReLU:
                     self.input_tensor,
                     eps=1e-4,
                     atol=1e-3)
-            else:
+            elif IS_NPU_AVAILABLE:
                 gradcheck(
                     FusedBiasLeakyReLU(2).npu(),
                     self.input_tensor,
@@ -86,7 +86,7 @@ class TestFusedBiasLeakyReLU:
                 self.input_tensor,
                 eps=1e-4,
                 atol=1e-3)
-        else:
+        elif IS_NPU_AVAILABLE:
             gradcheck(
                 FusedBiasLeakyReLU(2).npu(),
                 self.input_tensor,
