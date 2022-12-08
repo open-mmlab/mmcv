@@ -403,10 +403,6 @@ docker pull xxxxxx
 
 #### 选项2：本地安装
 
-#### 安装前准备工作
-
-编译安装前，需要安装CNToolkit软件包和Cambricon CNNL、CNCL组件。具体安装步骤，参见《寒武纪CNToolkit软件包安装升级使用手册》和相应的寒武纪用户手册。请参见 [Cambricon PyTorch的第三方依赖](https://github.com/Cambricon/catch/blob/main/script/release/build.property)以了解寒武纪软件栈所需的第三方依赖。
-
 #### 安装CATCH:
 
 - CATCH 完整安装教程见 [CATCH安装指南](https://github.com/Cambricon/catch/blob/main/CONTRIBUTING.md)
@@ -427,10 +423,10 @@ python setup.py install
 ``` python
 import torch
 import torch_mlu
-from mmcv.ops import softmax_focal_loss
+from mmcv.ops import sigmoid_focal_loss
 x = torch.randn(3, 10).mlu()
 x.requires_grad = True
 y = torch.tensor([1, 5, 3]).mlu()
 w = torch.ones(10).float().mlu()
-output = softmax_focal_loss(x, y, 2.0, 0.25, w, 'none')
+output = sigmoid_focal_loss(x, y, 2.0, 0.25, w, 'none')
 ```
