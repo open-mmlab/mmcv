@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
 
 _USING_PARROTS = True
 try:
@@ -14,36 +15,77 @@ class TestFusedBiasLeakyReLU:
 
     @classmethod
     def setup_class(cls):
-        if not torch.cuda.is_available():
+        if not IS_CUDA_AVAILABLE and not IS_NPU_AVAILABLE:
             return
-        cls.input_tensor = torch.randn((2, 2, 2, 2), requires_grad=True).cuda()
-        cls.bias = torch.zeros(2, requires_grad=True).cuda()
+        if IS_CUDA_AVAILABLE:
+            cls.input_tensor = torch.randn((2, 2, 2, 2), requires_grad=True).cuda()
+            cls.bias = torch.zeros(2, requires_grad=True).cuda()
+        else:
+            cls.input_tensor = torch.randn((2, 2, 2, 2), requires_grad=True).npu()
+            cls.bias = torch.zeros(2, requires_grad=True).npu()
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason='requires cuda')
+    @pytest.mark.parametrize('device', [
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'npu',
+            marks=pytest.mark.skipif(
+                not IS_NPU_AVAILABLE, reason='requires NPU support'))
+    ])
     def test_gradient(self):
 
         from mmcv.ops import FusedBiasLeakyReLU
         if _USING_PARROTS:
-            gradcheck(
-                FusedBiasLeakyReLU(2).cuda(),
-                self.input_tensor,
-                delta=1e-4,
-                pt_atol=1e-3)
+            if IS_CUDA_AVAILABLE:
+                gradcheck(
+                    FusedBiasLeakyReLU(2).cuda(),
+                    self.input_tensor,
+                    delta=1e-4,
+                    pt_atol=1e-3)
+            else:
+                gradcheck(
+                    FusedBiasLeakyReLU(2).npu(),
+                    self.input_tensor,
+                    delta=1e-4,
+                    pt_atol=1e-3)
         else:
+            if IS_CUDA_AVAILABLE:
+                gradcheck(
+                    FusedBiasLeakyReLU(2).cuda(),
+                    self.input_tensor,
+                    eps=1e-4,
+                    atol=1e-3)
+            else:
+                gradcheck(
+                    FusedBiasLeakyReLU(2).npu(),
+                    self.input_tensor,
+                    eps=1e-4,
+                    atol=1e-3)
+
+    @pytest.mark.parametrize('device', [
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'npu',
+            marks=pytest.mark.skipif(
+                not IS_NPU_AVAILABLE, reason='requires NPU support'))
+    ])
+    def test_gradgradient(self):
+
+        from mmcv.ops import FusedBiasLeakyReLU
+        if IS_CUDA_AVAILABLE:
             gradcheck(
                 FusedBiasLeakyReLU(2).cuda(),
                 self.input_tensor,
                 eps=1e-4,
                 atol=1e-3)
-
-    @pytest.mark.skipif(
-        not torch.cuda.is_available() or _USING_PARROTS,
-        reason='requires cuda')
-    def test_gradgradient(self):
-
-        from mmcv.ops import FusedBiasLeakyReLU
-        gradgradcheck(
-            FusedBiasLeakyReLU(2).cuda(),
-            self.input_tensor,
-            eps=1e-4,
-            atol=1e-3)
+        else:
+            gradcheck(
+                FusedBiasLeakyReLU(2).npu(),
+                self.input_tensor,
+                eps=1e-4,
+                atol=1e-3)
