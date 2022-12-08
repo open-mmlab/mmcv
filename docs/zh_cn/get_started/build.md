@@ -389,3 +389,45 @@ w = torch.ones(10).float().npu()
 output = softmax_focal_loss(x, y, 2.0, 0.25, w, 'none')
 print(output)
 ```
+
+### 在寒武纪 MLU 机器编译 mmcv-full
+
+#### 选项1: 使用docker
+
+首先拉取寒武纪docker
+```
+docker pull xxxxxx
+``` 
+
+进入docker, [编译 MMCV MLU](#编译mmcv-mlu) 并[进行验证](#验证是否成功安装).
+
+#### 选项2：本地安装
+
+
+#### 安装CATCH:
+
+- CATCH 完整安装教程见 [CATCH安装指南](https://github.com/Cambricon/catch/blob/main/CONTRIBUTING.md)
+
+
+#### 编译MMCV MLU:
+
+
+```
+git clone https://github.com/open-mmlab/mmcv/tree/master
+cd mmcv
+export MMCV_WITH_OPS=ON
+export FORCE_MLU=1
+python setup.py install
+```
+
+#### 验证是否成功安装
+``` python
+import torch
+import torch_mlu
+from mmcv.ops import softmax_focal_loss
+x = torch.randn(3, 10).mlu()
+x.requires_grad = True
+y = torch.tensor([1, 5, 3]).mlu()
+w = torch.ones(10).float().mlu()
+output = softmax_focal_loss(x, y, 2.0, 0.25, w, 'none')
+```
