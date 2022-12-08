@@ -7,7 +7,7 @@ _USING_PARROTS = True
 try:
     from parrots.autograd import gradcheck
 except ImportError:
-    from torch.autograd import gradcheck, gradgradcheck
+    from torch.autograd import gradcheck
     _USING_PARROTS = False
 
 
@@ -18,10 +18,12 @@ class TestFusedBiasLeakyReLU:
         if not IS_CUDA_AVAILABLE and not IS_NPU_AVAILABLE:
             return
         if IS_CUDA_AVAILABLE:
-            cls.input_tensor = torch.randn((2, 2, 2, 2), requires_grad=True).cuda()
+            cls.input_tensor = torch.randn((2, 2, 2, 2),
+                                           requires_grad=True).cuda()
             cls.bias = torch.zeros(2, requires_grad=True).cuda()
         else:
-            cls.input_tensor = torch.randn((2, 2, 2, 2), requires_grad=True).npu()
+            cls.input_tensor = torch.randn((2, 2, 2, 2),
+                                           requires_grad=True).npu()
             cls.bias = torch.zeros(2, requires_grad=True).npu()
 
     @pytest.mark.parametrize('device', [
