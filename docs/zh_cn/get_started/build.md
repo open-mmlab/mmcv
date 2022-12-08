@@ -403,6 +403,9 @@ docker pull xxxxxx
 
 #### 选项2：本地安装
 
+#### 安装前准备工作
+
+编译安装前，需要安装CNToolkit软件包和Cambricon CNNL、CNCL组件。具体安装步骤，参见《寒武纪CNToolkit软件包安装升级使用手册》和相应的寒武纪用户手册。请参见 [Cambricon PyTorch的第三方依赖](https://github.com/Cambricon/catch/blob/main/script/release/build.property)以了解寒武纪软件栈所需的第三方依赖。
 
 #### 安装CATCH:
 
