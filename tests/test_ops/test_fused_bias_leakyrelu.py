@@ -34,7 +34,7 @@ class TestFusedBiasLeakyReLU:
             marks=pytest.mark.skipif(
                 not IS_NPU_AVAILABLE, reason='requires NPU support'))
     ])
-    def test_gradient(self):
+    def test_gradient(self, device):
 
         from mmcv.ops import FusedBiasLeakyReLU
         if _USING_PARROTS:
@@ -74,7 +74,7 @@ class TestFusedBiasLeakyReLU:
             marks=pytest.mark.skipif(
                 not IS_NPU_AVAILABLE, reason='requires NPU support'))
     ])
-    def test_gradgradient(self):
+    def test_gradgradient(self, device):
 
         from mmcv.ops import FusedBiasLeakyReLU
         if IS_CUDA_AVAILABLE:
