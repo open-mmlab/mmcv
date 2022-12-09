@@ -375,3 +375,54 @@ w = torch.ones(10).float().npu()
 output = softmax_focal_loss(x, y, 2.0, 0.25, w, 'none')
 print(output)
 ```
+
+### Build mmcv-full on Cambricon MLU Devices
+
+#### Option1: Install mmcv-full based on Cambricon docker image
+
+Firstly, install and pull Cambricon docker image:
+
+```bash
+docker pull ${docker image}
+```
+
+Run and attach to the docker, [Install mmcv-full on MLU device](#Install mmcv-full on Cambricon MLU device) and [make sure you've installed mmcv-full on MLU device successfully](#Test Code)
+
+#### Option2: Install mmcv-full from compiling Cambricon PyTorch source code
+
+#### Install CATCH
+
+- Please follow steps in [CATCH Installation Guide](https://github.com/Cambricon/catch/blob/main/CONTRIBUTING.md) to install Cambricon PyTorch
+
+#### Install mmcv-full on Cambricon MLU device:
+
+pull the source code of MMCV:
+
+```bash
+git clone https://github.com/open-mmlab/mmcv.git -b master
+```
+
+install mmcv-full
+
+```bash
+cd mmcv
+export MMCV_WITH_OPS=ON
+export FORCE_MLU=1
+python setup.py install
+```
+
+#### Test Code
+
+After finishing previous steps, you can run the following python code to make sure that you've installed mmcv-full on MLU device successfully:
+
+```python
+import torch
+import torch_mlu
+from mmcv.ops import sigmoid_focal_loss
+x = torch.randn(3, 10).mlu()
+x.requires_grad = True
+y = torch.tensor([1, 5, 3]).mlu()
+w = torch.ones(10).float().mlu()
+output = sigmoid_focal_loss(x, y, 2.0, 0.25, w, 'none')
+print(output)
+```

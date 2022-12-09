@@ -392,16 +392,16 @@ print(output)
 
 ### 在寒武纪 MLU 机器编译 mmcv-full
 
-#### 选项1: 使用docker
+#### 选项1: 基于寒武纪docker image 安装
 
-首先拉取寒武纪docker
+首先请下载并且拉取寒武纪docker
 ```
-docker pull xxxxxx
+docker pull ${docker image}
 ``` 
 
 进入docker, [编译 MMCV MLU](#编译mmcv-mlu) 并[进行验证](#验证是否成功安装).
 
-#### 选项2：本地安装
+#### 选项2：基于cambricon pytorch源码编译安装
 
 #### 安装CATCH:
 
@@ -410,9 +410,8 @@ docker pull xxxxxx
 
 #### 编译MMCV MLU:
 
-
-```
-git clone https://github.com/open-mmlab/mmcv/tree/master
+```bash
+git clone https://github.com/open-mmlab/mmcv.git -b master
 cd mmcv
 export MMCV_WITH_OPS=ON
 export FORCE_MLU=1
