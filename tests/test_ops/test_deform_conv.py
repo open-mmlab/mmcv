@@ -45,6 +45,8 @@ class TestDeformconv:
                          im2col_step=2):
         if not torch.cuda.is_available() and device == 'cuda':
             pytest.skip('test requires GPU')
+        if not torch.npu.is_available() and device == 'npu':
+            pytest.skip('test requires NPU')
         from mmcv.ops import DeformConv2dPack
         c_in = 1
         c_out = 1
@@ -69,6 +71,8 @@ class TestDeformconv:
             torch.Tensor(deform_weight).reshape(1, 1, 2, 2))
         if device == 'cuda':
             model.cuda()
+        elif device == 'npu':
+            model.npu()
         model.type(dtype)
 
         out = model(x)
@@ -120,7 +124,7 @@ class TestDeformconv:
             input_dtype: torch.float or torch.half.
             threshold: the same as above function.
         """
-        if not torch.cuda.is_available():
+        if not torch.cuda.is_available() and not torch.npu.is_available():
             return
         from mmcv.ops import DeformConv2dPack
         c_in = 1
@@ -128,8 +132,6 @@ class TestDeformconv:
         repeated_input = np.repeat(input, batch_size, axis=0)
         repeated_gt_out = np.repeat(gt_out, batch_size, axis=0)
         repeated_gt_x_grad = np.repeat(gt_x_grad, batch_size, axis=0)
-        x = torch.Tensor(repeated_input).cuda().type(input_dtype)
-        x.requires_grad = True
         model = DeformConv2dPack(
             in_channels=c_in,
             out_channels=c_out,
@@ -143,7 +145,13 @@ class TestDeformconv:
             torch.Tensor(offset_bias).reshape(8))
         model.weight.data = torch.nn.Parameter(
             torch.Tensor(deform_weight).reshape(1, 1, 2, 2))
-        model.cuda()
+        if torch.cuda.is_available():
+            x = torch.Tensor(repeated_input).cuda().type(input_dtype)
+            model.cuda()
+        elif torch.npu.is_available():
+            x = torch.Tensor(repeated_input).npu().type(input_dtype)
+            model.npu()
+        x.requires_grad = True
 
         out = model(x)
         out.backward(torch.ones_like(out))
