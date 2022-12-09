@@ -8,7 +8,7 @@
 
 # source: https://github.com/NVlabs/stylegan3/blob/main/torch_utils/ops/upfirdn2d.py # noqa
 """Custom PyTorch ops for efficient resampling of 2D images."""
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Union
 
 import numpy as np
 import torch
@@ -54,59 +54,6 @@ def _get_filter_size(f):
     fh = int(fh)
     assert fw >= 1 and fh >= 1
     return fw, fh
-
-
-def setup_filter(f: torch.Tensor,
-                 device: Any = torch.device('cpu'),
-                 normalize: bool = True,
-                 flip_filter: bool = False,
-                 gain: Union[float, int] = 1,
-                 separable: Optional[bool] = None):
-    """Convenience function to setup 2D FIR filter for `upfirdn2d()`.
-
-    Args:
-        f (torch.Tensor): Torch tensor, numpy array, or python list
-            of the shape `[filter_height, filter_width]`
-            (non-separable), `[filter_taps]` (separable), `[]`
-            (impulse), or `None`.
-        device (Any): Result device. Defaults to torch.device('cpu').
-        normalize (bool): Normalize the filter so that it retains the
-            magnitude for constant input signal (DC). Defaults to True.
-        flip_filter (bool): Flip the filter? Defaults to False.
-        gain (Union[float, int]): Overall scaling factor for signal
-            magnitude. Defaults to 1.
-        separable (Optional[bool]): Return a separable filter?
-            Defaults to None.
-
-    Returns:
-        torch.Tensor: Float32 tensor of the shape
-        `[filter_height, filter_width]` (non-separable) or
-        `[filter_taps]` (separable).
-    """
-    # Validate.
-    if f is None:
-        f = 1
-    f = torch.as_tensor(f, dtype=torch.float32)
-    assert f.ndim in [0, 1, 2]
-    assert f.numel() > 0
-    if f.ndim == 0:
-        f = f[np.newaxis]
-
-    # Separable?
-    if separable is None:
-        separable = (f.ndim == 1 and f.numel() >= 8)
-    if f.ndim == 1 and not separable:
-        f = f.outer(f)
-    assert f.ndim == (1 if separable else 2)
-
-    # Apply normalize, flip, gain, and device.
-    if normalize:
-        f /= f.sum()
-    if flip_filter:
-        f = f.flip(list(range(f.ndim)))
-    f = f * (gain**(f.ndim / 2))
-    f = f.to(device=device)
-    return f
 
 
 def upfirdn2d(input: torch.Tensor,
