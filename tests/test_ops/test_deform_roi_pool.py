@@ -133,7 +133,7 @@ class TestDeformRoIPool:
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
-                not IS_MLU_AVAILABLE, reason='requires MLU support'))
+                not IS_MLU_AVAILABLE, reason='requires MLU support')),
         pytest.param(
             'npu',
             marks=pytest.mark.skipif(
