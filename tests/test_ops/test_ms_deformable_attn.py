@@ -54,6 +54,26 @@ def test_multiscale_deformable_attention(device):
         spatial_shapes=spatial_shapes,
         level_start_index=level_start_index)
 
+    # test with value_proj_ratio
+    embed_dims = 6
+    value_proj_ratio = 0.5
+    query = torch.rand(num_query, bs, embed_dims).to(device)
+    key = torch.rand(num_query, bs, embed_dims).to(device)
+    msda = MultiScaleDeformableAttention(
+        embed_dims=embed_dims,
+        num_levels=2,
+        num_heads=3,
+        value_proj_ratio=value_proj_ratio)
+    msda.init_weights()
+    msda.to(device)
+    msda(
+        query,
+        key,
+        key,
+        reference_points=reference_points,
+        spatial_shapes=spatial_shapes,
+        level_start_index=level_start_index)
+
 
 def test_forward_multi_scale_deformable_attn_pytorch():
     N, M, D = 1, 2, 2
