@@ -1,9 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import warnings
-from typing import Optional, Union
+from typing import Optional
 
+import mmengine.fileio as fileio
 import numpy as np
-from mmengine.fileio import BaseStorageBackend, FileClient, get_file_backend
 
 import mmcv
 from .base import BaseTransform
@@ -34,52 +33,24 @@ class LoadImageFromFile(BaseTransform):
             argument for :func:`mmcv.imfrombytes`.
             See :func:`mmcv.imfrombytes` for details.
             Defaults to 'cv2'.
-        file_client_args (dict): Arguments to instantiate a FileClient.
-            See :class:`mmengine.fileio.FileClient` for details.
-            Defaults to None. It will be deprecated in future. Please use
-            ``backend_args`` instead.
-            Deprecated in version 2.0.0rc4.
         ignore_empty (bool): Whether to allow loading empty image or file path
             not existent. Defaults to False.
         backend_args (dict, optional): Arguments to instantiate the
             preifx of uri corresponding backend. Defaults to None.
-            New in version 2.0.0rc4.
     """
 
     def __init__(self,
                  to_float32: bool = False,
                  color_type: str = 'color',
                  imdecode_backend: str = 'cv2',
-                 file_client_args: Optional[dict] = None,
                  ignore_empty: bool = False,
+                 *,
                  backend_args: Optional[dict] = None) -> None:
         self.ignore_empty = ignore_empty
         self.to_float32 = to_float32
         self.color_type = color_type
         self.imdecode_backend = imdecode_backend
-
-        if file_client_args is not None:
-            warnings.warn(
-                '"file_client_args" will be deprecated in future. '
-                'Please use "backend_args" instead', DeprecationWarning)
-            if backend_args is not None:
-                raise ValueError(
-                    '"file_client_args" and "backend_args" cannot be set '
-                    'at the same time.')
-        else:
-            file_client_args = dict(backend='disk')
-        if backend_args is None:
-            backend_args = dict(backend='disk')
-        self.file_client_args = file_client_args.copy()
-        self.file_client = FileClient(**self.file_client_args)
-        self.backend_args = backend_args.copy()
-
-        self.file_backend: Union[FileClient, BaseStorageBackend]
-        if self.file_client_args is None:
-            self.file_backend = get_file_backend(
-                backend_args=self.backend_args)
-        else:
-            self.file_backend = self.file_client
+        self.backend_args = backend_args
 
     def transform(self, results: dict) -> Optional[dict]:
         """Functions to load image.
@@ -94,7 +65,7 @@ class LoadImageFromFile(BaseTransform):
 
         filename = results['img_path']
         try:
-            img_bytes = self.file_backend.get(filename)
+            img_bytes = fileio.get(filename, backend_args=self.backend_args)
             img = mmcv.imfrombytes(
                 img_bytes, flag=self.color_type, backend=self.imdecode_backend)
         except Exception as e:
@@ -115,12 +86,12 @@ class LoadImageFromFile(BaseTransform):
                     f'ignore_empty={self.ignore_empty}, '
                     f'to_float32={self.to_float32}, '
                     f"color_type='{self.color_type}', "
-                    f"imdecode_backend='{self.imdecode_backend}', ")
+                    f"imdecode_backend='{self.imdecode_backend}'")
 
-        if self.file_client_args is not None:
-            repr_str += f'file_client_args={self.file_client_args})'
+        if self.backend_args is not None:
+            repr_str += f', backend_args={self.backend_args})'
         else:
-            repr_str += f'backend_args={self.backend_args})'
+            repr_str += ')'
 
         return repr_str
 
@@ -202,9 +173,8 @@ class LoadAnnotations(BaseTransform):
             argument for :func:`mmcv.imfrombytes`.
             See :func:`mmcv.imfrombytes` for details.
             Defaults to 'cv2'.
-        file_client_args (dict): Arguments to instantiate a FileClient.
-            See :class:`mmengine.fileio.FileClient` for details.
-            Defaults to ``dict(backend='disk')``.
+        backend_args (dict, optional): Arguments to instantiate the
+            preifx of uri corresponding backend. Defaults to None.
     """
 
     def __init__(
@@ -214,7 +184,6 @@ class LoadAnnotations(BaseTransform):
         with_seg: bool = False,
         with_keypoints: bool = False,
         imdecode_backend: str = 'cv2',
-        file_client_args: Optional[dict] = None,
         backend_args: Optional[dict] = None,
     ) -> None:
         super().__init__()
@@ -223,29 +192,7 @@ class LoadAnnotations(BaseTransform):
         self.with_seg = with_seg
         self.with_keypoints = with_keypoints
         self.imdecode_backend = imdecode_backend
-
-        if file_client_args is not None:
-            warnings.warn(
-                '"file_client_args" will be deprecated in future. '
-                'Please use "backend_args" instead', DeprecationWarning)
-            if backend_args is not None:
-                raise ValueError(
-                    '"file_client_args" and "backend_args" cannot be set '
-                    'at the same time.')
-        else:
-            file_client_args = dict(backend='disk')
-        if backend_args is None:
-            backend_args = dict(backend='disk')
-        self.file_client_args = file_client_args.copy()
-        self.file_client = FileClient(**self.file_client_args)
-        self.backend_args = backend_args.copy()
-
-        self.file_backend: Union[FileClient, BaseStorageBackend]
-        if self.file_client_args is None:
-            self.file_backend = get_file_backend(
-                backend_args=self.backend_args)
-        else:
-            self.file_backend = self.file_client
+        self.backend_args = backend_args
 
     def _load_bboxes(self, results: dict) -> None:
         """Private function to load bounding box annotations.
@@ -290,7 +237,8 @@ class LoadAnnotations(BaseTransform):
             dict: The dict contains loaded semantic segmentation annotations.
         """
 
-        img_bytes = self.file_backend.get(results['seg_map_path'])
+        img_bytes = fileio.get(
+            results['seg_map_path'], backend_args=self.backend_args)
         results['gt_seg_map'] = mmcv.imfrombytes(
             img_bytes, flag='unchanged',
             backend=self.imdecode_backend).squeeze()
@@ -339,11 +287,11 @@ class LoadAnnotations(BaseTransform):
         repr_str += f'with_label={self.with_label}, '
         repr_str += f'with_seg={self.with_seg}, '
         repr_str += f'with_keypoints={self.with_keypoints}, '
-        repr_str += f"imdecode_backend='{self.imdecode_backend}', "
+        repr_str += f"imdecode_backend='{self.imdecode_backend}'"
 
-        if self.file_client_args is not None:
-            repr_str += f'file_client_args={self.file_client_args})'
+        if self.backend_args is not None:
+            repr_str += f', backend_args={self.backend_args})'
         else:
-            repr_str += f'backend_args={self.backend_args})'
+            repr_str += ')'
 
         return repr_str
