@@ -14,7 +14,7 @@ from .non_local import NonLocal1d, NonLocal2d, NonLocal3d
 from .norm import build_norm_layer, is_norm
 from .padding import build_padding_layer
 from .plugin import build_plugin_layer
-from .scale import Scale
+from .scale import LayerScale, Scale
 from .swish import Swish
 from .upsample import build_upsample_layer
 from .wrappers import (Conv2d, Conv3d, ConvTranspose2d, ConvTranspose3d,
@@ -28,5 +28,5 @@ __all__ = [
     'Scale', 'ConvAWS2d', 'ConvWS2d', 'conv_ws_2d',
     'DepthwiseSeparableConvModule', 'Swish', 'Linear', 'Conv2dAdaptivePadding',
     'Conv2d', 'ConvTranspose2d', 'MaxPool2d', 'ConvTranspose3d', 'MaxPool3d',
-    'Conv3d', 'Dropout', 'DropPath'
+    'Conv3d', 'Dropout', 'DropPath', 'LayerScale'
 ]
