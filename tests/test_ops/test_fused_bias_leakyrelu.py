@@ -68,7 +68,7 @@ class TestFusedBiasLeakyReLU:
 
         from mmcv.ops import FusedBiasLeakyReLU
         gradcheck(
-                FusedBiasLeakyReLU(2).to(device),
-                self.input_tensor,
-                eps=1e-4,
-                atol=1e-3)
+            FusedBiasLeakyReLU(2).to(device),
+            self.input_tensor,
+            eps=1e-4,
+            atol=1e-3)
