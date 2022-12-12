@@ -47,25 +47,12 @@ class TestFusedBiasLeakyReLU:
                     self.input_tensor,
                     delta=1e-4,
                     pt_atol=1e-3)
-            elif IS_NPU_AVAILABLE:
-                gradcheck(
-                    FusedBiasLeakyReLU(2).npu(),
-                    self.input_tensor,
-                    delta=1e-4,
-                    pt_atol=1e-3)
         else:
-            if IS_CUDA_AVAILABLE:
-                gradcheck(
-                    FusedBiasLeakyReLU(2).cuda(),
-                    self.input_tensor,
-                    eps=1e-4,
-                    atol=1e-3)
-            elif IS_NPU_AVAILABLE:
-                gradcheck(
-                    FusedBiasLeakyReLU(2).npu(),
-                    self.input_tensor,
-                    eps=1e-4,
-                    atol=1e-3)
+            gradcheck(
+                FusedBiasLeakyReLU(2).to(device),
+                self.input_tensor,
+                eps=1e-4,
+                atol=1e-3)
 
     @pytest.mark.parametrize('device', [
         pytest.param(
@@ -80,15 +67,8 @@ class TestFusedBiasLeakyReLU:
     def test_gradgradient(self, device):
 
         from mmcv.ops import FusedBiasLeakyReLU
-        if IS_CUDA_AVAILABLE:
-            gradcheck(
-                FusedBiasLeakyReLU(2).cuda(),
-                self.input_tensor,
-                eps=1e-4,
-                atol=1e-3)
-        elif IS_NPU_AVAILABLE:
-            gradcheck(
-                FusedBiasLeakyReLU(2).npu(),
+        gradcheck(
+                FusedBiasLeakyReLU(2).to(device),
                 self.input_tensor,
                 eps=1e-4,
                 atol=1e-3)
