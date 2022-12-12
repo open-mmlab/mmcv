@@ -37,7 +37,7 @@ Then, you can clone the repositories to local:
 git clone git@github.com:{username}/mmcv.git
 ```
 
-After that, you should ddd official repository as the upstream repository
+After that, you should add official repository as the upstream repository
 
 ```bash
 git remote add upstream git@github.com:open-mmlab/mmcv
