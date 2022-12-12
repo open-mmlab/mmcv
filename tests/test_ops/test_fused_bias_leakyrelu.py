@@ -8,7 +8,7 @@ _USING_PARROTS = True
 try:
     from parrots.autograd import gradcheck
 except ImportError:
-    from torch.autograd import gradcheck
+    from torch.autograd import gradcheck, gradgradcheck
     _USING_PARROTS = False
 
 
@@ -67,7 +67,7 @@ class TestFusedBiasLeakyReLU:
     def test_gradgradient(self, device):
 
         from mmcv.ops import FusedBiasLeakyReLU
-        gradcheck(
+        gradgradcheck(
             FusedBiasLeakyReLU(2).to(device),
             self.input_tensor,
             eps=1e-4,
