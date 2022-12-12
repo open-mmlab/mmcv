@@ -36,10 +36,10 @@ void deform_roi_pool_forward_npu(Tensor input, Tensor rois, Tensor offset,
 }
 
 void deform_roi_pool_backward_npu(Tensor grad_output, Tensor input, Tensor rois,
-                                   Tensor offset, Tensor grad_input,
-                                   Tensor grad_offset, int pooled_height,
-                                   int pooled_width, float spatial_scale,
-                                   int sampling_ratio, float gamma) {
+                                  Tensor offset, Tensor grad_input,
+                                  Tensor grad_offset, int pooled_height,
+                                  int pooled_width, float spatial_scale,
+                                  int sampling_ratio, float gamma) {
   c10::SmallVector<int64_t, 2> output_sizes = {pooled_height, pooled_width};
   at::IntArrayRef output_size = at::IntArrayRef(output_sizes);
   int64_t sampling_ratio_ = (int64_t)sampling_ratio;
