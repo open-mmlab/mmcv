@@ -3,7 +3,6 @@
 #include "pytorch_device_registry.hpp"
 #define HOST_DEVICE
 
-
 template <typename T>
 HOST_DEVICE inline T single_box_iou(T const *const box1_raw,
                                     T const *const box2_raw, const int offset,
@@ -47,11 +46,13 @@ void bbox_overlaps_cpu_kernel(const Tensor boxes1, const Tensor boxes2,
   auto num_boxes2 = boxes2.size(0);
 
   if (aligned) {
+    // #pragma omp parallel for
     for (int i = 0; i < output_size; i++) {
       ious[i] = single_box_iou<T>(boxes1[i].data_ptr<T>(),
                                   boxes2[i].data_ptr<T>(), offset, mode_flag);
     }
   } else {
+    // #pragma omp parallel for
     for (int i = 0; i < num_boxes1; i++) {
       for (int j = 0; j < num_boxes2; j++) {
         ious[i][j] =
