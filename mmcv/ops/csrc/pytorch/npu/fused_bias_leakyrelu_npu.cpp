@@ -9,7 +9,7 @@ Tensor fused_bias_leakyrelu_op_impl(const Tensor &input, const Tensor &bias,
 
 Tensor fused_bias_leakyrelu_npu(const Tensor &input, const Tensor &bias,
                                 const Tensor &refer, int act, int grad,
-                                float alpha, float scale){
+                                float alpha, float scale) {
   at::Tensor py = at::empty_like(input);
   // forward
   if (grad == 0) {
