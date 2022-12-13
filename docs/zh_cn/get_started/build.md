@@ -405,7 +405,7 @@ docker pull ${docker image}
 
 #### 安装CATCH:
 
-- CATCH 完整安装教程见 [CATCH安装指南](https://github.com/Cambricon/catch/blob/main/CONTRIBUTING.md)
+- 请向 service@cambricon.com 发送邮件或联系Cambricon工程师以获取合适版本的CATCH软件包，在您获得合适版本的CATCH软件包后，请参照[CATCH安装指南](https://github.com/Cambricon/catch/blob/main/CONTRIBUTING.md)中的步骤安装CATCH.
 
 
 #### 编译MMCV MLU:
@@ -419,6 +419,7 @@ python setup.py install
 ```
 
 #### 验证是否成功安装
+完成上述安装步骤之后，您可以尝试运行下面的python代码以测试您是否成功在MLU设备上安装了mmcv-full:
 ``` python
 import torch
 import torch_mlu
