@@ -23,7 +23,7 @@ void deform_roi_pool_forward_npu(Tensor input, Tensor rois, Tensor offset,
   at::IntArrayRef output_size = at::IntArrayRef(output_sizes);
   int64_t sampling_ratio_ = (int64_t)sampling_ratio;
   OpCommand cmd;
-  cmd.Name("DeformRoiPool")
+  cmd.Name("DeformableRoiPool")
       .Input(input)
       .Input(rois)
       .Input(offset)
@@ -44,7 +44,7 @@ void deform_roi_pool_backward_npu(Tensor grad_output, Tensor input, Tensor rois,
   at::IntArrayRef output_size = at::IntArrayRef(output_sizes);
   int64_t sampling_ratio_ = (int64_t)sampling_ratio;
   OpCommand cmd;
-  cmd.Name("DeformRoiPoolGrad")
+  cmd.Name("DeformableRoiPoolGrad")
       .Input(grad_input)
       .Input(input)
       .Input(rois)
