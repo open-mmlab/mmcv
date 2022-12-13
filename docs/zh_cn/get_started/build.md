@@ -405,7 +405,7 @@ docker pull ${docker image}
 
 #### 安装CATCH:
 
-- 请向 service@cambricon.com 发送邮件或联系Cambricon工程师以获取合适版本的CATCH软件包，在您获得合适版本的CATCH软件包后，请参照[CATCH安装指南](https://github.com/Cambricon/catch/blob/main/CONTRIBUTING.md)中的步骤安装CATCH.
+- 请向 service@cambricon.com 发送邮件或联系Cambricon工程师以获取合适版本的CATCH软件包，在您获得合适版本的CATCH软件包后，请参照 ${CATCH-path}/CONTRIBUTING.md 中的步骤安装CATCH.
 
 
 #### 编译MMCV MLU:

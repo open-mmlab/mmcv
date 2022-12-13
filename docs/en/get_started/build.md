@@ -392,7 +392,7 @@ Run and attach to the docker, [Install mmcv-full on MLU device](#install-mmcv\-f
 
 #### Install CATCH
 
-- Please email service@cambricon.com or contact with Cambricon engineers for a suitable version of CATCH package. After you get the suitable version of CATCH package, please follow the steps in [CATCH Installation Guide](https://github.com/Cambricon/catch/blob/main/CONTRIBUTING.md) to install Cambricon PyTorch.
+- Please email service@cambricon.com or contact with Cambricon engineers for a suitable version of CATCH package. After you get the suitable version of CATCH package, please follow the steps in ${CATCH-path}/CONTRIBUTING.md to install Cambricon PyTorch.
 
 #### Install mmcv-full on Cambricon MLU device
 
