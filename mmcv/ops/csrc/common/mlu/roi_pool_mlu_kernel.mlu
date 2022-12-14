@@ -204,11 +204,11 @@ __mlu_func__ void MLUUnion1Roipool(T *input_v, T *rois_v, int batch,
       }
 
       if (is_empty) {
-        __nramset((T *)nram_out, c_slice_align, (T)0);
+        __bang_write_value((T *)nram_out, c_slice_align, (T)0);
         __memcpy((T *)output_base + dst_offset + c_offset, (T *)nram_out,
                  c_slice * t_size, NRAM2GDRAM);
         if (NULL != argmax) {
-          __nramset((int32_t *)nram_out, c_slice_align, (int32_t)(-1));
+          __bang_write_value((int32_t *)nram_out, c_slice_align, (int32_t)(-1));
           __memcpy((int32_t *)argmax_base + dst_offset + c_offset,
                    (int32_t *)nram_out, c_slice * sizeof(int32_t), NRAM2GDRAM);
         }
@@ -238,18 +238,18 @@ __mlu_func__ void MLUUnion1Roipool(T *input_v, T *rois_v, int batch,
           for (int i = 0; i < c_slice; i++) {
             nram_out[i] = (float)(((uint32_t *)nram_out)[i] / bin_wdim);
           }
-          __bang_add_const((float *)nram_a, (float *)nram_out, (float)bin_y1,
-                           c_slice_align);
-          __bang_mul_const((float *)nram_ping, (float *)nram_a, (float)width,
-                           c_slice_align);
+          __bang_add_scalar((float *)nram_a, (float *)nram_out, (float)bin_y1,
+                            c_slice_align);
+          __bang_mul_scalar((float *)nram_ping, (float *)nram_a, (float)width,
+                            c_slice_align);
 
           /*compute input_w*/
-          __bang_mul_const((float *)nram_a, (float *)nram_out, (float)bin_wdim,
-                           c_slice_align);
+          __bang_mul_scalar((float *)nram_a, (float *)nram_out, (float)bin_wdim,
+                            c_slice_align);
           __bang_sub((float *)nram_a, (float *)nram_argmax, (float *)nram_a,
                      c_slice_align);
-          __bang_add_const((float *)nram_a, (float *)nram_a, (float)bin_x1,
-                           c_slice_align);
+          __bang_add_scalar((float *)nram_a, (float *)nram_a, (float)bin_x1,
+                            c_slice_align);
           __bang_add((float *)nram_out, (float *)nram_ping, (float *)nram_a,
                      c_slice_align);
           convertFloat2Int((int32_t *)nram_argmax, (float *)nram_a,
@@ -290,9 +290,7 @@ __mlu_global__ void MLUKernelRoiPool(cnrtDataType_t data_type,
                        rois_num, (float)spatial_scale, (float *)output_data,
                        argmax);
     }; break;
-    default: {
-      break;
-    }
+    default: { break; }
   }
 }
 }  // namespace forward
@@ -328,30 +326,30 @@ __mlu_func__ void convertIndex(
                    align_c);
 
   // Perform 'temp_result - hstart' operation
-  __bang_sub_const((float *)nram_argmax_fp_h, (float *)nram_argmax_fp, hstart,
-                   align_c);
+  __bang_sub_scalar((float *)nram_argmax_fp_h, (float *)nram_argmax_fp, hstart,
+                    align_c);
 
   // Perform 'temp_result1 - temp_result2 * width' operation
-  __bang_mul_const((float *)nram_argmax_fp_w, (float *)nram_argmax_fp, width,
-                   align_c);
+  __bang_mul_scalar((float *)nram_argmax_fp_w, (float *)nram_argmax_fp, width,
+                    align_c);
   convertInt2Float((float *)nram_argmax_fp, (float *)nram_argmax_fp_bk1,
                    (int *)nram_argmax, (float *)nram_argmax_fp_bk2, align_c);
   __bang_sub((float *)nram_argmax_fp_w, (float *)nram_argmax_fp,
              (float *)nram_argmax_fp_w, align_c);
 
   // Perform 'temp_result - wstart' operation
-  __bang_sub_const((float *)nram_argmax_fp_w, (float *)nram_argmax_fp_w, wstart,
-                   align_c);
+  __bang_sub_scalar((float *)nram_argmax_fp_w, (float *)nram_argmax_fp_w,
+                    wstart, align_c);
 
   // Perform 'temp_result = h * w_compute + w' operation
-  __bang_mul_const((float *)nram_argmax_fp_h, (float *)nram_argmax_fp_h,
-                   w_compute, align_c);
+  __bang_mul_scalar((float *)nram_argmax_fp_h, (float *)nram_argmax_fp_h,
+                    w_compute, align_c);
   __bang_add((float *)nram_argmax_fp_h, (float *)nram_argmax_fp_h,
              (float *)nram_argmax_fp_w, align_c);
 
   if (loop_flag == 1) {
-    __bang_sub_const((float *)nram_argmax_fp_h, (float *)nram_argmax_fp_h,
-                     (loop_id * true_limit), align_c);
+    __bang_sub_scalar((float *)nram_argmax_fp_h, (float *)nram_argmax_fp_h,
+                      (loop_id * true_limit), align_c);
   }
   convertFloat2Int((int *)nram_argmax_int, (float *)nram_argmax_fp_bk1,
                    (float *)nram_argmax_fp_h, (float *)nram_argmax_fp_bk2,
@@ -460,21 +458,22 @@ __mlu_func__ void MLUUnion1Roipool(const T *rois, const T *grads,
          */
 
         // Load the data from GDRAM to NRAM.
-        __memcpy((T *)nram_grads + align_c * high_precision,
-                 (const T *)grads + (n * pooled_height * pooled_width +
-                                     ph * pooled_width + pw) *
-                                        channels,
-                 channels * sizeof(T), GDRAM2NRAM);
+        __memcpy(
+            (T *)nram_grads + align_c * high_precision,
+            (const T *)grads +
+                (n * pooled_height * pooled_width + ph * pooled_width + pw) *
+                    channels,
+            channels * sizeof(T), GDRAM2NRAM);
         if (high_precision) {
           __bang_half2float((float *)nram_grads,
                             (half *)nram_grads + align_c * high_precision,
                             align_c);
         }
 
-        __memcpy((int32_t *)nram_argmax,
-                 (const int32_t *)argmax + (n * pooled_height * pooled_width +
-                                            ph * pooled_width + pw) *
-                                               channels,
+        __memcpy((int32_t *)nram_argmax, (const int32_t *)argmax +
+                                             (n * pooled_height * pooled_width +
+                                              ph * pooled_width + pw) *
+                                                 channels,
                  channels * sizeof(int32_t), GDRAM2NRAM);
 
         // Perform pooling operation on NRAM.
@@ -523,20 +522,21 @@ __mlu_func__ void MLUUnion1Roipool(const T *rois, const T *grads,
          */
 
         // Load the data from GDRAM to NRAM.
-        __memcpy((T *)nram_grads + align_c * high_precision,
-                 (const T *)grads + (n * pooled_height * pooled_width +
-                                     ph * pooled_width + pw) *
-                                        channels,
-                 channels * sizeof(T), GDRAM2NRAM);
+        __memcpy(
+            (T *)nram_grads + align_c * high_precision,
+            (const T *)grads +
+                (n * pooled_height * pooled_width + ph * pooled_width + pw) *
+                    channels,
+            channels * sizeof(T), GDRAM2NRAM);
         if (high_precision) {
           __bang_half2float((float *)nram_grads,
                             (half *)nram_grads + align_c * high_precision,
                             align_c);
         }
-        __memcpy((int32_t *)nram_argmax,
-                 (const int32_t *)argmax + (n * pooled_height * pooled_width +
-                                            ph * pooled_width + pw) *
-                                               channels,
+        __memcpy((int32_t *)nram_argmax, (const int32_t *)argmax +
+                                             (n * pooled_height * pooled_width +
+                                              ph * pooled_width + pw) *
+                                                 channels,
                  channels * sizeof(int32_t), GDRAM2NRAM);
 
         int ping_pong = 0;
@@ -713,9 +713,7 @@ __mlu_global__ void MLUKernelRoiPoolBackward(
                        height, width, pooled_height, pooled_width, rois_num,
                        (const float)spatial_scale, high_precision);
     }; break;
-    default: {
-      break;
-    }
+    default: { break; }
   }
 }
 }  // namespace backward

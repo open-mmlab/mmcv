@@ -42,7 +42,7 @@ void CorrelationForwardCUDAKernelLauncher(Tensor input1, Tensor input2,
             <<<blocks, threads, 0, at::cuda::getCurrentCUDAStream()>>>(
                 trInput1_acc, trInput2_acc, output_acc, kH, kW, patchH, patchW,
                 padH, padW, dilationH, dilationW, dilation_patchH,
-                dilation_patchW, dH, dW);
+                dilation_patchW, dH, dW, oH, oW);
       }));
 }
 

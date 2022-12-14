@@ -10,6 +10,7 @@ MMCV 提供了检测、分割等任务中常用的算子
 | BBoxOverlaps                 |     | √    | √   | √   |
 | BorderAlign                  |     | √    |     |     |
 | BoxIouRotated                | √   | √    |     |     |
+| BoxIouQuadri                 | √   | √    |     |     |
 | CARAFE                       |     | √    | √   |     |
 | ChamferDistance              |     | √    |     |     |
 | CrissCrossAttention          |     | √    |     |     |
@@ -26,7 +27,7 @@ MMCV 提供了检测、分割等任务中常用的算子
 | FusedBiasLeakyrelu           |     | √    |     |     |
 | GatherPoints                 |     | √    |     |     |
 | GroupPoints                  |     | √    |     |     |
-| Iou3d                        |     | √    |     |     |
+| Iou3d                        |     | √    | √   |     |
 | KNN                          |     | √    |     |     |
 | MaskedConv                   |     | √    | √   |     |
 | MergeCells                   |     | √    |     |     |
@@ -35,17 +36,18 @@ MMCV 提供了检测、分割等任务中常用的算子
 | MultiScaleDeformableAttn     |     | √    |     |     |
 | NMS                          | √   | √    | √   |     |
 | NMSRotated                   | √   | √    |     |     |
+| NMSQuadri                    | √   | √    |     |     |
 | PixelGroup                   | √   |      |     |     |
 | PointsInBoxes                | √   | √    |     |     |
 | PointsInPolygons             |     | √    |     |     |
 | PSAMask                      | √   | √    | √   |     |
 | RotatedFeatureAlign          | √   | √    |     |     |
-| RoIPointPool3d               |     | √    |     |     |
+| RoIPointPool3d               |     | √    | √   |     |
 | RoIPool                      |     | √    | √   |     |
 | RoIAlignRotated              | √   | √    | √   |     |
 | RiRoIAlignRotated            |     | √    |     |     |
 | RoIAlign                     | √   | √    | √   |     |
-| RoIAwarePool3d               |     | √    |     |     |
+| RoIAwarePool3d               |     | √    | √   |     |
 | SAConv2d                     |     | √    |     |     |
 | SigmoidFocalLoss             |     | √    | √   |     |
 | SoftmaxFocalLoss             |     | √    |     |     |

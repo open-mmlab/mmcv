@@ -22,17 +22,17 @@ research projects as below:
 - [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMLab image and video generative models toolbox.
 - [MMDeploy](https://github.com/open-mmlab/mmdeploy): OpenMMLab model deployment framework.
 
-It provides the following functionalities.
+It provides the following functionalities:
 
-- Universal IO APIs
-- Image/Video processing
-- Image and annotation visualization
-- Useful utilities (progress bar, timer, ...)
-- PyTorch runner with hooking mechanism
-- Various CNN architectures
-- High-quality implementation of common CUDA ops
+- [Universal IO APIs](https://mmcv.readthedocs.io/en/latest/understand_mmcv/io.html)
+- [Image/Video processing](https://mmcv.readthedocs.io/en/latest/understand_mmcv/data_process.html)
+- [Image and annotation visualization](https://mmcv.readthedocs.io/en/latest/understand_mmcv/visualization.html)
+- [Useful utilities (progress bar, timer, ...)](https://mmcv.readthedocs.io/en/latest/understand_mmcv/utils.html)
+- [PyTorch runner with hooking mechanism](https://mmcv.readthedocs.io/en/latest/understand_mmcv/runner.html)
+- [Various CNN architectures](https://mmcv.readthedocs.io/en/latest/understand_mmcv/cnn.html)
+- [High-quality implementation of common CPU and CUDA ops](https://mmcv.readthedocs.io/en/latest/understand_mmcv/ops.html)
 
-It supports the following systems.
+It supports the following systems:
 
 - Linux
 - Windows

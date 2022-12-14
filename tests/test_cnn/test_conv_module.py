@@ -208,7 +208,6 @@ def relu_forward(self, x):
 @patch('torch.nn.BatchNorm2d.forward', bn_forward)
 @patch('torch.nn.Conv2d.forward', conv_forward)
 def test_order():
-
     with pytest.raises(AssertionError):
         # order must be a tuple
         order = ['conv', 'norm', 'act']
