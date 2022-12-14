@@ -255,17 +255,8 @@ void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHa
     diopiSize_t size(const_cast<int64_t*>(atSize.data()), atSize.size());
     diopiSize_t stride(const_cast<int64_t*>(atStride.data()), atStride.size());
     diopiDtype_t dtype = getDIOPITensorType(input);
-    // 获取新的buffer
-    // 是不是不可以这样子生成out？需要hacker input的内存到runtime中。
     diopiRequireTensor(ctx, out, &size, &stride, dtype, diopi_device);
-    // diopiGetTensorData
-    // (*out)->data_ptr
-    // updateATen2Tensor 已更新 更新回out
     updateATen2Tensor(ctx, input, *out);
-
-    // prefer method is: bool bRet = transferAcc(ctx, src, dst);
-    // use directly the at storage
-
 }
 
 c10::optional<c10::string_view> getRoundingMode(diopiRoundMode_t rounding_mode) {
