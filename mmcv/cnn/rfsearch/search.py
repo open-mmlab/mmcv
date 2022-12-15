@@ -143,9 +143,9 @@ class RFSearchHook(Hook):
                 module.estimate_rates()
                 module.expand_rates()
 
-    def wrap_model(self, 
-                   model: nn.Module, 
-                   search_op: str = 'Conv2d', 
+    def wrap_model(self,
+                   model: nn.Module,
+                   search_op: str = 'Conv2d',
                    prefix: str = ''):
         """wrap model to support searchable conv op.
 
