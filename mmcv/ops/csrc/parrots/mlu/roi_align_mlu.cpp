@@ -5,7 +5,7 @@
 #include <parrots_mlu_helper.hpp>
 using namespace parrots;
 
-// #define USE_CPU_ROI_ALIGN
+#define USE_CPU_ROI_ALIGN
 
 #ifdef USE_CPU_ROI_ALIGN
 using at::Tensor;
@@ -101,8 +101,6 @@ void KernelRoiAlignBackward(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
                             const float spatial_scale, const int sampling_ratio,
                             const bool aligned);
 
-namespace roi_align_forward {
-
 void ROIAlignForwardMLUKernelLauncher(CambContext& ctx, const DArrayLite& input,
                                       const DArrayLite& rois,
                                       DArrayLite& output, DArrayLite& argmax_y,
@@ -122,7 +120,7 @@ void ROIAlignForwardMLUKernelLauncher(CambContext& ctx, const DArrayLite& input,
   PARROTS_CHECKARGS(rois.ndims() == 2)
       << "rois should be a 2d tensor, got " << rois.ndims() << "D";
   PARROTS_CHECKARGS(pool_mode == 1)
-      << "pool_mode only suppurts 'avg' currently";
+      << "pool_mode only supports 'avg' currently";
   PARROTS_CHECKARGS(output.size() > 0) << "output should not be empty";
 
   const auto num_rois = rois.dim(0);
@@ -198,9 +196,6 @@ void roi_align_forward_camb_parrots(CambContext& ctx, const SSElement& attr,
                                    sampling_ratio, pool_mode, aligned);
 }
 
-}  //  namespace roi_align_forward
-
-namespace roi_align_backward {
 static int nearestPower2(int x) {
   x--;
   x |= x >> 1;
@@ -228,7 +223,7 @@ void ROIAlignBackwardMLUKernelLauncher(
   PARROTS_CHECKARGS(rois.ndims() == 2)
       << "rois should be a 2D tensor, got " << rois.ndims() << "D";
   PARROTS_CHECKARGS(pool_mode == 1)
-      << "pool_mode only suppurts 'avg' currently";
+      << "pool_mode only supports 'avg' currently";
   PARROTS_CHECKARGS(grad_input.size() > 0) << "grad_input should not be empty";
 
   const int batch_size = grad_input.dim(0);
@@ -244,7 +239,6 @@ void ROIAlignBackwardMLUKernelLauncher(
   const int no = grad_input.dim(0);
   const int ho = grad_input.dim(2);
   const int wo = grad_input.dim(3);
-
   const DArrayLite* grad_ptr = &grad;
   DArrayLite grad_tmp;
   if (grad.spec().probableMemoryFormat() != MemoryFormat::ChannelsLast) {
@@ -266,7 +260,7 @@ void ROIAlignBackwardMLUKernelLauncher(
 
   cnrtJobType_t k_type = CNRT_FUNC_TYPE_UNION1;
   int need_core = nearestPower2(boxes_num);
-  int union_number = getDeviceAttr(cnrtAttrClusterCount);
+  uint32_t union_number = getDeviceAttr(cnrtAttrClusterCount);
   uint32_t dim_x = getDeviceAttr(cnrtAttrMcorePerCluster);
   uint32_t dim_y = (need_core - 1) / dim_x + 1;
   dim_y = (dim_y > union_number) ? union_number : dim_y;
@@ -318,9 +312,27 @@ void roi_align_backward_camb_parrots(CambContext& ctx, const SSElement& attr,
       aligned_width, spatial_scale, sampling_ratio, pool_mode, aligned);
 }
 
-}  //  namespace roi_align_backward
-
 #endif  //  PARROTS_USE_CAMB
+
+void roi_align_forward_parrots(Context& ctx, const SSElement& attr,
+                        const OperatorBase::in_list_t& ins,
+                        OperatorBase::out_list_t& outs) {
+  if (ctx.getProxy().arch() == parrots::hostArch()) {
+    roi_align_forward_cpu_parrots(ctx, attr, ins, outs);
+  } else {
+    roi_align_forward_camb_parrots(ctx, attr, ins, outs);
+  }
+}
+
+void roi_align_backward_parrots(Context& ctx, const SSElement& attr,
+                        const OperatorBase::in_list_t& ins,
+                        OperatorBase::out_list_t& outs) {
+  if (ctx.getProxy().arch() == parrots::hostArch()) {
+    roi_align_backward_cpu_parrots(ctx, attr, ins, outs);
+  } else {
+    roi_align_backward_camb_parrots(ctx, attr, ins, outs);
+  }
+}
 
 PARROTS_EXTENSION_REGISTER(roi_align_forward)
     .attr("aligned_height")
@@ -331,12 +343,7 @@ PARROTS_EXTENSION_REGISTER(roi_align_forward)
     .attr("aligned")
     .input(2)
     .output(3)
-#ifdef USE_CPU_ROI_ALIGN
-    .apply(roi_align_forward_cpu_parrots)
-#endif
-#ifdef PARROTS_USE_CAMB
-    .apply(roi_align_forward::roi_align_forward_camb_parrots)
-#endif
+    .apply(roi_align_forward_parrots)
     .done();
 
 PARROTS_EXTENSION_REGISTER(roi_align_backward)
@@ -348,10 +355,5 @@ PARROTS_EXTENSION_REGISTER(roi_align_backward)
     .attr("aligned")
     .input(4)
     .output(1)
-#ifdef USE_CPU_ROI_ALIGN
-    .apply(roi_align_backward_cpu_parrots)
-#endif
-#ifdef PARROTS_USE_CAMB
-    .apply(roi_align_backward::roi_align_backward_camb_parrots)
-#endif
+    .apply(roi_align_backward_parrots)
     .done();

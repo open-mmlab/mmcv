@@ -75,12 +75,17 @@ inline int itemsize(parrots::ValueType vt) {
 
 inline int itemsize(const DArrayLite& x) { return itemsize(x.elemType()); }
 
-inline int getDeviceAttr(const cnrtDeviceAttr_t& attr) {
-  int ordinal = -1;
-  cnrtGetDevice(&ordinal);
-  int value = 0;
-  cnrtDeviceGetAttribute(&value, attr, ordinal);
-  return value;
+constexpr uint32_t rem_for_stack = 128 * 1024;
+
+inline uint32_t getDeviceAttr(cnrtDeviceAttr_t attr) {
+  int dev_ordinal = 0;
+  int device_attr = 1;
+  cnrtGetDevice(&dev_ordinal);
+  cnrtDeviceGetAttribute(&device_attr, attr, dev_ordinal);
+  if (attr == cnrtAttrNramSizePerMcore) {
+    device_attr -= rem_for_stack;
+  }
+  return device_attr;
 }
 
 #endif  // PARROTS_USE_CAMB

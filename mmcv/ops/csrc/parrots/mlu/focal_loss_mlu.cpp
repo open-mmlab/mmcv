@@ -124,7 +124,6 @@ void sigmoidFocalLossForwardMLUKernelLauncher(
   cnrtDim3_t k_dim;
   cnrtFunctionType_t k_type = CNRT_FUNC_TYPE_UNION1;
   policyFunc(&k_dim, &k_type, input, *target_ptr, weight);
-  auto core_dim = getDeviceAttr(cnrtAttrMcorePerCluster);
 
   // get compute queue
   auto queue = getStreamNative<CambDevice>(ctx.getStream());
@@ -323,7 +322,6 @@ void SigmoidFocalLossBackwardMLUKernelLauncher(
 
   // get dtype of input
   cnrtDataType_t d_type = getCnrtDataType(input.elemType());
-  auto core_dim = getDeviceAttr(cnrtAttrMcorePerCluster);
   auto dim_n = input.dim(0);
 
   // launch kernel
