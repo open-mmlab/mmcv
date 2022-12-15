@@ -61,3 +61,7 @@ class ClearMLLoggerHook(LoggerHook):
         for tag, val in tags.items():
             self.task_logger.report_scalar(tag, tag, val,
                                            self.get_iter(runner))
+
+    @master_only
+    def after_run(self, runner) -> None:
+        self.task.upload_artifact('Model Architecture', runner.model)
