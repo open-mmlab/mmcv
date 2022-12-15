@@ -3,7 +3,8 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import (IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE,
+                        DeviceType)
 
 _USING_PARROTS = True
 try:
@@ -123,23 +124,27 @@ class Testfocalloss:
             else:
                 gradcheck(floss, (x, y), eps=1e-2, atol=1e-2)
 
+    @pytest.mark.skipif(
+        torch.__version__ == 'parrots', reason='not supported in parrots now')
     def test_softmax_float(self):
         self._test_softmax(dtype=torch.float)
 
+    @pytest.mark.skipif(
+        torch.__version__ == 'parrots', reason='not supported in parrots now')
     def test_softmax_half(self):
         self._test_softmax(dtype=torch.half)
 
     @pytest.mark.parametrize('device', [
         pytest.param(
-            'npu',
+            DeviceType.npu,
             marks=pytest.mark.skipif(
                 not IS_NPU_AVAILABLE, reason='requires NPU support')),
         pytest.param(
-            'cuda',
+            DeviceType.cuda,
             marks=pytest.mark.skipif(
                 not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
         pytest.param(
-            'mlu',
+            DeviceType.mlu,
             marks=pytest.mark.skipif(
                 not IS_MLU_AVAILABLE, reason='requires MLU support'))
     ])
@@ -148,21 +153,23 @@ class Testfocalloss:
 
     @pytest.mark.parametrize('device', [
         pytest.param(
-            'npu',
+            DeviceType.npu,
             marks=pytest.mark.skipif(
                 not IS_NPU_AVAILABLE, reason='requires NPU support')),
         pytest.param(
-            'cuda',
+            DeviceType.cuda,
             marks=pytest.mark.skipif(
                 not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
         pytest.param(
-            'mlu',
+            DeviceType.mlu,
             marks=pytest.mark.skipif(
                 not IS_MLU_AVAILABLE, reason='requires MLU support'))
     ])
     def test_sigmoid_half(self, device):
         self._test_sigmoid(device, dtype=torch.half)
 
+    @pytest.mark.skipif(
+        torch.__version__ == 'parrots', reason='not supported in parrots now')
     def test_grad_softmax_float(self):
         self._test_grad_softmax(dtype=torch.float)
 

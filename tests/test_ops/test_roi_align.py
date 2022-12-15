@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, DeviceType
 
 _USING_PARROTS = True
 try:
@@ -94,13 +94,13 @@ def _test_roialign_allclose(device, dtype):
 
 
 @pytest.mark.parametrize('device', [
-    'cpu',
+    DeviceType.cpu,
     pytest.param(
-        'cuda',
+        DeviceType.cuda,
         marks=pytest.mark.skipif(
             not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
     pytest.param(
-        'mlu',
+        DeviceType.mlu,
         marks=pytest.mark.skipif(
             not IS_MLU_AVAILABLE, reason='requires MLU support'))
 ])

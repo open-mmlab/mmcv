@@ -20,7 +20,8 @@ def digit_version(version_str: str, length: int = 4):
         tuple[int]: The version info in digits (integers).
     """
     if version_str == 'parrots':
-        return digit_version(version_str.version.split('+')[0][:-2])
+        return digit_version(
+            version_str.version.split('+')[0][:-2])  # type: ignore
     version = parse(version_str)
     assert version.release, f'failed to parse version {version_str}'
     release = list(version.release)

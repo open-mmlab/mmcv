@@ -15,8 +15,11 @@ IS_IPU_AVAILABLE = is_ipu_available()
 def is_mlu_available() -> bool:
     try:
         import torch
-        return (hasattr(torch, 'is_mlu_available')
-                and torch.is_mlu_available())
+        if torch.__version__ == 'parrots':
+            return torch.cuda.is_available()
+        else:
+            return (hasattr(torch, 'is_mlu_available')
+                    and torch.is_mlu_available())
     except Exception:
         return False
 
@@ -51,3 +54,17 @@ def is_npu_available() -> bool:
 
 
 IS_NPU_AVAILABLE = is_npu_available()
+
+
+class DeviceType:
+    cpu = 'cpu'
+    cuda = 'cuda'
+    hip = 'hip'
+    ascend = 'ascend'
+    npu = 'npu'
+    mlu = 'mlu'
+    try:
+        import torch
+        mlu = 'camb' if torch.__version__ == 'parrots' else 'mlu'
+    except ImportError:
+        pass

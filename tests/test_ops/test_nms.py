@@ -3,18 +3,18 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, DeviceType
 
 
 class Testnms:
 
     @pytest.mark.parametrize('device', [
         pytest.param(
-            'cuda',
+            DeviceType.cuda,
             marks=pytest.mark.skipif(
                 not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
         pytest.param(
-            'mlu',
+            DeviceType.mlu,
             marks=pytest.mark.skipif(
                 not IS_MLU_AVAILABLE, reason='requires MLU support'))
     ])
@@ -38,6 +38,8 @@ class Testnms:
         assert np.allclose(dets.cpu().numpy(), np_dets)  # test gpu
         assert np.allclose(inds.cpu().numpy(), np_inds)  # test gpu
 
+    @pytest.mark.skipif(
+        torch.__version__ == 'parrots', reason='not supported in parrots now')
     def test_softnms_allclose(self):
         if not torch.cuda.is_available():
             return
@@ -107,6 +109,8 @@ class Testnms:
                 assert np.allclose(dets.cpu().numpy(), np_output[m]['dets'])
                 assert np.allclose(inds.cpu().numpy(), np_output[m]['inds'])
 
+    @pytest.mark.skipif(
+        torch.__version__ == 'parrots', reason='not supported in parrots now')
     def test_nms_match(self):
         if not torch.cuda.is_available():
             return
@@ -143,6 +147,8 @@ class Testnms:
         with pytest.raises(AssertionError):
             nms_match(wrong_dets, iou_thr)
 
+    @pytest.mark.skipif(
+        torch.__version__ == 'parrots', reason='not supported in parrots now')
     def test_batched_nms(self):
         import mmcv
         from mmcv.ops import batched_nms
