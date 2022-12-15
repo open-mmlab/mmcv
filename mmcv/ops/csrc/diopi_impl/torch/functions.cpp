@@ -18,7 +18,7 @@ diopiError_t diopiNms(diopiContextHandle_t ctx, diopiTensorHandle_t* out, const 
         const diopiTensorHandle_t scores, double iouThreshold, int64_t offset) {
     auto atDets = ::impl::aten::buildATen(dets);
     auto atScores = ::impl::aten::buildATen(scores);
-    auto atOut = NMSCUDAKernelLauncher(atDets, atScores, iouThreshold, (int)offset);
+    auto atOut = NMSCUDAKernelLauncher(atDets, atScores, iouThreshold, offset);
     ::impl::aten::buildDiopiTensor(ctx, atOut, out);
 }
 
@@ -56,4 +56,43 @@ diopiError_t diopiChamferDistanceBackward(diopiContextHandle_t ctx, const diopiT
     auto grad_xyz2_out = ::impl::aten::buildATen(grad_xyz2);
     ChamferDistanceBackwardCUDAKernelLauncher(
         xyz1_in, xyz2_in, idx1_in, idx2_in, grad_dist1_in, grad_dist2_in, grad_xyz1_out, grad_xyz2_out);
+}
+
+void PrROIPoolForwardCUDAKernelLauncher(Tensor input, Tensor rois,
+                                        Tensor output, int pooled_height,
+                                        int pooled_width, float spatial_scale);
+
+void PrROIPoolBackwardCUDAKernelLauncher(Tensor grad_output, Tensor rois,
+                                         Tensor grad_input, int pooled_height,
+                                         int pooled_width, float spatial_scale);
+
+void PrROIPoolCoorBackwardCUDAKernelLauncher(
+    Tensor output, Tensor grad_output, Tensor input, Tensor rois,
+    Tensor grad_rois, int pooled_height, int pooled_width, float spatial_scale);
+
+diopiError_t diopiPrroiPool(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t rois, diopiTensorHandle_t output,
+                                      int64_t pooled_height, int64_t pooled_width, float spatial_scale) {
+    auto input_in = ::impl::aten::buildATen(input);
+    auto rois_in = ::impl::aten::buildATen(rois);
+    auto output_out = ::impl::aten::buildATen(output);
+    PrROIPoolForwardCUDAKernelLauncher(input_in, rois_in, output_out, pooled_height, pooled_width, spatial_scale);
+
+}
+
+diopiError_t diopiPrroiPoolbackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_output, diopiTensorHandle_t rois, diopiTensorHandle_t grad_input,
+                                              int64_t pooled_height, int64_t pooled_width, float spatial_scale) {
+    auto grad_output_in = ::impl::aten::buildATen(grad_output);
+    auto rois_in = ::impl::aten::buildATen(rois);
+    auto grad_input_out = ::impl::aten::buildATen(grad_input);
+    PrROIPoolBackwardCUDAKernelLauncher(grad_output_in, rois_in, grad_input_out, pooled_height, pooled_width, spatial_scale);
+}
+
+diopiError_t diopiPrroiPoolCoorBackward(diopiContextHandle_t ctx, diopiTensorHandle_t output, diopiTensorHandle_t grad_output, diopiTensorHandle_t input, diopiTensorHandle_t rois,
+                                        diopiTensorHandle_t grad_rois, int64_t pooled_height, int64_t pooled_width, float spatial_scale) {
+    auto output_in = ::impl::aten::buildATen(output);
+    auto grad_output_in = ::impl::aten::buildATen(grad_output);
+    auto input_in = ::impl::aten::buildATen(input);
+    auto rois_in = ::impl::aten::buildATen(rois);
+    auto grad_rois_out = ::impl::aten::buildATen(grad_rois);
+    PrROIPoolCoorBackwardCUDAKernelLauncher(output_in, grad_output_in, input_in, rois_in, grad_rois_out, pooled_height, pooled_width, spatial_scale);
 }
