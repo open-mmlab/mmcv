@@ -255,8 +255,8 @@ __mlu_global__ void MLUUnion1KernelPtsIdxOfVoxels(
       } else {
         __bang_half2float((float *)temp_buffer4, (half *)nram_pts_in_flag,
                           compute_pts_num);
-        // __bang_move((void *)fp_nram_pts_in_flag, (void *)temp_buffer4,
-        //             compute_pts_num * sizeof(float));
+        __bang_move((void *)fp_nram_pts_in_flag, (void *)temp_buffer4,
+                    compute_pts_num * sizeof(float));
 #if __BANG_ARCH__ >= 322
         __bang_half2int32_tz((int *)temp_buffer1, (half *)local_X,
                              compute_pts_num, 0);
