@@ -905,8 +905,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("dets_sorted"), py::arg("iou_threshold"),
         py::arg("multi_label"));
   m.def("stack_furthest_point_sampling_forward",
-      &stack_furthest_point_sampling_forward,
-      "stack_furthest_point_sampling_forward", py::arg("points_tensor"),
-      py::arg("temp_tensor"), py::arg("xyz_batch_cnt_tensor"),
-      py::arg("idx_tensor"), py::arg("num_sampled_points_tensor"));
+        &stack_furthest_point_sampling_forward,
+        "stack_furthest_point_sampling_forward", py::arg("points_tensor"),
+        py::arg("temp_tensor"), py::arg("xyz_batch_cnt_tensor"),
+        py::arg("idx_tensor"), py::arg("num_sampled_points_tensor"));
 }
