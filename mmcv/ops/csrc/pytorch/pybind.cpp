@@ -446,6 +446,13 @@ Tensor nms_quadri(const Tensor dets, const Tensor scores, const Tensor order,
                   const Tensor dets_sorted, const float iou_threshold,
                   const int multi_label);
 
+void stack_three_interpolate_forward(Tensor points_tensor, Tensor idx_tensor,
+                                     Tensor weight_tensor, Tensor out_tensor);
+
+void stack_three_interpolate_backward(Tensor grad_out_tensor, Tensor idx_tensor,
+                                      Tensor weight_tensor,
+                                      Tensor grad_points_tensor);
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
         py::arg("kernel"), py::arg("up_x"), py::arg("up_y"), py::arg("down_x"),
@@ -899,4 +906,11 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("dets"), py::arg("scores"), py::arg("order"),
         py::arg("dets_sorted"), py::arg("iou_threshold"),
         py::arg("multi_label"));
+  m.def("stack_three_interpolate_forward", &stack_three_interpolate_forward,
+        "stack_three_interpolate_forward", py::arg("points_tensor"),
+        py::arg("idx_tensor"), py::arg("weight_tensor"), py::arg("out_tensor"));
+  m.def("stack_three_interpolate_backward", &stack_three_interpolate_backward,
+        "stack_three_interpolate_backward", py::arg("grad_out_tensor"),
+        py::arg("idx_tensor"), py::arg("weight_tensor"),
+        py::arg("grad_points_tensor"));
 }

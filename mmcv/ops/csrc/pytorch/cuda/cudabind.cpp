@@ -1867,3 +1867,38 @@ REGISTER_DEVICE_IMPL(prroi_pool_forward_impl, CUDA, prroi_pool_forward_cuda);
 REGISTER_DEVICE_IMPL(prroi_pool_backward_impl, CUDA, prroi_pool_backward_cuda);
 REGISTER_DEVICE_IMPL(prroi_pool_coor_backward_impl, CUDA,
                      prroi_pool_coor_backward_cuda);
+
+void StackThreeInterpolateForwardCUDAKernelLauncher(const Tensor points,
+                                                    const Tensor idx,
+                                                    const Tensor weight,
+                                                    Tensor out);
+
+void StackThreeInterpolateBackwardCUDAKernelLauncher(const Tensor grad_out,
+                                                     const Tensor idx,
+                                                     const Tensor weight,
+                                                     Tensor grad_points);
+
+void stack_three_interpolate_forward_cuda(const Tensor points, const Tensor idx,
+                                          const Tensor weight, Tensor out) {
+  StackThreeInterpolateForwardCUDAKernelLauncher(points, idx, weight, out);
+};
+
+void stack_three_interpolate_backward_cuda(const Tensor grad_out,
+                                           const Tensor idx,
+                                           const Tensor weight,
+                                           Tensor grad_points) {
+  StackThreeInterpolateBackwardCUDAKernelLauncher(grad_out, idx, weight,
+                                                  grad_points);
+};
+
+void stack_three_interpolate_forward_impl(const Tensor points, const Tensor idx,
+                                          const Tensor weight, Tensor out);
+
+void stack_three_interpolate_backward_impl(const Tensor grad_out,
+                                           const Tensor idx,
+                                           const Tensor weight,
+                                           Tensor grad_points);
+REGISTER_DEVICE_IMPL(stack_three_interpolate_forward_impl, CUDA,
+                     stack_three_interpolate_forward_cuda);
+REGISTER_DEVICE_IMPL(stack_three_interpolate_backward_impl, CUDA,
+                     stack_three_interpolate_backward_cuda);
