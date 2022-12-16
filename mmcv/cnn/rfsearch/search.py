@@ -163,6 +163,10 @@ class RFSearchHook(Hook):
                 fullname = 'module.' + name
             else:
                 fullname = prefix + '.' + name
+            if self.config['search']['skip_layer'] is not None:
+                if any(layer in fullname
+                       for layer in self.config['search']['skip_layer']):
+                    continue
             if isinstance(module, eval(op)):
                 if 1 < module.kernel_size[0] and \
                     0 != module.kernel_size[0] % 2 or \
@@ -175,13 +179,7 @@ class RFSearchHook(Hook):
                         logger.info('Wrap model %s to %s.' %
                                     (str(module), str(moduleWrap)))
                     setattr(model, name, moduleWrap)
-            elif isinstance(module, BaseConvRFSearchOp):
-                pass
-            else:
-                if self.config['search']['skip_layer'] is not None:
-                    if any(layer in fullname
-                           for layer in self.config['search']['skip_layer']):
-                        continue
+            elif not isinstance(module, BaseConvRFSearchOp):
                 self.wrap_model(module, search_op, fullname)
 
     def set_model(self,
@@ -206,6 +204,10 @@ class RFSearchHook(Hook):
                 fullname = 'module.' + name
             else:
                 fullname = prefix + '.' + name
+            if self.config['search']['skip_layer'] is not None:
+                if any(layer in fullname
+                       for layer in self.config['search']['skip_layer']):
+                    continue
             if isinstance(module, eval(op)):
                 if 1 < module.kernel_size[0] and \
                     0 != module.kernel_size[0] % 2 or \
@@ -232,11 +234,5 @@ class RFSearchHook(Hook):
                         logger.info(
                             'Set module %s dilation as: [%d %d]' %
                             (fullname, module.dilation[0], module.dilation[1]))
-            elif isinstance(module, BaseConvRFSearchOp):
-                pass
-            else:
-                if self.config['search']['skip_layer'] is not None:
-                    if any(layer in fullname
-                           for layer in self.config['search']['skip_layer']):
-                        continue
+            elif not isinstance(module, BaseConvRFSearchOp):
                 self.set_model(module, search_op, init_rates, fullname)
