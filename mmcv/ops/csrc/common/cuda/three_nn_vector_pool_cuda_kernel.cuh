@@ -1,5 +1,5 @@
-#ifndef VECTOR_POOL_CUDA_KERNEL_CUH
-#define VECTOR_POOL_CUDA_KERNEL_CUH
+#ifndef THREE_NN_VECTOR_POOL_CUDA_KERNEL_CUH
+#define THREE_NN_VECTOR_POOL_CUDA_KERNEL_CUH
 
 #ifdef MMCV_USE_PARROTS
 #include "parrots_cuda_helper.hpp"
@@ -177,3 +177,4 @@ __global__ void query_three_nn_by_stacked_local_idxs_cuda_kernel(
     cur_new_xyz_grid_idxs[2] = besti3;
   }
 }
+#endif
