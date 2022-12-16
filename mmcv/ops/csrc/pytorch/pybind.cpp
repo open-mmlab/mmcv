@@ -446,6 +446,11 @@ Tensor nms_quadri(const Tensor dets, const Tensor scores, const Tensor order,
                   const Tensor dets_sorted, const float iou_threshold,
                   const int multi_label);
 
+void stack_furthest_point_sampling_forward(Tensor points_tensor,
+                                           Tensor temp_tensor,
+                                           Tensor xyz_batch_cnt_tensor,
+                                           Tensor idx_tensor,
+                                           Tensor num_sampled_points_tensor);
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
         py::arg("kernel"), py::arg("up_x"), py::arg("up_y"), py::arg("down_x"),
@@ -899,4 +904,9 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("dets"), py::arg("scores"), py::arg("order"),
         py::arg("dets_sorted"), py::arg("iou_threshold"),
         py::arg("multi_label"));
+  m.def("stack_furthest_point_sampling_forward",
+      &stack_furthest_point_sampling_forward,
+      "stack_furthest_point_sampling_forward", py::arg("points_tensor"),
+      py::arg("temp_tensor"), py::arg("xyz_batch_cnt_tensor"),
+      py::arg("idx_tensor"), py::arg("num_sampled_points_tensor"));
 }
