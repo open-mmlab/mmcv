@@ -130,7 +130,7 @@ int HardVoxelizeForwardCUDAKernelLauncher(
 
   // check zero element
   if (max_points == 0 || max_voxels == 0) {
-    return;
+    return 0;
   }
 
   // get compute queue
