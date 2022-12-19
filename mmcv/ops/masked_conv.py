@@ -136,4 +136,3 @@ class MaskedConv2d(nn.Conv2d):
         else:
             return masked_conv2d(input, mask, self.weight, self.bias,
                                  self.padding)
-                                 
