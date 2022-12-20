@@ -156,9 +156,6 @@ def test_voxelization_mlu(device_type):
     points = voxel_dict['points']
 
     points = torch.tensor(points)
-    max_num_points = -1
-    dynamic_voxelization = Voxelization(voxel_size, point_cloud_range,
-                                        max_num_points)
     max_num_points = 1000
     hard_voxelization = Voxelization(voxel_size, point_cloud_range,
                                      max_num_points)
