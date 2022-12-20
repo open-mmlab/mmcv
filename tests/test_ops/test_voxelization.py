@@ -63,8 +63,7 @@ def test_voxelization(device_type):
         assert num_points_current_voxel == expected_num_points_per_voxel[i]
 
 
-@pytest.mark.skipif(
-    not IS_CUDA_AVAILABLE, reason='requires CUDA support')
+@pytest.mark.skipif(not IS_CUDA_AVAILABLE, reason='requires CUDA support')
 def test_voxelization_nondeterministic():
     voxel_size = [0.5, 0.5, 0.5]
     point_cloud_range = [0, -40, -3, 70.4, 40, 1]
