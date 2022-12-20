@@ -1,87 +1,9 @@
-// Copyright (c) OpenMMLab. All rights reserved
-#include <parrots/compute/aten.hpp>
 #include <parrots/darray/darraymath.hpp>
 #include <parrots/foundation/darrayutil.hpp>
 #include <parrots_mlu_helper.hpp>
+
+#include "parrots_roi_align.h"
 using namespace parrots;
-
-#define USE_CPU_ROI_ALIGN
-
-#ifdef USE_CPU_ROI_ALIGN
-using at::Tensor;
-void ROIAlignForwardCPULauncher(Tensor input, Tensor rois, Tensor output,
-                                Tensor argmax_y, Tensor argmax_x,
-                                int aligned_height, int aligned_width,
-                                float spatial_scale, int sampling_ratio,
-                                int pool_mode, bool aligned);
-
-void ROIAlignBackwardCPULauncher(Tensor grad_output, Tensor rois,
-                                 Tensor argmax_y, Tensor argmax_x,
-                                 Tensor grad_input, int aligned_height,
-                                 int aligned_width, float spatial_scale,
-                                 int sampling_ratio, int pool_mode,
-                                 bool aligned);
-
-void roi_align_forward_cpu_parrots(HostContext& ctx, const SSElement& attr,
-                                   const OperatorBase::in_list_t& ins,
-                                   OperatorBase::out_list_t& outs) {
-  int aligned_height;
-  int aligned_width;
-  float spatial_scale;
-  int sampling_ratio;
-  int pool_mode;
-  bool aligned;
-  SSAttrs(attr)
-      .get<int>("aligned_height", aligned_height)
-      .get<int>("aligned_width", aligned_width)
-      .get<float>("spatial_scale", spatial_scale)
-      .get<int>("sampling_ratio", sampling_ratio)
-      .get<int>("pool_mode", pool_mode)
-      .get<bool>("aligned", aligned)
-      .done();
-
-  const auto& input = buildATensor(ctx, ins[0]);
-  const auto& rois = buildATensor(ctx, ins[1]);
-  auto output = buildATensor(ctx, outs[0]);
-  auto argmax_y = buildATensor(ctx, outs[1]);
-  auto argmax_x = buildATensor(ctx, outs[2]);
-
-  ROIAlignForwardCPULauncher(input, rois, output, argmax_y, argmax_x,
-                             aligned_height, aligned_width, spatial_scale,
-                             sampling_ratio, pool_mode, aligned);
-}
-
-void roi_align_backward_cpu_parrots(HostContext& ctx, const SSElement& attr,
-                                    const OperatorBase::in_list_t& ins,
-                                    OperatorBase::out_list_t& outs) {
-  int aligned_height;
-  int aligned_width;
-  float spatial_scale;
-  int sampling_ratio;
-  int pool_mode;
-  bool aligned;
-  SSAttrs(attr)
-      .get<int>("aligned_height", aligned_height)
-      .get<int>("aligned_width", aligned_width)
-      .get<float>("spatial_scale", spatial_scale)
-      .get<int>("sampling_ratio", sampling_ratio)
-      .get<int>("pool_mode", pool_mode)
-      .get<bool>("aligned", aligned)
-      .done();
-
-  const auto& grad_output = buildATensor(ctx, ins[0]);
-  const auto& rois = buildATensor(ctx, ins[1]);
-  const auto& argmax_y = buildATensor(ctx, ins[2]);
-  const auto& argmax_x = buildATensor(ctx, ins[3]);
-  auto grad_input = buildATensor(ctx, outs[0]);
-  ROIAlignBackwardCPULauncher(grad_output, rois, argmax_y, argmax_x, grad_input,
-                              aligned_height, aligned_width, spatial_scale,
-                              sampling_ratio, pool_mode, aligned);
-}
-
-#endif  // USE_CPU_ROI_ALIGN
-
-#ifdef PARROTS_USE_CAMB
 
 void KernelRoiAlign(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
                     cnrtQueue_t queue, const cnrtDataType_t d_type,
@@ -312,48 +234,7 @@ void roi_align_backward_camb_parrots(CambContext& ctx, const SSElement& attr,
       aligned_width, spatial_scale, sampling_ratio, pool_mode, aligned);
 }
 
-#endif  //  PARROTS_USE_CAMB
-
-void roi_align_forward_parrots(Context& ctx, const SSElement& attr,
-                        const OperatorBase::in_list_t& ins,
-                        OperatorBase::out_list_t& outs) {
-  if (ctx.getProxy().arch() == parrots::hostArch()) {
-    roi_align_forward_cpu_parrots(ctx, attr, ins, outs);
-  } else {
-    roi_align_forward_camb_parrots(ctx, attr, ins, outs);
-  }
-}
-
-void roi_align_backward_parrots(Context& ctx, const SSElement& attr,
-                        const OperatorBase::in_list_t& ins,
-                        OperatorBase::out_list_t& outs) {
-  if (ctx.getProxy().arch() == parrots::hostArch()) {
-    roi_align_backward_cpu_parrots(ctx, attr, ins, outs);
-  } else {
-    roi_align_backward_camb_parrots(ctx, attr, ins, outs);
-  }
-}
-
-PARROTS_EXTENSION_REGISTER(roi_align_forward)
-    .attr("aligned_height")
-    .attr("aligned_width")
-    .attr("spatial_scale")
-    .attr("sampling_ratio")
-    .attr("pool_mode")
-    .attr("aligned")
-    .input(2)
-    .output(3)
-    .apply(roi_align_forward_parrots)
-    .done();
-
-PARROTS_EXTENSION_REGISTER(roi_align_backward)
-    .attr("aligned_height")
-    .attr("aligned_width")
-    .attr("spatial_scale")
-    .attr("sampling_ratio")
-    .attr("pool_mode")
-    .attr("aligned")
-    .input(4)
-    .output(1)
-    .apply(roi_align_backward_parrots)
-    .done();
+REGISTER_DEVICE_IMPL(roi_align_forward_impl, MLU, Arch::CAMB,
+                     roi_align_forward_camb_parrots);
+REGISTER_DEVICE_IMPL(roi_align_backward_impl, MLU, Arch::CAMB,
+                     roi_align_backward_camb_parrots);

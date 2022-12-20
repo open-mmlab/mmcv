@@ -1,37 +1,10 @@
-#include <parrots/compute/aten.hpp>
 #include <parrots/darray/darraymath.hpp>
+#include <parrots/foundation/logging.hpp>
 #include <parrots_mlu_helper.hpp>
 
+#include "parrots_nms.h"
+
 using namespace parrots;
-
-#define USE_CPU_NMS
-
-#ifdef USE_CPU_NMS
-
-using at::Tensor;
-Tensor nms_cpu(Tensor boxes, Tensor scores, float iou_threshold, int offset);
-
-void nms_parrots_cpu(HostContext &ctx, const SSElement &attr,
-                     const OperatorBase::in_list_t &ins,
-                     OperatorBase::out_list_t &outs) {
-  float iou_threshold;
-  int offset;
-  SSAttrs(attr)
-      .get("iou_threshold", iou_threshold)
-      .get("offset", offset)
-      .done();
-
-  at::Tensor boxes, scores;
-  boxes = buildATensor(ctx, ins[0]);
-  scores = buildATensor(ctx, ins[1]);
-  auto out = nms_cpu(boxes, scores, iou_threshold, offset);
-  updateDArray(ctx, out, outs[0]);
-  return;
-}
-
-#endif  // USE_CPU_NMS
-
-#ifdef PARROTS_USE_CAMB
 
 void KernelNms(cnrtDim3_t k_dim, cnrtFunctionType_t k_type, cnrtQueue_t queue,
                const cnrtDataType_t data_type_input, const void *boxes_ptr,
@@ -42,12 +15,13 @@ void KernelNms(cnrtDim3_t k_dim, cnrtFunctionType_t k_type, cnrtQueue_t queue,
 
 inline int32_t getJobLimitCapability() {
   CNcontext drv_ctx;
-  TORCH_CHECK(CN_SUCCESS == cnCtxGetCurrent(&drv_ctx), "cnCtxGetCurrent fails");
+  PARROTS_CHECKARGS(CN_SUCCESS == cnCtxGetCurrent(&drv_ctx))
+      << "cnCtxGetCurrent fails";
   CNctxConfigParam ctx_conf_param;
-  TORCH_CHECK(
-      CN_SUCCESS == cnGetCtxConfigParam(drv_ctx, CN_CTX_CONFIG_UNION_LIMIT,
-                                        &ctx_conf_param),
-      "cnGetCtxConfigParam fails.");
+  PARROTS_CHECKARGS(CN_SUCCESS == cnGetCtxConfigParam(drv_ctx,
+                                                      CN_CTX_CONFIG_UNION_LIMIT,
+                                                      &ctx_conf_param))
+      << "cnGetCtxConfigParam fails.";
   return (int32_t)ctx_conf_param.unionLimit;
 }
 
@@ -93,8 +67,9 @@ static cnnlStatus_t policyFunc(cnrtDim3_t *k_dim, cnrtFunctionType_t *k_type,
       }
     }; break;
     default:
-      LOG(WARNING) << "[cnnlNms_v2]: got unsupported job limit number."
-                   << " Use default CN_KERNEL_CLASS_UNION1 with UNION1 task.";
+      PARROTS_LOG_WARN(
+          "[cnnlNms_v2]: got unsupported job limit number. "
+          "Use default CN_KERNEL_CLASS_UNION1 with UNION1 task.");
   }
   return CNNL_STATUS_SUCCESS;
 }
@@ -192,24 +167,6 @@ void nms_parrots_device(CambContext &ctx, const SSElement &attr,
   const auto &scores = ins[1];
   auto &out = outs[0];
   NMSMLUKernelLauncher(ctx, boxes, scores, out, iou_threshold, offset);
-  return;
-}
-#endif  //  PARROTS_USE_CAMB
-
-void nms_parrots(Context &ctx, const SSElement &attr,
-                 const OperatorBase::in_list_t &ins,
-                 OperatorBase::out_list_t &outs) {
-  if (ctx.getProxy().arch() == parrots::hostArch()) {
-    nms_parrots_cpu(ctx, attr, ins, outs);
-  } else {
-    nms_parrots_device(ctx, attr, ins, outs);
-  }
 }
 
-PARROTS_EXTENSION_REGISTER(nms)
-    .attr("iou_threshold")
-    .attr("offset")
-    .input(2)
-    .output(1)
-    .apply(nms_parrots)
-    .done();
+REGISTER_DEVICE_IMPL(nms_impl, MLU, Arch::CAMB, nms_parrots_device);

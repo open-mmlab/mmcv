@@ -231,8 +231,11 @@ def get_extensions():
                 ]
         if use_camb:
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
+            include_dirs.append(
+                os.path.abspath('./mmcv/ops/csrc/parrots/common'))
             op_files = glob.glob('./mmcv/ops/csrc/common/mlu/*.mlu') +\
-                glob.glob('./mmcv/ops/csrc/parrots/*cpu.cpp') +\
+                glob.glob('./mmcv/ops/csrc/parrots/common/*.cpp') +\
+                glob.glob('./mmcv/ops/csrc/parrots/cpu/*.cpp') +\
                 glob.glob('./mmcv/ops/csrc/parrots/mlu/*.cpp') +\
                 glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp')
             mlu_args = os.getenv('MMCV_MLU_ARGS')

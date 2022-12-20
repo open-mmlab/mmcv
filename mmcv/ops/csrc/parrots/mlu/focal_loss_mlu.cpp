@@ -1,8 +1,7 @@
 #include <parrots/darray/darraymath.hpp>
+#include <parrots_mlu_helper.hpp>
 
-#include "parrots_mlu_helper.hpp"
-
-#ifdef PARROTS_USE_CAMB
+#include "parrots_focal_loss.h"
 
 using namespace parrots;
 
@@ -155,17 +154,9 @@ void sigmoid_focal_loss_forward_camb_parrots(CambContext& ctx,
                                            gamma, alpha);
 }
 
-PARROTS_EXTENSION_REGISTER(sigmoid_focal_loss_forward)
-    .attr("gamma")
-    .attr("alpha")
-    .input(3)
-    .output(1)
-    .apply(sigmoid_focal_loss_forward_camb_parrots)
-    .done();
-
 }  // namespace sigmoid_forward
 
-namespace sigmoid_backeard {
+namespace sigmoid_backward {
 
 // Policy Function
 static void policyFunc(cnrtDim3_t* k_dim, cnrtFunctionType_t* k_type) {
@@ -348,14 +339,10 @@ void sigmoid_focal_loss_backward_camb_parrots(
                                             grad_input, gamma, alpha);
 }
 
-PARROTS_EXTENSION_REGISTER(sigmoid_focal_loss_backward)
-    .attr("gamma")
-    .attr("alpha")
-    .input(3)
-    .output(1)
-    .apply(sigmoid_focal_loss_backward_camb_parrots)
-    .done();
+}  // namespace sigmoid_backward
 
-}  // namespace sigmoid_backeard
-
-#endif  // PARROTS_USE_CAMB
+REGISTER_DEVICE_IMPL(sigmoid_focal_loss_forward_impl, MLU, Arch::CAMB,
+                     sigmoid_forward::sigmoid_focal_loss_forward_camb_parrots);
+REGISTER_DEVICE_IMPL(
+    sigmoid_focal_loss_backward_impl, MLU, Arch::CAMB,
+    sigmoid_backward::sigmoid_focal_loss_backward_camb_parrots);
