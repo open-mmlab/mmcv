@@ -61,7 +61,7 @@ static void policyFuncCalcPointsPerVoxel(cnrtDim3_t *k_dim,
   *k_type = CNRT_FUNC_TYPE_BLOCK;
 }
 
-int HardVoxelizeForwardCUDAKernelLauncher(
+int HardVoxelizeForwardMLUKernelLauncher(
     const at::Tensor &points, at::Tensor &voxels, at::Tensor &coors,
     at::Tensor &num_points_per_voxel, const std::vector<float> voxel_size,
     const std::vector<float> coors_range, const int max_points,
