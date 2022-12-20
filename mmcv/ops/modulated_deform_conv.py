@@ -117,6 +117,7 @@ class ModulatedDeformConv2dFunction(Function):
         ctx.groups = groups
         ctx.deform_groups = deform_groups
         ctx.with_bias = bias is not None
+        ctx.device = input.device.type
         if not ctx.with_bias:
             bias = input.new_empty(0)  # fake tensor
         # When pytorch version >= 1.6.0, amp is adopted for fp16 mode;
