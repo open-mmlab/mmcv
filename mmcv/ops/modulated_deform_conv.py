@@ -36,6 +36,66 @@ class ModulatedDeformConv2dFunction(Function):
             deform_groups_i=deform_groups)
 
     @staticmethod
+    def _calculate_sort_index(kernel_h, kernel_w, deformable_group):
+        split_num = deformable_group * 2 * kernel_h * kernel_w
+        sort_index = list(range(split_num))
+        sort_index_fp = (sort_index[1::2] + sort_index[::2])
+        sort_index_bp_dict = {i: idx for idx, i in enumerate(sort_index)}
+        sort_index_bp = [sort_index_bp_dict[i] for i in sort_index]
+        sort_index_fp = torch.IntTensor(sort_index_fp)
+        sort_index_bp = torch.IntTensor(sort_index_bp)
+        sort_index_fp = sort_index_fp.npu()
+        sort_index_bp = sort_index_bp.npu()
+        return sort_index_fp, sort_index_bp
+
+    @staticmethod
+    def _npu_forward(ctx, input_tensor, offset, mask, weight, bias):
+        _, _, kernel_h, kernel_w = weight.shape
+        conv2d_bias = bias if len(bias) > 0 else None
+        sort_index_fp, sort_index_bp = \
+            ModulatedDeformConv2dFunction._calculate_sort_index(
+                kernel_w, kernel_h, ctx.deform_groups)
+        select_offset = offset.index_select(1, sort_index_fp)
+        offset_all = torch.cat([select_offset, mask], dim=1)
+        output, offset_out = torch.npu_deformable_conv2d(
+            input_tensor,
+            weight,
+            offset_all,
+            conv2d_bias,
+            kernel_size=[kernel_w, kernel_h],
+            stride=[1, 1, ctx.stride[0], ctx.stride[1]],
+            padding=[1, 1, ctx.padding[0], ctx.padding[1]],
+            dilation=[1, 1, ctx.dilation[0], ctx.dilation[1]],
+            groups=ctx.groups,
+            deformable_groups=ctx.deform_groups,
+            modulated=True)
+        if weight.requires_grad or mask.requires_grad or offset.requires_grad \
+                or input_tensor.requires_grad:
+            ctx.save_for_backward(input_tensor, weight, offset_out, offset_all,
+                                  sort_index_bp)
+        return output
+
+    @staticmethod
+    def _npu_backward(ctx, grad_output):
+        input_tensor, weight, offset_out, offset_all, sort_index_bp = \
+            ctx.saved_tensors
+        grad_input, grad_weight, grad_offset_all, grad_bias = \
+            torch.npu_deformable_conv2dbk(
+                input_tensor, grad_output, offset_out, weight, offset_all,
+                kernel_size=[weight.shape[3], weight.shape[2]],
+                stride=[1, 1, ctx.stride[0], ctx.stride[1]],
+                padding=[1, 1, ctx.padding[0], ctx.padding[1]],
+                dilation=[1, 1, ctx.dilation[0], ctx.dilation[1]],
+                groups=ctx.groups, deformable_groups=ctx.deform_groups,
+                modulated=True)
+        grad_offset = grad_offset_all.index_select(1, sort_index_bp)
+        grad_mask = grad_offset_all[:, grad_offset.shape[1]:, :, :]
+        if not ctx.with_bias:
+            grad_bias = None
+        return (grad_input, grad_offset, grad_mask, grad_weight, grad_bias,
+                None, None, None, None, None, None, None, None)
+
+    @staticmethod
     def forward(ctx,
                 input: torch.Tensor,
                 offset: torch.Tensor,
@@ -70,6 +130,10 @@ class ModulatedDeformConv2dFunction(Function):
         weight = weight.type_as(input)
         bias = bias.type_as(input)  # type: ignore
         mask = mask.type_as(input)
+        if ctx.device == 'npu':
+            output = ModulatedDeformConv2dFunction._npu_forward(
+                ctx, input, offset, mask, weight, bias)
+            return output
         ctx.save_for_backward(input, offset, mask, weight, bias)
         output = input.new_empty(
             ModulatedDeformConv2dFunction._output_size(ctx, input, weight))
@@ -99,6 +163,9 @@ class ModulatedDeformConv2dFunction(Function):
     @staticmethod
     @once_differentiable
     def backward(ctx, grad_output: torch.Tensor) -> tuple:
+        if ctx.device == 'npu':
+            return ModulatedDeformConv2dFunction._npu_backward(
+                ctx, grad_output)
         input, offset, mask, weight, bias = ctx.saved_tensors
         grad_input = torch.zeros_like(input)
         grad_offset = torch.zeros_like(offset)
