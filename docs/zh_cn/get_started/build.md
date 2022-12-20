@@ -394,7 +394,7 @@ print(output)
 
 #### 选项1: 基于寒武纪docker image 安装
 
-首先请下载并且拉取寒武纪docker
+首先请下载并且拉取寒武纪docker (请向 service@cambricon.com发邮件以获得最新的寒武纪pytorch发布docker)
 ```
 docker pull ${docker image}
 ``` 

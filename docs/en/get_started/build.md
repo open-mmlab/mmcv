@@ -380,7 +380,7 @@ print(output)
 
 #### Option1: Install mmcv-full based on Cambricon docker image
 
-Firstly, install and pull Cambricon docker image:
+Firstly, install and pull Cambricon docker image (please email service@cambricon.com for the latest release docker):
 
 ```bash
 docker pull ${docker image}
@@ -396,13 +396,13 @@ Run and attach to the docker, [Install mmcv-full on MLU device](#install-mmcv\-f
 
 #### Install mmcv-full on Cambricon MLU device
 
-pull the source code of MMCV:
+Pull the source code of MMCV:
 
 ```bash
 git clone https://github.com/open-mmlab/mmcv.git -b master
 ```
 
-install mmcv-full
+Install mmcv-full
 
 ```bash
 cd mmcv
