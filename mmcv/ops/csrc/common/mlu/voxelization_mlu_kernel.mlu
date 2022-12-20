@@ -145,7 +145,7 @@ __mlu_global__ void MLUUnion1KernelDynamicVoxelize(
 
   const int32_t split_num = 9;
   const int32_t deal_num =
-      FLOOR_ALIGN(MAX_NRAM_SIZE / split_num / sizeof(float), NFU_ALIGN_SIZE);
+      PAD_DOWN(MAX_NRAM_SIZE / split_num / sizeof(float), NFU_ALIGN_SIZE);
   const int32_t repeat = points_per_core / deal_num;
   const int32_t rem = points_per_core % deal_num;
   const int32_t ping_pong_gap = 3 * deal_num * sizeof(float);
@@ -194,7 +194,6 @@ __mlu_global__ void MLUUnion1KernelDynamicVoxelize(
   }
 
   for (int32_t i = 0; i < repeat - 2; ++i) {
-    pvLock();
     __memcpy_async(coors_x_start + i * deal_num,
                    points_x + (i % 2) * ping_pong_gap,
                    deal_num * sizeof(int32_t), NRAM2GDRAM);
@@ -204,7 +203,6 @@ __mlu_global__ void MLUUnion1KernelDynamicVoxelize(
     __memcpy_async(coors_z_start + i * deal_num,
                    points_z + (i % 2) * ping_pong_gap,
                    deal_num * sizeof(int32_t), NRAM2GDRAM);
-    pvUnlock();
     __memcpy_async(points_x + (i % 2) * ping_pong_gap,
                    points + (points_start + (i + 2) * deal_num) * num_features,
                    sizeof(float), GDRAM2NRAM, sizeof(float),
@@ -229,7 +227,6 @@ __mlu_global__ void MLUUnion1KernelDynamicVoxelize(
   }
 
   if (repeat >= 2) {
-    pvLock();
     __memcpy_async(coors_x_start + (repeat - 2) * deal_num,
                    points_x + (repeat % 2) * ping_pong_gap,
                    deal_num * sizeof(int32_t), NRAM2GDRAM);
@@ -239,7 +236,6 @@ __mlu_global__ void MLUUnion1KernelDynamicVoxelize(
     __memcpy_async(coors_z_start + (repeat - 2) * deal_num,
                    points_z + (repeat % 2) * ping_pong_gap,
                    deal_num * sizeof(int32_t), NRAM2GDRAM);
-    pvUnlock();
   }
   if (rem > 0) {
     __memcpy_async(points_x + (repeat % 2) * ping_pong_gap,
@@ -268,7 +264,6 @@ __mlu_global__ void MLUUnion1KernelDynamicVoxelize(
   __asm__ volatile("sync;");
 
   if (repeat > 0) {
-    pvLock();
     __memcpy_async(coors_x_start + (repeat - 1) * deal_num,
                    points_x + ((repeat - 1) % 2) * ping_pong_gap,
                    deal_num * sizeof(int32_t), NRAM2GDRAM);
@@ -278,7 +273,6 @@ __mlu_global__ void MLUUnion1KernelDynamicVoxelize(
     __memcpy_async(coors_z_start + (repeat - 1) * deal_num,
                    points_z + ((repeat - 1) % 2) * ping_pong_gap,
                    deal_num * sizeof(int32_t), NRAM2GDRAM);
-    pvUnlock();
   }
   if (rem > 0) {
     computeDynamicVoxelize(points_x + (repeat % 2) * ping_pong_gap,
@@ -288,7 +282,6 @@ __mlu_global__ void MLUUnion1KernelDynamicVoxelize(
                            coors_z_min, voxel_x, voxel_y, voxel_z, grid_x,
                            grid_y, grid_z, rem);
     __asm__ volatile("sync;");
-    pvLock();
     __memcpy_async(coors_x_start + repeat * deal_num,
                    points_x + (repeat % 2) * ping_pong_gap,
                    rem * sizeof(int32_t), NRAM2GDRAM);
@@ -298,7 +291,6 @@ __mlu_global__ void MLUUnion1KernelDynamicVoxelize(
     __memcpy_async(coors_z_start + repeat * deal_num,
                    points_z + (repeat % 2) * ping_pong_gap,
                    rem * sizeof(int32_t), NRAM2GDRAM);
-    pvUnlock();
   }
 #endif
 }
@@ -315,7 +307,7 @@ __mlu_global__ void MLUUnion1KernelPoint2Voxel(int32_t *coors,
 
   const int32_t split_num = 6;
   const int32_t deal_num =
-      FLOOR_ALIGN(MAX_NRAM_SIZE / split_num / sizeof(int32_t), NFU_ALIGN_SIZE);
+      PAD_DOWN(MAX_NRAM_SIZE / split_num / sizeof(int32_t), NFU_ALIGN_SIZE);
   const int32_t ping_pong_gap = 3 * deal_num * sizeof(int32_t);
 
   char *coors_x = nram_buffer;
