@@ -3,8 +3,8 @@
 
 #define MAX_DEVICE_TYPES 8  // currently x86, cuda, camb, hip, ascend
 
-#include <part/devices.hpp>
 #include <parrots/extension.hpp>
+#include <part/devices.hpp>
 
 namespace parrots {
 
@@ -22,9 +22,7 @@ class DeviceRegistry<Ret (*)(Args...), f> {
     funcs_[size_t(device)] = function;
   }
 
-  FunctionType find(const Arch& device) const {
-    return funcs_[size_t(device)];
-  }
+  FunctionType find(const Arch& device) const { return funcs_[size_t(device)]; }
 
   static DeviceRegistry& instance() {
     static DeviceRegistry instance;

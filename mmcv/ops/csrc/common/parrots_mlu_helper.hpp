@@ -17,12 +17,10 @@
 #define MAX_SRAM_SIZE (1920 * 1024)  // 1920KB, initialization value
 #endif
 
-
 #define NFU_ALIGN_SIZE 128
 #define PAD_UP(x, y) (((x) / (y) + (int)((x) % (y) > 0)) * (y))
 #define PAD_DOWN(x, y) (((x) / (y)) * (y))
 #define CEIL_ALIGN(x, y) (((x) + (y)-1) / (y) * (y))
-
 
 using parrots::DArrayLite;
 using parrots::Prim;
