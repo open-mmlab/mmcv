@@ -10,9 +10,9 @@ from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair, _single
 
 from mmcv.utils import deprecated_api_warning
-from .modulated_deform_conv import ModulatedDeformConv2dFunction
 from ..cnn import CONV_LAYERS
 from ..utils import ext_loader, print_log
+from .modulated_deform_conv import ModulatedDeformConv2dFunction
 
 ext_module = ext_loader.load_ext('_ext', [
     'deform_conv_forward', 'deform_conv_backward_input',
