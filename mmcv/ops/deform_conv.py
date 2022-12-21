@@ -142,8 +142,7 @@ class DeformConv2dFunction(Function):
     ) -> Tuple[Optional[Tensor], Optional[Tensor], Optional[Tensor], None,
                None, None, None, None, None, None]:
         if ctx.device == 'npu':
-            return DeformConv2dFunction._npu_backward(
-                ctx, grad_output)
+            return DeformConv2dFunction._npu_backward(ctx, grad_output)
         input, offset, weight = ctx.saved_tensors
 
         grad_input = grad_offset = grad_weight = None
