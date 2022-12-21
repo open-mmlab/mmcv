@@ -10,6 +10,7 @@ from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair, _single
 
 from mmcv.utils import deprecated_api_warning
+from .modulated_deform_conv import ModulatedDeformConv2dFunction
 from ..cnn import CONV_LAYERS
 from ..utils import ext_loader, print_log
 
@@ -45,54 +46,6 @@ class DeformConv2dFunction(Function):
             deform_groups_i=deform_groups,
             bias_i=bias,
             im2col_step_i=im2col_step)
-
-    @staticmethod
-    def _calculate_npu_sort_index(kernel_h, kernel_w, deformable_group):
-        split_num = deformable_group * 2 * kernel_h * kernel_w
-        sort_index_for_npu = list(range(split_num))
-        sort_index_for_npu_fp = (
-            sort_index_for_npu[1::2] + sort_index_for_npu[::2])
-        sort_index_for_npu_bp_dict = {
-            i: idx
-            for idx, i in enumerate(sort_index_for_npu_fp)
-        }
-        sort_index_for_npu_bp = [
-            sort_index_for_npu_bp_dict[i] for i in sort_index_for_npu
-        ]
-        sort_index_for_npu_fp = torch.IntTensor(sort_index_for_npu_fp)
-        sort_index_for_npu_bp = torch.IntTensor(sort_index_for_npu_bp)
-        sort_index_for_npu_fp = sort_index_for_npu_fp.npu()
-        sort_index_for_npu_bp = sort_index_for_npu_bp.npu()
-        return sort_index_for_npu_fp, sort_index_for_npu_bp
-
-    @staticmethod
-    def _npu_forward(ctx, input_tensor, offset, mask, weight, bias):
-        _, _, k1, k2 = weight.shape
-        if not bias:
-            bias = input_tensor.new_empty(0)
-        conv2d_bias = bias if len(bias) > 0 else None
-        sort_index_for_npu_fp, sort_index_for_npu_bp = \
-            DeformConv2dFunction._calculate_npu_sort_index(
-                k2, k1, ctx.deform_groups)
-        select_offset = offset.index_select(1, sort_index_for_npu_fp)
-        offset_all = torch.cat([select_offset, mask], dim=1)
-        output, offset_out = torch.npu_deformable_conv2d(
-            input_tensor,
-            weight,
-            offset_all,
-            conv2d_bias,
-            kernel_size=[k2, k1],
-            stride=[1, 1, ctx.stride[0], ctx.stride[1]],
-            padding=[1, 1, ctx.padding[0], ctx.padding[1]],
-            dilation=[1, 1, ctx.dilation[0], ctx.dilation[1]],
-            groups=ctx.groups,
-            deformable_groups=ctx.deform_groups,
-            modulated=True)
-        if weight.requires_grad or mask.requires_grad or offset.requires_grad \
-                or input_tensor.requires_grad:
-            ctx.save_for_backward(input_tensor, weight, offset_out, offset_all,
-                                  sort_index_for_npu_bp)
-        return output
 
     @staticmethod
     def _npu_backward(ctx, grad_output):
@@ -148,7 +101,8 @@ class DeformConv2dFunction(Function):
         if ctx.device == 'npu':
             mask_shape, _ = torch.chunk(offset, 2, dim=1)
             mask = torch.ones_like(mask_shape).to(input.device)
-            output = DeformConv2dFunction._npu_forward(
+            bias = input.new_empty(0)
+            output = ModulatedDeformConv2dFunction._npu_forward(
                 ctx, input, offset, mask, weight, bias)
             return output
         ctx.save_for_backward(input, offset, weight)
