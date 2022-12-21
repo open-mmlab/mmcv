@@ -54,7 +54,7 @@ class DeformConv2dFunction(Function):
             sort_index_for_npu[1::2] + sort_index_for_npu[::2])
         sort_index_for_npu_bp_dict = {
             i: idx
-            for idx, i in enumerate(sort_index_for_npu)
+            for idx, i in enumerate(sort_index_for_npu_fp)
         }
         sort_index_for_npu_bp = [
             sort_index_for_npu_bp_dict[i] for i in sort_index_for_npu
@@ -69,7 +69,7 @@ class DeformConv2dFunction(Function):
     def _npu_forward(ctx, input_tensor, offset, mask, weight, bias):
         _, _, k1, k2 = weight.shape
         if not bias:
-            bias = input_tensor.new_empty(0).type_as(input_tensor)
+            bias = input_tensor.new_empty(0)
         conv2d_bias = bias if len(bias) > 0 else None
         sort_index_for_npu_fp, sort_index_for_npu_bp = \
             DeformConv2dFunction._calculate_npu_sort_index(
