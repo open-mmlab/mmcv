@@ -4,6 +4,9 @@
 #include <parrots/foundation/ssattrs.hpp>
 
 #include "correlation_pytorch.h"
+#include <diopi/diopirt.h>
+#include <diopi/functions.h>
+#include <parrots/diopi.hpp>
 
 using namespace parrots;
 
@@ -28,14 +31,16 @@ void correlation_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
       .get<int>("dW", dW)
       .done();
 
-  auto input1 = buildATensor(ctx, ins[0]);
-  auto input2 = buildATensor(ctx, ins[1]);
+  diopiContext dctx(ctx);
+  diopiContextHandle_t ch = &dctx;
+  auto input1 = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
+  auto input2 = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
 
-  auto output = buildATensor(ctx, outs[0]);
+  auto output = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
 
-  correlation_forward(input1, input2, output, kH, kW, patchH, patchW, padH,
+  PARROTS_CALLDIOPI(diopiCorrelation(ch, input1, input2, output, kH, kW, patchH, patchW, padH,
                       padW, dilationH, dilationW, dilation_patchH,
-                      dilation_patchW, dH, dW);
+                      dilation_patchW, dH, dW));
 }
 
 void correlation_backward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
@@ -58,16 +63,18 @@ void correlation_backward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
       .get<int>("dW", dW)
       .done();
 
-  auto grad_output = buildATensor(ctx, ins[0]);
-  auto input1 = buildATensor(ctx, ins[1]);
-  auto input2 = buildATensor(ctx, ins[2]);
+  diopiContext dctx(ctx);
+  diopiContextHandle_t ch = &dctx;
+  auto grad_output = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
+  auto input1 = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
+  auto input2 = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[2]));
 
-  auto grad_input1 = buildATensor(ctx, outs[0]);
-  auto grad_input2 = buildATensor(ctx, outs[1]);
+  auto grad_input1 = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
+  auto grad_input2 = reinterpret_cast<diopiTensorHandle_t>(&outs[1]);
 
-  correlation_backward(grad_output, input1, input2, grad_input1, grad_input2,
+  PARROTS_CALLDIOPI(diopiCorrelationBackward(ch, grad_output, input1, input2, grad_input1, grad_input2,
                        kH, kW, patchH, patchW, padH, padW, dilationH, dilationW,
-                       dilation_patchH, dilation_patchW, dH, dW);
+                       dilation_patchH, dilation_patchW, dH, dW));
 }
 #endif
 
