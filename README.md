@@ -22,8 +22,8 @@
 [![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmcv.readthedocs.io/en/latest/)
 [![platform](https://img.shields.io/badge/platform-Linux%7CWindows%7CmacOS-blue)](https://mmcv.readthedocs.io/en/latest/get_started/installation.html)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mmcv)](https://pypi.org/project/mmcv/)
-[![pytorch](https://img.shields.io/badge/pytorch-1.5~1.12-orange)](https://pytorch.org/get-started/previous-versions/)
-[![cuda](https://img.shields.io/badge/cuda-9.2~11.6-green)](https://developer.nvidia.com/cuda-downloads)
+[![pytorch](https://img.shields.io/badge/pytorch-1.5~1.13-orange)](https://pytorch.org/get-started/previous-versions/)
+[![cuda](https://img.shields.io/badge/cuda-9.2~11.7-green)](https://developer.nvidia.com/cuda-downloads)
 [![PyPI](https://img.shields.io/pypi/v/mmcv)](https://pypi.org/project/mmcv)
 [![badge](https://github.com/open-mmlab/mmcv/workflows/build/badge.svg)](https://github.com/open-mmlab/mmcv/actions)
 [![codecov](https://codecov.io/gh/open-mmlab/mmcv/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmcv)
@@ -76,17 +76,17 @@ There are two versions of MMCV:
 
 Before installing mmcv-full, make sure that PyTorch has been successfully installed following the [PyTorch official installation guide](https://github.com/pytorch/pytorch#installation).
 
-The command to install mmcv-full on Linux or Windows platforms is as follows (if your system is macOS, please refer to [build mmcv-full from source](https://mmcv.readthedocs.io/en/latest/get_started/build.html#macos-mmcv-full))
+The command to install mmcv-full:
 
 ```bash
 pip install -U openmim
 mim install mmcv-full
 ```
 
-If you need to specify the version of mmcv-full, you can use the following command
+If you need to specify the version of mmcv-full, you can use the following command:
 
 ```bash
-mim install mmcv-full==1.5.0
+mim install mmcv-full==1.7.0
 ```
 
 If you find that the above installation command does not use a pre-built package ending with `.whl` but a source package ending with `.tar.gz`, you may not have a pre-build package corresponding to the PyTorch or CUDA or mmcv-full version, in which case you can [build mmcv-full from source](https://mmcv.readthedocs.io/en/latest/get_started/build.html).

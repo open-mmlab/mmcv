@@ -2,6 +2,7 @@
 from unittest.mock import patch
 
 import pytest
+from packaging.version import InvalidVersion
 
 from mmcv import get_git_hash, parse_version_info
 from mmcv.utils import digit_version
@@ -24,11 +25,15 @@ def test_digit_version():
     assert digit_version('1.0.0post') < digit_version('1.0.0post1')
     assert digit_version('v1') == (1, 0, 0, 0, 0, 0)
     assert digit_version('v1.1.5') == (1, 1, 5, 0, 0, 0)
-    with pytest.raises(AssertionError):
+
+    # When the version of packaging is less than 22.0,
+    # it throws an AssertionError if an invalid input
+    # is provided.
+    with pytest.raises((AssertionError, InvalidVersion)):
         digit_version('a')
-    with pytest.raises(AssertionError):
+    with pytest.raises((AssertionError, InvalidVersion)):
         digit_version('1x')
-    with pytest.raises(AssertionError):
+    with pytest.raises((AssertionError, InvalidVersion)):
         digit_version('1.x')
 
 

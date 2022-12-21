@@ -234,7 +234,7 @@ __mlu_func__ void nms_detection_ux(
     IN_DT *score_data, const IN_DT *boxes_data, const Addr input_ram,
     const int input_num_boxes, const int max_output_size,
     const float thresh_iou, const float thresh_score, const float offset,
-    const int output_mode, const int algo) {
+    const int output_mode, const int algo, char *cdma_gdram) {
   exit_flag[0] = 0;
 
   IN_DT *sram = (IN_DT *)sram_buffer;
@@ -321,7 +321,25 @@ __mlu_func__ void nms_detection_ux(
       __memcpy(sram, max_box, REDUCE_NUM * sizeof(IN_DT), NRAM2SRAM);
     }
     __sync_all();
-#if __BANG_ARCH__ <= 372
+#if __BANG_ARCH__ >= 590
+    __memcpy((char *)cdma_gdram + REDUCE_NUM * clusterId * sizeof(IN_DT), sram,
+             REDUCE_NUM * sizeof(IN_DT), SRAM2GDRAM);
+    __sync_all();
+    if (clusterId == 0 && coreId == 0) {
+      __bang_write_zero(inter_x1, NMS_SIZE);
+      __memcpy((char *)inter_x1, (char *)cdma_gdram, sizeof(IN_DT), GDRAM2NRAM,
+               sizeof(IN_DT), REDUCE_NUM * sizeof(IN_DT), clusterDim - 1);
+      __bang_max(max_box, inter_x1, NMS_SIZE);
+      int max_cluster = (sizeof(IN_DT) == sizeof(half))
+                            ? ((uint16_t *)max_box)[1]
+                            : ((uint32_t *)max_box)[1];
+      __memcpy((char *)cdma_gdram,
+               (char *)cdma_gdram + max_cluster * REDUCE_NUM * sizeof(IN_DT),
+               REDUCE_NUM * sizeof(IN_DT), GDRAM2GDRAM);
+    }
+    __sync_all();
+    __memcpy(max_box, cdma_gdram, REDUCE_NUM * sizeof(IN_DT), GDRAM2NRAM);
+#else
     findGlobalMaxBox(max_box, sram, inter_x1);
 #endif
 
@@ -380,6 +398,7 @@ __mlu_global__ void MLUUionXKernelNMS(
   int input_dwidth = (data_type_input == CNRT_FLOAT32) ? 4 : 2;
   int32_t *exit_flag = (int32_t *)((char *)workspace +
                                    INFO_NUM * input_num_boxes * input_dwidth);
+  char *cdma_addr = (char *)exit_flag + sizeof(int32_t);
   int reduce_sram_size = NFU_ALIGN_SIZE * REDUCE_NUM * input_dwidth;
   int availbale_sram_size = SIZE_SRAM_BUF - reduce_sram_size;
 
@@ -409,24 +428,26 @@ __mlu_global__ void MLUUionXKernelNMS(
       nms_detection_ux(exit_flag, output_box_num, (uint32_t *)output,
                        score_data, boxes_data, input_ram, input_num_boxes,
                        max_output_size, iou_threshold, confidence_threshold,
-                       offset, output_mode, algo);
+                       offset, output_mode, algo, cdma_addr);
     } else {
       nms_detection_ux(exit_flag, output_box_num, (uint32_t *)output,
                        (half *)score_data, (half *)boxes_data, input_ram,
                        input_num_boxes, max_output_size, iou_threshold,
-                       confidence_threshold, offset, output_mode, algo);
+                       confidence_threshold, offset, output_mode, algo,
+                       cdma_addr);
     }
   } else {
     if (data_type_input == CNRT_FLOAT32) {
       nms_detection_ux(exit_flag, output_box_num, (float *)output, score_data,
                        boxes_data, input_ram, input_num_boxes, max_output_size,
                        iou_threshold, confidence_threshold, offset, output_mode,
-                       algo);
+                       algo, cdma_addr);
     } else {
       nms_detection_ux(exit_flag, output_box_num, (half *)output,
                        (half *)score_data, (half *)boxes_data, input_ram,
                        input_num_boxes, max_output_size, iou_threshold,
-                       confidence_threshold, offset, output_mode, algo);
+                       confidence_threshold, offset, output_mode, algo,
+                       cdma_addr);
     }
   }
   ((uint32_t *)result_num)[0] = output_box_num;
