@@ -358,7 +358,7 @@ void ms_deform_attn_mlu_backward(
   const int channels = value.size(3);
   const int num_levels = spatial_shapes.size(0);
   const int num_queries = sampling_loc.size(1);
-  const      int num_points = sampling_loc.size(4);
+  const int num_points = sampling_loc.size(4);
   // Check shape.
   TORCH_CHECK(spatial_shapes.size(1) == 2,
               "the 2nd dimensions of spatial_shapes should be 2, got ",
