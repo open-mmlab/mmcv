@@ -21,10 +21,13 @@ at::Tensor DiffIoURotatedSortVerticesCUDAKernelLauncher(at::Tensor vertices,
   int b = vertices.size(0);
   int n = vertices.size(1);
   int m = vertices.size(2);
-  at::Tensor idx =
-      torch::zeros({b, n, MAX_NUM_VERT_IDX},
-                   at::device(vertices.device()).dtype(at::ScalarType::Int));
+  // at::Tensor idx =
+  //     torch::zeros({b, n, MAX_NUM_VERT_IDX},
+  //                  at::device(vertices.device()).dtype(at::ScalarType::Int));
 
+  at::Tensor idx =
+      at::zeros({b, n, MAX_NUM_VERT_IDX},
+                   vertices.options().dtype(at::ScalarType::Int).device(at::kCUDA));
   diff_iou_rotated_sort_vertices_forward_cuda_kernel<<<b, opt_n_thread(n), 0,
                                                        stream>>>(
       b, n, m, vertices.data_ptr<float>(), mask.data_ptr<bool>(),

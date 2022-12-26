@@ -4,6 +4,9 @@
 #include <parrots/foundation/ssattrs.hpp>
 
 #include "knn_pytorch.h"
+#include <diopi/diopirt.h>
+#include <diopi/functions.h>
+#include <parrots/diopi.hpp>
 
 using namespace parrots;
 
@@ -19,14 +22,15 @@ void knn_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
       .get<int>("nsample", nsample)
       .done();
 
-  auto xyz_tensor = buildATensor(ctx, ins[0]);
-  auto new_xyz_tensor = buildATensor(ctx, ins[1]);
+  diopiContext dctx(ctx);
+  diopiContextHandle_t ch = &dctx;
+  auto xyz_tensor = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
+  auto new_xyz_tensor = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
 
-  auto idx_tensor = buildATensor(ctx, outs[0]);
-  auto dist2_tensor = buildATensor(ctx, outs[1]);
+  auto idx_tensor = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
+  auto dist2_tensor = reinterpret_cast<diopiTensorHandle_t>(&outs[1]);
 
-  knn_forward(xyz_tensor, new_xyz_tensor, idx_tensor, dist2_tensor, b, n, m,
-              nsample);
+  PARROTS_CALLDIOPI(diopiKnn(ch, xyz_tensor, new_xyz_tensor, idx_tensor, dist2_tensor, b, n, m, nsample));
 }
 
 PARROTS_EXTENSION_REGISTER(knn_forward)

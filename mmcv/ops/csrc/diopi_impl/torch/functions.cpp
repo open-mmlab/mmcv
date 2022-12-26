@@ -269,3 +269,78 @@ diopiError_t diopiCorrelationBackward(diopiContextHandle_t ctx, diopiTensorHandl
       patchW, padH, padW, dilationH, dilationW, dilation_patchH,
       dilation_patchW, dH, dW);
 }
+
+void DeformRoIPoolForwardCUDAKernelLauncher(Tensor input, Tensor rois,
+                                            Tensor offset, Tensor output,
+                                            int pooled_height, int pooled_width,
+                                            float spatial_scale,
+                                            int sampling_ratio, float gamma);
+
+void DeformRoIPoolBackwardCUDAKernelLauncher(
+    Tensor grad_output, Tensor input, Tensor rois, Tensor offset,
+    Tensor grad_input, Tensor grad_offset, int pooled_height, int pooled_width,
+    float spatial_scale, int sampling_ratio, float gamma);
+
+diopiError_t diopiDeformRoiPool(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t rois, diopiTensorHandle_t offset,
+                                  diopiTensorHandle_t output, int64_t pooled_height,
+                                  int64_t pooled_width, float spatial_scale,
+                                  int64_t sampling_ratio, float gamma) {
+    auto input_in = ::impl::aten::buildATen(input);
+    auto rois_in = ::impl::aten::buildATen(rois);
+    auto offset_in = ::impl::aten::buildATen(offset);
+    auto output_out = ::impl::aten::buildATen(output);
+    DeformRoIPoolForwardCUDAKernelLauncher(input_in, rois_in, offset_in, output_out,
+                                         pooled_height, pooled_width,
+                                         spatial_scale, sampling_ratio, gamma);
+}
+
+diopiError_t diopiDeformRoiPoolBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_output, diopiTensorHandle_t input,
+                                   diopiTensorHandle_t rois, diopiTensorHandle_t offset,
+                                   diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_offset,
+                                   int64_t pooled_height, int64_t pooled_width,
+                                   float spatial_scale, int64_t sampling_ratio,
+                                   float gamma) {
+    auto grad_output_in = ::impl::aten::buildATen(grad_output);
+    auto input_in = ::impl::aten::buildATen(input);
+    auto rois_in = ::impl::aten::buildATen(rois);
+    auto offset_in = ::impl::aten::buildATen(offset);
+    auto grad_input_out = ::impl::aten::buildATen(grad_input);
+    auto grad_offset_out = ::impl::aten::buildATen(grad_offset);
+    DeformRoIPoolBackwardCUDAKernelLauncher(
+      grad_output_in, input_in, rois_in, offset_in, grad_input_out, grad_offset_out, pooled_height,
+      pooled_width, spatial_scale, sampling_ratio, gamma);
+}
+
+Tensor DiffIoURotatedSortVerticesCUDAKernelLauncher(Tensor vertices,
+                                                    Tensor mask,
+                                                    Tensor num_valid);
+
+diopiError_t diopiDiffIouRotatedSortVertices(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiTensorHandle_t vertices, diopiTensorHandle_t mask,
+                                                   diopiTensorHandle_t num_valid) {
+    auto atVertices = ::impl::aten::buildATen(vertices);
+    auto atMask = ::impl::aten::buildATen(mask);
+    auto atNumValid = ::impl::aten::buildATen(num_valid);
+    auto atOut = DiffIoURotatedSortVerticesCUDAKernelLauncher(atVertices, atMask, atNumValid);
+    ::impl::aten::buildDiopiTensor(ctx, atOut, out);
+}
+
+void KNNForwardCUDAKernelLauncher(int b, int n, int m, int nsample,
+                                  const Tensor xyz, const Tensor new_xyz,
+                                  Tensor idx, Tensor dist2);
+
+diopiError_t diopiKnn(diopiContextHandle_t ctx, diopiTensorHandle_t xyz_tensor, diopiTensorHandle_t new_xyz_tensor, diopiTensorHandle_t idx_tensor,
+                 diopiTensorHandle_t dist2_tensor, int64_t b, int64_t n, int64_t m, int64_t nsample) {
+    auto xyz_tensor_in = ::impl::aten::buildATen(xyz_tensor);
+    auto new_xyz_tensor_in = ::impl::aten::buildATen(new_xyz_tensor);
+    auto idx_tensor_out = ::impl::aten::buildATen(idx_tensor);
+    auto dist2_tensor_out = ::impl::aten::buildATen(dist2_tensor);
+    KNNForwardCUDAKernelLauncher(b, n, m, nsample, xyz_tensor_in, new_xyz_tensor_in, idx_tensor_out, dist2_tensor_out);
+}
+
+void MinAreaPolygonsCUDAKernelLauncher(const Tensor pointsets, Tensor polygons);
+
+diopiError_t diopiMinAreaPolygons(diopiContextHandle_t ctx, const diopiTensorHandle_t pointsets, diopiTensorHandle_t polygons) {
+    auto pointsets_in = ::impl::aten::buildATen(pointsets);
+    auto polygons_out = ::impl::aten::buildATen(polygons);
+    MinAreaPolygonsCUDAKernelLauncher(pointsets_in, polygons_out);
+}

@@ -4,6 +4,32 @@ import pytest
 import torch
 
 from mmcv.ops import diff_iou_rotated_2d, diff_iou_rotated_3d
+from mmcv.utils import IS_CUDA_AVAILABLE
+
+
+@pytest.mark.parametrize('device', [
+    pytest.param(
+        'cuda',
+        marks=pytest.mark.skipif(
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+])
+def test_diff_iou_rotated_2d_diopi(device):
+    np_boxes1 = np.array([[[0.5, 0.5, 1., 1., .0], [0.5, 0.5, 1., 1., .0],
+                           [0.5, 0.5, 1., 1., .0], [0.5, 0.5, 1., 1., .0],
+                           [0.5, 0.5, 1., 1., .0]]],
+                         dtype=np.float32)
+    np_boxes2 = np.array(
+        [[[0.5, 0.5, 1., 1., .0], [0.5, 0.5, 1., 1., np.pi / 2],
+          [0.5, 0.5, 1., 1., np.pi / 4], [1., 1., 1., 1., .0],
+          [1.5, 1.5, 1., 1., .0]]],
+        dtype=np.float32)
+
+    boxes1 = torch.from_numpy(np_boxes1)
+    boxes2 = torch.from_numpy(np_boxes2)
+
+    np_expect_ious = np.array([[1., 1., .7071, 1 / 7, .0]])
+    ious = diff_iou_rotated_2d(boxes1.to(device), boxes2.to(device))
+    assert np.allclose(ious.cpu().numpy(), np_expect_ious, atol=1e-4)
 
 
 @pytest.mark.skipif(
