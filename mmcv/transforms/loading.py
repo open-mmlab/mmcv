@@ -184,6 +184,7 @@ class LoadAnnotations(BaseTransform):
         with_seg: bool = False,
         with_keypoints: bool = False,
         imdecode_backend: str = 'cv2',
+        *,
         backend_args: Optional[dict] = None,
     ) -> None:
         super().__init__()
