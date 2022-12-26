@@ -31,6 +31,7 @@ Module
    GeneralizedAttention
    HSigmoid
    HSwish
+   LayerScale
    Linear
    MaxPool2d
    MaxPool3d
