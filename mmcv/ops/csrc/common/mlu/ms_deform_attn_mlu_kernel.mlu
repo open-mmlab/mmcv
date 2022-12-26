@@ -1377,7 +1377,8 @@ void __mlu_func__ computeData(
     __bang_fusion(FUSION_FMA, grad_w_weight, grad_output_nram_tl, (float)(-hh),
                   grad_w_weight, deal_num_real, deal_num_real);
     __bang_mul_scalar(grad_output_nram_tl_temp, top_grad_temp, w1,
-                      deal_num_real);  // for calc grad_attn_weight
+                      deal_num_real);
+    // for calc grad_attn_weight
     __bang_mul_scalar(grad_output_nram_tl, grad_output_nram_tl, w1,
                       deal_num_real);
   }
@@ -1399,7 +1400,8 @@ void __mlu_func__ computeData(
     __bang_fusion(FUSION_FMA, grad_w_weight, grad_output_nram_bl, (float)(-lh),
                   grad_w_weight, deal_num_real, deal_num_real);
     __bang_mul_scalar(grad_output_nram_bl_temp, top_grad_temp, w3,
-                      deal_num_real);  // for calc grad_attn_weight
+                      deal_num_real);
+    // for calc grad_attn_weight
     __bang_mul_scalar(grad_output_nram_bl, grad_output_nram_bl, w3,
                       deal_num_real);
     __bang_add(grad_output_nram_tl, grad_output_nram_tl, grad_output_nram_bl,
