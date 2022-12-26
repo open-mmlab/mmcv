@@ -60,6 +60,7 @@ MsDeformAttnBackwardKernelPolicy msDeformAttnBackwardPolicyFunc(
 
   return MS_DEFORM_ATTN_BACKWARD_DEFAULT;
 }
+
 void KernelMsDeformAttnBackwardDefaultKernel(
     cnrtDim3_t k_dim, cnrtFunctionType_t k_type, cnrtQueue_t queue,
     const cnrtDataType_t d_type, const float* data_value,
@@ -69,6 +70,7 @@ void KernelMsDeformAttnBackwardDefaultKernel(
     const int32_t num_heads, const int32_t channels, const int32_t num_levels,
     const int32_t num_queries, const int32_t num_points, float* grad_value,
     float* grad_sampling_loc, float* grad_attn_weight);
+
 void KernelMsDeformAttnBackwardSmallChannelsKernel(
     cnrtDim3_t k_dim, cnrtFunctionType_t k_type, cnrtQueue_t queue,
     const cnrtDataType_t d_type, const float* data_value,
