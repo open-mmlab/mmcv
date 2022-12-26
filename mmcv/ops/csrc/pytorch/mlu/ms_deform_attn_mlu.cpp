@@ -283,7 +283,9 @@ Tensor ms_deform_attn_mlu_forward(const Tensor& value,
 
   // launch kernel
   switch (policy) {
-    default: { VLOG(5) << "MsDeformAttnForward Policy not supported"; }; break;
+    default: {
+      VLOG(5) << "MsDeformAttnForward Policy not supported";
+    }; break;
     case MS_DEFORM_ATTN_FORWARD_DEFAULT: {
       CNLOG(INFO) << "Launch Kernel MLUKernelMsDeformAttnForwardDefault<<<"
                   << k_dim.x << ", " << k_dim.y << ", " << k_dim.z << ">>>";
@@ -470,7 +472,9 @@ void ms_deform_attn_mlu_backward(
   MsDeformAttnBackwardKernelPolicy kernelPolicy =
       msDeformAttnBackwardPolicyFunc(channels, num_levels, num_points);
   switch (kernelPolicy) {
-    default: { VLOG(5) << "NotImplemented."; } break;
+    default: {
+      VLOG(5) << "NotImplemented.";
+    } break;
     case MS_DEFORM_ATTN_BACKWARD_DEFAULT: {
       KernelMsDeformAttnBackwardDefaultKernel(
           k_dim, k_type, queue, data_type, (float*)value_ptr,
