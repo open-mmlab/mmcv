@@ -470,25 +470,25 @@ void ms_deform_attn_mlu_backward(
   MsDeformAttnBackwardKernelPolicy kernelPolicy =
       msDeformAttnBackwardPolicyFunc(channels, num_levels, num_points);
   switch (kernelPolicy) {
-  caseMS_DEFORM_ATTN_BACKWARD_DEFAULT : {
-    KernelMsDeformAttnBackwardDefaultKernel(
-        k_dim, k_type, queue, data_type, (float*)value_ptr,
-        (int32_t*)spatial_shapes_ptr, (int32_t*)level_start_index_ptr,
-        (float*)sampling_loc_ptr, (float*)attn_weight_ptr,
-        (float*)grad_output_ptr, batch_size, num_keys, num_heads, channels,
-        num_levels, num_queries, num_points, (float*)grad_value_ptr,
-        (float*)grad_sampling_loc_ptr, (float*)grad_attn_weight_ptr);
-  } break;
-  caseMS_DEFORM_ATTN_BACKWARD_SMALL_CHANNEL : {
-    KernelMsDeformAttnBackwardSmallChannelsKernel(
-        k_dim, k_type, queue, data_type, (float*)value_ptr,
-        (int32_t*)spatial_shapes_ptr, (int32_t*)level_start_index_ptr,
-        (float*)sampling_loc_ptr, (float*)attn_weight_ptr,
-        (float*)grad_output_ptr, batch_size, num_keys, num_heads, channels,
-        num_levels, num_queries, num_points, (float*)grad_value_ptr,
-        (float*)grad_sampling_loc_ptr, (float*)grad_attn_weight_ptr);
-  } break;
-  default: { VLOG(5) << "NotImplemented."; }
+    default: { VLOG(5) << "NotImplemented."; } break;
+    case MS_DEFORM_ATTN_BACKWARD_DEFAULT: {
+      KernelMsDeformAttnBackwardDefaultKernel(
+          k_dim, k_type, queue, data_type, (float*)value_ptr,
+          (int32_t*)spatial_shapes_ptr, (int32_t*)level_start_index_ptr,
+          (float*)sampling_loc_ptr, (float*)attn_weight_ptr,
+          (float*)grad_output_ptr, batch_size, num_keys, num_heads, channels,
+          num_levels, num_queries, num_points, (float*)grad_value_ptr,
+          (float*)grad_sampling_loc_ptr, (float*)grad_attn_weight_ptr);
+    } break;
+    case MS_DEFORM_ATTN_BACKWARD_SMALL_CHANNEL: {
+      KernelMsDeformAttnBackwardSmallChannelsKernel(
+          k_dim, k_type, queue, data_type, (float*)value_ptr,
+          (int32_t*)spatial_shapes_ptr, (int32_t*)level_start_index_ptr,
+          (float*)sampling_loc_ptr, (float*)attn_weight_ptr,
+          (float*)grad_output_ptr, batch_size, num_keys, num_heads, channels,
+          num_levels, num_queries, num_points, (float*)grad_value_ptr,
+          (float*)grad_sampling_loc_ptr, (float*)grad_attn_weight_ptr);
+    } break;
   }
 }
 
