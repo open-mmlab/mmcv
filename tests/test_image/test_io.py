@@ -98,7 +98,7 @@ class TestIO:
             img_cv2_color_bgr_petrel_with_args = mmcv.imread(
                 self.s3_path,
                 backend='cv2',
-                file_client_args={'backend': 'petrel'})
+                backend_args={'backend': 'petrel'})
             mock_method.assert_called()
             assert_array_equal(img_cv2_color_bgr_petrel,
                                img_cv2_color_bgr_petrel_with_args)
@@ -112,7 +112,7 @@ class TestIO:
             img_cv2_color_bgr_http_with_args = mmcv.imread(
                 self.http_path,
                 backend='cv2',
-                file_client_args={'backend': 'http'})
+                backend_args={'backend': 'http'})
             mock_method.assert_called()
             assert_array_equal(img_cv2_color_bgr_http,
                                img_cv2_color_bgr_http_with_args)
@@ -357,6 +357,7 @@ class TestIO:
     def test_imwrite(self):
         img = mmcv.imread(self.img_path)
         out_file = osp.join(tempfile.gettempdir(), 'mmcv_test.jpg')
+
         mmcv.imwrite(img, out_file)
         rewrite_img = mmcv.imread(out_file)
         os.remove(out_file)
@@ -366,9 +367,10 @@ class TestIO:
         with patch.object(
                 PetrelBackend, 'put', return_value=None) as mock_method:
             ret = mmcv.imwrite(img, self.s3_path)
-            ret_with_args = mmcv.imwrite(
-                img, self.s3_path, file_client_args={'backend': 'petrel'})
             assert ret
+
+            ret_with_args = mmcv.imwrite(
+                img, self.s3_path, backend_args={'backend': 'petrel'})
             assert ret_with_args
             mock_method.assert_called()
 
