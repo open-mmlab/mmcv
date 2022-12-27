@@ -166,8 +166,12 @@ def imread(img_or_path: Union[np.ndarray, str, Path],
             `cv2`, `pillow`, `turbojpeg`, `tifffile`, `None`.
             If backend is None, the global imread_backend specified by
             ``mmcv.use_backend()`` will be used. Default: None.
-        backend_args (dict, optional): Arguments to instantiate the
-            preifx of uri corresponding backend. Defaults to None.
+        backend_args (dict, optional): Instantiates the corresponding file
+            backend. It may contain `backend` key to specify the file
+            backend. If it contains, the file backend corresponding to this
+            value will be used and initialized with the remaining values,
+            otherwise the corresponding file backend will be selected
+            based on the prefix of the file path. Defaults to None.
 
     Returns:
         ndarray: Loaded image array.
@@ -281,8 +285,12 @@ def imwrite(img: np.ndarray,
         params (None or list): Same as opencv :func:`imwrite` interface.
         auto_mkdir (bool): If the parent folder of `file_path` does not exist,
             whether to create it automatically. It will be deprecated.
-        backend_args (dict, optional): Arguments to instantiate the
-            preifx of uri corresponding backend. Defaults to None.
+        backend_args (dict, optional): Instantiates the corresponding file
+            backend. It may contain `backend` key to specify the file
+            backend. If it contains, the file backend corresponding to this
+            value will be used and initialized with the remaining values,
+            otherwise the corresponding file backend will be selected
+            based on the prefix of the file path. Defaults to None.
 
     Returns:
         bool: Successful or not.

@@ -35,8 +35,12 @@ class LoadImageFromFile(BaseTransform):
             Defaults to 'cv2'.
         ignore_empty (bool): Whether to allow loading empty image or file path
             not existent. Defaults to False.
-        backend_args (dict, optional): Arguments to instantiate the
-            preifx of uri corresponding backend. Defaults to None.
+        backend_args (dict, optional): Instantiates the corresponding file
+            backend. It may contain `backend` key to specify the file
+            backend. If it contains, the file backend corresponding to this
+            value will be used and initialized with the remaining values,
+            otherwise the corresponding file backend will be selected
+            based on the prefix of the file path. Defaults to None.
     """
 
     def __init__(self,
@@ -173,8 +177,12 @@ class LoadAnnotations(BaseTransform):
             argument for :func:`mmcv.imfrombytes`.
             See :func:`mmcv.imfrombytes` for details.
             Defaults to 'cv2'.
-        backend_args (dict, optional): Arguments to instantiate the
-            preifx of uri corresponding backend. Defaults to None.
+        backend_args (dict, optional): Instantiates the corresponding file
+            backend. It may contain `backend` key to specify the file
+            backend. If it contains, the file backend corresponding to this
+            value will be used and initialized with the remaining values,
+            otherwise the corresponding file backend will be selected
+            based on the prefix of the file path. Defaults to None.
     """
 
     def __init__(
