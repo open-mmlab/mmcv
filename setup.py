@@ -208,7 +208,7 @@ def get_extensions():
         # define_macros = [('MMCV_USE_PARROTS', None)]
         define_macros = []
         include_dirs = []
-        op_files = glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') +\
+        op_files = glob.glob('./mmcv/ops/csrc/pytorch/cuda/[!i]*.cu') +\
             glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') +\
             glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
