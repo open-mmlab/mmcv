@@ -208,9 +208,10 @@ def get_extensions():
         # define_macros = [('MMCV_USE_PARROTS', None)]
         define_macros = []
         include_dirs = []
-        op_files = glob.glob('./mmcv/ops/csrc/pytorch/cuda/[!i]*.cu') +\
+        op_files = glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') +\
             glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') +\
             glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
+        op_files.remove('./mmcv/ops/csrc/pytorch/cuda/iou3d_cuda.cu')
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
