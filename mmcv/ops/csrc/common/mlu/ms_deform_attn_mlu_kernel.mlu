@@ -1430,6 +1430,7 @@ void __mlu_func__ computeData(
   recursiveSumPool(grad_h_weight, 1, deal_num_real, ALIGN_NUM_FOR_REDUCE);
 #endif
 }
+
 template <typename T>
 void __mlu_func__ storeData(
     const int32_t &h_low, const int32_t &w_low, const int32_t &h_high,
