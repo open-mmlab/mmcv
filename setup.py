@@ -270,6 +270,7 @@ def get_extensions():
 
         include_dirs = []
 
+        extra_objects = []
         is_rocm_pytorch = False
         try:
             from torch.utils.cpp_extension import ROCM_HOME
@@ -300,16 +301,54 @@ def get_extensions():
                 torch.is_mlu_available()) or \
                 os.getenv('FORCE_MLU', '0') == '1':
             from torch_mlu.utils.cpp_extension import MLUExtension
+            if not os.path.exists('./mlu-ops'):
+                import requests
+                mluops_url = 'https://github.com/Cambricon/'\
+                    'mlu-ops/releases/latest'
+                response = requests.get(url=mluops_url, allow_redirects=False)
+                download_url = response.headers.get('Location').replace(
+                    'releases/tag', 'archive/refs/tags') + '.zip'
+                req = requests.get(download_url)
+                with open('./mlu-ops-latest.zip', 'wb') as f:
+                    try:
+                        f.write(req.content)
+                    except Exception:
+                        raise ImportError('downlowad mlu-ops fail')
+
+                from zipfile import BadZipFile, ZipFile
+                with ZipFile('./mlu-ops-latest.zip', 'r') as archive:
+                    try:
+                        archive.extractall()
+                        dir_name = archive.namelist()[0].split('/')[0]
+                        os.rename(dir_name, 'mlu-ops')
+                    except BadZipFile:
+                        print('invalid mlu-ops-latest.zip file')
+
             define_macros += [('MMCV_WITH_MLU', None)]
             mlu_args = os.getenv('MMCV_MLU_ARGS')
-            extra_compile_args['cncc'] = [mlu_args] if mlu_args else []
+            mluops_includes = []
+            mluops_includes.append('-I' +
+                                   os.path.abspath('./mlu-ops/bangc-ops'))
+            mluops_includes.append(
+                '-I' + os.path.abspath('./mlu-ops/bangc-ops/kernels'))
+            extra_compile_args['cncc'] = [mlu_args] + \
+                mluops_includes if mlu_args else mluops_includes
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/mlu/*.cpp') + \
-                glob.glob('./mmcv/ops/csrc/common/mlu/*.mlu')
+                glob.glob('./mmcv/ops/csrc/common/mlu/*.mlu') + \
+                glob.glob(
+                    './mlu-ops/bangc-ops/core/**/*.cpp', recursive=True) + \
+                glob.glob(
+                    './mlu-ops/bangc-ops/kernels/**/*.cpp', recursive=True) + \
+                glob.glob(
+                    './mlu-ops/bangc-ops/kernels/**/*.mlu', recursive=True)
+            extra_objects = glob.glob(
+                './mlu-ops/bangc-ops/kernels/*/x86_64/*.o')
             extension = MLUExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/mlu'))
+            include_dirs.append(os.path.abspath('./mlu-ops/bangc-ops'))
         elif (hasattr(torch.backends, 'mps')
               and torch.backends.mps.is_available()) or os.getenv(
                   'FORCE_MPS', '0') == '1':
@@ -371,6 +410,7 @@ def get_extensions():
             sources=op_files,
             include_dirs=include_dirs,
             define_macros=define_macros,
+            extra_objects=extra_objects,
             extra_compile_args=extra_compile_args)
         extensions.append(ext_ops)
 
