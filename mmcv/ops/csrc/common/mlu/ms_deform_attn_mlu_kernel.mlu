@@ -1424,6 +1424,7 @@ void __mlu_func__ computeData(
   recursiveSumPool(grad_output_nram_tl, 1, deal_num_real, ALIGN_NUM_FOR_REDUCE);
   __bang_mul_scalar(grad_w_weight, grad_w_weight, width, deal_num_real);
   __bang_mul(grad_w_weight, grad_w_weight, top_grad_temp, deal_num_real);
+
   recursiveSumPool(grad_w_weight, 1, deal_num_real, ALIGN_NUM_FOR_REDUCE);
   __bang_mul_scalar(grad_h_weight, grad_h_weight, height, deal_num_real);
   __bang_mul(grad_h_weight, grad_h_weight, top_grad_temp, deal_num_real);
