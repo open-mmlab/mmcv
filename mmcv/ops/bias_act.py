@@ -128,8 +128,10 @@ def bias_act(input: torch.Tensor,
              use_custom_op: bool = True):
     r"""Fused bias and activation function.
 
-    Adds bias `b` to activation tensor `x`, evaluates activation function
-    `act`, and scales the result by `gain`. Each of the steps is optional.
+    Adds bias `b` to activation tensor `input`, and evaluates activation
+    function `act`, and scales the result by `gain`. Each of the steps is
+    optional.
+
     In most cases, the fused op is considerably more efficient than performing
     the same calculation using standard PyTorch ops. It supports first and
     second order gradients, but not third order gradients.
@@ -153,8 +155,8 @@ def bias_act(input: torch.Tensor,
             to use default. See `activation_funcs` for the default scaling of
             each activation function. If unsure, consider specifying 1.
             Defaults to None.
-        clamp (float):  Clamp the output values to `[-clamp, +clamp]`
-            , or `None` to disable the clamping (default). Defaults to None.
+        clamp (float):  Clamp the output values to `[-clamp, +clamp]`,
+            or `None` to disable the clamping (default). Defaults to None.
         use_custom_op (bool): Whether to use customized op.
             Defaults to True.
 
@@ -186,8 +188,10 @@ def _bias_act_ref(input: torch.Tensor,
     """Slow reference implementation of `bias_act()` using standard PyTorch
     ops.
 
-    Adds bias `b` to activation tensor `x`, evaluates activation function
-    `act`, and scales the result by `gain`. Each of the steps is optional.
+    Adds bias `b` to activation tensor `input`, and evaluates activation
+    function `act`, and scales the result by `gain`. Each of the steps is
+    optional.
+
     In most cases, the fused op is considerably more efficient than performing
     the same calculation using standard PyTorch ops. It supports first and
     second order gradients, but not third order gradients.
@@ -230,23 +234,23 @@ def _bias_act_ref(input: torch.Tensor,
         assert isinstance(bias, torch.Tensor) and bias.ndim == 1
         assert 0 <= dim < input.ndim
         assert bias.shape[0] == input.shape[dim]
-        x = input + bias.reshape(
+        input = input + bias.reshape(
             [-1 if i == dim else 1 for i in range(input.ndim)])
 
     # Evaluate activation function.
     alpha = float(alpha)
-    x = spec.func(input, alpha=alpha)
+    output = spec.func(input, alpha=alpha)
 
     # Scale by gain.
     gain = float(gain)
     if gain != 1:
-        x = x * gain
+        output = output * gain
 
     # Clamp.
     if clamp >= 0:
         # pylint: disable=invalid-unary-operand-type
-        x = x.clamp(-clamp, clamp)
-    return x
+        output = output.clamp(-clamp, clamp)
+    return output
 
 
 _bias_act_cuda_cache: Dict = dict()

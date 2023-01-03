@@ -43,13 +43,13 @@ def _parse_padding(padding):
     return padx0, padx1, pady0, pady1
 
 
-def _get_filter_size(f):
+def _get_filter_size(filter):
     """get width and height of filter kernel."""
-    if f is None:
+    if filter is None:
         return 1, 1
-    assert isinstance(f, torch.Tensor) and f.ndim in [1, 2]
-    fw = f.shape[-1]
-    fh = f.shape[0]
+    assert isinstance(filter, torch.Tensor) and filter.ndim in [1, 2]
+    fw = filter.shape[-1]
+    fh = filter.shape[0]
     fw = int(fw)
     fh = int(fh)
     assert fw >= 1 and fh >= 1
@@ -57,7 +57,7 @@ def _get_filter_size(f):
 
 
 def upfirdn2d(input: torch.Tensor,
-              f: torch.Tensor,
+              filter: torch.Tensor,
               up: int = 1,
               down: int = 1,
               padding: Union[int, List[int]] = 0,
@@ -89,7 +89,7 @@ def upfirdn2d(input: torch.Tensor,
     Args:
         input (torch.Tensor): Float32/float64/float16 input tensor of the shape
             `[batch_size, num_channels, in_height, in_width]`.
-        f (torch.Tensor): Float32 FIR filter of the shape `[filter_height,
+        filter (torch.Tensor): Float32 FIR filter of the shape `[filter_height,
             filter_width]` (non-separable), `[filter_taps]` (separable), or
             `None` (identity).
         up (int): Integer upsampling factor. Can be a single int or a
@@ -116,10 +116,10 @@ def upfirdn2d(input: torch.Tensor,
             down=down,
             padding=padding,
             flip_filter=flip_filter,
-            gain=gain).apply(input, f)
+            gain=gain).apply(input, filter)
     return _upfirdn2d_ref(
         input,
-        f,
+        filter,
         up=up,
         down=down,
         padding=padding,
@@ -128,7 +128,7 @@ def upfirdn2d(input: torch.Tensor,
 
 
 def _upfirdn2d_ref(input: torch.Tensor,
-                   f: torch.Tensor,
+                   filter: torch.Tensor,
                    up: int = 1,
                    down: int = 1,
                    padding: Union[int, List[int]] = 0,
@@ -161,10 +161,10 @@ def _upfirdn2d_ref(input: torch.Tensor,
     """
     # Validate arguments.
     assert isinstance(input, torch.Tensor) and input.ndim == 4
-    if f is None:
-        f = torch.ones([1, 1], dtype=torch.float32, device=input.device)
-    assert isinstance(f, torch.Tensor) and f.ndim in [1, 2]
-    assert f.dtype == torch.float32 and not f.requires_grad
+    if filter is None:
+        filter = torch.ones([1, 1], dtype=torch.float32, device=input.device)
+    assert isinstance(filter, torch.Tensor) and filter.ndim in [1, 2]
+    assert filter.dtype == torch.float32 and not filter.requires_grad
     batch_size, num_channels, in_height, in_width = input.shape
     upx, upy = _parse_scaling(up)
     downx, downy = _parse_scaling(down)
@@ -173,7 +173,7 @@ def _upfirdn2d_ref(input: torch.Tensor,
     # Check that upsampled buffer is not smaller than the filter.
     upW = in_width * upx + padx0 + padx1
     upH = in_height * upy + pady0 + pady1
-    assert upW >= f.shape[-1] and upH >= f.shape[0]
+    assert upW >= filter.shape[-1] and upH >= filter.shape[0]
 
     # Upsample by inserting zeros.
     x = input.reshape([batch_size, num_channels, in_height, 1, in_width, 1])
@@ -191,18 +191,19 @@ def _upfirdn2d_ref(input: torch.Tensor,
           max(-padx0, 0):x.shape[3] - max(-padx1, 0)]
 
     # Setup filter.
-    f = f * (gain**(f.ndim / 2))
-    f = f.to(x.dtype)
+    filter = filter * (gain**(filter.ndim / 2))
+    filter = filter.to(x.dtype)
     if not flip_filter:
-        f = f.flip(list(range(f.ndim)))
+        filter = filter.flip(list(range(filter.ndim)))
 
     # Convolve with the filter.
-    f = f[np.newaxis, np.newaxis].repeat([num_channels, 1] + [1] * f.ndim)
-    if f.ndim == 4:
-        x = conv2d(input=x, weight=f, groups=num_channels)
+    filter = filter[np.newaxis,
+                    np.newaxis].repeat([num_channels, 1] + [1] * filter.ndim)
+    if filter.ndim == 4:
+        x = conv2d(input=x, weight=filter, groups=num_channels)
     else:
-        x = conv2d(input=x, weight=f.unsqueeze(2), groups=num_channels)
-        x = conv2d(input=x, weight=f.unsqueeze(3), groups=num_channels)
+        x = conv2d(input=x, weight=filter.unsqueeze(2), groups=num_channels)
+        x = conv2d(input=x, weight=filter.unsqueeze(3), groups=num_channels)
 
     # Downsample by throwing away pixels.
     x = x[:, :, ::downy, ::downx]
@@ -305,7 +306,7 @@ def _upfirdn2d_cuda(up: int = 1,
 
 
 def filter2d(input: torch.Tensor,
-             f: torch.Tensor,
+             filter: torch.Tensor,
              padding: Union[int, List[int]] = 0,
              flip_filter: bool = False,
              gain: Union[float, int] = 1,
@@ -319,7 +320,7 @@ def filter2d(input: torch.Tensor,
     Args:
         input (torch.Tensor): Float32/float64/float16 input tensor of the shape
             `[batch_size, num_channels, in_height, in_width]`.
-        f (torch.Tensor): Float32 FIR filter of the shape `[filter_height,
+        filter (torch.Tensor): Float32 FIR filter of the shape `[filter_height,
             filter_width]` (non-separable), `[filter_taps]` (separable), or
             `None`.
         padding (int | tuple[int]): Padding with respect to the output.
@@ -337,7 +338,7 @@ def filter2d(input: torch.Tensor,
             out_width]`.
     """
     padx0, padx1, pady0, pady1 = _parse_padding(padding)
-    fw, fh = _get_filter_size(f)
+    fw, fh = _get_filter_size(filter)
     p = [
         padx0 + fw // 2,
         padx1 + (fw - 1) // 2,
@@ -346,7 +347,7 @@ def filter2d(input: torch.Tensor,
     ]
     return upfirdn2d(
         input,
-        f,
+        filter,
         padding=p,
         flip_filter=flip_filter,
         gain=gain,
@@ -354,7 +355,7 @@ def filter2d(input: torch.Tensor,
 
 
 def upsample2d(input: torch.Tensor,
-               f: torch.Tensor,
+               filter: torch.Tensor,
                up: int = 2,
                padding: Union[int, List[int]] = 0,
                flip_filter: bool = False,
@@ -370,7 +371,7 @@ def upsample2d(input: torch.Tensor,
     Args:
         input (torch.Tensor): Float32/float64/float16 input tensor of the shape
             `[batch_size, num_channels, in_height, in_width]`.
-        f (torch.Tensor): Float32 FIR filter of the shape `[filter_height,
+        filter (torch.Tensor): Float32 FIR filter of the shape `[filter_height,
             filter_width]` (non-separable), `[filter_taps]` (separable), or
             `None` (identity).
         up (int): Integer upsampling factor. Can be a single int or a
@@ -390,7 +391,7 @@ def upsample2d(input: torch.Tensor,
     """
     upx, upy = _parse_scaling(up)
     padx0, padx1, pady0, pady1 = _parse_padding(padding)
-    fw, fh = _get_filter_size(f)
+    fw, fh = _get_filter_size(filter)
     p = [
         padx0 + (fw + upx - 1) // 2,
         padx1 + (fw - upx) // 2,
@@ -399,7 +400,7 @@ def upsample2d(input: torch.Tensor,
     ]
     return upfirdn2d(
         input,
-        f,
+        filter,
         up=up,
         padding=p,
         flip_filter=flip_filter,
@@ -408,7 +409,7 @@ def upsample2d(input: torch.Tensor,
 
 
 def downsample2d(input: torch.Tensor,
-                 f: torch.Tensor,
+                 filter: torch.Tensor,
                  down: int = 2,
                  padding: Union[int, List[int]] = 0,
                  flip_filter: bool = False,
@@ -424,7 +425,7 @@ def downsample2d(input: torch.Tensor,
     Args:
         input (torch.Tensor): Float32/float64/float16 input tensor of the shape
             `[batch_size, num_channels, in_height, in_width]`.
-        f (torch.Tensor): Float32 FIR filter of the shape `[filter_height,
+        filter (torch.Tensor): Float32 FIR filter of the shape `[filter_height,
             filter_width]` (non-separable), `[filter_taps]` (separable), or
             `None` (identity).
         down (int): Integer downsampling factor. Can be a single int or a
@@ -444,7 +445,7 @@ def downsample2d(input: torch.Tensor,
     """
     downx, downy = _parse_scaling(down)
     padx0, padx1, pady0, pady1 = _parse_padding(padding)
-    fw, fh = _get_filter_size(f)
+    fw, fh = _get_filter_size(filter)
     p = [
         padx0 + (fw - downx + 1) // 2,
         padx1 + (fw - downx) // 2,
@@ -453,7 +454,7 @@ def downsample2d(input: torch.Tensor,
     ]
     return upfirdn2d(
         input,
-        f,
+        filter,
         down=down,
         padding=p,
         flip_filter=flip_filter,

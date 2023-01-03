@@ -189,9 +189,10 @@ Tensor softnms(Tensor boxes, Tensor scores, Tensor dets, float iou_threshold,
 
 std::vector<std::vector<int>> nms_match(Tensor dets, float iou_threshold);
 
-std::vector<std::vector<float>> pixel_group(
-    Tensor score, Tensor mask, Tensor embedding, Tensor kernel_label,
-    Tensor kernel_contour, int kernel_region_num, float distance_threshold);
+std::vector<std::vector<float>>
+pixel_group(Tensor score, Tensor mask, Tensor embedding, Tensor kernel_label,
+            Tensor kernel_contour, int kernel_region_num,
+            float distance_threshold);
 
 std::vector<std::vector<int>> contour_expand(Tensor kernel_mask,
                                              Tensor internal_kernel_label,
@@ -312,9 +313,9 @@ Tensor nms_rotated(const Tensor dets, const Tensor scores, const Tensor order,
                    const Tensor dets_sorted, const float iou_threshold,
                    const int multi_label);
 
-Tensor upfirdn2d(torch::Tensor x, torch::Tensor f, int upx, int upy, int downx,
-                 int downy, int padx0, int padx1, int pady0, int pady1,
-                 bool flip, float gain);
+Tensor upfirdn2d(torch::Tensor input, torch::Tensor filter, int upx, int upy,
+                 int downx, int downy, int padx0, int padx1, int pady0,
+                 int pady1, bool flip, float gain);
 
 Tensor fused_bias_leakyrelu(const Tensor &input, const Tensor &bias,
                             const Tensor &refer, int act, int grad, float alpha,
@@ -331,9 +332,10 @@ void roi_align_rotated_backward(Tensor grad_output, Tensor rois,
                                 int sampling_ratio, bool aligned,
                                 bool clockwise);
 
-std::vector<torch::Tensor> dynamic_point_to_voxel_forward(
-    const torch::Tensor &feats, const torch::Tensor &coors,
-    const std::string &reduce_type);
+std::vector<torch::Tensor>
+dynamic_point_to_voxel_forward(const torch::Tensor &feats,
+                               const torch::Tensor &coors,
+                               const std::string &reduce_type);
 
 void dynamic_point_to_voxel_backward(torch::Tensor &grad_feats,
                                      const torch::Tensor &grad_reduced_feats,
@@ -439,15 +441,15 @@ void chamfer_distance_backward(const Tensor xyz1, const Tensor xyz2,
                                Tensor graddist2, Tensor gradxyz1,
                                Tensor gradxyz2);
 
-Tensor bias_act(const Tensor &x, const Tensor &b, const Tensor &xref,
+Tensor bias_act(const Tensor &input, const Tensor &bias, const Tensor &xref,
                 const Tensor &yref, const Tensor &dy, int grad, int dim,
                 int act, float alpha, float gain, float clamp);
 
-std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu(
-    torch::Tensor x, torch::Tensor fu, torch::Tensor fd, torch::Tensor b,
-    torch::Tensor si, int up, int down, int px0, int px1, int py0, int py1,
-    int sx, int sy, float gain, float slope, float clamp, bool flip_filters,
-    bool writeSigns);
+std::tuple<torch::Tensor, torch::Tensor, int>
+filtered_lrelu(torch::Tensor x, torch::Tensor fu, torch::Tensor fd,
+               torch::Tensor b, torch::Tensor si, int up, int down, int px0,
+               int px1, int py0, int py1, int sx, int sy, float gain,
+               float slope, float clamp, bool flip_filters, bool writeSigns);
 
 torch::Tensor filtered_lrelu_act_(torch::Tensor x, torch::Tensor si, int sx,
                                   int sy, float gain, float slope, float clamp,
@@ -461,10 +463,10 @@ Tensor nms_quadri(const Tensor dets, const Tensor scores, const Tensor order,
                   const int multi_label);
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
-  m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("x"), py::arg("f"),
-        py::arg("upx"), py::arg("upy"), py::arg("downx"), py::arg("downy"),
-        py::arg("padx0"), py::arg("padx1"), py::arg("pady0"), py::arg("pady1"),
-        py::arg("flip"), py::arg("gain"));
+  m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
+        py::arg("filter"), py::arg("upx"), py::arg("upy"), py::arg("downx"),
+        py::arg("downy"), py::arg("padx0"), py::arg("padx1"), py::arg("pady0"),
+        py::arg("pady1"), py::arg("flip"), py::arg("gain"));
   m.def("fused_bias_leakyrelu", &fused_bias_leakyrelu,
         "fused_bias_leakyrelu (CUDA)", py::arg("input"), py::arg("bias"),
         py::arg("empty"), py::arg("act"), py::arg("grad"), py::arg("alpha"),
@@ -906,10 +908,10 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("input"), py::arg("rois"), py::arg("grad_rois"),
         py::arg("pooled_height"), py::arg("pooled_width"),
         py::arg("spatial_scale"));
-  m.def("bias_act", &bias_act, "bias_act (CUDA)", py::arg("x"), py::arg("b"),
-        py::arg("xref"), py::arg("yref"), py::arg("dy"), py::arg("grad"),
-        py::arg("dim"), py::arg("act"), py::arg("alpha"), py::arg("gain"),
-        py::arg("clamp"));
+  m.def("bias_act", &bias_act, "bias_act (CUDA)", py::arg("input"),
+        py::arg("bias"), py::arg("xref"), py::arg("yref"), py::arg("dy"),
+        py::arg("grad"), py::arg("dim"), py::arg("act"), py::arg("alpha"),
+        py::arg("gain"), py::arg("clamp"));
   m.def("filtered_lrelu", &filtered_lrelu, "filtered_lrelu (CUDA)",
         py::arg("x"), py::arg("fu"), py::arg("fd"), py::arg("b"), py::arg("si"),
         py::arg("up"), py::arg("down"), py::arg("px0"), py::arg("px1"),

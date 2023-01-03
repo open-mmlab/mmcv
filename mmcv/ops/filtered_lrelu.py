@@ -214,7 +214,7 @@ def _filtered_lrelu_ref(input: torch.Tensor,
     x = bias_act(input=input, bias=bias)  # Apply bias.
     x = upfirdn2d(
         input=x,
-        f=fu,
+        filter=fu,
         up=up,
         padding=[px0, px1, py0, py1],
         gain=up**2,
@@ -223,7 +223,7 @@ def _filtered_lrelu_ref(input: torch.Tensor,
         input=x, act='lrelu', alpha=slope, gain=gain,
         clamp=clamp)  # Bias, leaky ReLU, clamp.
     x = upfirdn2d(
-        input=x, f=fd, down=down, flip_filter=flip_filter)  # Downsample.
+        input=x, filter=fd, down=down, flip_filter=flip_filter)  # Downsample.
 
     assert x.shape == (batch_size, channels, out_h, out_w)
     assert x.dtype == in_dtype
@@ -357,7 +357,7 @@ def _filtered_lrelu_cuda(up: int = 1,
                 y = input.add(bias.unsqueeze(-1).unsqueeze(-1))  # Add bias.
                 y = upfirdn2d(
                     input=y,
-                    f=fu,
+                    filter=fu,
                     up=up,
                     padding=[px0, px1, py0, py1],
                     gain=float(up**2),
@@ -367,7 +367,7 @@ def _filtered_lrelu_cuda(up: int = 1,
                                                     gain, slope, clamp,
                                                     write_signs)
                 y = upfirdn2d(
-                    input=y, f=fd, down=down,
+                    input=y, filter=fd, down=down,
                     flip_filter=flip_filter)  # Downsample.
 
             # Prepare for gradient computation.
