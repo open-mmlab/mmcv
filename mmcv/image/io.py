@@ -6,10 +6,10 @@ from pathlib import Path
 from typing import Optional, Union
 
 import cv2
+import mmengine.fileio as fileio
 import numpy as np
 from cv2 import (IMREAD_COLOR, IMREAD_GRAYSCALE, IMREAD_IGNORE_ORIENTATION,
                  IMREAD_UNCHANGED)
-from mmengine.fileio import FileClient
 from mmengine.utils import is_filepath, is_str
 
 try:
@@ -145,11 +145,9 @@ def imread(img_or_path: Union[np.ndarray, str, Path],
            flag: str = 'color',
            channel_order: str = 'bgr',
            backend: Optional[str] = None,
-           file_client_args: Optional[dict] = None) -> np.ndarray:
+           *,
+           backend_args: Optional[dict] = None) -> np.ndarray:
     """Read an image.
-
-    Note:
-        In v1.4.1 and later, add `file_client_args` parameters.
 
     Args:
         img_or_path (ndarray or str or Path): Either a numpy array or str or
@@ -168,9 +166,12 @@ def imread(img_or_path: Union[np.ndarray, str, Path],
             `cv2`, `pillow`, `turbojpeg`, `tifffile`, `None`.
             If backend is None, the global imread_backend specified by
             ``mmcv.use_backend()`` will be used. Default: None.
-        file_client_args (dict | None): Arguments to instantiate a
-            FileClient. See :class:`mmengine.fileio.FileClient` for details.
-            Default: None.
+        backend_args (dict, optional): Instantiates the corresponding file
+            backend. It may contain `backend` key to specify the file
+            backend. If it contains, the file backend corresponding to this
+            value will be used and initialized with the remaining values,
+            otherwise the corresponding file backend will be selected
+            based on the prefix of the file path. Defaults to None.
 
     Returns:
         ndarray: Loaded image array.
@@ -187,22 +188,20 @@ def imread(img_or_path: Union[np.ndarray, str, Path],
         >>> # infer the file backend by the prefix s3
         >>> img = mmcv.imread(s3_img_path)
         >>> # manually set the file backend petrel
-        >>> img = mmcv.imread(s3_img_path, file_client_args={
+        >>> img = mmcv.imread(s3_img_path, backend_args={
         ...     'backend': 'petrel'})
         >>> http_img_path = 'http://path/to/img.jpg'
         >>> img = mmcv.imread(http_img_path)
-        >>> img = mmcv.imread(http_img_path, file_client_args={
+        >>> img = mmcv.imread(http_img_path, backend_args={
         ...     'backend': 'http'})
     """
-
     if isinstance(img_or_path, Path):
         img_or_path = str(img_or_path)
 
     if isinstance(img_or_path, np.ndarray):
         return img_or_path
     elif is_str(img_or_path):
-        file_client = FileClient.infer_client(file_client_args, img_or_path)
-        img_bytes = file_client.get(img_or_path)
+        img_bytes = fileio.get(img_or_path, backend_args=backend_args)
         return imfrombytes(img_bytes, flag, channel_order, backend)
     else:
         raise TypeError('"img" must be a numpy array or a str or '
@@ -272,11 +271,9 @@ def imwrite(img: np.ndarray,
             file_path: str,
             params: Optional[list] = None,
             auto_mkdir: Optional[bool] = None,
-            file_client_args: Optional[dict] = None) -> bool:
+            *,
+            backend_args: Optional[dict] = None) -> bool:
     """Write image to file.
-
-    Note:
-        In v1.4.1 and later, add `file_client_args` parameters.
 
     Warning:
         The parameter `auto_mkdir` will be deprecated in the future and every
@@ -288,9 +285,12 @@ def imwrite(img: np.ndarray,
         params (None or list): Same as opencv :func:`imwrite` interface.
         auto_mkdir (bool): If the parent folder of `file_path` does not exist,
             whether to create it automatically. It will be deprecated.
-        file_client_args (dict | None): Arguments to instantiate a
-            FileClient. See :class:`mmengine.fileio.FileClient` for details.
-            Default: None.
+        backend_args (dict, optional): Instantiates the corresponding file
+            backend. It may contain `backend` key to specify the file
+            backend. If it contains, the file backend corresponding to this
+            value will be used and initialized with the remaining values,
+            otherwise the corresponding file backend will be selected
+            based on the prefix of the file path. Defaults to None.
 
     Returns:
         bool: Successful or not.
@@ -301,7 +301,7 @@ def imwrite(img: np.ndarray,
         >>> # infer the file backend by the prefix s3
         >>> ret = mmcv.imwrite(img, 's3://bucket/img.jpg')
         >>> # manually set the file backend petrel
-        >>> ret = mmcv.imwrite(img, 's3://bucket/img.jpg', file_client_args={
+        >>> ret = mmcv.imwrite(img, 's3://bucket/img.jpg', backend_args={
         ...     'backend': 'petrel'})
     """
     assert is_filepath(file_path)
@@ -310,11 +310,13 @@ def imwrite(img: np.ndarray,
         warnings.warn(
             'The parameter `auto_mkdir` will be deprecated in the future and '
             'every file clients will make directory automatically.')
-    file_client = FileClient.infer_client(file_client_args, file_path)
+
     img_ext = osp.splitext(file_path)[-1]
     # Encode image according to image suffix.
     # For example, if image path is '/path/your/img.jpg', the encode
     # format is '.jpg'.
     flag, img_buff = cv2.imencode(img_ext, img, params)
-    file_client.put(img_buff.tobytes(), file_path)
+
+    fileio.put(img_buff.tobytes(), file_path, backend_args=backend_args)
+
     return flag

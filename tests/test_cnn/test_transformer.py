@@ -538,7 +538,6 @@ def test_ffn():
     with pytest.raises(AssertionError):
         # num_fcs should be no less than 2
         FFN(num_fcs=1)
-    FFN(dropout=0, add_residual=True)
     ffn = FFN(dropout=0, add_identity=True)
 
     input_tensor = torch.rand(2, 20, 256)
@@ -552,6 +551,13 @@ def test_ffn():
     torch.allclose(
         ffn(input_tensor, identity=residual).sum(),
         ffn(input_tensor).sum() + residual.sum() - input_tensor.sum())
+
+    # test with layer_scale
+    ffn = FFN(dropout=0, add_identity=True, layer_scale_init_value=0.1)
+
+    input_tensor = torch.rand(2, 20, 256)
+    input_tensor_nbc = input_tensor.transpose(0, 1)
+    assert torch.allclose(ffn(input_tensor).sum(), ffn(input_tensor_nbc).sum())
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason='Cuda not available')

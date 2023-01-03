@@ -23,7 +23,7 @@ class TestLoadImageFromFile:
         assert results['ori_shape'] == (300, 400)
         assert repr(transform) == transform.__class__.__name__ + \
             "(ignore_empty=False, to_float32=False, color_type='color', " + \
-            "imdecode_backend='cv2', file_client_args={'backend': 'disk'})"
+            "imdecode_backend='cv2')"
 
         # to_float32
         transform = LoadImageFromFile(to_float32=True)
@@ -131,5 +131,4 @@ class TestLoadAnnotations:
         assert repr(transform) == (
             'LoadAnnotations(with_bbox=True, '
             'with_label=False, with_seg=False, '
-            "with_keypoints=False, imdecode_backend='cv2', "
-            "file_client_args={'backend': 'disk'})")
+            "with_keypoints=False, imdecode_backend='cv2')")

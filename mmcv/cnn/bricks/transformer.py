@@ -15,6 +15,7 @@ from mmengine.utils import deprecated_api_warning, to_2tuple
 from mmcv.cnn import (Linear, build_activation_layer, build_conv_layer,
                       build_norm_layer)
 from .drop import build_dropout
+from .scale import LayerScale
 
 # Avoid BC-breaking of importing MultiScaleDeformableAttention from this file
 try:
@@ -572,6 +573,8 @@ class FFN(BaseModule):
             when adding the shortcut.
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
             Default: None.
+        layer_scale_init_value (float): Initial value of scale factor in
+            LayerScale. Default: 1.0
     """
 
     @deprecated_api_warning(
@@ -588,7 +591,8 @@ class FFN(BaseModule):
                  ffn_drop=0.,
                  dropout_layer=None,
                  add_identity=True,
-                 init_cfg=None):
+                 init_cfg=None,
+                 layer_scale_init_value=0.):
         super().__init__(init_cfg)
         assert num_fcs >= 2, 'num_fcs should be no less ' \
             f'than 2. got {num_fcs}.'
@@ -611,6 +615,11 @@ class FFN(BaseModule):
             dropout_layer) if dropout_layer else torch.nn.Identity()
         self.add_identity = add_identity
 
+        if layer_scale_init_value > 0:
+            self.gamma2 = LayerScale(embed_dims, scale=layer_scale_init_value)
+        else:
+            self.gamma2 = nn.Identity()
+
     @deprecated_api_warning({'residual': 'identity'}, cls_name='FFN')
     def forward(self, x, identity=None):
         """Forward function for `FFN`.
@@ -618,6 +627,7 @@ class FFN(BaseModule):
         The function would add x to the output tensor if residue is None.
         """
         out = self.layers(x)
+        out = self.gamma2(out)
         if not self.add_identity:
             return self.dropout_layer(out)
         if identity is None:
