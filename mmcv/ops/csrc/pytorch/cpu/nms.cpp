@@ -1,11 +1,17 @@
 // Copyright (c) OpenMMLab. All rights reserved
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"
+#include "torch/utils.h"
+
+float* get_data_float(Tensor x) {
+    return x.data_ptr<float>();
+}
 
 Tensor nms_cpu(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
   if (boxes.numel() == 0) {
     return at::empty({0}, boxes.options().dtype(at::kLong));
   }
+
   auto x1_t = boxes.select(1, 0).contiguous();
   auto y1_t = boxes.select(1, 1).contiguous();
   auto x2_t = boxes.select(1, 2).contiguous();

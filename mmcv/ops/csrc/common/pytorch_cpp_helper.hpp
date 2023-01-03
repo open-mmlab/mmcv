@@ -1,6 +1,7 @@
 #ifndef PYTORCH_CPP_HELPER
 #define PYTORCH_CPP_HELPER
 #include <torch/types.h>
+#include <pytorch_gdb.hpp>
 
 #include <vector>
 
@@ -23,5 +24,7 @@ using namespace at;
 #define CHECK_CPU_INPUT(x) \
   CHECK_CPU(x);            \
   CHECK_CONTIGUOUS(x)
+
+
 
 #endif  // PYTORCH_CPP_HELPER

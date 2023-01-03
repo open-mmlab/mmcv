@@ -267,6 +267,8 @@ def get_extensions():
         if platform.system() != 'Windows':
             extra_compile_args['cxx'] = ['-std=c++14']
 
+        extra_compile_args['cxx'] += ['-g']
+        # extra_compile_args['cxx'] += ['-fkeep-inline-functions']
         include_dirs = []
 
         is_rocm_pytorch = False
@@ -287,7 +289,8 @@ def get_extensions():
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') + \
-                glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cpp')
+                glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/common/*.cpp')
             extension = CUDAExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/pytorch'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
