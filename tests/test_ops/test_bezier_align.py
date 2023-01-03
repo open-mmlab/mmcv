@@ -20,7 +20,27 @@ outputs = ([[[[1., 1.75, 3.5, 5.25], [2.5, 3.25, 5., 6.75],
                                                0.0625]]]])
 
 
-def _test_bezieralign_allclose(device, dtype):
+@pytest.mark.parametrize('device', [
+    'cpu',
+    pytest.param(
+        'cuda',
+        marks=pytest.mark.skipif(
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    pytest.param(
+        'mlu',
+        marks=pytest.mark.skipif(
+            not IS_MLU_AVAILABLE, reason='requires MLU support'))
+])
+@pytest.mark.parametrize('dtype', [
+    torch.float,
+    pytest.param(
+        torch.double,
+        marks=pytest.mark.skipif(
+            IS_MLU_AVAILABLE,
+            reason='MLU does not support for 64-bit floating point')),
+    torch.half
+])
+def test_bezieralign(device, dtype):
     try:
         from mmcv.ops import bezier_align
     except ModuleNotFoundError:
@@ -44,28 +64,3 @@ def _test_bezieralign_allclose(device, dtype):
         output.data.type(torch.float).cpu().numpy(), np_output, atol=1e-3)
     assert np.allclose(
         x.grad.data.type(torch.float).cpu().numpy(), np_grad, atol=1e-3)
-
-
-@pytest.mark.parametrize('device', [
-    'cpu',
-    pytest.param(
-        'cuda',
-        marks=pytest.mark.skipif(
-            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
-    pytest.param(
-        'mlu',
-        marks=pytest.mark.skipif(
-            not IS_MLU_AVAILABLE, reason='requires MLU support'))
-])
-@pytest.mark.parametrize('dtype', [
-    torch.float,
-    pytest.param(
-        torch.double,
-        marks=pytest.mark.skipif(
-            IS_MLU_AVAILABLE,
-            reason='MLU does not support for 64-bit floating point')),
-    torch.half
-])
-def test_bezieralign(device, dtype):
-
-    _test_bezieralign_allclose(device=device, dtype=dtype)
