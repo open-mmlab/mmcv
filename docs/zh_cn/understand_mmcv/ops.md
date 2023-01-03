@@ -18,7 +18,7 @@ MMCV 提供了检测、分割等任务中常用的算子
 | ConvexIoU                    |     | √    |     |     |        |
 | CornerPool                   |     | √    |     |     |        |
 | Correlation                  |     | √    |     |     |        |
-| Deformable Convolution v1/v2 | √   | √    |     |     |        |
+| Deformable Convolution v1/v2 | √   | √    |     |     | √      |
 | Deformable RoIPool           |     | √    | √   |     | √      |
 | DiffIoURotated               |     | √    |     |     |        |
 | DynamicScatter               |     | √    |     |     |        |
