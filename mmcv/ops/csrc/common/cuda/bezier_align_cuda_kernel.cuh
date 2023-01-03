@@ -1,4 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved
+// Modified from
+// https://github.com/aim-uofa/AdelaiDet/blob/master/adet/layers/csrc/BezierAlign/BezierAlign_cuda.cu
 #ifndef BEZIER_ALIGN_CUDA_KERNEL_CUH
 #define BEZIER_ALIGN_CUDA_KERNEL_CUH
 

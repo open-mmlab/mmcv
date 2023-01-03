@@ -1880,24 +1880,6 @@ void BezierAlignBackwardCUDAKernelLauncher(Tensor grad_output, Tensor rois,
                                         int sampling_ratio,
                                         bool aligned);
 
-void bezier_align_forward_cuda(Tensor input, Tensor rois, Tensor output,
-                            int aligned_height, int aligned_width,
-                            float spatial_scale, int sampling_ratio,
-                            bool aligned) {
-  BezierAlignForwardCUDAKernelLauncher(
-      input, rois, output, aligned_height, aligned_width,
-      spatial_scale, sampling_ratio, aligned);
-}
-
-void bezier_align_backward_cuda(Tensor grad_output, Tensor rois, Tensor grad_input,
-                             int aligned_height, int aligned_width,
-                             float spatial_scale, int sampling_ratio,
-                             bool aligned) {
-  BezierAlignBackwardCUDAKernelLauncher(
-      grad_output, rois, grad_input, aligned_height,
-      aligned_width, spatial_scale, sampling_ratio, aligned);
-}
-
 void bezier_align_forward_impl(Tensor input, Tensor rois, Tensor output,
                             int aligned_height, int aligned_width,
                             float spatial_scale, int sampling_ratio,
@@ -1908,5 +1890,5 @@ void bezier_align_backward_impl(Tensor grad_output, Tensor rois, Tensor grad_inp
                              float spatial_scale, int sampling_ratio,
                              bool aligned);
 
-REGISTER_DEVICE_IMPL(bezier_align_forward_impl, CUDA, bezier_align_forward_cuda);
-REGISTER_DEVICE_IMPL(bezier_align_backward_impl, CUDA, bezier_align_backward_cuda);
+REGISTER_DEVICE_IMPL(bezier_align_forward_impl, CUDA, BezierAlignForwardCUDAKernelLauncher);
+REGISTER_DEVICE_IMPL(bezier_align_backward_impl, CUDA, BezierAlignBackwardCUDAKernelLauncher);

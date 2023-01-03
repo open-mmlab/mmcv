@@ -49,6 +49,7 @@ void pre_calc_for_bilinear_interpolate(
     T bin_size_w,
     int roi_bin_grid_h,
     int roi_bin_grid_w,
+    T offset,
     std::vector<PreCalc<T>> &pre_calc)
 {
   int pre_calc_index = 0;
@@ -63,8 +64,8 @@ void pre_calc_for_bilinear_interpolate(
       const T y0 = bezier_curve(p0_y, p1_y, p2_y, p3_y, u);
       const T x1 = bezier_curve(p4_x, p5_x, p6_x, p7_x, u);
       const T y1 = bezier_curve(p4_y, p5_y, p6_y, p7_y, u);
-      const T x_center = x1 * v + x0 * (1. - v);
-      const T y_center = y1 * v + y0 * (1. - v);
+      const T x_center = x1 * v + x0 * (1. - v) - offset;
+      const T y_center = y1 * v + y0 * (1. - v) - offset;
       for (int iy = 0; iy < iy_upper; iy++)
       {
         const T yy = y_center - (T)0.5 * bin_size_h +
@@ -245,6 +246,7 @@ void BezierAlignForward(
         bin_size_w,
         roi_bin_grid_h,
         roi_bin_grid_w,
+        offset,
         pre_calc);
 
     for (int c = 0; c < channels; c++)
@@ -348,7 +350,6 @@ void bilinear_interpolate_gradient(
 
   w1 = hy * hx, w2 = hy * lx, w3 = ly * hx, w4 = ly * lx;
 
-  return;
 }
 
 template <class T>
@@ -533,26 +534,6 @@ void BezierAlignBackwardCPULauncher(Tensor grad_output, Tensor rois,
             n_stride, c_stride, h_stride, w_stride); });
 }
 
-void bezier_align_forward_cpu(Tensor input, Tensor rois, Tensor output,
-                              int aligned_height,
-                              int aligned_width, float spatial_scale,
-                              int sampling_ratio, bool aligned)
-{
-  BezierAlignForwardCPULauncher(input, rois, output,
-                                aligned_height, aligned_width, spatial_scale,
-                                sampling_ratio, aligned);
-}
-
-void bezier_align_backward_cpu(Tensor grad_output, Tensor rois, Tensor grad_input,
-                               int aligned_height, int aligned_width,
-                               float spatial_scale, int sampling_ratio,
-                               bool aligned)
-{
-  BezierAlignBackwardCPULauncher(grad_output, rois, grad_input,
-                                 aligned_height, aligned_width, spatial_scale,
-                                 sampling_ratio, aligned);
-}
-
 void bezier_align_forward_impl(Tensor input, Tensor rois, Tensor output,
                                int aligned_height, int aligned_width,
                                float spatial_scale, int sampling_ratio,
@@ -563,5 +544,5 @@ void bezier_align_backward_impl(Tensor grad_output, Tensor rois, Tensor grad_inp
                                 float spatial_scale, int sampling_ratio,
                                 bool aligned);
 
-REGISTER_DEVICE_IMPL(bezier_align_forward_impl, CPU, bezier_align_forward_cpu);
-REGISTER_DEVICE_IMPL(bezier_align_backward_impl, CPU, bezier_align_backward_cpu);
+REGISTER_DEVICE_IMPL(bezier_align_forward_impl, CPU, BezierAlignForwardCPULauncher);
+REGISTER_DEVICE_IMPL(bezier_align_backward_impl, CPU, BezierAlignBackwardCPULauncher);
