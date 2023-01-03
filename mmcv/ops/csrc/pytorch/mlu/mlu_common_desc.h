@@ -18,6 +18,7 @@
 #include "pytorch_mlu_helper.hpp"
 
 mluOpDataType_t getMluOpDataType(const caffe2::TypeMeta& data_type);
+mluOpTensorLayout_t getMluOpSuggestLayout(const at::Tensor& input);
 
 class MluOpTensorDescriptor {
  public:

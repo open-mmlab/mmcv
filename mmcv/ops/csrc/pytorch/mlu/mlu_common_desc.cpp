@@ -37,10 +37,28 @@ mluOpDataType_t getMluOpDataType(const caffe2::TypeMeta& data_type) {
   return MLUOP_DTYPE_INVALID;
 }
 
+// laytout
+mluOpTensorLayout_t getMluOpSuggestLayout(const at::Tensor& input) {
+  auto suggest_memory_format = input.suggest_memory_format();
+  mluOpTensorLayout_t layout = MLUOP_LAYOUT_ARRAY;
+  switch (input.dim()) {
+    case 4:
+      layout = (suggest_memory_format == at::MemoryFormat::ChannelsLast)
+      ? MLUOP_LAYOUT_NHWC : MLUOP_LAYOUT_NCHW;
+      break;
+    case 5:
+      layout = (suggest_memory_format == at::MemoryFormat::ChannelsLast3d)
+      ? MLUOP_LAYOUT_NDHWC : MLUOP_LAYOUT_NCDHW;
+      break;
+    default:
+      layout = MLUOP_LAYOUT_ARRAY;
+  }
+  return layout;
+}
+
 void MluOpTensorDescriptor::set(Tensor t) {
   mluOpDataType_t data_type = getMluOpDataType(t.dtype());
-  mluOpTensorLayout_t layout =
-      MLUOP_LAYOUT_ARRAY;  // XXX Improve it in the future;
+  mluOpTensorLayout_t layout = getMluOpSuggestLayout(t);
   int t_dim = t.dim();
   std::vector<int> dim_array;
   if (t_dim == 0) {
