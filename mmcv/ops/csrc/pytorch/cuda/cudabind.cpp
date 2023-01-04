@@ -538,18 +538,17 @@ torch::Tensor bias_act_op(const torch::Tensor &input, const torch::Tensor &bias,
 
 REGISTER_DEVICE_IMPL(bias_act_op_impl, CUDA, bias_act_op);
 
-std::tuple<torch::Tensor, torch::Tensor, int>
-filtered_lrelu_op_impl(torch::Tensor x, torch::Tensor fu, torch::Tensor fd,
-                       torch::Tensor b, torch::Tensor si, int up, int down,
-                       int px0, int px1, int py0, int py1, int sx, int sy,
-                       float gain, float slope, float clamp, bool flip_filters,
-                       bool writeSigns);
+std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op_impl(
+    torch::Tensor x, torch::Tensor fu, torch::Tensor fd, torch::Tensor b,
+    torch::Tensor si, int up, int down, int px0, int px1, int py0, int py1,
+    int sx, int sy, float gain, float slope, float clamp, bool flip_filters,
+    bool writeSigns);
 
-std::tuple<torch::Tensor, torch::Tensor, int>
-filtered_lrelu_op(torch::Tensor x, torch::Tensor fu, torch::Tensor fd,
-                  torch::Tensor b, torch::Tensor si, int up, int down, int px0,
-                  int px1, int py0, int py1, int sx, int sy, float gain,
-                  float slope, float clamp, bool flip_filters, bool writeSigns);
+std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
+    torch::Tensor x, torch::Tensor fu, torch::Tensor fd, torch::Tensor b,
+    torch::Tensor si, int up, int down, int px0, int px1, int py0, int py1,
+    int sx, int sy, float gain, float slope, float clamp, bool flip_filters,
+    bool writeSigns);
 
 REGISTER_DEVICE_IMPL(filtered_lrelu_op_impl, CUDA, filtered_lrelu_op);
 
@@ -1283,10 +1282,9 @@ REGISTER_DEVICE_IMPL(roi_pool_backward_impl, CUDA, roi_pool_backward_cuda);
 
 typedef enum { SUM = 0, MEAN = 1, MAX = 2 } reduce_t;
 
-std::vector<at::Tensor>
-DynamicPointToVoxelForwardCUDAKernelLauncher(const at::Tensor &feats,
-                                             const at::Tensor &coors,
-                                             const reduce_t reduce_type);
+std::vector<at::Tensor> DynamicPointToVoxelForwardCUDAKernelLauncher(
+    const at::Tensor &feats, const at::Tensor &coors,
+    const reduce_t reduce_type);
 
 void DynamicPointToVoxelBackwardCUDAKernelLauncher(
     at::Tensor &grad_feats, const at::Tensor &grad_reduced_feats,
@@ -1294,10 +1292,9 @@ void DynamicPointToVoxelBackwardCUDAKernelLauncher(
     const at::Tensor &coors_map, const at::Tensor &reduce_count,
     const reduce_t reduce_type);
 
-std::vector<torch::Tensor>
-dynamic_point_to_voxel_forward_cuda(const torch::Tensor &feats,
-                                    const torch::Tensor &coors,
-                                    const reduce_t reduce_type) {
+std::vector<torch::Tensor> dynamic_point_to_voxel_forward_cuda(
+    const torch::Tensor &feats, const torch::Tensor &coors,
+    const reduce_t reduce_type) {
   return DynamicPointToVoxelForwardCUDAKernelLauncher(feats, coors,
                                                       reduce_type);
 };
@@ -1312,10 +1309,9 @@ void dynamic_point_to_voxel_backward_cuda(
                                                 reduce_count, reduce_type);
 };
 
-std::vector<torch::Tensor>
-dynamic_point_to_voxel_forward_impl(const torch::Tensor &feats,
-                                    const torch::Tensor &coors,
-                                    const reduce_t reduce_type);
+std::vector<torch::Tensor> dynamic_point_to_voxel_forward_impl(
+    const torch::Tensor &feats, const torch::Tensor &coors,
+    const reduce_t reduce_type);
 
 void dynamic_point_to_voxel_backward_impl(
     torch::Tensor &grad_feats, const torch::Tensor &grad_reduced_feats,
@@ -1680,18 +1676,22 @@ torch::Tensor IndiceConvForwardCUDAKernelLauncher(
     torch::Tensor indiceNum, int64_t numActOut, int64_t _inverse,
     int64_t _subM);
 
-torch::Tensor
-indice_conv_forward_cuda(torch::Tensor features, torch::Tensor filters,
-                         torch::Tensor indicePairs, torch::Tensor indiceNum,
-                         int64_t numActOut, int64_t _inverse, int64_t _subM) {
+torch::Tensor indice_conv_forward_cuda(torch::Tensor features,
+                                       torch::Tensor filters,
+                                       torch::Tensor indicePairs,
+                                       torch::Tensor indiceNum,
+                                       int64_t numActOut, int64_t _inverse,
+                                       int64_t _subM) {
   return IndiceConvForwardCUDAKernelLauncher(
       features, filters, indicePairs, indiceNum, numActOut, _inverse, _subM);
 };
 
-torch::Tensor
-indice_conv_forward_impl(torch::Tensor features, torch::Tensor filters,
-                         torch::Tensor indicePairs, torch::Tensor indiceNum,
-                         int64_t numActOut, int64_t _inverse, int64_t _subM);
+torch::Tensor indice_conv_forward_impl(torch::Tensor features,
+                                       torch::Tensor filters,
+                                       torch::Tensor indicePairs,
+                                       torch::Tensor indiceNum,
+                                       int64_t numActOut, int64_t _inverse,
+                                       int64_t _subM);
 
 REGISTER_DEVICE_IMPL(indice_conv_forward_impl, CUDA, indice_conv_forward_cuda);
 
@@ -1700,20 +1700,18 @@ std::vector<torch::Tensor> IndiceConvBackwardCUDAKernelLauncher(
     torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
     int64_t _subM);
 
-std::vector<torch::Tensor>
-indice_conv_backward_cuda(torch::Tensor features, torch::Tensor filters,
-                          torch::Tensor outGrad, torch::Tensor indicePairs,
-                          torch::Tensor indiceNum, int64_t _inverse,
-                          int64_t _subM) {
+std::vector<torch::Tensor> indice_conv_backward_cuda(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
+    int64_t _subM) {
   return IndiceConvBackwardCUDAKernelLauncher(
       features, filters, outGrad, indicePairs, indiceNum, _inverse, _subM);
 };
 
-std::vector<torch::Tensor>
-indice_conv_backward_impl(torch::Tensor features, torch::Tensor filters,
-                          torch::Tensor outGrad, torch::Tensor indicePairs,
-                          torch::Tensor indiceNum, int64_t _inverse,
-                          int64_t _subM);
+std::vector<torch::Tensor> indice_conv_backward_impl(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
+    int64_t _subM);
 
 REGISTER_DEVICE_IMPL(indice_conv_backward_impl, CUDA,
                      indice_conv_backward_cuda);
