@@ -189,10 +189,9 @@ Tensor softnms(Tensor boxes, Tensor scores, Tensor dets, float iou_threshold,
 
 std::vector<std::vector<int>> nms_match(Tensor dets, float iou_threshold);
 
-std::vector<std::vector<float>>
-pixel_group(Tensor score, Tensor mask, Tensor embedding, Tensor kernel_label,
-            Tensor kernel_contour, int kernel_region_num,
-            float distance_threshold);
+std::vector<std::vector<float>> pixel_group(
+    Tensor score, Tensor mask, Tensor embedding, Tensor kernel_label,
+    Tensor kernel_contour, int kernel_region_num, float distance_threshold);
 
 std::vector<std::vector<int>> contour_expand(Tensor kernel_mask,
                                              Tensor internal_kernel_label,
@@ -332,10 +331,9 @@ void roi_align_rotated_backward(Tensor grad_output, Tensor rois,
                                 int sampling_ratio, bool aligned,
                                 bool clockwise);
 
-std::vector<torch::Tensor>
-dynamic_point_to_voxel_forward(const torch::Tensor &feats,
-                               const torch::Tensor &coors,
-                               const std::string &reduce_type);
+std::vector<torch::Tensor> dynamic_point_to_voxel_forward(
+    const torch::Tensor &feats, const torch::Tensor &coors,
+    const std::string &reduce_type);
 
 void dynamic_point_to_voxel_backward(torch::Tensor &grad_feats,
                                      const torch::Tensor &grad_reduced_feats,
@@ -445,11 +443,11 @@ Tensor bias_act(const Tensor &input, const Tensor &bias, const Tensor &xref,
                 const Tensor &yref, const Tensor &dy, int grad, int dim,
                 int act, float alpha, float gain, float clamp);
 
-std::tuple<torch::Tensor, torch::Tensor, int>
-filtered_lrelu(torch::Tensor x, torch::Tensor fu, torch::Tensor fd,
-               torch::Tensor b, torch::Tensor si, int up, int down, int px0,
-               int px1, int py0, int py1, int sx, int sy, float gain,
-               float slope, float clamp, bool flip_filters, bool writeSigns);
+std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu(
+    torch::Tensor x, torch::Tensor fu, torch::Tensor fd, torch::Tensor b,
+    torch::Tensor si, int up, int down, int px0, int px1, int py0, int py1,
+    int sx, int sy, float gain, float slope, float clamp, bool flip_filters,
+    bool writeSigns);
 
 torch::Tensor filtered_lrelu_act_(torch::Tensor x, torch::Tensor si, int sx,
                                   int sy, float gain, float slope, float clamp,
