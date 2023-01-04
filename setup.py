@@ -333,6 +333,7 @@ def get_extensions():
                 '-I' + os.path.abspath('./mlu-ops/bangc-ops/kernels'))
             extra_compile_args['cncc'] = [mlu_args] + \
                 mluops_includes if mlu_args else mluops_includes
+            extra_compile_args['cxx'] += ['-fno-gnu-unique']
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/mlu/*.cpp') + \
