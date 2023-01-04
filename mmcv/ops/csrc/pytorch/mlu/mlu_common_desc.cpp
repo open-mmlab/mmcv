@@ -44,11 +44,13 @@ mluOpTensorLayout_t getMluOpSuggestLayout(const at::Tensor& input) {
   switch (input.dim()) {
     case 4:
       layout = (suggest_memory_format == at::MemoryFormat::ChannelsLast)
-      ? MLUOP_LAYOUT_NHWC : MLUOP_LAYOUT_NCHW;
+                   ? MLUOP_LAYOUT_NHWC
+                   : MLUOP_LAYOUT_NCHW;
       break;
     case 5:
       layout = (suggest_memory_format == at::MemoryFormat::ChannelsLast3d)
-      ? MLUOP_LAYOUT_NDHWC : MLUOP_LAYOUT_NCDHW;
+                   ? MLUOP_LAYOUT_NDHWC
+                   : MLUOP_LAYOUT_NCDHW;
       break;
     default:
       layout = MLUOP_LAYOUT_ARRAY;
