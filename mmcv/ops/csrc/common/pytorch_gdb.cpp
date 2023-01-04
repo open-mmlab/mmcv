@@ -1,6 +1,7 @@
 #include <torch/csrc/DynamicTypes.h>
 #include <torch/csrc/autograd/variable.h>
 #include <torch/csrc/python_headers.h>
+#include <torch/csrc/autograd/python_variable.h>
 #include <torch/csrc/utils/invalid_arguments.h>
 #include <torch/csrc/utils/python_strings.h>
 #include <torch/csrc/utils/python_tuples.h>
