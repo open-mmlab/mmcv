@@ -372,7 +372,7 @@ class EvalHook(Hook):
         runner.log_buffer.ready = True
 
         if self.save_best is not None:
-            # If the performance of model is pool, the `eval_res` may be an
+            # If the performance of model is poor, the `eval_res` may be an
             # empty dict and it will raise exception when `self.save_best` is
             # not None. More details at
             # https://github.com/open-mmlab/mmdetection/issues/6265.
