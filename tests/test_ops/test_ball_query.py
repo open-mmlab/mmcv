@@ -17,7 +17,6 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
             not IS_MLU_AVAILABLE, reason='requires MLU support'))
 ])
 def test_ball_query(device):
-    print(device)
     new_xyz = torch.tensor(
         [[[-0.0740, 1.3147, -1.3625], [-2.2769, 2.7817, -0.2334],
           [-0.4003, 2.4666, -0.5116], [-0.0740, 1.3147, -1.3625],
