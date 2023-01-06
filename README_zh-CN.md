@@ -49,7 +49,7 @@ MMCV 支持多种平台，包括：
 
 如想了解更多特性和使用，请参考[文档](http://mmcv.readthedocs.io/zh_CN/2.x)。
 
-提示: MMCV 需要 Python 3.6 以上版本。
+提示: MMCV 需要 Python 3.7 以上版本。
 
 ## 安装
 
