@@ -403,23 +403,22 @@ docker pull ${docker image}
 
 #### 选项2：基于cambricon pytorch源码编译安装
 
-#### 安装CATCH:
+#### 安装 CATCH:
 
-- 请向 service@cambricon.com 发送邮件或联系Cambricon工程师以获取合适版本的CATCH软件包，在您获得合适版本的CATCH软件包后，请参照 ${CATCH-path}/CONTRIBUTING.md 中的步骤安装CATCH.
+请向 service@cambricon.com 发送邮件或联系 Cambricon 工程师以获取合适版本的 CATCH 软件包，在您获得合适版本的 CATCH 软件包后，请参照 ${CATCH-path}/CONTRIBUTING.md 中的步骤安装 CATCH。
 
-
-#### 编译MMCV MLU:
+#### 编译 MMCV MLU:
 
 ```bash
 git clone https://github.com/open-mmlab/mmcv.git -b master
 cd mmcv
-export MMCV_WITH_OPS=ON
+export MMCV_WITH_OPS=1
 export FORCE_MLU=1
 python setup.py install
 ```
 
 #### 验证是否成功安装
-完成上述安装步骤之后，您可以尝试运行下面的python代码以测试您是否成功在MLU设备上安装了mmcv-full:
+完成上述安装步骤之后，您可以尝试运行下面的 Python 代码以测试您是否成功在 MLU 设备上安装了 mmcv-full:
 ``` python
 import torch
 import torch_mlu
