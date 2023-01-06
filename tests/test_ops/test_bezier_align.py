@@ -25,11 +25,7 @@ outputs = ([[[[1., 1.75, 3.5, 5.25], [2.5, 3.25, 5., 6.75],
     pytest.param(
         'cuda',
         marks=pytest.mark.skipif(
-            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
-    pytest.param(
-        'mlu',
-        marks=pytest.mark.skipif(
-            not IS_MLU_AVAILABLE, reason='requires MLU support'))
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support'))
 ])
 @pytest.mark.parametrize('dtype', [
     torch.float,

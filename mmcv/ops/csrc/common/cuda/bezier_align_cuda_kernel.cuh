@@ -7,43 +7,32 @@
 #include <float.h>
 #ifdef MMCV_WITH_TRT
 #include "common_cuda_helper.hpp"
-#else // MMCV_WITH_TRT
+#else  // MMCV_WITH_TRT
 #ifdef MMCV_USE_PARROTS
 #include "parrots_cuda_helper.hpp"
-#else // MMCV_USE_PARROTS
+#else  // MMCV_USE_PARROTS
 #include "pytorch_cuda_helper.hpp"
-#endif // MMCV_USE_PARROTS
-#endif // MMCV_WITH_TRT
+#endif  // MMCV_USE_PARROTS
+#endif  // MMCV_WITH_TRT
 
 template <typename T>
-__device__ T bezier_curve(
-    const T p0,
-    const T p1,
-    const T p2,
-    const T p3,
-    const T u)
-{
-  return (
-      (1. - u) * (1. - u) * (1. - u) * p0 + 3. * u * (1. - u) * (1. - u) * p1 + 3. * u * u * (1. - u) * p2 + u * u * u * p3);
+__device__ T bezier_curve(const T p0, const T p1, const T p2, const T p3,
+                          const T u) {
+  return ((1. - u) * (1. - u) * (1. - u) * p0 +
+          3. * u * (1. - u) * (1. - u) * p1 + 3. * u * u * (1. - u) * p2 +
+          u * u * u * p3);
 }
 
 template <typename T>
 __global__ void bezier_align_forward_cuda_kernel(
     const int nthreads,
-    const T *bottom_data, // inputs
-    const T *bottom_rois, // bottom rois contains the bezier curve
-    T *top_data,          // outputs
-    const int pooled_height,
-    const int pooled_width,
-    const T spatial_scale,
-    const int sampling_ratio,
-    bool aligned,
-    const int channels,
-    const int height,
-    const int width)
-{
-  CUDA_1D_KERNEL_LOOP(index, nthreads)
-  {
+    const T *bottom_data,  // inputs
+    const T *bottom_rois,  // bottom rois contains the bezier curve
+    T *top_data,           // outputs
+    const int pooled_height, const int pooled_width, const T spatial_scale,
+    const int sampling_ratio, bool aligned, const int channels,
+    const int height, const int width) {
+  CUDA_1D_KERNEL_LOOP(index, nthreads) {
     // (n, c, ph, pw) is an element in the pooled output
     int pw = index % pooled_width;
     int ph = (index / pooled_width) % pooled_height;
@@ -87,8 +76,7 @@ __global__ void bezier_align_forward_cuda_kernel(
 
     T roi_width = max(abs(p0_x - p3_x), abs(p4_x - p7_x));
     T roi_height = max(abs(p0_y - p3_y), abs(p4_y - p7_y));
-    if (!aligned)
-    { // for backward-compatibility only
+    if (!aligned) {  // for backward-compatibility only
       roi_width = max(roi_width, (T)1.);
       roi_height = max(roi_height, (T)1.);
     }
@@ -101,28 +89,27 @@ __global__ void bezier_align_forward_cuda_kernel(
     // We use roi_bin_grid to sample the grid and mimic integral
     int roi_bin_grid_h = (sampling_ratio > 0)
                              ? sampling_ratio
-                             : ceil(roi_height / pooled_height); // e.g., = 2
+                             : ceil(roi_height / pooled_height);  // e.g., = 2
     int roi_bin_grid_w =
         (sampling_ratio > 0) ? sampling_ratio : ceil(roi_width / pooled_width);
 
     // We do average (integral) pooling inside a bin
     // When the grid is empty, output zeros == 0/1, instead of NaN.
-    const T count = max(roi_bin_grid_h * roi_bin_grid_w, 1); // e.g. = 4
+    const T count = max(roi_bin_grid_h * roi_bin_grid_w, 1);  // e.g. = 4
 
     T output_val = 0.;
-    for (int iy = 0; iy < roi_bin_grid_h; iy++) // e.g., iy = 0, 1
+    for (int iy = 0; iy < roi_bin_grid_h; iy++)  // e.g., iy = 0, 1
     {
       const T y = y_center - (T)0.5 * bin_size_h +
                   static_cast<T>(iy + .5f) * bin_size_h /
-                      static_cast<T>(roi_bin_grid_h); // e.g., 0.5, 1.5
-      for (int ix = 0; ix < roi_bin_grid_w; ix++)
-      {
+                      static_cast<T>(roi_bin_grid_h);  // e.g., 0.5, 1.5
+      for (int ix = 0; ix < roi_bin_grid_w; ix++) {
         const T x = x_center - (T)0.5 * bin_size_w +
                     static_cast<T>(ix + .5f) * bin_size_w /
                         static_cast<T>(roi_bin_grid_w);
 
-        T val = bilinear_interpolate(
-            offset_bottom_data, height, width, y, x, index);
+        T val = bilinear_interpolate(offset_bottom_data, height, width, y, x,
+                                     index);
         output_val += val;
       }
     }
@@ -134,21 +121,11 @@ __global__ void bezier_align_forward_cuda_kernel(
 
 template <typename T>
 __global__ void bezier_align_backward_cuda_kernel(
-    const int nthreads,
-    const T *top_diff,
-    const T *bottom_rois,
-    T *bottom_diff,
-    const int pooled_height,
-    const int pooled_width,
-    const T spatial_scale,
-    const int sampling_ratio,
-    bool aligned,
-    const int channels,
-    const int height,
-    const int width)
-{
-  CUDA_1D_KERNEL_LOOP(index, nthreads)
-  {
+    const int nthreads, const T *top_diff, const T *bottom_rois, T *bottom_diff,
+    const int pooled_height, const int pooled_width, const T spatial_scale,
+    const int sampling_ratio, bool aligned, const int channels,
+    const int height, const int width) {
+  CUDA_1D_KERNEL_LOOP(index, nthreads) {
     // (n, c, ph, pw) is an element in the pooled output
     int pw = index % pooled_width;
     int ph = (index / pooled_width) % pooled_height;
@@ -190,8 +167,7 @@ __global__ void bezier_align_backward_cuda_kernel(
 
     T roi_width = max(abs(p0_x - p3_x), abs(p4_x - p7_x));
     T roi_height = max(abs(p0_y - p3_y), abs(p4_y - p7_y));
-    if (!aligned)
-    { // for backward-compatibility only
+    if (!aligned) {  // for backward-compatibility only
       roi_width = max(roi_width, (T)1.);
       roi_height = max(roi_height, (T)1.);
     }
@@ -208,20 +184,19 @@ __global__ void bezier_align_backward_cuda_kernel(
     // We use roi_bin_grid to sample the grid and mimic integral
     int roi_bin_grid_h = (sampling_ratio > 0)
                              ? sampling_ratio
-                             : ceil(roi_height / pooled_height); // e.g., = 2
+                             : ceil(roi_height / pooled_height);  // e.g., = 2
     int roi_bin_grid_w =
         (sampling_ratio > 0) ? sampling_ratio : ceil(roi_width / pooled_width);
 
     // We do average (integral) pooling inside a bin
-    const T count = roi_bin_grid_h * roi_bin_grid_w; // e.g. = 4
+    const T count = roi_bin_grid_h * roi_bin_grid_w;  // e.g. = 4
 
-    for (int iy = 0; iy < roi_bin_grid_h; iy++) // e.g., iy = 0, 1
+    for (int iy = 0; iy < roi_bin_grid_h; iy++)  // e.g., iy = 0, 1
     {
       const T y = y_center - (T)0.5 * bin_size_h +
                   static_cast<T>(iy + .5f) * bin_size_h /
-                      static_cast<T>(roi_bin_grid_h); // e.g., 0.5, 1.5
-      for (int ix = 0; ix < roi_bin_grid_w; ix++)
-      {
+                      static_cast<T>(roi_bin_grid_h);  // e.g., 0.5, 1.5
+      for (int ix = 0; ix < roi_bin_grid_w; ix++) {
         const T x = x_center - (T)0.5 * bin_size_w +
                     static_cast<T>(ix + .5f) * bin_size_w /
                         static_cast<T>(roi_bin_grid_w);
@@ -229,40 +204,27 @@ __global__ void bezier_align_backward_cuda_kernel(
         T w1, w2, w3, w4;
         int x_low, x_high, y_low, y_high;
 
-        bilinear_interpolate_gradient(
-            height,
-            width,
-            y,
-            x,
-            w1,
-            w2,
-            w3,
-            w4,
-            x_low,
-            x_high,
-            y_low,
-            y_high,
-            index);
+        bilinear_interpolate_gradient(height, width, y, x, w1, w2, w3, w4,
+                                      x_low, x_high, y_low, y_high, index);
 
         T g1 = top_diff_this_bin * w1 / count;
         T g2 = top_diff_this_bin * w2 / count;
         T g3 = top_diff_this_bin * w3 / count;
         T g4 = top_diff_this_bin * w4 / count;
 
-        if (x_low >= 0 && x_high >= 0 && y_low >= 0 && y_high >= 0)
-        {
-          atomicAdd(
-              offset_bottom_diff + y_low * width + x_low, static_cast<T>(g1));
-          atomicAdd(
-              offset_bottom_diff + y_low * width + x_high, static_cast<T>(g2));
-          atomicAdd(
-              offset_bottom_diff + y_high * width + x_low, static_cast<T>(g3));
-          atomicAdd(
-              offset_bottom_diff + y_high * width + x_high, static_cast<T>(g4));
-        } // if
-      }   // ix
-    }     // iy
-  }       // CUDA_1D_KERNEL_LOOP
-} // BezierAlignBackward
+        if (x_low >= 0 && x_high >= 0 && y_low >= 0 && y_high >= 0) {
+          atomicAdd(offset_bottom_diff + y_low * width + x_low,
+                    static_cast<T>(g1));
+          atomicAdd(offset_bottom_diff + y_low * width + x_high,
+                    static_cast<T>(g2));
+          atomicAdd(offset_bottom_diff + y_high * width + x_low,
+                    static_cast<T>(g3));
+          atomicAdd(offset_bottom_diff + y_high * width + x_high,
+                    static_cast<T>(g4));
+        }  // if
+      }    // ix
+    }      // iy
+  }        // CUDA_1D_KERNEL_LOOP
+}  // BezierAlignBackward
 
-#endif // BEZIER_ALIGN_CUDA_KERNEL_CUH
+#endif  // BEZIER_ALIGN_CUDA_KERNEL_CUH
