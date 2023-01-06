@@ -253,13 +253,13 @@ workflows:
           cuda: "10.2"
           requires:
             - hold
-      - build_cuda1:
+      - build_cuda:
           name: minimum_version_gpu
           torch: 1.6.0
           # Use double quotation mark to explicitly specify its type
           # as string instead of number
           cuda: "10.1"
-          filters:
-            branches:
-              only:
-                - 2.x
+          # filters:
+          #   branches:
+          #     only:
+          #       - 2.x
