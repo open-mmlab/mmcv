@@ -309,7 +309,6 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
@@ -326,6 +325,7 @@ setup(
         'build': parse_requirements('requirements/build.txt'),
         'optional': parse_requirements('requirements/optional.txt'),
     },
+    python_requires='>=3.7',
     ext_modules=get_extensions(),
     cmdclass=cmd_class,
     zip_safe=False)
