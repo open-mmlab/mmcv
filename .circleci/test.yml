@@ -253,11 +253,6 @@ workflows:
           cuda: "10.2"
           requires:
             - hold
-  # merge_stage_test:
-  #   when:
-  #     not:
-  #       << pipeline.parameters.lint_only >>
-  #   jobs:
       - build_cuda1:
           name: minimum_version_gpu
           torch: 1.6.0
