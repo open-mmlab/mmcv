@@ -40,7 +40,7 @@ We implement common ops used in detection, segmentation, etc.
 | PixelGroup                   | √   |      |     |     |        |
 | PointsInBoxes                | √   | √    |     |     |        |
 | PointsInPolygons             |     | √    |     |     |        |
-| PSAMask                      | √   | √    | √   |     |        |
+| PSAMask                      | √   | √    | √   |     | √      |
 | RotatedFeatureAlign          | √   | √    |     |     |        |
 | RoIPointPool3d               |     | √    | √   |     |        |
 | RoIPool                      |     | √    | √   |     |        |
