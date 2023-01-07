@@ -1,8 +1,8 @@
 coverage
 lmdb
-onnx>=1.12.0
-onnxoptimizer>=0.3.0
-onnxruntime>=1.8.0
+onnx
+onnxoptimizer
+onnxruntime
 protobuf~=3.20.2
 pytest
 PyTurboJPEG
