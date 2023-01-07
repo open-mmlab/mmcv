@@ -280,7 +280,7 @@ jobs:
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
         with:
-          sudo: true
+          sudo: false
       - name: Build and install
         run: rm -rf .eggs && python -m pip install -e .
       - name: Validate the installation
