@@ -3,7 +3,6 @@ lmdb
 onnx
 onnxoptimizer
 onnxruntime
-protobuf~=3.20.2
 pytest
 PyTurboJPEG
 scipy
