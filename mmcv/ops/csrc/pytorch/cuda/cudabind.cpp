@@ -1867,3 +1867,20 @@ REGISTER_DEVICE_IMPL(prroi_pool_forward_impl, CUDA, prroi_pool_forward_cuda);
 REGISTER_DEVICE_IMPL(prroi_pool_backward_impl, CUDA, prroi_pool_backward_cuda);
 REGISTER_DEVICE_IMPL(prroi_pool_coor_backward_impl, CUDA,
                      prroi_pool_coor_backward_cuda);
+
+void StackFurthestPointSamplingForwardCUDALauncher(
+    Tensor points_tensor, Tensor temp_tensor, Tensor xyz_batch_cnt_tensor,
+    Tensor idx_tensor, Tensor num_sampled_points_tensor);
+
+void stack_furthest_point_sampling_forward_cuda(
+    Tensor points_tensor, Tensor temp_tensor, Tensor xyz_batch_cnt_tensor,
+    Tensor idx_tensor, Tensor num_sampled_points_tensor) {
+  StackFurthestPointSamplingForwardCUDALauncher(
+      points_tensor, temp_tensor, xyz_batch_cnt_tensor, idx_tensor,
+      num_sampled_points_tensor);
+}
+void stack_furthest_point_sampling_forward_impl(
+    Tensor points_tensor, Tensor temp_tensor, Tensor xyz_batch_cnt_tensor,
+    Tensor idx_tensor, Tensor num_sampled_points_tensor);
+REGISTER_DEVICE_IMPL(stack_furthest_point_sampling_forward_impl, CUDA,
+                     stack_furthest_point_sampling_forward_cuda);
