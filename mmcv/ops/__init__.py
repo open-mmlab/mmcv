@@ -68,6 +68,7 @@ from .three_interpolate import three_interpolate
 from .three_nn import three_nn
 from .tin_shift import TINShift, tin_shift
 from .upfirdn2d import upfirdn2d
+from .voxel_query_vector_pool import vector_pool_with_voxel_query
 from .voxelize import Voxelization, voxelization
 
 __all__ = [
@@ -102,5 +103,5 @@ __all__ = [
     'points_in_boxes_cpu', 'points_in_boxes_all', 'points_in_polygons',
     'min_area_polygons', 'active_rotated_filter', 'convex_iou', 'convex_giou',
     'diff_iou_rotated_2d', 'diff_iou_rotated_3d', 'chamfer_distance',
-    'PrRoIPool', 'prroi_pool'
+    'PrRoIPool', 'prroi_pool', 'vector_pool_with_voxel_query'
 ]

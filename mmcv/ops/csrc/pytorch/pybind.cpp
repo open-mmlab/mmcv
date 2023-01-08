@@ -445,7 +445,19 @@ void box_iou_quadri(const Tensor boxes1, const Tensor boxes2, Tensor ious,
 Tensor nms_quadri(const Tensor dets, const Tensor scores, const Tensor order,
                   const Tensor dets_sorted, const float iou_threshold,
                   const int multi_label);
-
+int stack_vector_pool_forward(
+    const Tensor support_xyz_tensor, const Tensor xyz_batch_cnt_tensor,
+    const Tensor support_features_tensor, const Tensor new_xyz_tensor,
+    const Tensor new_xyz_batch_cnt_tensor, Tensor new_features_tensor,
+    Tensor new_local_xyz_tensor, Tensor point_cnt_of_grid_tensor,
+    Tensor grouped_idxs_tensor, const int num_grid_x, const int num_grid_y,
+    const int num_grid_z, const float max_neighbour_distance, const int use_xyz,
+    const int num_max_sum_points, const int nsample, const int neighbor_type,
+    const int pooling_type);
+void stack_vector_pool_backward(const Tensor grad_new_features_tensor,
+                                const Tensor point_cnt_of_grid_tensor,
+                                const Tensor grouped_idxs_tensor,
+                                Tensor grad_support_features_tensor);
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
         py::arg("kernel"), py::arg("up_x"), py::arg("up_y"), py::arg("down_x"),
@@ -899,4 +911,18 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("dets"), py::arg("scores"), py::arg("order"),
         py::arg("dets_sorted"), py::arg("iou_threshold"),
         py::arg("multi_label"));
+  m.def("stack_vector_pool_forward", &stack_vector_pool_forward,
+        "stack vector pool forward", py::arg("support_xyz_tensor"),
+        py::arg("xyz_batch_cnt_tensor"), py::arg("support_features_tensor"),
+        py::arg("new_xyz_tensor"), py::arg("new_xyz_batch_cnt_tensor"),
+        py::arg("new_features_tensor"), py::arg("new_local_xyz_tensor"),
+        py::arg("point_cnt_of_grid_tensor"), py::arg("grouped_idxs_tensor"),
+        py::arg("num_grid_x"), py::arg("num_grid_y"), py::arg("num_grid_z"),
+        py::arg("max_neighbour_distance"), py::arg("use_xyz"),
+        py::arg("num_max_sum_points"), py::arg("nsample"),
+        py::arg("neighbor_type"), py::arg("pooling_type"));
+  m.def("stack_vector_pool_backward", &stack_vector_pool_backward,
+        "stack vector pool backward", py::arg("grad_new_features_tensor"),
+        py::arg("point_cnt_of_grid_tensor"), py::arg("grouped_idxs_tensor"),
+        py::arg("grad_support_features_tensor"));
 }
