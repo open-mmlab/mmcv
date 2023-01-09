@@ -17,7 +17,7 @@ env:
   MMCV_WITH_OPS: 1
 
 jobs:
-  build_parrots_21:
+  build_parrots:
     runs-on: ubuntu-18.04
     container:
       image: ghcr.io/cokedong/parrots:pat0.21.0a0_cuda11
