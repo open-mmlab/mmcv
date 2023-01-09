@@ -49,7 +49,7 @@ We implement common ops used in detection, segmentation, etc.
 | RoIAlign                     | √   | √    | √   |     |        |
 | RoIAwarePool3d               |     | √    | √   |     |        |
 | SAConv2d                     |     | √    |     |     |        |
-| SigmoidFocalLoss             |     | √    | √   |     | √      |
+| SigmoidFocalLoss             | √   | √    | √   |     | √      |
 | SoftmaxFocalLoss             |     | √    |     |     | √      |
 | SoftNMS                      |     | √    |     |     |        |
 | Sparse Convolution           |     | √    |     |     |        |
