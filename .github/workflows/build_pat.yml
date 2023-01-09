@@ -1,6 +1,13 @@
 name: build_pat
 
-on: push
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+      - 'README_zh-CN.md'
+      - 'docs/**'
+      - 'examples/**'
+      - '.dev_scripts/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
