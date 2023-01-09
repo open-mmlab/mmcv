@@ -452,23 +452,3 @@ jobs:
           pip install -r requirements/test.txt
           # The timing on macos VMs is not precise, so we skip the progressbar tests
           pytest tests/ --ignore tests/test_utils/test_progressbar.py --ignore tests/test_utils/test_timer.py
-  # build_parrots_22:
-  #   runs-on: ubuntu-18.04
-  #   container:
-  #     image: ghcr.io/cokedong/parrots:pat0.22.0a0_cuda11
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Build and test
-  #       run: |
-  #         source /usr/local/env/pat_latest
-  #         MMCV_WITH_OPS=1 pip install -e . -v
-  build_parrots_21:
-    runs-on: ubuntu-18.04
-    container:
-      image: ghcr.io/cokedong/parrots:pat0.21.0a0_cuda11
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build and test
-        run: |
-          source /usr/local/env/pat_latest
-          MMCV_WITH_OPS=1 pip install -e . -v
