@@ -1203,7 +1203,8 @@ class RandomFlip(BaseTransform):
             bboxes (numpy.ndarray): Bounding boxes, shape (..., 4*k)
             img_shape (tuple[int]): Image shape (height, width)
             direction (str): Flip direction. Options are 'horizontal',
-                'vertical'.
+                'vertical', and 'diagonal'.
+
         Returns:
             numpy.ndarray: Flipped bounding boxes.
         """
@@ -1239,7 +1240,8 @@ class RandomFlip(BaseTransform):
             keypoints (numpy.ndarray): Keypoints, shape (..., 2)
             img_shape (tuple[int]): Image shape (height, width)
             direction (str): Flip direction. Options are 'horizontal',
-                'vertical'.
+                'vertical', and 'diagonal'.
+
         Returns:
             numpy.ndarray: Flipped keypoints.
         """
@@ -1259,7 +1261,7 @@ class RandomFlip(BaseTransform):
             raise ValueError(
                 f"Flipping direction must be 'horizontal', 'vertical', \
                   or 'diagonal', but got '{direction}'")
-        flipped = np.concatenate([keypoints, meta_info], axis=-1)
+        flipped = np.concatenate([flipped, meta_info], axis=-1)
         return flipped
 
     def _flip_seg_map(self, seg_map: dict, direction: str) -> np.ndarray:
@@ -1357,6 +1359,7 @@ class RandomFlip(BaseTransform):
 
         Args:
             results (dict): Result dict from loading pipeline.
+
         Returns:
             dict: Flipped results, 'img', 'gt_bboxes', 'gt_seg_map',
             'gt_keypoints', 'flip', and 'flip_direction' keys are
