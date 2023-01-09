@@ -17,19 +17,6 @@ env:
   MMCV_WITH_OPS: 1
 
 jobs:
-  # build_parrots_22:
-  #   runs-on: ubuntu-18.04
-  #   container:
-  #     image: ghcr.io/cokedong/parrots:pat0.22.0a0_cuda11
-  #     credentials:
-  #       username: cokedong
-  #       password: ${{ secrets.PARROTS_CI_TOKEN }}
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Build and test
-  #       run: |
-  #         source /usr/local/env/pat_latest
-  #         MMCV_WITH_OPS=1 pip install -e . -v
   build_parrots_21:
     runs-on: ubuntu-18.04
     container:
@@ -39,7 +26,7 @@ jobs:
         password: ${{ secrets.PARROTS_CI_TOKEN }}
     steps:
       - uses: actions/checkout@v2
-      - name: Build and test
+      - name: Build and install
         run: |
           source /usr/local/env/pat_latest
           MMCV_WITH_OPS=1 pip install -e . -v
