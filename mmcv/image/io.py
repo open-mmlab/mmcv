@@ -145,6 +145,7 @@ def imread(img_or_path: Union[np.ndarray, str, Path],
            flag: str = 'color',
            channel_order: str = 'bgr',
            backend: Optional[str] = None,
+           file_client_args: Optional[dict] = None,
            *,
            backend_args: Optional[dict] = None) -> np.ndarray:
     """Read an image.
@@ -166,12 +167,18 @@ def imread(img_or_path: Union[np.ndarray, str, Path],
             `cv2`, `pillow`, `turbojpeg`, `tifffile`, `None`.
             If backend is None, the global imread_backend specified by
             ``mmcv.use_backend()`` will be used. Default: None.
+        file_client_args (dict | None): Arguments to instantiate a
+            FileClient. See :class:`mmengine.fileio.FileClient` for details.
+            Default: None. It will be deprecated in future. Please use
+            ``backend_args`` instead.
+            Deprecated in version 2.0.0rc4.
         backend_args (dict, optional): Instantiates the corresponding file
             backend. It may contain `backend` key to specify the file
             backend. If it contains, the file backend corresponding to this
             value will be used and initialized with the remaining values,
             otherwise the corresponding file backend will be selected
             based on the prefix of the file path. Defaults to None.
+            New in version 2.0.0rc4.
 
     Returns:
         ndarray: Loaded image array.
@@ -195,13 +202,27 @@ def imread(img_or_path: Union[np.ndarray, str, Path],
         >>> img = mmcv.imread(http_img_path, backend_args={
         ...     'backend': 'http'})
     """
+    if file_client_args is not None:
+        warnings.warn(
+            '"file_client_args" will be deprecated in future. '
+            'Please use "backend_args" instead', DeprecationWarning)
+        if backend_args is not None:
+            raise ValueError(
+                '"file_client_args" and "backend_args" cannot be set at the '
+                'same time.')
+
     if isinstance(img_or_path, Path):
         img_or_path = str(img_or_path)
 
     if isinstance(img_or_path, np.ndarray):
         return img_or_path
     elif is_str(img_or_path):
-        img_bytes = fileio.get(img_or_path, backend_args=backend_args)
+        if file_client_args is not None:
+            file_client = fileio.FileClient.infer_client(file_client_args,
+                                                         img_or_path)
+            img_bytes = file_client.get(img_or_path)
+        else:
+            img_bytes = fileio.get(img_or_path, backend_args=backend_args)
         return imfrombytes(img_bytes, flag, channel_order, backend)
     else:
         raise TypeError('"img" must be a numpy array or a str or '
@@ -271,6 +292,7 @@ def imwrite(img: np.ndarray,
             file_path: str,
             params: Optional[list] = None,
             auto_mkdir: Optional[bool] = None,
+            file_client_args: Optional[dict] = None,
             *,
             backend_args: Optional[dict] = None) -> bool:
     """Write image to file.
@@ -285,12 +307,18 @@ def imwrite(img: np.ndarray,
         params (None or list): Same as opencv :func:`imwrite` interface.
         auto_mkdir (bool): If the parent folder of `file_path` does not exist,
             whether to create it automatically. It will be deprecated.
+        file_client_args (dict | None): Arguments to instantiate a
+            FileClient. See :class:`mmengine.fileio.FileClient` for details.
+            Default: None. It will be deprecated in future. Please use
+            ``backend_args`` instead.
+            Deprecated in version 2.0.0rc4.
         backend_args (dict, optional): Instantiates the corresponding file
             backend. It may contain `backend` key to specify the file
             backend. If it contains, the file backend corresponding to this
             value will be used and initialized with the remaining values,
             otherwise the corresponding file backend will be selected
             based on the prefix of the file path. Defaults to None.
+            New in version 2.0.0rc4.
 
     Returns:
         bool: Successful or not.
@@ -304,6 +332,15 @@ def imwrite(img: np.ndarray,
         >>> ret = mmcv.imwrite(img, 's3://bucket/img.jpg', backend_args={
         ...     'backend': 'petrel'})
     """
+    if file_client_args is not None:
+        warnings.warn(
+            '"file_client_args" will be deprecated in future. '
+            'Please use "backend_args" instead', DeprecationWarning)
+        if backend_args is not None:
+            raise ValueError(
+                '"file_client_args" and "backend_args" cannot be set at the '
+                'same time.')
+
     assert is_filepath(file_path)
     file_path = str(file_path)
     if auto_mkdir is not None:
@@ -317,6 +354,10 @@ def imwrite(img: np.ndarray,
     # format is '.jpg'.
     flag, img_buff = cv2.imencode(img_ext, img, params)
 
-    fileio.put(img_buff.tobytes(), file_path, backend_args=backend_args)
+    if file_client_args is not None:
+        file_client = fileio.FileClient.infer_client(file_client_args, file_path)
+        file_client.put(img_buff.tobytes(), file_path)
+    else:
+        fileio.put(img_buff.tobytes(), file_path, backend_args=backend_args)
 
     return flag
