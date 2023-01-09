@@ -123,7 +123,7 @@ class MMDistributedDataParallel(DistributedDataParallel):
                 output = self.gather(outputs, self.output_device)
         else:
             inputs, kwargs = self.scatter(inputs, kwargs, [-1])
-            output = self.module.train_step(*inputs[0], **kwargs[0])
+            output = self.module.val_step(*inputs[0], **kwargs[0])
 
         if ('parrots' not in TORCH_VERSION
                 and digit_version(TORCH_VERSION) >= digit_version('1.11.0a0')):
