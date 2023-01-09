@@ -59,7 +59,7 @@ class TestIO:
     def test_imread(self):
         # backend cv2
         mmcv.use_backend('cv2')
-        
+
         # file_client_args and backend_args can not be both set
         with pytest.raises(
                 ValueError,
@@ -386,7 +386,7 @@ class TestIO:
     def test_imwrite(self):
         img = mmcv.imread(self.img_path)
         out_file = osp.join(tempfile.gettempdir(), 'mmcv_test.jpg')
-        
+
         # file_client_args and backend_args can not be both set
         with pytest.raises(
                 ValueError,

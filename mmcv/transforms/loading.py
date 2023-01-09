@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Union
 import warnings
+from typing import Optional, Union
 
 import mmengine.fileio as fileio
 import numpy as np
@@ -62,7 +62,7 @@ class LoadImageFromFile(BaseTransform):
         self.to_float32 = to_float32
         self.color_type = color_type
         self.imdecode_backend = imdecode_backend
-        
+
         if file_client_args is not None:
             warnings.warn(
                 '"file_client_args" will be deprecated in future. '
@@ -75,7 +75,7 @@ class LoadImageFromFile(BaseTransform):
             file_client_args = dict(backend='disk')
         if backend_args is None:
             backend_args = dict(backend='disk')
-        
+
         self.file_client_args = file_client_args.copy()
         self.file_client = fileio.FileClient(**self.file_client_args)
         self.backend_args = backend_args.copy()
@@ -238,7 +238,7 @@ class LoadAnnotations(BaseTransform):
         self.with_seg = with_seg
         self.with_keypoints = with_keypoints
         self.imdecode_backend = imdecode_backend
-        
+
         if file_client_args is not None:
             warnings.warn(
                 '"file_client_args" will be deprecated in future. '
@@ -251,7 +251,7 @@ class LoadAnnotations(BaseTransform):
             file_client_args = dict(backend='disk')
         if backend_args is None:
             backend_args = dict(backend='disk')
-        
+
         self.file_client_args = file_client_args.copy()
         self.file_client = fileio.FileClient(**self.file_client_args)
         self.backend_args = backend_args.copy()
@@ -262,7 +262,7 @@ class LoadAnnotations(BaseTransform):
                 backend_args=self.backend_args)
         else:
             self.file_backend = self.file_client
-        
+
     def _load_bboxes(self, results: dict) -> None:
         """Private function to load bounding box annotations.
 

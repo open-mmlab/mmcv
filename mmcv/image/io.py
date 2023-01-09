@@ -218,8 +218,8 @@ def imread(img_or_path: Union[np.ndarray, str, Path],
         return img_or_path
     elif is_str(img_or_path):
         if file_client_args is not None:
-            file_client = fileio.FileClient.infer_client(file_client_args,
-                                                         img_or_path)
+            file_client = fileio.FileClient.infer_client(
+                file_client_args, img_or_path)
             img_bytes = file_client.get(img_or_path)
         else:
             img_bytes = fileio.get(img_or_path, backend_args=backend_args)
@@ -355,7 +355,8 @@ def imwrite(img: np.ndarray,
     flag, img_buff = cv2.imencode(img_ext, img, params)
 
     if file_client_args is not None:
-        file_client = fileio.FileClient.infer_client(file_client_args, file_path)
+        file_client = fileio.FileClient.infer_client(file_client_args,
+                                                     file_path)
         file_client.put(img_buff.tobytes(), file_path)
     else:
         fileio.put(img_buff.tobytes(), file_path, backend_args=backend_args)
