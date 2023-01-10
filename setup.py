@@ -143,28 +143,46 @@ def get_extensions():
     if EXT_TYPE == 'parrots':
         ext_name = 'mmcv._ext'
         from parrots.utils.build_extension import Extension
+        from parrots.base import use_cuda, use_camb
 
         # new parrots op impl do not use MMCV_USE_PARROTS
         # define_macros = [('MMCV_USE_PARROTS', None)]
         define_macros = []
         include_dirs = []
-        op_files = glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') +\
-            glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') +\
-            glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
-        include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
-        include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
-        cuda_args = os.getenv('MMCV_CUDA_ARGS')
-        extra_compile_args = {
-            'nvcc': [cuda_args, '-std=c++14'] if cuda_args else ['-std=c++14'],
-            'cxx': ['-std=c++14'],
-        }
-        if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
-            define_macros += [('MMCV_WITH_CUDA', None)]
-            extra_compile_args['nvcc'] += [
-                '-D__CUDA_NO_HALF_OPERATORS__',
-                '-D__CUDA_NO_HALF_CONVERSIONS__',
-                '-D__CUDA_NO_HALF2_OPERATORS__',
+        if use_cuda:
+            op_files = glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') +\
+                glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') +\
+                glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
+            cuda_args = os.getenv('MMCV_CUDA_ARGS')
+            extra_compile_args = {
+                'nvcc': [cuda_args, '-std=c++14'] if cuda_args else ['-std=c++14'],
+                'cxx': ['-std=c++14'],
+            }
+            if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
+                define_macros += [('MMCV_WITH_CUDA', None)]
+                extra_compile_args['nvcc'] += [
+                    '-D__CUDA_NO_HALF_OPERATORS__',
+                    '-D__CUDA_NO_HALF_CONVERSIONS__',
+                    '-D__CUDA_NO_HALF2_OPERATORS__',
+                ]
+                
+        if use_camb:
+            define_macros = []
+            include_dirs = [os.path.abspath('./mmcv/ops/csrc'),
+                os.path.abspath('./mmcv/ops/csrc/common'),
+                os.path.abspath('./mmcv/ops/csrc/common/mlu')
             ]
+            op_files = glob.glob('./mmcv/ops/csrc/common/mlu/*.mlu') +\
+                glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') +\
+                glob.glob('./mmcv/ops/csrc/parrots/mlu/*.cpp')
+            mlu_args = os.getenv('MMCV_MLU_ARGS')
+            extra_compile_args = {
+                'cxx': [],
+                'cncc': [mlu_args] if mlu_args else
+                    ['-v', '-fPIC', '--shared', '--bang-mlu-arch=MLU290', '-O3'],
+            }
         ext_ops = Extension(
             name=ext_name,
             sources=op_files,
