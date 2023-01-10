@@ -183,20 +183,20 @@ int HardVoxelizeForwardMLUKernelLauncher(
                         grid_x, grid_y, grid_z, num_points, num_features);
 
   // 2. map point to the idx of the corresponding voxel, find duplicate coor
-  auto point_to_pointidx = -at::ones(
-                                {
-                                    num_points,
-                                },
-                                points.options().dtype(at::kInt))
-                                .contiguous();
+  auto point_to_pointidx = at::zeros(
+                               {
+                                   num_points,
+                               },
+                               points.options().dtype(at::kInt))
+                               .contiguous();
   auto point_to_pointidx_impl = torch_mlu::getMluTensorImpl(point_to_pointidx);
   auto point_to_pointidx_ptr = point_to_pointidx_impl->cnnlMalloc();
-  auto point_to_voxelidx = -at::ones(
-                                {
-                                    num_points,
-                                },
-                                points.options().dtype(at::kInt))
-                                .contiguous();
+  auto point_to_voxelidx = at::zeros(
+                               {
+                                   num_points,
+                               },
+                               points.options().dtype(at::kInt))
+                               .contiguous();
   auto point_to_voxelidx_impl = torch_mlu::getMluTensorImpl(point_to_voxelidx);
   auto point_to_voxelidx_ptr = point_to_voxelidx_impl->cnnlMalloc();
 
@@ -210,12 +210,12 @@ int HardVoxelizeForwardMLUKernelLauncher(
                                &k_type_calc_points_per_voxel, num_points);
 
   // 3. determine voxel num and voxel's coor index
-  auto coor_to_voxelidx = -at::ones(
-                               {
-                                   num_points,
-                               },
-                               points.options().dtype(at::kInt))
-                               .contiguous();
+  auto coor_to_voxelidx = at::zeros(
+                              {
+                                  num_points,
+                              },
+                              points.options().dtype(at::kInt))
+                              .contiguous();
   auto coor_to_voxelidx_impl = torch_mlu::getMluTensorImpl(coor_to_voxelidx);
   auto coor_to_voxelidx_ptr = coor_to_voxelidx_impl->cnnlMalloc();
   auto voxel_num = at::zeros(
