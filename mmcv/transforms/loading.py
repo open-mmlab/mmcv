@@ -34,8 +34,8 @@ class LoadImageFromFile(BaseTransform):
             argument for :func:`mmcv.imfrombytes`.
             See :func:`mmcv.imfrombytes` for details.
             Defaults to 'cv2'.
-        file_client_args (dict): Arguments to instantiate a FileClient.
-            See :class:`mmengine.fileio.FileClient` for details.
+        file_client_args (dict, optional): Arguments to instantiate a
+            FileClient. See :class:`mmengine.fileio.FileClient` for details.
             Defaults to None. It will be deprecated in future. Please use
             ``backend_args`` instead.
             Deprecated in version 2.0.0rc4.
@@ -208,8 +208,8 @@ class LoadAnnotations(BaseTransform):
             argument for :func:`mmcv.imfrombytes`.
             See :func:`mmcv.imfrombytes` for details.
             Defaults to 'cv2'.
-        file_client_args (dict): Arguments to instantiate a FileClient.
-            See :class:`mmengine.fileio.FileClient` for details.
+        file_client_args (dict, optional): Arguments to instantiate a
+            FileClient. See :class:`mmengine.fileio.FileClient` for details.
             Defaults to None. It will be deprecated in future. Please use
             ``backend_args`` instead.
             Deprecated in version 2.0.0rc4.
@@ -219,6 +219,7 @@ class LoadAnnotations(BaseTransform):
             value will be used and initialized with the remaining values,
             otherwise the corresponding file backend will be selected
             based on the prefix of the file path. Defaults to None.
+            New in version 2.0.0rc4.
     """
 
     def __init__(

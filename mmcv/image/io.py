@@ -167,7 +167,7 @@ def imread(img_or_path: Union[np.ndarray, str, Path],
             `cv2`, `pillow`, `turbojpeg`, `tifffile`, `None`.
             If backend is None, the global imread_backend specified by
             ``mmcv.use_backend()`` will be used. Default: None.
-        file_client_args (dict | None): Arguments to instantiate a
+        file_client_args (dict, optional): Arguments to instantiate a
             FileClient. See :class:`mmengine.fileio.FileClient` for details.
             Default: None. It will be deprecated in future. Please use
             ``backend_args`` instead.
@@ -307,7 +307,7 @@ def imwrite(img: np.ndarray,
         params (None or list): Same as opencv :func:`imwrite` interface.
         auto_mkdir (bool): If the parent folder of `file_path` does not exist,
             whether to create it automatically. It will be deprecated.
-        file_client_args (dict | None): Arguments to instantiate a
+        file_client_args (dict, optional): Arguments to instantiate a
             FileClient. See :class:`mmengine.fileio.FileClient` for details.
             Default: None. It will be deprecated in future. Please use
             ``backend_args`` instead.
