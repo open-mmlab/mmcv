@@ -7,6 +7,7 @@
 
 using namespace parrots;
 
+#ifdef MMCV_WITH_CUDA
 void border_align_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
                                        const OperatorBase::in_list_t& ins,
                                        OperatorBase::out_list_t& outs) {
@@ -49,3 +50,4 @@ PARROTS_EXTENSION_REGISTER(border_align_backward)
     .output(1)
     .apply(border_align_backward_cuda_parrots)
     .done();
+#endif

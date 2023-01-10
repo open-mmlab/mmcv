@@ -40,6 +40,7 @@ void rotated_feature_align_backward_cuda_parrots(
   rotated_feature_align_backward(grad_output, best_bboxes, grad_input,
                                  spatial_scale, points);
 }
+#endif
 
 void rotated_feature_align_forward_cpu_parrots(
     HostContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
@@ -57,7 +58,6 @@ void rotated_feature_align_forward_cpu_parrots(
   rotated_feature_align_forward(features, best_bboxes, output, spatial_scale,
                                 points);
 }
-#endif
 
 void rotated_feature_align_backward_cpu_parrots(
     HostContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
@@ -92,7 +92,7 @@ PARROTS_EXTENSION_REGISTER(rotated_feature_align_backward)
     .attr("points")
     .input(2)
     .output(1)
-    .apply(rotated_feature_align_forward_cpu_parrots)
+    .apply(rotated_feature_align_backward_cpu_parrots)
 #ifdef MMCV_WITH_CUDA
     .apply(rotated_feature_align_backward_cuda_parrots)
 #endif
