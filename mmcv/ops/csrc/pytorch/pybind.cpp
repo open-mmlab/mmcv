@@ -446,6 +446,16 @@ Tensor nms_quadri(const Tensor dets, const Tensor scores, const Tensor order,
                   const Tensor dets_sorted, const float iou_threshold,
                   const int multi_label);
 
+void bezier_align_forward(Tensor input, Tensor rois, Tensor output,
+                          int aligned_height, int aligned_width,
+                          float spatial_scale, int sampling_ratio,
+                          bool aligned);
+
+void bezier_align_backward(Tensor grad_output, Tensor rois, Tensor grad_input,
+                           int aligned_height, int aligned_width,
+                           float spatial_scale, int sampling_ratio,
+                           bool aligned);
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
         py::arg("kernel"), py::arg("up_x"), py::arg("up_y"), py::arg("down_x"),
@@ -899,4 +909,14 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("dets"), py::arg("scores"), py::arg("order"),
         py::arg("dets_sorted"), py::arg("iou_threshold"),
         py::arg("multi_label"));
+  m.def("bezier_align_forward", &bezier_align_forward, "bezier_align forward",
+        py::arg("input"), py::arg("rois"), py::arg("output"),
+        py::arg("aligned_height"), py::arg("aligned_width"),
+        py::arg("spatial_scale"), py::arg("sampling_ratio"),
+        py::arg("aligned"));
+  m.def("bezier_align_backward", &bezier_align_backward,
+        "bezier_align backward", py::arg("grad_output"), py::arg("rois"),
+        py::arg("grad_input"), py::arg("aligned_height"),
+        py::arg("aligned_width"), py::arg("spatial_scale"),
+        py::arg("sampling_ratio"), py::arg("aligned"));
 }
