@@ -32,4 +32,4 @@ jobs:
       - name: Build and install
         run: |
           source /usr/local/env/pat_latest
-          MMCV_WITH_OPS=1 pip install -e . -v
+          pip install -e . -v
