@@ -10,13 +10,14 @@ from mmcv.transforms import LoadAnnotations, LoadImageFromFile
 
 class TestLoadImageFromFile:
 
-    def test_load_img(self):      
+    def test_load_img(self):
         # file_client_args and backend_args can not be both set
         with pytest.raises(
                 ValueError,
                 match='"file_client_args" and "backend_args" cannot be set'):
-            LoadImageFromFile(file_client_args={'backend': 'disk'},
-                              backend_args={'backend': 'disk'})
+            LoadImageFromFile(
+                file_client_args={'backend': 'disk'},
+                backend_args={'backend': 'disk'})
         data_prefix = osp.join(osp.dirname(__file__), '../data')
 
         results = dict(img_path=osp.join(data_prefix, 'color.jpg'))
@@ -76,14 +77,15 @@ class TestLoadAnnotations:
                 'keypoints': [4, 5, 6]
             }]
         }
-        
+
     def test_init(self):
         # file_client_args and backend_args can not be both set
         with pytest.raises(
                 ValueError,
                 match='"file_client_args" and "backend_args" cannot be set'):
-            LoadAnnotations(file_client_args={'backend': 'disk'},
-                            backend_args={'backend': 'disk'})
+            LoadAnnotations(
+                file_client_args={'backend': 'disk'},
+                backend_args={'backend': 'disk'})
 
     def test_load_bboxes(self):
         transform = LoadAnnotations(
