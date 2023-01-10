@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE
 
 inputs = ([[[
     [1., 2., 5., 6.],
@@ -27,15 +27,7 @@ outputs = ([[[[1., 1.75, 3.5, 5.25], [2.5, 3.25, 5., 6.75],
         marks=pytest.mark.skipif(
             not IS_CUDA_AVAILABLE, reason='requires CUDA support'))
 ])
-@pytest.mark.parametrize('dtype', [
-    torch.float,
-    pytest.param(
-        torch.double,
-        marks=pytest.mark.skipif(
-            IS_MLU_AVAILABLE,
-            reason='MLU does not support for 64-bit floating point')),
-    torch.half
-])
+@pytest.mark.parametrize('dtype', [torch.float, torch.double, torch.half])
 def test_bezieralign(device, dtype):
     try:
         from mmcv.ops import bezier_align
