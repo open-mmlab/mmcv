@@ -58,7 +58,7 @@ We implement common ops used in detection, segmentation, etc.
 | ThreeNN                      |     | √    | √   |     |        |
 | TINShift                     |     | √    | √   |     |        |
 | UpFirDn2d                    |     | √    |     |     |        |
-| Voxelization                 | √   | √    |     |     | √      |
+| Voxelization                 | √   | √    | √   |     | √      |
 | PrRoIPool                    |     | √    |     |     |        |
 | BezierAlign                  | √   | √    |     |     |        |
 | BiasAct                      |     | √    |     |     |        |
