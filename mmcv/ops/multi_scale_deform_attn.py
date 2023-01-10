@@ -50,6 +50,17 @@ class MultiScaleDeformableAttnFunction(Function):
         """
 
         ctx.im2col_step = im2col_step
+
+        # When pytorch version >= 1.6.0, amp is adopted for fp16 mode;
+        # amp won't cast the type of sampling_locations, attention_weights
+        # (float32), but "value" is cast to float16, leading to the type
+        # mismatch with input (when it is float32) or weight.
+        # The flag for whether to use fp16 or amp is the type of "value",
+        # we cast weight and input to temporarily support fp16 and amp
+        # whatever the pytorch version is.
+        sampling_locations = sampling_locations.type_as(value)
+        attention_weights = attention_weights.type_as(value)
+
         output = ext_module.ms_deform_attn_forward(
             value,
             value_spatial_shapes,
