@@ -83,6 +83,7 @@ void ROIAlignForwardMLUKernelLauncher(CambContext& ctx, const DArrayLite& input,
                  rois.data(), channels, aligned, aligned_height, aligned_width,
                  height, width, sampling_ratio, spatial_scale, num_rois,
                  (void*)output_ptr->data());
+  copy(ctx, output, output_tmp);
 }
 
 void roi_align_forward_camb_parrots(CambContext& ctx, const SSElement& attr,
