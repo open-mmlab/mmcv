@@ -88,6 +88,7 @@ class DeformConv2dFunction(Function):
         ctx.groups = groups
         ctx.deform_groups = deform_groups
         ctx.im2col_step = im2col_step
+        ctx.device = input.device.type
 
         # When pytorch version >= 1.6.0, amp is adopted for fp16 mode;
         # amp won't cast the type of model (float32), but "offset" is cast
