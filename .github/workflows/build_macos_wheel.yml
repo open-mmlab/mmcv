@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         torch: [1.6.0, 1.7.0, 1.8.0, 1.9.0, 1.10.0, 1.11.0, 1.12.0, 1.13.0]
-        python-version: [3.6, 3.7, 3.8, 3.9, '3.10']
+        python-version: [3.7, 3.8, 3.9, '3.10']
         include:
           - torch: 1.6.0
             torchvision: 0.7.0
@@ -46,12 +46,6 @@ jobs:
             python-version: '3.10'
           - torch: 1.10.0
             python-version: '3.10'
-          - torch: 1.11.0
-            python-version: 3.6
-          - torch: 1.12.0
-            python-version: 3.6
-          - torch: 1.13.0
-            python-version: 3.6
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
