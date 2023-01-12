@@ -233,11 +233,17 @@ def get_extensions():
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(
                 os.path.abspath('./mmcv/ops/csrc/parrots/common'))
-            op_files = glob.glob('./mmcv/ops/csrc/common/mlu/*.mlu') +\
+            mlu_kernel_files = [
+                './mmcv/ops/csrc/common/mlu/roi_align_mlu_kernel.mlu',
+                './mmcv/ops/csrc/common/mlu/nms_mlu_kernel.mlu',
+                './mmcv/ops/csrc/common/mlu/focal_loss_sigmoid_mlu_kernel.mlu'
+            ]
+            op_files = mlu_kernel_files +\
                 glob.glob('./mmcv/ops/csrc/parrots/common/*.cpp') +\
                 glob.glob('./mmcv/ops/csrc/parrots/cpu/*.cpp') +\
                 glob.glob('./mmcv/ops/csrc/parrots/mlu/*.cpp') +\
                 glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp')
+
             mlu_args = os.getenv('MMCV_MLU_ARGS')
             extra_compile_args = {
                 'cncc': [mlu_args] if mlu_args else
