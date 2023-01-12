@@ -43,7 +43,7 @@ We implement common ops used in detection, segmentation, etc.
 | PSAMask                      | √   | √    | √   |     | √      |
 | RotatedFeatureAlign          | √   | √    |     |     |        |
 | RoIPointPool3d               |     | √    | √   |     |        |
-| RoIPool                      |     | √    | √   |     |        |
+| RoIPool                      |     | √    | √   |     | √      |
 | RoIAlignRotated              | √   | √    | √   |     |        |
 | RiRoIAlignRotated            |     | √    |     |     |        |
 | RoIAlign                     | √   | √    | √   |     |        |
