@@ -57,7 +57,7 @@ void bbox_overlaps_cpu_kernel(const Tensor boxes1, const Tensor boxes2,
 
 void bbox_overlaps_cpu(const Tensor boxes1, const Tensor boxes2, Tensor ious,
                        const int mode, const bool aligned, const int offset) {
-  bbox_overlaps_cpu_kernel<float>(boxes1, boxes2, ious, mode, aligned, offset);
+  bbox_overlaps_cpu_kernel(boxes1, boxes2, ious, mode, aligned, offset);
 }
 
 void bbox_overlaps_impl(const Tensor boxes1, const Tensor boxes2, Tensor ious,
