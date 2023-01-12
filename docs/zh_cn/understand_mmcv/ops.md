@@ -60,3 +60,4 @@ MMCV 提供了检测、分割等任务中常用的算子
 | UpFirDn2d                    |     | √    |     |     |        |
 | Voxelization                 | √   | √    |     |     |        |
 | PrRoIPool                    |     | √    |     |     |        |
+| BezierAlign                  | √   | √    |     |     |        |

@@ -60,3 +60,4 @@ We implement common ops used in detection, segmentation, etc.
 | UpFirDn2d                    |     | √    |     |     |        |
 | Voxelization                 | √   | √    |     |     |        |
 | PrRoIPool                    |     | √    |     |     |        |
+| BezierAlign                  | √   | √    |     |     |        |
