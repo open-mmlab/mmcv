@@ -3,6 +3,7 @@ from .active_rotated_filter import active_rotated_filter
 from .assign_score_withk import assign_score_withk
 from .ball_query import ball_query
 from .bbox import bbox_overlaps
+from .bezier_align import BezierAlign, bezier_align
 from .border_align import BorderAlign, border_align
 from .box_iou_quadri import box_iou_quadri
 from .box_iou_rotated import box_iou_rotated
@@ -102,5 +103,5 @@ __all__ = [
     'points_in_boxes_cpu', 'points_in_boxes_all', 'points_in_polygons',
     'min_area_polygons', 'active_rotated_filter', 'convex_iou', 'convex_giou',
     'diff_iou_rotated_2d', 'diff_iou_rotated_3d', 'chamfer_distance',
-    'PrRoIPool', 'prroi_pool'
+    'PrRoIPool', 'prroi_pool', 'BezierAlign', 'bezier_align'
 ]

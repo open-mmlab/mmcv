@@ -49,7 +49,7 @@ It supports the following systems:
 
 See the [documentation](http://mmcv.readthedocs.io/en/2.x) for more features and usage.
 
-Note: MMCV requires Python 3.6+.
+Note: MMCV requires Python 3.7+.
 
 ## Installation
 
