@@ -301,28 +301,39 @@ def get_extensions():
                 torch.is_mlu_available()) or \
                 os.getenv('FORCE_MLU', '0') == '1':
             from torch_mlu.utils.cpp_extension import MLUExtension
-            if not os.path.exists('./mlu-ops'):
-                import requests
-                mluops_url = 'https://github.com/Cambricon/'\
-                    'mlu-ops/releases/latest'
-                response = requests.get(url=mluops_url, allow_redirects=False)
-                download_url = response.headers.get('Location').replace(
-                    'releases/tag', 'archive/refs/tags') + '.zip'
-                req = requests.get(download_url)
-                with open('./mlu-ops-latest.zip', 'wb') as f:
-                    try:
-                        f.write(req.content)
-                    except Exception:
-                        raise ImportError('download mlu-ops fail')
+            if os.getenv('MMCV_MLU_OPS_PATH'):
+                try:
+                    if os.path.exists('mlu-ops') and os.path.islink('mlu-ops'):
+                        os.remove('mlu-ops')
+                    os.symlink(os.getenv('MMCV_MLU_OPS_PATH'), 'mlu-ops')
+                except Exception:
+                    raise FileExistsError(
+                        'mlu-ops already exists, please move it out,'
+                        'or rename or remove it.')
+            else:
+                if not os.path.exists('mlu-ops'):
+                    import requests
+                    mluops_url = 'https://github.com/Cambricon/'\
+                        'mlu-ops/releases/latest'
+                    response = requests.get(
+                        url=mluops_url, allow_redirects=False)
+                    download_url = response.headers.get('Location').replace(
+                        'releases/tag', 'archive/refs/tags') + '.zip'
+                    req = requests.get(download_url)
+                    with open('./mlu-ops-latest.zip', 'wb') as f:
+                        try:
+                            f.write(req.content)
+                        except Exception:
+                            raise ImportError('download mlu-ops fail')
 
-                from zipfile import BadZipFile, ZipFile
-                with ZipFile('./mlu-ops-latest.zip', 'r') as archive:
-                    try:
-                        archive.extractall()
-                        dir_name = archive.namelist()[0].split('/')[0]
-                        os.rename(dir_name, 'mlu-ops')
-                    except BadZipFile:
-                        print('invalid mlu-ops-latest.zip file')
+                    from zipfile import BadZipFile, ZipFile
+                    with ZipFile('./mlu-ops-latest.zip', 'r') as archive:
+                        try:
+                            archive.extractall()
+                            dir_name = archive.namelist()[0].split('/')[0]
+                            os.rename(dir_name, 'mlu-ops')
+                        except BadZipFile:
+                            print('invalid mlu-ops-latest.zip file')
 
             define_macros += [('MMCV_WITH_MLU', None)]
             mlu_args = os.getenv('MMCV_MLU_ARGS')
