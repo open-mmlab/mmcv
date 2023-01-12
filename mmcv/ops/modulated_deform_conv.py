@@ -40,7 +40,7 @@ class ModulatedDeformConv2dFunction(Function):
         split_num = deformable_group * 2 * kernel_h * kernel_w
         sort_index = list(range(split_num))
         sort_index_fp = (sort_index[1::2] + sort_index[::2])
-        sort_index_bp_dict = {i: idx for idx, i in enumerate(sort_index)}
+        sort_index_bp_dict = {i: idx for idx, i in enumerate(sort_index_fp)}
         sort_index_bp = [sort_index_bp_dict[i] for i in sort_index]
         sort_index_fp = torch.IntTensor(sort_index_fp)
         sort_index_bp = torch.IntTensor(sort_index_bp)
