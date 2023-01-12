@@ -143,7 +143,10 @@ class RFSearchHook(Hook):
                 module.estimate_rates()
                 module.expand_rates()
 
-    def wrap_model(self, model: nn.Module, search_op: str = 'Conv2d'):
+    def wrap_model(self,
+                   model: nn.Module,
+                   search_op: str = 'Conv2d',
+                   prefix: str = ''):
         """wrap model to support searchable conv op.
 
         Args:
@@ -152,9 +155,18 @@ class RFSearchHook(Hook):
                 Defaults to 'Conv2d'.
             init_rates (int, optional): Set to other initial dilation rates.
                 Defaults to None.
+            prefix (str): Prefix for function recursion. Defaults to ''.
         """
         op = 'torch.nn.' + search_op
         for name, module in model.named_children():
+            if prefix == '':
+                fullname = 'module.' + name
+            else:
+                fullname = prefix + '.' + name
+            if self.config['search']['skip_layer'] is not None:
+                if any(layer in fullname
+                       for layer in self.config['search']['skip_layer']):
+                    continue
             if isinstance(module, eval(op)):
                 if 1 < module.kernel_size[0] and \
                     0 != module.kernel_size[0] % 2 or \
@@ -167,14 +179,8 @@ class RFSearchHook(Hook):
                         logger.info('Wrap model %s to %s.' %
                                     (str(module), str(moduleWrap)))
                     setattr(model, name, moduleWrap)
-            elif isinstance(module, BaseConvRFSearchOp):
-                pass
-            else:
-                if self.config['search']['skip_layer'] is not None:
-                    if any(layer in name
-                           for layer in self.config['search']['skip_layer']):
-                        continue
-                self.wrap_model(module, search_op)
+            elif not isinstance(module, BaseConvRFSearchOp):
+                self.wrap_model(module, search_op, fullname)
 
     def set_model(self,
                   model: nn.Module,
@@ -198,6 +204,10 @@ class RFSearchHook(Hook):
                 fullname = 'module.' + name
             else:
                 fullname = prefix + '.' + name
+            if self.config['search']['skip_layer'] is not None:
+                if any(layer in fullname
+                       for layer in self.config['search']['skip_layer']):
+                    continue
             if isinstance(module, eval(op)):
                 if 1 < module.kernel_size[0] and \
                     0 != module.kernel_size[0] % 2 or \
@@ -224,11 +234,5 @@ class RFSearchHook(Hook):
                         logger.info(
                             'Set module %s dilation as: [%d %d]' %
                             (fullname, module.dilation[0], module.dilation[1]))
-            elif isinstance(module, BaseConvRFSearchOp):
-                pass
-            else:
-                if self.config['search']['skip_layer'] is not None:
-                    if any(layer in fullname
-                           for layer in self.config['search']['skip_layer']):
-                        continue
+            elif not isinstance(module, BaseConvRFSearchOp):
                 self.set_model(module, search_op, init_rates, fullname)
