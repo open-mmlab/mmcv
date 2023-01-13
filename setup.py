@@ -301,11 +301,17 @@ def get_extensions():
                 torch.is_mlu_available()) or \
                 os.getenv('FORCE_MLU', '0') == '1':
             from torch_mlu.utils.cpp_extension import MLUExtension
-            if os.getenv('MMCV_MLU_OPS_PATH'):
+            mlu_ops_path = os.getenv('MMCV_MLU_OPS_PATH')
+            if mlu_ops_path:
                 try:
-                    if os.path.exists('mlu-ops') and os.path.islink('mlu-ops'):
-                        os.remove('mlu-ops')
-                    os.symlink(os.getenv('MMCV_MLU_OPS_PATH'), 'mlu-ops')
+                    if os.path.exists('mlu-ops'):
+                        if os.path.islink('mlu-ops'):
+                            os.remove('mlu-ops')
+                            os.symlink(mlu_ops_path, 'mlu-ops')
+                        elif os.path.abspath('mlu-ops') != mlu_ops_path:
+                            os.symlink(mlu_ops_path, 'mlu-ops')
+                    else:
+                        os.symlink(mlu_ops_path, 'mlu-ops')
                 except Exception:
                     raise FileExistsError(
                         'mlu-ops already exists, please move it out,'
