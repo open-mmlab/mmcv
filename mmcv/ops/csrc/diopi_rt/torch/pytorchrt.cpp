@@ -11,6 +11,8 @@
 
 #include <ATen/ATen.h>
 
+#include "diopi.hpp"
+
 extern "C" {
 
 static char szVersion[256] = {0};

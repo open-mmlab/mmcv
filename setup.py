@@ -302,6 +302,8 @@ def get_extensions():
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
             include_dirs.append(os.path.abspath('./DIOPI/include'))
+            include_dirs.append(
+                os.path.abspath('./mmcv/ops/csrc/diopi_rt/torch'))
         elif (hasattr(torch, 'is_mlu_available') and
                 torch.is_mlu_available()) or \
                 os.getenv('FORCE_MLU', '0') == '1':
