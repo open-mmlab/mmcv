@@ -330,7 +330,7 @@ def get_extensions():
                         try:
                             f.write(req.content)
                         except Exception:
-                            raise ImportError('download mlu-ops fail')
+                            raise ImportError('failed to download mlu-ops')
 
                     from zipfile import BadZipFile, ZipFile
                     with ZipFile('./mlu-ops-latest.zip', 'r') as archive:
