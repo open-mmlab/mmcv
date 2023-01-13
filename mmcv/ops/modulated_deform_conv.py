@@ -406,10 +406,13 @@ if IS_MLU_AVAILABLE:
             o1, o2, mask = torch.chunk(out, 3, dim=1)
             offset = torch.cat((o1, o2), dim=1)
             mask = torch.sigmoid(mask)
+            x = x.type_as(offset)
+            weight = self.weight.type_as(x)
+            mask = mask.type_as(x)
             return tv_deform_conv2d(
                 x,
                 offset,
-                self.weight,
+                weight,
                 bias=self.bias,
                 stride=self.stride,
                 padding=self.padding,
