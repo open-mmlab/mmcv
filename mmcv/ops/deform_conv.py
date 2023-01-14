@@ -9,9 +9,10 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair, _single
 
-from mmcv.utils import deprecated_api_warning
+from mmcv.utils import IS_MLU_AVAILABLE, deprecated_api_warning
 from ..cnn import CONV_LAYERS
 from ..utils import ext_loader, print_log
+from .modulated_deform_conv import ModulatedDeformConv2dFunction
 
 ext_module = ext_loader.load_ext('_ext', [
     'deform_conv_forward', 'deform_conv_backward_input',
@@ -47,6 +48,23 @@ class DeformConv2dFunction(Function):
             im2col_step_i=im2col_step)
 
     @staticmethod
+    def _npu_backward(ctx, grad_output):
+        input_tensor, weight, offset_out, offset_all, sort_index_for_npu_bp = \
+            ctx.saved_tensors
+        grad_input, grad_weight, grad_offset_all, grad_bias = \
+            torch.npu_deformable_conv2dbk(
+                input_tensor, grad_output, offset_out, weight, offset_all,
+                kernel_size=[weight.shape[3], weight.shape[2]],
+                stride=[1, 1, ctx.stride[0], ctx.stride[1]],
+                padding=[1, 1, ctx.padding[0], ctx.padding[1]],
+                dilation=[1, 1, ctx.dilation[0], ctx.dilation[1]],
+                groups=ctx.groups, deformable_groups=ctx.deform_groups,
+                modulated=True)
+        grad_offset = grad_offset_all.index_select(1, sort_index_for_npu_bp)
+        return grad_input, grad_offset, grad_weight, \
+            None, None, None, None, None, None, None
+
+    @staticmethod
     def forward(ctx,
                 input: Tensor,
                 offset: Tensor,
@@ -69,6 +87,7 @@ class DeformConv2dFunction(Function):
         ctx.groups = groups
         ctx.deform_groups = deform_groups
         ctx.im2col_step = im2col_step
+        ctx.device = input.device.type
 
         # When pytorch version >= 1.6.0, amp is adopted for fp16 mode;
         # amp won't cast the type of model (float32), but "offset" is cast
@@ -79,6 +98,13 @@ class DeformConv2dFunction(Function):
         # whatever the pytorch version is.
         input = input.type_as(offset)
         weight = weight.type_as(input)
+        if ctx.device == 'npu':
+            mask_shape, _ = torch.chunk(offset, 2, dim=1)
+            mask = torch.ones_like(mask_shape).to(input.device)
+            bias = input.new_empty(0)
+            output = ModulatedDeformConv2dFunction._npu_forward(
+                ctx, input, offset, mask, weight, bias)
+            return output
         ctx.save_for_backward(input, offset, weight)
 
         output = input.new_empty(
@@ -115,6 +141,8 @@ class DeformConv2dFunction(Function):
         ctx, grad_output: Tensor
     ) -> Tuple[Optional[Tensor], Optional[Tensor], Optional[Tensor], None,
                None, None, None, None, None, None]:
+        if ctx.device == 'npu':
+            return DeformConv2dFunction._npu_backward(ctx, grad_output)
         input, offset, weight = ctx.saved_tensors
 
         grad_input = grad_offset = grad_weight = None
@@ -406,3 +434,67 @@ class DeformConv2dPack(DeformConv2d):
         super()._load_from_state_dict(state_dict, prefix, local_metadata,
                                       strict, missing_keys, unexpected_keys,
                                       error_msgs)
+
+
+if IS_MLU_AVAILABLE:
+    import torchvision
+
+    from mmcv.utils import digit_version
+    assert digit_version(torchvision.__version__) >= digit_version(
+        '0.10.0a0'), 'the version of torchvision should be >= 0.10.0'
+
+    from torchvision.ops import deform_conv2d as tv_deform_conv2d
+
+    @CONV_LAYERS.register_module('DCN', force=True)
+    class DeformConv2dPack_MLU(DeformConv2d):
+        """This class is the DCN implementation of the MLU device. The MLU
+        backend support of the operator has been implemented in torchvision.
+        The mmcv registration mechanism is used for multiplexing here. The
+        torchvision implementation of DCN is called.
+
+        Args:
+            in_channels (int): Same as nn.Conv2d.
+            out_channels (int): Same as nn.Conv2d.
+            kernel_size (int or tuple[int]): Same as nn.Conv2d.
+            stride (int): Same as nn.Conv2d, while tuple is not supported.
+            padding (int): Same as nn.Conv2d, while tuple is not supported.
+            dilation (int): Same as nn.Conv2d, while tuple is not supported.
+            groups (int): Same as nn.Conv2d.
+            bias (bool or str): If specified as `auto`, it will be decided by
+                the norm_cfg. Bias will be set as True if norm_cfg is None,
+                otherwise False.
+            im2col_step (int): Number of samples processed by
+                im2col_cuda_kernel per call. It will work when ``batch_size``
+                > ``im2col_step``, but ``batch_size`` must be divisible by
+                ``im2col_step``. Default: 32. `New in version 1.7.2.
+                Currently not supported on MLU devices.`
+        """
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+            self.conv_offset = nn.Conv2d(
+                self.in_channels,
+                self.deform_groups * 2 * self.kernel_size[0] *
+                self.kernel_size[1],
+                kernel_size=self.kernel_size,
+                stride=_pair(self.stride),
+                padding=_pair(self.padding),
+                dilation=_pair(self.dilation),
+                bias=True)
+            self.init_offset()
+
+        def init_offset(self):
+            self.conv_offset.weight.data.zero_()
+            self.conv_offset.bias.data.zero_()
+
+        def forward(self, x: Tensor) -> Tensor:  # type: ignore
+            cur_im2col_step = min(self.im2col_step, x.size(0))
+            assert (x.size(0) % cur_im2col_step
+                    ) == 0, 'batch size must be divisible by im2col_step'
+            offset = self.conv_offset(x)
+            x = x.type_as(offset)
+            weight = self.weight
+            weight = weight.type_as(x)
+            return tv_deform_conv2d(x, offset, weight, None, self.stride,
+                                    self.padding, self.dilation)
