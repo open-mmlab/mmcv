@@ -3,7 +3,7 @@
 using namespace NPU_NAME_SPACE;
 
 Tensor nms_rotated_npu(const Tensor dets, const Tensor scores,
-                       const Tensor labels, const float iou_threshold){
+                       const Tensor labels, const float iou_threshold) {
   auto originDtype = dets.scalar_type();
   at::Tensor detsCast = dets;
   at::Tensor scoresCast = scores;
