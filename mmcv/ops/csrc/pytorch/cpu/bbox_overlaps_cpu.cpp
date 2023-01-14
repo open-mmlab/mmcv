@@ -1,7 +1,6 @@
 // Copyright(c) OpenMMLab.All rights reserved.
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"
-#define HOST_DEVICE
 
 using torch::indexing::None;
 using torch::indexing::Slice;
