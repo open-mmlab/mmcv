@@ -14,8 +14,7 @@ Tensor nms_rotated_npu(const Tensor dets, const Tensor scores,
   c10::SmallVector<int64_t, SIZE> selectedIndexSize = {dets.size(0)};
   at::Tensor selectedBox = OpPreparation::ApplyTensor(dets);
   at::Tensor selectedIndex = OpPreparation::ApplyTensor(
-                            selectedIndexSize, dets.options().dtype(at::kInt),
-                            dets);
+      selectedIndexSize, dets.options().dtype(at::kInt), dets);
 
   c10::SmallVector<int64_t, N> output_sync_idx = {0, 1};
   OpCommand cmd;
