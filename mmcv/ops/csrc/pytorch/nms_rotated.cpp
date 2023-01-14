@@ -31,8 +31,7 @@ Tensor nms_rotated(const Tensor dets, const Tensor scores, const Tensor order,
 #else
     AT_ERROR("Not compiled with GPU support");
 #endif
-  }
-  else if(dets.device().type() == at::kXLA) {
+  } else if(dets.device().type() == at::kXLA) {
 #ifdef MMCV_WITH_NPU
     return nms_rotated_npu(dets, scores, labels, iou_threshold);
 #else
