@@ -26,7 +26,7 @@ Tensor nms_rotated_npu(const Tensor dets, const Tensor scores,
       .Input(labels)
       .Output(selectedBox)
       .Output(selectedIndex)
-      .Attr("iou_threshold", (float)iouThreshold)
+      .Attr("iou_threshold", (float)iou_threshold)
       .Run();
   selectedIndex = NPUNativeFunctions::npu_dtype_cast(selectedIndex, at::kLong);
   return selectedIndex;
