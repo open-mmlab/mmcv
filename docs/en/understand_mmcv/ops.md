@@ -18,7 +18,7 @@ We implement common ops used in detection, segmentation, etc.
 | ConvexIoU                    |     | √    |     |     |        |
 | CornerPool                   |     | √    |     |     |        |
 | Correlation                  |     | √    |     |     |        |
-| Deformable Convolution v1/v2 | √   | √    |     |     |        |
+| Deformable Convolution v1/v2 | √   | √    |     |     | √      |
 | Deformable RoIPool           |     | √    | √   |     | √      |
 | DiffIoURotated               |     | √    |     |     |        |
 | DynamicScatter               |     | √    |     |     |        |
@@ -40,10 +40,10 @@ We implement common ops used in detection, segmentation, etc.
 | PixelGroup                   | √   |      |     |     |        |
 | PointsInBoxes                | √   | √    |     |     |        |
 | PointsInPolygons             |     | √    |     |     |        |
-| PSAMask                      | √   | √    | √   |     |        |
+| PSAMask                      | √   | √    | √   |     | √      |
 | RotatedFeatureAlign          | √   | √    |     |     |        |
 | RoIPointPool3d               |     | √    | √   |     |        |
-| RoIPool                      |     | √    | √   |     |        |
+| RoIPool                      |     | √    | √   |     | √      |
 | RoIAlignRotated              | √   | √    | √   |     |        |
 | RiRoIAlignRotated            |     | √    |     |     |        |
 | RoIAlign                     | √   | √    | √   |     |        |
@@ -58,5 +58,5 @@ We implement common ops used in detection, segmentation, etc.
 | ThreeNN                      |     | √    | √   |     |        |
 | TINShift                     |     | √    | √   |     |        |
 | UpFirDn2d                    |     | √    |     |     |        |
-| Voxelization                 | √   | √    |     |     |        |
+| Voxelization                 | √   | √    | √   |     |        |
 | PrRoIPool                    |     | √    |     |     |        |
