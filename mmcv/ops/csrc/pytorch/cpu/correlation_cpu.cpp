@@ -78,7 +78,7 @@ static void correlate_forward_cpu_kernel(
 }
 
 template <typename scalar_t>
-static void correlate_patch_grad(
+static void correlation_backward_cpu_kernel(
     Tensor input1,
     Tensor gradInput1,
     Tensor input2,
@@ -120,14 +120,14 @@ static void correlate_patch_grad(
 }
 
 void correlationForwardCPUKernelLaucher(const Tensor input1,
-                                                 const Tensor input2,
-                                                 Tensor output,
-                                                 int kH, int kW,
-                                                 int patchH, int patchW,
-                                                 int padH, int padW,
-                                                 int dilationH, int dilationW,
-                                                 int dilation_patchH, int dilation_patchW,
-                                                 int dH, int dW)
+                                        const Tensor input2,
+                                        Tensor output,
+                                        int kH, int kW,
+                                        int patchH, int patchW,
+                                        int padH, int padW,
+                                        int dilationH, int dilationW,
+                                        int dilation_patchH, int dilation_patchW,
+                                        int dH, int dW)
 {
   const auto batch_size = input1.size(0);
   const auto iH = input1.size(2);
@@ -150,13 +150,13 @@ void correlationForwardCPUKernelLaucher(const Tensor input1,
       for (pw = 0; pw < patchW; ++pw)
       {
         AT_DISPATCH_FLOATING_TYPES_AND_HALF(input1.scalar_type(), "correlation_forward_cpp", ([&]
-                                                                                     {
+                                                                                              {
             auto input1_acc = input1.accessor<scalar_t, 4>();
             auto input2_acc = input2.accessor<scalar_t, 4>();
             auto output_acc = output.accessor<scalar_t, 5>();
             for (h = 0; h < oH; ++h) {
               for (w = 0; w < oW; ++w) {
-                correlate_patch(input1_acc[n],
+                correlate_forward_cpu_kernel(input1_acc[n],
                                 input2_acc[n],
                                 &output_acc[n][ph][pw][h][w],
                                 kH, kW,
@@ -172,16 +172,18 @@ void correlationForwardCPUKernelLaucher(const Tensor input1,
   }
   return output;
 }
-void correlation_cpp_backward(
-    torch::Tensor input1,
-    torch::Tensor input2,
-    torch::Tensor gradOutput,
-    int kH, int kW,
-    int patchH, int patchW,
-    int padH, int padW,
-    int dilationH, int dilationW,
-    int dilation_patchH, int dilation_patchW,
-    int dH, int dW) {
+void correlationBackwardCPUKernelLaucher(torch::Tensor input1,
+                                         torch::Tensor input2,
+                                         const torch::Tensor gradOutput,
+                                         Tensor grad_input1,
+                                         Tensor grad_input2,
+                                         int kH, int kW,
+                                         int patchH, int patchW,
+                                         int padH, int padW,
+                                         int dilationH, int dilationW,
+                                         int dilation_patchH, int dilation_patchW,
+                                         int dH, int dW)
+{
 
   const int batch_size = input1.size(0);
   const int patchRadH = (patchH - 1) / 2;
@@ -189,14 +191,12 @@ void correlation_cpp_backward(
   const int oH = gradOutput.size(3);
   const int oW = gradOutput.size(4);
 
-  auto gradInput1 = torch::zeros_like(input1);
-
-  auto gradInput2 = torch::zeros_like(input2);
-
   int n, ph, pw, h, w;
-  #pragma omp parallel for private(n, ph, pw, h, w)
-    for (n = 0; n < batch_size; ++n) {
-      AT_DISPATCH_FLOATING_TYPES(input1.scalar_type(), "correlation_backward_cpp", ([&] {
+#pragma omp parallel for private(n, ph, pw, h, w)
+  for (n = 0; n < batch_size; ++n)
+  {
+    AT_DISPATCH_FLOATING_TYPES(input1.scalar_type(), "correlation_backward_cpp", ([&]
+                                                                                  {
         auto input1_acc = input1.accessor<scalar_t, 4>();
         auto gradInput1_acc = gradInput1.accessor<scalar_t, 4>();
         auto input2_acc = input2.accessor<scalar_t, 4>();
@@ -207,7 +207,7 @@ void correlation_cpp_backward(
           for(pw = 0; pw < patchW; ++pw){
             for (h = 0; h < oH; ++h) {
               for (w = 0; w < oW; ++w) {
-                correlate_patch_grad(input1_acc[n], gradInput1_acc[n],
+                correlation_backward_cpu_kernel(input1_acc[n], gradInput1_acc[n],
                                      input2_acc[n], gradInput2_acc[n],
                                      gradOutput_acc[n][ph][pw][h][w],
                                      kH, kW,
@@ -219,9 +219,8 @@ void correlation_cpp_backward(
               }
             }
           }
-        }
-      }));
-    }
+        } }));
+  }
 
   return {gradInput1, gradInput2};
 }
