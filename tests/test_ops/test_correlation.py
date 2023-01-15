@@ -3,6 +3,7 @@ import pytest
 import torch
 
 from mmcv.ops import Correlation
+from mmcv.utils import IS_CUDA_AVAILABLE
 
 _input1 = [[[[1., 2., 3.], [0., 1., 2.], [3., 5., 2.]]]]
 _input2 = [[[[1., 2., 3.], [3., 1., 2.], [8., 5., 2.]]]]
@@ -18,12 +19,13 @@ def assert_equal_tensor(tensor_a, tensor_b):
 
 class TestCorrelation:
 
-    def _test_correlation(self, dtype=torch.float):
+    def _test_correlation(self, dtype=torch.float, device='cpu'):
 
         layer = Correlation(max_displacement=0)
-
-        input1 = torch.tensor(_input1, dtype=dtype).cuda()
-        input2 = torch.tensor(_input2, dtype=dtype).cuda()
+        input1 = torch.tensor(_input1, dtype=dtype).to(device)
+        input2 = torch.tensor(_input2, dtype=dtype).to(device)
+        # input1 = torch.tensor(_input1, dtype=dtype).cuda()
+        # input2 = torch.tensor(_input2, dtype=dtype).cuda()
         input1.requires_grad = True
         input2.requires_grad = True
         out = layer(input1, input2)
@@ -39,7 +41,14 @@ class TestCorrelation:
 
     @pytest.mark.skipif(
         not torch.cuda.is_available(), reason='requires CUDA support')
-    def test_correlation(self):
-        self._test_correlation(torch.float)
-        self._test_correlation(torch.double)
-        self._test_correlation(torch.half)
+    @pytest.mark.parametrize('device', [
+        'cpu',
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support'))
+    ])
+    def test_correlation(self, device):
+        self._test_correlation(torch.float, device)
+        self._test_correlation(torch.double, device)
+        self._test_correlation(torch.half, device)
