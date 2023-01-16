@@ -66,7 +66,6 @@ class CorrelationFunction(Function):
         ctx, grad_output: Tensor
     ) -> Tuple[Tensor, Tensor, None, None, None, None, None, None]:
         input1, input2 = ctx.saved_tensors
-
         kH, kW = ctx.kernel_size
         patch_size = ctx.patch_size
         padH, padW = ctx.padding
