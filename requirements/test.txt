@@ -5,6 +5,7 @@ onnxoptimizer; python_version < '3.10'
 onnxruntime>=1.8.0
 protobuf~=3.19.0
 pytest
+pytest-benchmark
 PyTurboJPEG
 scipy
 tifffile
