@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
-from typing import Optional, Union
+from typing import Optional
 
 import mmengine.fileio as fileio
 import numpy as np
@@ -63,6 +63,8 @@ class LoadImageFromFile(BaseTransform):
         self.color_type = color_type
         self.imdecode_backend = imdecode_backend
 
+        self.file_client_args: Optional[dict] = None
+        self.backend_args: Optional[dict] = None
         if file_client_args is not None:
             warnings.warn(
                 '"file_client_args" will be deprecated in future. '
@@ -71,21 +73,10 @@ class LoadImageFromFile(BaseTransform):
                 raise ValueError(
                     '"file_client_args" and "backend_args" cannot be set '
                     'at the same time.')
-        else:
-            file_client_args = dict(backend='disk')
-        if backend_args is None:
-            backend_args = dict(backend='disk')
 
-        self.file_client_args = file_client_args.copy()
-        self.file_client = fileio.FileClient(**self.file_client_args)
-        self.backend_args = backend_args.copy()
-
-        self.file_backend: Union[fileio.FileClient, fileio.BaseStorageBackend]
-        if self.file_client_args is None:
-            self.file_backend = fileio.get_file_backend(
-                backend_args=self.backend_args)
-        else:
-            self.file_backend = self.file_client
+            self.file_client_args = file_client_args.copy()
+        if backend_args is not None:
+            self.backend_args = backend_args.copy()
 
     def transform(self, results: dict) -> Optional[dict]:
         """Functions to load image.
@@ -100,7 +91,13 @@ class LoadImageFromFile(BaseTransform):
 
         filename = results['img_path']
         try:
-            img_bytes = self.file_backend.get(filename)
+            if self.file_client_args is not None:
+                file_client = fileio.FileClient.infer_client(
+                    self.file_client_args, filename)
+                img_bytes = file_client.get(filename)
+            else:
+                img_bytes = fileio.get(
+                    filename, backend_args=self.backend_args)
             img = mmcv.imfrombytes(
                 img_bytes, flag=self.color_type, backend=self.imdecode_backend)
         except Exception as e:
@@ -240,6 +237,8 @@ class LoadAnnotations(BaseTransform):
         self.with_keypoints = with_keypoints
         self.imdecode_backend = imdecode_backend
 
+        self.file_client_args: Optional[dict] = None
+        self.backend_args: Optional[dict] = None
         if file_client_args is not None:
             warnings.warn(
                 '"file_client_args" will be deprecated in future. '
@@ -248,21 +247,10 @@ class LoadAnnotations(BaseTransform):
                 raise ValueError(
                     '"file_client_args" and "backend_args" cannot be set '
                     'at the same time.')
-        else:
-            file_client_args = dict(backend='disk')
-        if backend_args is None:
-            backend_args = dict(backend='disk')
 
-        self.file_client_args = file_client_args.copy()
-        self.file_client = fileio.FileClient(**self.file_client_args)
-        self.backend_args = backend_args.copy()
-
-        self.file_backend: Union[fileio.FileClient, fileio.BaseStorageBackend]
-        if self.file_client_args is None:
-            self.file_backend = fileio.get_file_backend(
-                backend_args=self.backend_args)
-        else:
-            self.file_backend = self.file_client
+            self.file_client_args = file_client_args.copy()
+        if backend_args is not None:
+            self.backend_args = backend_args.copy()
 
     def _load_bboxes(self, results: dict) -> None:
         """Private function to load bounding box annotations.
@@ -306,8 +294,14 @@ class LoadAnnotations(BaseTransform):
         Returns:
             dict: The dict contains loaded semantic segmentation annotations.
         """
+        if self.file_client_args is not None:
+            file_client = fileio.FileClient.infer_client(
+                self.file_client_args, results['seg_map_path'])
+            img_bytes = file_client.get(results['seg_map_path'])
+        else:
+            img_bytes = fileio.get(
+                results['seg_map_path'], backend_args=self.backend_args)
 
-        img_bytes = self.file_backend.get(results['seg_map_path'])
         results['gt_seg_map'] = mmcv.imfrombytes(
             img_bytes, flag='unchanged',
             backend=self.imdecode_backend).squeeze()
