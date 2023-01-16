@@ -300,9 +300,37 @@ def get_extensions():
         elif (hasattr(torch, 'is_mlu_available') and
                 torch.is_mlu_available()) or \
                 os.getenv('FORCE_MLU', '0') == '1':
+            import re
+            from string import Template
+
             from torch_mlu.utils.cpp_extension import MLUExtension
+
+            def get_mluops_version(file_path):
+                with open(file_path) as f:
+                    for line in f:
+                        if re.search('MLUOP_MAJOR', line):
+                            major = line.strip().split(' ')[2]
+                        if re.search('MLUOP_MINOR', line):
+                            minor = line.strip().split(' ')[2]
+                        if re.search('MLUOP_PATCHLEVEL', line):
+                            patchlevel = line.strip().split(' ')[2]
+                f.close()
+                version_str = 'v$major.$minor.$patchlevel'
+                mluops_version = Template(version_str).substitute(
+                    major=major, minor=minor, patchlevel=patchlevel)
+                return mluops_version
+
+            mmcv_mluops_version = get_mluops_version(
+                './mmcv/ops/csrc/pytorch/mlu/mlu_common_helper.h')
             mlu_ops_path = os.getenv('MMCV_MLU_OPS_PATH')
             if mlu_ops_path:
+                exists_mluops_version = get_mluops_version(
+                    mlu_ops_path + './bangc-ops/mlu_op.h')
+                if exists_mluops_version != mmcv_mluops_version:
+                    print('the version of mlu-ops provided is %s,'
+                          ' while %s is needed.' %
+                          (exists_mluops_version, mmcv_mluops_version))
+                    exit()
                 try:
                     if os.path.exists('mlu-ops'):
                         if os.path.islink('mlu-ops'):
@@ -319,13 +347,9 @@ def get_extensions():
             else:
                 if not os.path.exists('mlu-ops'):
                     import requests
-                    mluops_url = 'https://github.com/Cambricon/'\
-                        'mlu-ops/releases/latest'
-                    response = requests.get(
-                        url=mluops_url, allow_redirects=False)
-                    download_url = response.headers.get('Location').replace(
-                        'releases/tag', 'archive/refs/tags') + '.zip'
-                    req = requests.get(download_url)
+                    mluops_url = 'https://github.com/Cambricon/mlu-ops/' + \
+                        'archive/refs/tags/' + mmcv_mluops_version + '.zip'
+                    req = requests.get(mluops_url)
                     with open('./mlu-ops-latest.zip', 'wb') as f:
                         try:
                             f.write(req.content)
@@ -340,6 +364,14 @@ def get_extensions():
                             os.rename(dir_name, 'mlu-ops')
                         except BadZipFile:
                             print('invalid mlu-ops-latest.zip file')
+                else:
+                    exists_mluops_version = get_mluops_version(
+                        './mlu-ops/bangc-ops/mlu_op.h')
+                    if exists_mluops_version != mmcv_mluops_version:
+                        print('the version of provided mlu-ops is %s,'
+                              ' while %s is needed.' %
+                              (exists_mluops_version, mmcv_mluops_version))
+                        exit()
 
             define_macros += [('MMCV_WITH_MLU', None)]
             mlu_args = os.getenv('MMCV_MLU_ARGS')

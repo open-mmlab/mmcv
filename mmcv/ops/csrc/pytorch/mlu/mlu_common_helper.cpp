@@ -9,9 +9,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *************************************************************************/
-#include "mlu_common_desc.h"
-
-#include "mlu_op.h"
+#include "mlu_common_helper.h"
 
 // Descriptors
 mluOpDataType_t getMluOpDataType(const caffe2::TypeMeta& data_type) {

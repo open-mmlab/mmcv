@@ -9,10 +9,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *************************************************************************/
-#include "mlu_common_desc.h"
-#include "mlu_op.h"
-#include "pytorch_device_registry.hpp"
-#include "pytorch_mlu_helper.hpp"
+#include "mlu_common_helper.h"
 
 void ball_query_forward_mlu(int b, int n, int m, float min_radius,
                             float max_radius, int nsample, const Tensor new_xyz,
