@@ -11,7 +11,7 @@ void sigmoid_focal_loss_forward_cpu_kernel(const int N, const T* input, const in
                                const float alpha,
                                const int num_classes) {
     for (int i = 0; i < N; i++) {
-        T p = (T) 1. / ((T)1. + expf(-input[i]));
+        T p = (T) 1. / ((T)1. + exp(-input[i]));
         int64_t t = target[i / num_classes];
         if (t == (i % num_classes)) { // positive
             output[i] = -alpha * pow(((T)1. - p), gamma) * log(std::max(p, (T)FLT_MIN));
@@ -32,7 +32,7 @@ void sigmoid_focal_loss_backward_cpu_kernel(const int N, const T* input, const i
                                const float alpha,
                                const int num_classes) {
     for (int i = 0; i < N; i++) {
-        T p = (T) 1. / ((T)1. + expf(-input[i]));
+        T p = (T) 1. / ((T)1. + exp(-input[i]));
         int64_t t = target[i / num_classes];
         if (t == (i % num_classes)) { // positive
             grad_input[i] = -alpha * pow((T)1. - p, gamma) *
@@ -80,18 +80,6 @@ void TensorSigmoidFocalLossBackwardCPUKernelLaucher(Tensor input, Tensor target,
       });
 }
 
-void sigmoid_focal_loss_forward_cpu(Tensor input, Tensor target,
-                               Tensor weight, Tensor output,
-                               const float gamma,
-                               const float alpha) {
-  TensorSigmoidFocalLossForwardCPUKernelLaucher(input, target, weight, output, gamma, alpha);
-}
-
-void sigmoid_focal_loss_backward_cpu(Tensor input, Tensor target,
-                                      Tensor weight, Tensor grad_input,
-                                      float gamma, float alpha) {
-    TensorSigmoidFocalLossBackwardCPUKernelLaucher(input, target, weight, grad_input, gamma, alpha);
-}
 void sigmoid_focal_loss_forward_impl(Tensor input, Tensor target,
                                Tensor weight, Tensor output,
                                const float gamma,
@@ -100,5 +88,5 @@ void sigmoid_focal_loss_backward_impl(Tensor input, Tensor target,
                                       Tensor weight, Tensor grad_input,
                                       float gamma, float alpha);
 
-REGISTER_DEVICE_IMPL(sigmoid_focal_loss_forward_impl, CPU, sigmoid_focal_loss_forward_cpu);
-REGISTER_DEVICE_IMPL(sigmoid_focal_loss_backward_impl, CPU, sigmoid_focal_loss_backward_cpu);
+REGISTER_DEVICE_IMPL(sigmoid_focal_loss_forward_impl, CPU, TensorSigmoidFocalLossForwardCPUKernelLaucher);
+REGISTER_DEVICE_IMPL(sigmoid_focal_loss_backward_impl, CPU, TensorSigmoidFocalLossBackwardCPUKernelLaucher);
