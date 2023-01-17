@@ -40,6 +40,7 @@ Module
    NonLocal3d
    Scale
    Swish
+   Conv2dRFSearchOp
 
 Build Function
 ----------------

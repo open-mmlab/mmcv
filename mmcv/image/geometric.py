@@ -440,7 +440,7 @@ def imcrop(
         img (ndarray): Image to be cropped.
         bboxes (ndarray): Shape (k, 4) or (4, ), location of cropped bboxes.
         scale (float, optional): Scale ratio of bboxes, the default value
-            1.0 means no padding.
+            1.0 means no scaling.
         pad_fill (Number | list[Number]): Value to be filled for padding.
             Default: None, which means no padding.
 
