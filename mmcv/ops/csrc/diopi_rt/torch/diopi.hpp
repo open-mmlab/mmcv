@@ -5,8 +5,8 @@
 #include <list>
 
 struct diopiContext {
-    std::list<at::Tensor> arrays;
-    diopiContext() {}
+  std::list<at::Tensor> arrays;
+  diopiContext() {}
 };
 
 #endif // INCLUDE_PARROTS_DIOPI_HPP_
