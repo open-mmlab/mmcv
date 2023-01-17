@@ -179,6 +179,7 @@ DIOPI_API diopiError_t diopiGetTensorElemSize(const diopiTensorHandle_t th, int6
 }
 
 diopiError_t diopiGetStream(diopiContextHandle_t ctx, diopiStreamHandle_t* stream) {
+    // techniquely device independent
     *stream = at::cuda::getCurrentCUDAStream();
     return diopiSuccess;
 }

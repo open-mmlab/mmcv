@@ -211,7 +211,7 @@ def get_extensions():
         op_files = glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') +\
             glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') +\
             glob.glob('./mmcv/ops/csrc/parrots/*.cpp') +\
-            glob.glob('./mmcv/ops/csrc/diopi_impl/*.cpp')
+            glob.glob('./mmcv/ops/csrc/diopi_impl/cuda/*.cpp')
         op_files.remove('./mmcv/ops/csrc/pytorch/cuda/iou3d_cuda.cu')
 
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
@@ -295,7 +295,7 @@ def get_extensions():
                 glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cpp') + \
-                glob.glob('./mmcv/ops/csrc/diopi_impl/*.cpp') +\
+                glob.glob('./mmcv/ops/csrc/diopi_impl/cuda/*.cpp') +\
                 glob.glob('./mmcv/ops/csrc/diopi_rt/torch/*.cpp')
             extension = CUDAExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/pytorch'))
