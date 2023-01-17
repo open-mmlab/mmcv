@@ -10,6 +10,7 @@
 #include <iostream>
 
 #include <ATen/ATen.h>
+#include <ATen/cuda/CUDAContext.h>
 
 #include "diopi.hpp"
 
@@ -84,7 +85,7 @@ const char* device_to_str(const diopiDevice_t device)
 #undef _device2str
 }
 
-diopiDtype_t scalartype2dtype(c10::ScalarType dt) {
+diopiDtype_t scalartype2dtype(const c10::ScalarType dt) {
     switch (dt) {
         case c10::ScalarType::Byte: return diopi_dtype_uint8;
         case c10::ScalarType::Char: return diopi_dtype_int8;
@@ -98,6 +99,35 @@ diopiDtype_t scalartype2dtype(c10::ScalarType dt) {
         case c10::ScalarType::BFloat16: return diopi_dtype_bfloat16;
         default:
             std::cerr << "c10::ScalarType not supported in diopi";
+    }
+}
+
+c10::ScalarType dtype2scalartype(const diopiDtype_t dt) {
+    switch (dt) {
+        case diopi_dtype_uint8: return c10::ScalarType::Byte;
+        case diopi_dtype_int8: return c10::ScalarType::Char;
+        case diopi_dtype_int16: return c10::ScalarType::Short;
+        case diopi_dtype_int32:
+        case diopi_dtype_uint32: return c10::ScalarType::Int;
+        case diopi_dtype_int64:
+        case diopi_dtype_uint64: return c10::ScalarType::Long;
+        case diopi_dtype_float16: return c10::ScalarType::Half;
+        case diopi_dtype_float32: return c10::ScalarType::Float;
+        case diopi_dtype_float64: return c10::ScalarType::Double;
+        case diopi_dtype_bool: return c10::ScalarType::Bool;
+        case diopi_dtype_bfloat16: c10::ScalarType::BFloat16;
+        default:
+            std::cerr << "diopi dytpe not supported in pytorch+diopi scenario)";
+    }
+}
+
+c10::DeviceType device2DeviceType(const diopiDevice_t device) {
+    if (device == diopi_host) {
+        return c10::DeviceType::CPU;
+    } else if (device == diopi_device) {
+        return c10::DeviceType::CUDA;
+    } else {
+        std::cerr << "device dtype not supported";
     }
 }
 
@@ -149,14 +179,18 @@ DIOPI_API diopiError_t diopiGetTensorElemSize(const diopiTensorHandle_t th, int6
 }
 
 diopiError_t diopiGetStream(diopiContextHandle_t ctx, diopiStreamHandle_t* stream) {
-    // ctx->getStreamHandle();
+    *stream = at::cuda::getCurrentCUDAStream();
     return diopiSuccess;
 }
 
 DIOPI_API diopiError_t diopiRequireTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* tensor,
                                           const diopiSize_t* size, const diopiSize_t* stride,
                                           const diopiDtype_t dtype, const diopiDevice_t dev) {
-    // ctx->createTensor
+    at::IntArrayRef atDims((*size).data, (*size).len);
+    at::IntArrayRef atStrides((*stride).data, (*stride).len);
+    auto options = at::TensorOptions(device2DeviceType(dev)).dtype(dtype2scalartype(dtype));
+    ctx->arrays.push_back(at::empty(atDims, options));
+    *tensor = reinterpret_cast<diopiTensorHandle_t>(&(ctx->arrays.back()));
     return diopiSuccess;
 }
 
