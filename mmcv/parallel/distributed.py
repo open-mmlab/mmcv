@@ -20,6 +20,20 @@ class MMDistributedDataParallel(DistributedDataParallel):
     - It implement two APIs ``train_step()`` and ``val_step()``.
     """
 
+    def forward(self, *inputs, **kwargs):
+        """Override the original forward function.
+
+        The main difference lies in the CPU inference where the data in
+        :class:`DataContainers` will still be gathered.
+        """
+        if not self.device_ids:
+            # We add the following line thus the module could gather and
+            # convert data containers as those in GPU inference
+            inputs, kwargs = self.scatter(inputs, kwargs, [-1])
+            return self.module(*inputs[0], **kwargs[0])
+        else:
+            return super().forward(*inputs, **kwargs)
+
     def to_kwargs(self, inputs: ScatterInputs, kwargs: ScatterInputs,
                   device_id: int) -> Tuple[tuple, tuple]:
         # Use `self.to_kwargs` instead of `self.scatter` in pytorch1.8
