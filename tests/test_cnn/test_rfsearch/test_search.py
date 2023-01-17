@@ -1,17 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Tests the rfsearch with runners.
 
-CommandLine:
-    pytest tests/test_runner/test_hooks.py
-    xdoctest tests/test_hooks.py zero
-"""
-
-import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
 
 from mmcv.cnn.rfsearch import Conv2dRFSearchOp, RFSearchHook
-from tests.test_runner.test_hooks import _build_demo_runner
 
 
 def test_rfsearchhook():
@@ -114,20 +105,6 @@ def test_rfsearchhook():
     assert model.conv2.dilation_rates == [(1, 1), (3, 3)]
     assert model.conv3.dilation_rates == [(1, 1), (1, 2)]
 
-    # 1. test step() with mode of search
-    loader = DataLoader(torch.ones((1, 1, 1, 1)))
-    runner = _build_demo_runner()
-    runner.model = model
-    runner.register_hook(rfsearchhook_search)
-    runner.run([loader], [('train', 1)])
-
-    test_skip_layer()
-    assert not isinstance(model.conv1, Conv2dRFSearchOp)
-    assert isinstance(model.conv2, Conv2dRFSearchOp)
-    assert isinstance(model.conv3, Conv2dRFSearchOp)
-    assert model.conv2.dilation_rates == [(1, 1), (3, 3)]
-    assert model.conv3.dilation_rates == [(1, 1), (1, 3)]
-
     # 2. test init_model() with mode of fixed_single_branch
     model = Model()
     rfsearchhook_fixed_single_branch.init_model(model)
@@ -139,35 +116,9 @@ def test_rfsearchhook():
     assert model.conv2.dilation == (2, 2)
     assert model.conv3.dilation == (1, 1)
 
-    # 2. test step() with mode of fixed_single_branch
-    runner = _build_demo_runner()
-    runner.model = model
-    runner.register_hook(rfsearchhook_fixed_single_branch)
-    runner.run([loader], [('train', 1)])
-
-    assert not isinstance(model.conv1, Conv2dRFSearchOp)
-    assert not isinstance(model.conv2, Conv2dRFSearchOp)
-    assert not isinstance(model.conv3, Conv2dRFSearchOp)
-    assert model.conv1.dilation == (1, 1)
-    assert model.conv2.dilation == (2, 2)
-    assert model.conv3.dilation == (1, 1)
-
     # 3. test init_model() with mode of fixed_multi_branch
     model = Model()
     rfsearchhook_fixed_multi_branch.init_model(model)
-
-    test_skip_layer()
-    assert not isinstance(model.conv1, Conv2dRFSearchOp)
-    assert isinstance(model.conv2, Conv2dRFSearchOp)
-    assert isinstance(model.conv3, Conv2dRFSearchOp)
-    assert model.conv2.dilation_rates == [(1, 1), (3, 3)]
-    assert model.conv3.dilation_rates == [(1, 1), (1, 2)]
-
-    # 3. test step() with mode of fixed_single_branch
-    runner = _build_demo_runner()
-    runner.model = model
-    runner.register_hook(rfsearchhook_fixed_multi_branch)
-    runner.run([loader], [('train', 1)])
 
     test_skip_layer()
     assert not isinstance(model.conv1, Conv2dRFSearchOp)

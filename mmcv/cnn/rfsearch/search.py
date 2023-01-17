@@ -3,15 +3,14 @@ import os
 from typing import Dict, Optional
 
 import mmengine
+import torch  # noqa
 import torch.nn as nn
 from mmengine.hooks import Hook
-from mmengine.logging import MMLogger
+from mmengine.logging import print_log
 from mmengine.registry import HOOKS
 
-from mmcv.cnn.rfsearch.utils import get_single_padding, write_to_json
-from .operator import BaseConvRFSearchOp
-
-logger = MMLogger.get_current_instance()
+from .operator import BaseConvRFSearchOp, Conv2dRFSearchOp  # noqa
+from .utils import get_single_padding, write_to_json
 
 
 @HOOKS.register_module()
@@ -82,7 +81,7 @@ class RFSearchHook(Hook):
                 search/fixed_single_branch/fixed_multi_branch
         """
         if self.verbose:
-            logger.info('RFSearch init begin.')
+            print_log('RFSearch init begin.', 'current')
         if self.mode == 'search':
             if self.config['structure']:
                 self.set_model(model, search_op='Conv2d')
@@ -95,19 +94,19 @@ class RFSearchHook(Hook):
         else:
             raise NotImplementedError
         if self.verbose:
-            logger.info('RFSearch init end.')
+            print_log('RFSearch init end.', 'current')
 
     def after_train_epoch(self, runner):
         """Performs a dilation searching step after one training epoch."""
         if self.by_epoch and self.mode == 'search':
             self.step(runner.model, runner.work_dir)
 
-    def after_train_iter(self, runner):
+    def after_train_iter(self, runner, batch_idx, data_batch, outputs):
         """Performs a dilation searching step after one training iteration."""
         if not self.by_epoch and self.mode == 'search':
             self.step(runner.model, runner.work_dir)
 
-    def step(self, model: nn.Module, work_dir: str):
+    def step(self, model: nn.Module, work_dir: str) -> None:
         """Performs a dilation searching step.
 
         Args:
@@ -132,7 +131,7 @@ class RFSearchHook(Hook):
                 ),
             )
 
-    def estimate_and_expand(self, model: nn.Module):
+    def estimate_and_expand(self, model: nn.Module) -> None:
         """estimate and search for RFConvOp.
 
         Args:
@@ -146,7 +145,7 @@ class RFSearchHook(Hook):
     def wrap_model(self,
                    model: nn.Module,
                    search_op: str = 'Conv2d',
-                   prefix: str = ''):
+                   prefix: str = '') -> None:
         """wrap model to support searchable conv op.
 
         Args:
@@ -176,8 +175,9 @@ class RFSearchHook(Hook):
                         module, self.config['search'], self.verbose)
                     moduleWrap = moduleWrap.to(module.weight.device)
                     if self.verbose:
-                        logger.info('Wrap model %s to %s.' %
-                                    (str(module), str(moduleWrap)))
+                        print_log(
+                            'Wrap model %s to %s.' %
+                            (str(module), str(moduleWrap)), 'current')
                     setattr(model, name, moduleWrap)
             elif not isinstance(module, BaseConvRFSearchOp):
                 self.wrap_model(module, search_op, fullname)
@@ -186,7 +186,7 @@ class RFSearchHook(Hook):
                   model: nn.Module,
                   search_op: str = 'Conv2d',
                   init_rates: Optional[int] = None,
-                  prefix: str = ''):
+                  prefix: str = '') -> None:
         """set model based on config.
 
         Args:
@@ -231,8 +231,9 @@ class RFSearchHook(Hook):
                             self.config['structure'][fullname][1]))
                     setattr(model, name, module)
                     if self.verbose:
-                        logger.info(
+                        print_log(
                             'Set module %s dilation as: [%d %d]' %
-                            (fullname, module.dilation[0], module.dilation[1]))
+                            (fullname, module.dilation[0], module.dilation[1]),
+                            'current')
             elif not isinstance(module, BaseConvRFSearchOp):
                 self.set_model(module, search_op, init_rates, fullname)

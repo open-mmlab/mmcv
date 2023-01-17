@@ -4,13 +4,11 @@ import copy
 import numpy as np
 import torch
 import torch.nn as nn
-from mmengine.logging import MMLogger
+from mmengine.logging import print_log
 from mmengine.model import BaseModule
 from torch import Tensor
 
 from .utils import expand_rates, get_single_padding
-
-logger = MMLogger.get_current_instance()
 
 
 class BaseConvRFSearchOp(BaseModule):
@@ -84,7 +82,7 @@ class Conv2dRFSearchOp(BaseConvRFSearchOp):
 
         self.branch_weights = nn.Parameter(torch.Tensor(self.num_branches))
         if self.verbose:
-            logger.info(f'Expand as {self.dilation_rates}')
+            print_log(f'Expand as {self.dilation_rates}', 'current')
         nn.init.constant_(self.branch_weights, global_config['init_alphas'])
 
     def forward(self, input: Tensor) -> Tensor:
@@ -118,13 +116,14 @@ class Conv2dRFSearchOp(BaseConvRFSearchOp):
             output += outputs[i]
         return output
 
-    def estimate_rates(self):
+    def estimate_rates(self) -> None:
         """Estimate new dilation rate based on trained branch_weights."""
         norm_w = self.normlize(self.branch_weights[:len(self.dilation_rates)])
         if self.verbose:
-            logger.info('Estimate dilation {} with weight {}.'.format(
-                self.dilation_rates,
-                norm_w.detach().cpu().numpy().tolist()))
+            print_log(
+                'Estimate dilation {} with weight {}.'.format(
+                    self.dilation_rates,
+                    norm_w.detach().cpu().numpy().tolist()), 'current')
 
         sum0, sum1, w_sum = 0, 0, 0
         for i in range(len(self.dilation_rates)):
@@ -143,9 +142,9 @@ class Conv2dRFSearchOp(BaseConvRFSearchOp):
         self.op_layer.padding = self.get_padding(self.op_layer.dilation)
         self.dilation_rates = [tuple(estimated)]
         if self.verbose:
-            logger.info(f'Estimate as {tuple(estimated)}')
+            print_log(f'Estimate as {tuple(estimated)}', 'current')
 
-    def expand_rates(self):
+    def expand_rates(self) -> None:
         """Expand dilation rate."""
         dilation = self.op_layer.dilation
         dilation_rates = expand_rates(dilation, self.global_config)
@@ -158,11 +157,11 @@ class Conv2dRFSearchOp(BaseConvRFSearchOp):
 
         self.dilation_rates = copy.deepcopy(dilation_rates)
         if self.verbose:
-            logger.info(f'Expand as {self.dilation_rates}')
+            print_log(f'Expand as {self.dilation_rates}', 'current')
         nn.init.constant_(self.branch_weights,
                           self.global_config['init_alphas'])
 
-    def get_padding(self, dilation):
+    def get_padding(self, dilation) -> tuple:
         padding = (get_single_padding(self.op_layer.kernel_size[0],
                                       self.op_layer.stride[0], dilation[0]),
                    get_single_padding(self.op_layer.kernel_size[1],
