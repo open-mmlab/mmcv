@@ -301,7 +301,6 @@ def get_extensions():
                 torch.is_mlu_available()) or \
                 os.getenv('FORCE_MLU', '0') == '1':
             import re
-            from string import Template
 
             from torch_mlu.utils.cpp_extension import MLUExtension
 
@@ -315,9 +314,7 @@ def get_extensions():
                         if re.search('MLUOP_PATCHLEVEL', line):
                             patchlevel = line.strip().split(' ')[2]
                 f.close()
-                version_str = 'v$major.$minor.$patchlevel'
-                mluops_version = Template(version_str).substitute(
-                    major=major, minor=minor, patchlevel=patchlevel)
+                mluops_version = f'v{major}.{minor}.{patchlevel}'
                 return mluops_version
 
             mmcv_mluops_version = get_mluops_version(
@@ -325,7 +322,7 @@ def get_extensions():
             mlu_ops_path = os.getenv('MMCV_MLU_OPS_PATH')
             if mlu_ops_path:
                 exists_mluops_version = get_mluops_version(
-                    mlu_ops_path + './bangc-ops/mlu_op.h')
+                    mlu_ops_path + '/bangc-ops/mlu_op.h')
                 if exists_mluops_version != mmcv_mluops_version:
                     print('the version of mlu-ops provided is %s,'
                           ' while %s is needed.' %
@@ -350,20 +347,20 @@ def get_extensions():
                     mluops_url = 'https://github.com/Cambricon/mlu-ops/' + \
                         'archive/refs/tags/' + mmcv_mluops_version + '.zip'
                     req = requests.get(mluops_url)
-                    with open('./mlu-ops-latest.zip', 'wb') as f:
+                    with open('./mlu-ops.zip', 'wb') as f:
                         try:
                             f.write(req.content)
                         except Exception:
                             raise ImportError('failed to download mlu-ops')
 
                     from zipfile import BadZipFile, ZipFile
-                    with ZipFile('./mlu-ops-latest.zip', 'r') as archive:
+                    with ZipFile('./mlu-ops.zip', 'r') as archive:
                         try:
                             archive.extractall()
                             dir_name = archive.namelist()[0].split('/')[0]
                             os.rename(dir_name, 'mlu-ops')
                         except BadZipFile:
-                            print('invalid mlu-ops-latest.zip file')
+                            print('invalid mlu-ops.zip file')
                 else:
                     exists_mluops_version = get_mluops_version(
                         './mlu-ops/bangc-ops/mlu_op.h')
