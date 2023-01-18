@@ -392,16 +392,16 @@ print(output)
 
 ### 在寒武纪 MLU 机器编译 mmcv-full
 
-#### 选项1: 基于寒武纪docker image 安装
+#### 选项1: 基于寒武纪 docker image 安装
 
-首先请下载并且拉取寒武纪docker (请向 service@cambricon.com发邮件以获得最新的寒武纪pytorch发布docker)
+首先请下载并且拉取寒武纪 docker (请向 service@cambricon.com 发邮件以获得最新的寒武纪 pytorch 发布 docker)
 ```
 docker pull ${docker image}
 ``` 
 
-进入docker, [编译 MMCV MLU](#编译mmcv-mlu) 并[进行验证](#验证是否成功安装).
+进入 docker, [编译 MMCV MLU](#编译mmcv-mlu) 并[进行验证](#验证是否成功安装).
 
-#### 选项2：基于cambricon pytorch源码编译安装
+#### 选项2：基于 cambricon pytorch 源码编译安装
 
 #### 安装 CATCH:
 
@@ -418,7 +418,9 @@ python setup.py install
 ```
 
 #### 验证是否成功安装
+
 完成上述安装步骤之后，您可以尝试运行下面的 Python 代码以测试您是否成功在 MLU 设备上安装了 mmcv-full:
+
 ``` python
 import torch
 import torch_mlu
