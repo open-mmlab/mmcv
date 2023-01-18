@@ -56,8 +56,9 @@ class MultiScaleDeformableAttnFunction(Function):
         # (float32), but "value" is cast to float16, leading to the type
         # mismatch with input (when it is float32) or weight.
         # The flag for whether to use fp16 or amp is the type of "value",
-        # we cast weight and input to temporarily support fp16 and amp
-        # whatever the pytorch version is.
+        # we cast sampling_locations and attention_weights to
+        # temporarily support fp16 and amp whatever the
+        # pytorch version is.
         sampling_locations = sampling_locations.type_as(value)
         attention_weights = attention_weights.type_as(value)
 
