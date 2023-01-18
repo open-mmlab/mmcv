@@ -300,8 +300,6 @@ def get_extensions():
         elif (hasattr(torch, 'is_mlu_available') and
                 torch.is_mlu_available()) or \
                 os.getenv('FORCE_MLU', '0') == '1':
-            import re
-
             from torch_mlu.utils.cpp_extension import MLUExtension
 
             def get_mluops_version(file_path):
@@ -313,7 +311,6 @@ def get_extensions():
                             minor = line.strip().split(' ')[2]
                         if re.search('MLUOP_PATCHLEVEL', line):
                             patchlevel = line.strip().split(' ')[2]
-                f.close()
                 mluops_version = f'v{major}.{minor}.{patchlevel}'
                 return mluops_version
 
