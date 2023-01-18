@@ -89,7 +89,7 @@ class TestNmsRotated:
         assert np.allclose(dets.cpu().numpy()[:, :5], np_expect_dets)
         assert np.allclose(keep_inds.cpu().numpy(), np_expect_keep_inds)
 
-    def test_batched_nms(self, device):
+    def test_batched_nms(self):
         # test batched_nms with nms_rotated
         from mmcv.ops import batched_nms
 
