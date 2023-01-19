@@ -247,7 +247,8 @@ def get_extensions():
             cpu_use = max(4, num_cpu - 1)
             # docker container resource limited case
             if os.path.exists('/.dockerenv'):
-                exit_code, cpu_use_ns = subprocess.getstatusoutput('cat /sys/fs/cgroup/cpu/cpu.cfs_quota_us')
+                exit_code, cpu_use_ns = subprocess.getstatusoutput(
+                    'cat /sys/fs/cgroup/cpu/cpu.cfs_quota_us')
                 if exit_code == 0 and cpu_use_ns != '-1':
                     cpu_use = int(int(cpu_use_ns) / 100000 - 1)
         except (ModuleNotFoundError, AttributeError, ValueError):
