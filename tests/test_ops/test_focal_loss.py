@@ -13,6 +13,7 @@ except ImportError:
     _USING_PARROTS = False
 
 # torch.set_printoptions(precision=8, threshold=100)
+SKIP_BENCHMARK = True
 
 inputs = [
     ([[1., 0], [0, 1.]], [0, 1]),
@@ -187,6 +188,7 @@ class Testfocalloss:
         loss = sigmoid_focal_loss(*args)
         loss.backward()
 
+    @pytest.mark.skipif(SKIP_BENCHMARK, reason='Skip benchmark.')
     @pytest.mark.parametrize(
         'param',
         benchmark_data,
@@ -208,6 +210,7 @@ class Testfocalloss:
             ((x, y, gamma, alpha, None, 'mean'), ),
             rounds=10)
 
+    @pytest.mark.skipif(SKIP_BENCHMARK, reason='Skip benchmark.')
     @pytest.mark.parametrize(
         'param',
         benchmark_data,
