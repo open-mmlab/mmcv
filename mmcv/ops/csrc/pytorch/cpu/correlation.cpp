@@ -1,45 +1,13 @@
+// Copyright (c) OpenMMLab. All rights reserved.
+// Modified from
+// https://github.com/ClementPinard/Pytorch-Correlation-extension/blob/master/Correlation_Module/correlation_cuda_kernel.cu
+// Original licence: Under MIT License
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"
 #include <torch/types.h>
 #include <vector>
 #include <cstdio>
 #define WITHIN_BOUNDS(x, y, H, W) (x >= 0 && x < H && y >= 0 && y < W)
-// template <typename scalar_t>
-// static void correlate_patch(
-//     Tensor input1,
-//     Tensor input2,
-//     scalar_t *dst,
-//     int kH, int kW,
-//     int dilationH, int dilationW,
-//     int u, int v,
-//     int shiftU, int shiftV)
-// {
-//   const int C = input1.size(0);
-//   const int iH = input1.size(1);
-//   const int iW = input1.size(2);
-//   for (int c = 0; c < C; ++c)
-//   {
-//     for (int i = 0; i < kH; ++i)
-//     {
-//       int i1 = u + i * dilationH;
-//       int i2 = i1 + shiftU;
-//       if WITHIN_BOUNDS (i1, i2, iH, iH)
-//       {
-//         for (int j = 0; j < kW; ++j)
-//         {
-//           int j1 = v + j * dilationW;
-//           int j2 = j1 + shiftV;
-//           if WITHIN_BOUNDS (j1, j2, iW, iW)
-//           {
-//             scalar_t v1 = input1[c][i1][j1];
-//             scalar_t v2 = input2[c][i2][j2];
-//             *dst += v1 * v2;
-//           }
-//         }
-//       }
-//     }
-//   }
-// }
 template <typename scalar_t>
 static void correlate_forward_cpu_kernel(
     TensorAccessor<scalar_t, 3> input1,
@@ -89,7 +57,6 @@ static void correlation_backward_cpu_kernel(
     int u, int v,
     int shiftU, int shiftV)
 {
-
   const int C = input1.size(0);
   const int iH = input1.size(1);
   const int iW = input1.size(2);
@@ -221,8 +188,6 @@ void correlationBackwardCPUKernelLaucher(const torch::Tensor gradOutput,
           }
         } }));
   }
-
-  // return {gradInput1, gradInput2};
 }
 
 void correlation_forward_cpu(Tensor input1, Tensor input2, Tensor output,
@@ -249,8 +214,7 @@ void correlation_backward_cpu(Tensor gradOutput,
                               int dilation_patchH, int dilation_patchW,
                               int dH, int dW)
 {
-  correlationBackwardCPUKernelLaucher(input1, input2,
-                                      gradOutput,
+  correlationBackwardCPUKernelLaucher(gradOutput,input1, input2,
                                       grad_input1,
                                       grad_input2,
                                       kH, kW,
