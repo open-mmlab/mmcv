@@ -6,7 +6,6 @@
 #include "pytorch_device_registry.hpp"
 #include <torch/types.h>
 #include <vector>
-#include <cstdio>
 #define WITHIN_BOUNDS(x, y, H, W) (x >= 0 && x < H && y >= 0 && y < W)
 template <typename scalar_t>
 static void correlate_forward_cpu_kernel(
