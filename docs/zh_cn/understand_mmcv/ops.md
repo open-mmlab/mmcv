@@ -35,7 +35,7 @@ MMCV 提供了检测、分割等任务中常用的算子
 | ModulatedDeformConv2d        | √   | √    | √   |     | √      |
 | MultiScaleDeformableAttn     |     | √    | √   |     |        |
 | NMS                          | √   | √    | √   |     | √      |
-| NMSRotated                   | √   | √    |     |     |        |
+| NMSRotated                   | √   | √    |     |     | √      |
 | NMSQuadri                    | √   | √    |     |     |        |
 | PixelGroup                   | √   |      |     |     |        |
 | PointsInBoxes                | √   | √    |     |     |        |
