@@ -389,3 +389,51 @@ w = torch.ones(10).float().npu()
 output = softmax_focal_loss(x, y, 2.0, 0.25, w, 'none')
 print(output)
 ```
+
+### 在寒武纪 MLU 机器编译 mmcv-full
+
+#### 选项1: 基于寒武纪 docker image 安装
+
+首先请下载并且拉取寒武纪 docker (请向 service@cambricon.com 发邮件以获得最新的寒武纪 pytorch 发布 docker)
+```
+docker pull ${docker image}
+``` 
+
+进入 docker, [编译 MMCV MLU](#编译mmcv-mlu) 并[进行验证](#验证是否成功安装).
+
+#### 选项2：基于 cambricon pytorch 源码编译安装
+
+#### 安装 CATCH:
+
+请向 service@cambricon.com 发送邮件或联系 Cambricon 工程师以获取合适版本的 CATCH 软件包，在您获得合适版本的 CATCH 软件包后，请参照 ${CATCH-path}/CONTRIBUTING.md 中的步骤安装 CATCH。
+
+算子库 mlu-ops 在编译时自动下载到默认路径(mmcv/mlu-ops)，你也可以在编译前设置环境变量 MMCV_MLU_OPS_PATH 指向已经存在的 mlu-ops 算子库路径：
+
+```bash
+export MMCV_MLU_OPS_PATH=/xxx/xxx/mlu-ops
+```
+
+#### 编译 MMCV:
+
+```bash
+git clone https://github.com/open-mmlab/mmcv.git -b master
+cd mmcv
+export MMCV_WITH_OPS=1
+export FORCE_MLU=1
+python setup.py install
+```
+
+#### 验证是否成功安装
+
+完成上述安装步骤之后，您可以尝试运行下面的 Python 代码以测试您是否成功在 MLU 设备上安装了 mmcv-full:
+
+``` python
+import torch
+import torch_mlu
+from mmcv.ops import sigmoid_focal_loss
+x = torch.randn(3, 10).mlu()
+x.requires_grad = True
+y = torch.tensor([1, 5, 3]).mlu()
+w = torch.ones(10).float().mlu()
+output = sigmoid_focal_loss(x, y, 2.0, 0.25, w, 'none')
+```
