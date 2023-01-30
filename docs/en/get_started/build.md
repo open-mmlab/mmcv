@@ -402,6 +402,12 @@ Pull the source code of MMCV:
 git clone https://github.com/open-mmlab/mmcv.git -b master
 ```
 
+The mlu-ops library will be downloaded in the default directory(mmcv/mlu-ops) while installing. You can also set MMCV_MLU_OPS_PATH to an existed mlu-ops library  before installing as follows:
+
+```bash
+export MMCV_MLU_OPS_PATH=/xxx/xxx/mlu-ops
+```
+
 Install mmcv-full
 
 ```bash

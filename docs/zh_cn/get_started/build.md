@@ -407,6 +407,12 @@ docker pull ${docker image}
 
 请向 service@cambricon.com 发送邮件或联系 Cambricon 工程师以获取合适版本的 CATCH 软件包，在您获得合适版本的 CATCH 软件包后，请参照 ${CATCH-path}/CONTRIBUTING.md 中的步骤安装 CATCH。
 
+算子库 mlu-ops 在编译时自动下载到默认路径(mmcv/mlu-ops)，你也可以在编译前设置环境变量 MMCV_MLU_OPS_PATH 指向已经存在的 mlu-ops 算子库路径：
+
+```bash
+export MMCV_MLU_OPS_PATH=/xxx/xxx/mlu-ops
+```
+
 #### 编译 MMCV:
 
 ```bash
