@@ -8,11 +8,20 @@ from mmcv.ops.multi_scale_deform_attn import (
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
 _USING_PARROTS = True
+_IS_AUTOCAST_AVAILABLE = True
 try:
     from parrots.autograd import gradcheck
 except ImportError:
     from torch.autograd import gradcheck
     _USING_PARROTS = False
+
+try:
+    # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast
+    # would be imported and used; we should test if our modules support it.
+    from torch.cuda.amp import autocast
+except ImportError:
+    _IS_AUTOCAST_AVAILABLE = False
+    pass
 
 
 @pytest.mark.parametrize('device', [
@@ -146,6 +155,57 @@ def test_forward_equal_with_pytorch_float(device):
                    output_pytorch.abs()).max()
     assert max_abs_err < 1e-9
     assert max_rel_err < 1e-6
+
+
+@pytest.mark.skipif(
+    not _IS_AUTOCAST_AVAILABLE, reason='requires autocast support')
+def test_forward_equal_with_autocast():
+    N, M, D = 1, 2, 2
+    Lq, L, P = 2, 2, 2
+    shapes = torch.as_tensor([(6, 4), (3, 2)], dtype=torch.long)
+    level_start_index = torch.cat((shapes.new_zeros(
+        (1, )), shapes.prod(1).cumsum(0)[:-1]))
+    S = sum((H * W).item() for H, W in shapes)
+
+    torch.manual_seed(3)
+    value = torch.rand(N, S, M, D) * 0.01
+    sampling_locations = torch.rand(N, Lq, M, L, P, 2)
+    attention_weights = torch.rand(N, Lq, M, L, P) + 1e-5
+    attention_weights /= attention_weights.sum(
+        -1, keepdim=True).sum(
+            -2, keepdim=True)
+    im2col_step = 2
+    output_pytorch = multi_scale_deformable_attn_pytorch(
+        value, shapes, sampling_locations, attention_weights).detach().cpu()
+
+    # float test
+    dtype = torch.float
+    with autocast(enabled=True):
+        output_device = MultiScaleDeformableAttnFunction.apply(
+            value.cuda().type(dtype), shapes.cuda(), level_start_index.cuda(),
+            sampling_locations.cuda(), attention_weights.cuda(),
+            im2col_step).detach().cpu()
+    assert torch.allclose(output_device, output_pytorch, rtol=1e-2, atol=1e-3)
+    max_abs_err = (output_device - output_pytorch).abs().max()
+    max_rel_err = ((output_device - output_pytorch).abs() /
+                   output_pytorch.abs()).max()
+    assert max_abs_err < 1e-9
+    assert max_rel_err < 1e-6
+
+    # half test
+    dtype = torch.half
+    with autocast(enabled=True):
+        output_device = MultiScaleDeformableAttnFunction.apply(
+            value.cuda().type(dtype), shapes.cuda(), level_start_index.cuda(),
+            sampling_locations.cuda(), attention_weights.cuda(),
+            im2col_step).detach().cpu()
+    assert torch.allclose(
+        output_device, output_pytorch.half(), rtol=1e-2, atol=1e-3)
+    max_abs_err = (output_device - output_pytorch).abs().max()
+    max_rel_err = ((output_device - output_pytorch).abs() /
+                   output_pytorch.abs()).max()
+    assert max_abs_err < 1e-5
+    assert max_rel_err < 1e-2
 
 
 @pytest.mark.parametrize('device', [
