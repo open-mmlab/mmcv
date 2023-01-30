@@ -159,6 +159,7 @@ def test_forward_equal_with_pytorch_float(device):
 
 @pytest.mark.skipif(
     not _IS_AUTOCAST_AVAILABLE, reason='requires autocast support')
+@pytest.mark.skipif(not IS_CUDA_AVAILABLE, reason='requires CUDA support')
 def test_forward_equal_with_autocast():
     N, M, D = 1, 2, 2
     Lq, L, P = 2, 2, 2
