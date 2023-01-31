@@ -392,31 +392,40 @@ print(output)
 
 ### 在寒武纪 MLU 机器编译 mmcv-full
 
-#### 选项1: 基于寒武纪 docker image 安装
+#### 安装 torch_mlu
 
-首先请下载并且拉取寒武纪 docker (请向 service@cambricon.com 发邮件以获得最新的寒武纪 pytorch 发布 docker)
+##### 选项1: 基于寒武纪 docker image 安装
+
+首先请下载并且拉取寒武纪 docker (请向 service@cambricon.com 发邮件以获得最新的寒武纪 pytorch 发布 docker)。
 ```
 docker pull ${docker image}
 ``` 
 
-进入 docker, [编译 MMCV MLU](#编译mmcv-mlu) 并[进行验证](#验证是否成功安装).
+进入 docker, [编译 MMCV MLU](#编译mmcv-mlu) 并[进行验证](#验证是否成功安装)。
 
-#### 选项2：基于 cambricon pytorch 源码编译安装
+##### 选项2：基于 cambricon pytorch 源码编译安装
 
-#### 安装 CATCH:
+###### 安装 CATCH:
 
 请向 service@cambricon.com 发送邮件或联系 Cambricon 工程师以获取合适版本的 CATCH 软件包，在您获得合适版本的 CATCH 软件包后，请参照 ${CATCH-path}/CONTRIBUTING.md 中的步骤安装 CATCH。
 
-算子库 mlu-ops 在编译时自动下载到默认路径(mmcv/mlu-ops)，你也可以在编译前设置环境变量 MMCV_MLU_OPS_PATH 指向已经存在的 mlu-ops 算子库路径：
+#### 编译 MMCV:
+
+克隆代码仓库
+
+```bash
+git clone https://github.com/open-mmlab/mmcv.git
+```
+
+算子库 mlu-ops 在编译 MMCV 时自动下载到默认路径(mmcv/mlu-ops)，你也可以在编译前设置环境变量 MMCV_MLU_OPS_PATH 指向已经存在的 mlu-ops 算子库路径。
 
 ```bash
 export MMCV_MLU_OPS_PATH=/xxx/xxx/mlu-ops
 ```
 
-#### 编译 MMCV:
+开始编译
 
 ```bash
-git clone https://github.com/open-mmlab/mmcv.git -b master
 cd mmcv
 export MMCV_WITH_OPS=1
 export FORCE_MLU=1

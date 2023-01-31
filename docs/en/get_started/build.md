@@ -378,7 +378,9 @@ print(output)
 
 ### Build mmcv-full on Cambricon MLU Devices
 
-#### Option1: Install mmcv-full based on Cambricon docker image
+#### Install torch_mlu
+
+##### Option1: Install mmcv-full based on Cambricon docker image
 
 Firstly, install and pull Cambricon docker image (please email service@cambricon.com for the latest release docker):
 
@@ -388,21 +390,21 @@ docker pull ${docker image}
 
 Run and attach to the docker, [Install mmcv-full on MLU device](#install-mmcv\-full-on-cambricon-mlu-device) and [make sure you've installed mmcv-full on MLU device successfully](#test-code)
 
-#### Option2: Install mmcv-full from compiling Cambricon PyTorch source code
+##### Option2: Install mmcv-full from compiling Cambricon PyTorch source code
 
-#### Install CATCH
+###### Install CATCH
 
 - Please email service@cambricon.com or contact with Cambricon engineers for a suitable version of CATCH package. After you get the suitable version of CATCH package, please follow the steps in ${CATCH-path}/CONTRIBUTING.md to install Cambricon PyTorch.
 
 #### Install mmcv-full on Cambricon MLU device
 
-Pull the source code of MMCV:
+Clone the repo
 
 ```bash
-git clone https://github.com/open-mmlab/mmcv.git -b master
+git clone https://github.com/open-mmlab/mmcv.git
 ```
 
-The mlu-ops library will be downloaded in the default directory(mmcv/mlu-ops) while installing. You can also set MMCV_MLU_OPS_PATH to an existed mlu-ops library before installing as follows:
+The mlu-ops library will be downloaded in the default directory(mmcv/mlu-ops) while installing MMCV. You can also set MMCV_MLU_OPS_PATH to an existed mlu-ops library before installing as follows:
 
 ```bash
 export MMCV_MLU_OPS_PATH=/xxx/xxx/mlu-ops
@@ -412,7 +414,7 @@ Install mmcv-full
 
 ```bash
 cd mmcv
-export MMCV_WITH_OPS=ON
+export MMCV_WITH_OPS=1
 export FORCE_MLU=1
 python setup.py install
 ```
