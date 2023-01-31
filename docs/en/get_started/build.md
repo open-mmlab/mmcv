@@ -392,8 +392,6 @@ Run and attach to the docker, [Install mmcv-full on MLU device](#install-mmcv\-f
 
 ##### Option2: Install mmcv-full from compiling Cambricon PyTorch source code
 
-###### Install CATCH
-
 Please email service@cambricon.com or contact with Cambricon engineers for a suitable version of CATCH package. After you get the suitable version of CATCH package, please follow the steps in ${CATCH-path}/CONTRIBUTING.md to install Cambricon PyTorch.
 
 #### Install mmcv-full on Cambricon MLU device
@@ -421,7 +419,7 @@ python setup.py install
 
 #### Test Code
 
-After finishing previous steps, you can run the following python code to make sure that you've installed mmcv-full on MLU device successfully:
+After finishing previous steps, you can run the following python code to make sure that you've installed mmcv-full on MLU device successfully
 
 ```python
 import torch
