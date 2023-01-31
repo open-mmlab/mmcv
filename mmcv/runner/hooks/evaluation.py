@@ -24,9 +24,9 @@ class EvalHook(Hook):
         dataloader (DataLoader): A PyTorch dataloader, whose dataset has
             implemented ``evaluate`` function.
         start (int | None, optional): Evaluation starting epoch or iteration.
-            It enablesevaluation before the training starts if ``start`` <= the
-            resuming epoch or the resuming iteration. If None, whether to
-            evaluate is merely decided by ``interval``. Default: None.
+            It enables evaluation before the training starts if ``start`` <= the
+            resuming epoch or iteration. If None, whether to evaluate is
+            merely decided by ``interval``. Default: None.
         interval (int): Evaluation interval. Default: 1.
         by_epoch (bool): Determine perform evaluation by epoch or by iteration.
             If set to True, it will perform by epoch. Otherwise, by iteration.
