@@ -405,7 +405,7 @@ docker pull ${docker image}
 
 ##### 选项2：基于 cambricon pytorch 源码编译安装
 
-###### 安装 CATCH:
+###### 安装 CATCH
 
 请向 service@cambricon.com 发送邮件或联系 Cambricon 工程师以获取合适版本的 CATCH 软件包，在您获得合适版本的 CATCH 软件包后，请参照 ${CATCH-path}/CONTRIBUTING.md 中的步骤安装 CATCH。
 
