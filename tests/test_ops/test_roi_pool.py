@@ -69,20 +69,13 @@ class TestRoiPool:
             np_output = np.array(output[0])
             np_grad = np.array(output[1])
 
-            if device == 'npu':
-                import torch_npu  # noqa: F401
-                x = torch.tensor(np_input, dtype=dtype).npu()
-                rois = torch.tensor(np_rois, dtype=dtype).npu()
-                output = roi_pool(x, rois, (pool_h, pool_w), spatial_scale)
-                assert np.allclose(output.data.cpu().numpy(), np_output, 1e-3)
-            else:
-                x = torch.tensor(
-                    np_input, dtype=dtype, device=device, requires_grad=True)
-                rois = torch.tensor(np_rois, dtype=dtype, device=device)
-                output = roi_pool(x, rois, (pool_h, pool_w), spatial_scale)
-                output.backward(torch.ones_like(output))
-                assert np.allclose(output.data.cpu().numpy(), np_output, 1e-3)
-                assert np.allclose(x.grad.data.cpu().numpy(), np_grad, 1e-3)
+            x = torch.tensor(
+                np_input, dtype=dtype, device=device, requires_grad=True)
+            rois = torch.tensor(np_rois, dtype=dtype, device=device)
+            output = roi_pool(x, rois, (pool_h, pool_w), spatial_scale)
+            output.backward(torch.ones_like(output))
+            assert np.allclose(output.data.cpu().numpy(), np_output, 1e-3)
+            assert np.allclose(x.grad.data.cpu().numpy(), np_grad, 1e-3)
 
     @pytest.mark.parametrize('device', [
         pytest.param(
