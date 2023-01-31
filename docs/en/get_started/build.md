@@ -404,7 +404,7 @@ Clone the repo
 git clone https://github.com/open-mmlab/mmcv.git
 ```
 
-The mlu-ops library will be downloaded in the default directory(mmcv/mlu-ops) while installing MMCV. You can also set MMCV_MLU_OPS_PATH to an existed mlu-ops library before installing as follows:
+The mlu-ops library will be downloaded to the default directory (mmcv/mlu-ops) while building MMCV. You can also set `MMCV_MLU_OPS_PATH` to an existing mlu-ops library before building as follows:
 
 ```bash
 export MMCV_MLU_OPS_PATH=/xxx/xxx/mlu-ops
