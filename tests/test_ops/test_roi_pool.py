@@ -96,8 +96,8 @@ class TestRoiPool:
         pytest.param(
             torch.double,
             marks=pytest.mark.skipif(
-                IS_MLU_AVAILABLE,
-                reason='MLU does not support for 64-bit floating point')),
+                IS_MLU_AVAILABLE or IS_NPU_AVAILABLE,
+                reason='MLU, NPU does not support for 64-bit floating point')),
         torch.half
     ])
     def test_roipool_allclose(self, device, dtype):
