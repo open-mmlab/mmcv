@@ -12,12 +12,14 @@ void bbox_overlaps_npu(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
   if (mode == 1) {
     modeStr = "iof";
   }
-  bboxes1 = aligned ? bboxes1.transpose(0, 1) : bboxes1;
-  bboxes2 = aligned ? bboxes2.transpose(0, 1) : bboxes2;
+  at::Tensor bboxes = at::ones_like(bboxes2);
+  at::Tensor gtboxes = at::ones_like(bboxes1);
+  bboxes = aligned ? bboxes2.transpose(0, 1) : bboxes2;
+  gtboxes = aligned ? bboxes1.transpose(0, 1) : bboxes1;
   OpCommand cmd;
   cmd.Name("Iou")
-      .Input(bboxes2)
-      .Input(bboxes1)
+      .Input(bboxes)
+      .Input(gtboxes)
       .Output(ious)
       .Attr("mode", modeStr)
       .Attr("aligned", aligned)
