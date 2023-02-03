@@ -22,8 +22,8 @@ void bbox_overlaps_npu(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
       .Input(gtboxes)
       .Output(ious)
       .Attr("mode", modeStr)
-      .Attr("aligned", aligned)
       .Attr("eps", (float)offset)
+      .Attr("aligned", aligned)
       .Run();
 }
 
