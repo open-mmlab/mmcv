@@ -80,8 +80,6 @@ class RoIAlignFunction(Function):
         ctx.aligned = aligned
         ctx.input_shape = input.size()
 
-        assert input.is_contiguous(), "Memory of input must be contiguous"
-
         assert rois.size(1) == 5, 'RoI must be (idx, x1, y1, x2, y2)!'
 
         output_shape = (rois.size(0), input.size(1), ctx.output_size[0],
@@ -197,10 +195,11 @@ class RoIAlign(nn.Module):
     def forward(self, input: torch.Tensor, rois: torch.Tensor) -> torch.Tensor:
         """
         Args:
-            input: NCHW images
+            input: NCHW images. The tensor's memory needs to be contiguous.
             rois: Bx5 boxes. First column is the index into N.\
                 The other 4 columns are xyxy.
         """
+        assert input.is_contiguous(), 'Memory of input must be contiguous'
         if self.use_torchvision:
             from torchvision.ops import roi_align as tv_roi_align
             if 'aligned' in tv_roi_align.__code__.co_varnames:
