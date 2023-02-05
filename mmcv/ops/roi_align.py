@@ -80,6 +80,8 @@ class RoIAlignFunction(Function):
         ctx.aligned = aligned
         ctx.input_shape = input.size()
 
+        assert input.is_contiguous(), "Memory of input must be contiguous"
+
         assert rois.size(1) == 5, 'RoI must be (idx, x1, y1, x2, y2)!'
 
         output_shape = (rois.size(0), input.size(1), ctx.output_size[0],
