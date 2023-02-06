@@ -7,7 +7,7 @@ We implement common ops used in detection, segmentation, etc.
 | ActiveRotatedFilter          | √   | √    |     |     |        |
 | AssignScoreWithK             |     | √    |     |     |        |
 | BallQuery                    |     | √    | √   |     |        |
-| BBoxOverlaps                 |     | √    | √   | √   |        |
+| BBoxOverlaps                 |     | √    | √   | √   | √      |
 | BorderAlign                  |     | √    |     |     |        |
 | BoxIouRotated                | √   | √    |     |     |        |
 | BoxIouQuadri                 | √   | √    |     |     |        |
