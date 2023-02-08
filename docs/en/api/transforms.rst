@@ -12,6 +12,7 @@ mmcv.transforms
    :template: classtemplate.rst
 
    BaseTransform
+   TestTimeAug
 
 Loading
 ----------------
@@ -41,6 +42,8 @@ Processing
    RandomGrayscale
    RandomResize
    Resize
+   ToTensor
+   ImageToTensor
 
 Wrapper
 ----------------
