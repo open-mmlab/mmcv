@@ -237,7 +237,13 @@ def rescale_size(old_size: tuple,
             raise ValueError(f'Invalid scale {scale}, must be positive.')
         scale_factor = scale
     elif isinstance(scale, tuple):
-        scale_factor = min(scale[0] / w, scale[1] / h)
+        original_scale = w / h
+        target_scale = scale[0] / scale[1]
+
+        if target_scale > original_scale:
+            scale_factor = scale[1] / h
+        else:
+            scale_factor = scale[0] / w
     else:
         raise TypeError(
             f'Scale must be a number or tuple of int, but got {type(scale)}')
