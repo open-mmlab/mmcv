@@ -72,6 +72,39 @@ void MluOpTensorDescriptor::set(Tensor t) {
   set_desc(t, layout, data_type, dim_array);
 }
 
+void MluOpTensorDescriptor::set_with_layout(Tensor t,
+                                            mluOpTensorLayout_t layout) {
+  mluOpDataType_t data_type = getMluOpDataType(t.dtype());
+  int t_dim = t.dim();
+  std::vector<int> shape_info = checkUpperBoundAndCastTo<int>(t.sizes().vec());
+  std::vector<int> stride_info =
+      checkUpperBoundAndCastTo<int>(t.strides().vec());
+  if (layout == MLUOP_LAYOUT_NHWC || layout == MLUOP_LAYOUT_NDHWC ||
+      layout == MLUOP_LAYOUT_NLC) {
+    convertShapeAndStride(shape_info, stride_info);
+  } else {
+    auto convertDepthWiseConvShapeStride = [](const std::vector<int64_t>& vec,
+                                              std::vector<int>& target_vec,
+                                              std::vector<int>& stride_vec) {
+      // NCHW --> HWCN
+      target_vec[0] = static_cast<int>(vec[2]);
+      target_vec[1] = static_cast<int>(vec[3]);
+      target_vec[2] = static_cast<int>(vec[1]);
+      target_vec[3] = static_cast<int>(vec[0]);
+      // Calculate Stride just like contiguous of HWCN.
+      stride_vec[3] = 1;
+      stride_vec[2] = target_vec[3] * stride_vec[3];
+      stride_vec[1] = target_vec[2] * stride_vec[2];
+      stride_vec[0] = target_vec[1] * stride_vec[1];
+    };
+    convertDepthWiseConvShapeStride(t.sizes().vec(), shape_info, stride_info);
+  }
+  TORCH_CHECK(mluOpSetTensorDescriptorEx(
+                  desc_, layout, data_type, t_dim, shape_info.data(),
+                  stride_info.data()) == MLUOP_STATUS_SUCCESS,
+              "mluOpSetTensorDescriptorEx execution failed.");
+}
+
 void MluOpTensorDescriptor::set_desc(const at::Tensor& t,
                                      mluOpTensorLayout_t layout,
                                      mluOpDataType_t dtype,
