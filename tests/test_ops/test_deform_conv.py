@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import TORCH_VERSION, digit_version
+from mmcv.utils import IS_MLU_AVAILABLE, TORCH_VERSION, digit_version
 
 try:
     # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast
@@ -45,7 +45,10 @@ class TestDeformconv:
                          im2col_step=2):
         if not torch.cuda.is_available() and device == 'cuda':
             pytest.skip('test requires GPU')
-        from mmcv.ops import DeformConv2dPack
+        if device == 'mlu':
+            from mmcv.ops import DeformConv2dPack_MLU as DeformConv2dPack
+        else:
+            from mmcv.ops import DeformConv2dPack
         c_in = 1
         c_out = 1
         batch_size = 10
@@ -69,6 +72,8 @@ class TestDeformconv:
             torch.Tensor(deform_weight).reshape(1, 1, 2, 2))
         if device == 'cuda':
             model.cuda()
+        elif device == 'mlu':
+            model.mlu()
         model.type(dtype)
 
         out = model(x)
@@ -108,6 +113,7 @@ class TestDeformconv:
     def _test_amp_deformconv(self,
                              input_dtype,
                              threshold=1e-3,
+                             device='cuda',
                              batch_size=10,
                              im2col_step=2):
         """The function to test amp released on pytorch 1.6.0.
@@ -120,15 +126,18 @@ class TestDeformconv:
             input_dtype: torch.float or torch.half.
             threshold: the same as above function.
         """
-        if not torch.cuda.is_available():
+        if not torch.cuda.is_available() and device == 'cuda':
             return
-        from mmcv.ops import DeformConv2dPack
+        if device == 'mlu':
+            from mmcv.ops import DeformConv2dPack_MLU as DeformConv2dPack
+        else:
+            from mmcv.ops import DeformConv2dPack
         c_in = 1
         c_out = 1
         repeated_input = np.repeat(input, batch_size, axis=0)
         repeated_gt_out = np.repeat(gt_out, batch_size, axis=0)
         repeated_gt_x_grad = np.repeat(gt_x_grad, batch_size, axis=0)
-        x = torch.Tensor(repeated_input).cuda().type(input_dtype)
+        x = torch.Tensor(repeated_input).to(device).type(input_dtype)
         x.requires_grad = True
         model = DeformConv2dPack(
             in_channels=c_in,
@@ -143,7 +152,10 @@ class TestDeformconv:
             torch.Tensor(offset_bias).reshape(8))
         model.weight.data = torch.nn.Parameter(
             torch.Tensor(deform_weight).reshape(1, 1, 2, 2))
-        model.cuda()
+        if device == 'cuda':
+            model.cuda()
+        elif device == 'mlu':
+            model.mlu()
 
         out = model(x)
         out.backward(torch.ones_like(out))
@@ -180,21 +192,25 @@ class TestDeformconv:
     def test_deformconv(self):
         self._test_deformconv(torch.double, device='cpu')
         self._test_deformconv(torch.float, device='cpu', threshold=1e-1)
-        self._test_deformconv(torch.double)
-        self._test_deformconv(torch.float)
-        self._test_deformconv(torch.half, threshold=1e-1)
+
+        device = 'mlu' if IS_MLU_AVAILABLE else 'cuda'
+        self._test_deformconv(torch.double, device=device)
+        self._test_deformconv(torch.float, device=device)
+        self._test_deformconv(torch.half, threshold=1e-1, device=device)
         # test batch_size < im2col_step
-        self._test_deformconv(torch.float, batch_size=1, im2col_step=2)
+        self._test_deformconv(
+            torch.float, batch_size=1, im2col_step=2, device=device)
         # test bach_size % im2col_step != 0
         with pytest.raises(
                 AssertionError,
                 match='batch size must be divisible by im2col_step'):
-            self._test_deformconv(torch.float, batch_size=10, im2col_step=3)
+            self._test_deformconv(
+                torch.float, batch_size=10, im2col_step=3, device=device)
 
         # test amp when torch version >= '1.6.0', the type of
         # input data for deformconv might be torch.float or torch.half
         if (TORCH_VERSION != 'parrots'
                 and digit_version(TORCH_VERSION) >= digit_version('1.6.0')):
             with autocast(enabled=True):
-                self._test_amp_deformconv(torch.float, 1e-1)
-                self._test_amp_deformconv(torch.half, 1e-1)
+                self._test_amp_deformconv(torch.float, 1e-1, device)
+                self._test_amp_deformconv(torch.half, 1e-1, device)
