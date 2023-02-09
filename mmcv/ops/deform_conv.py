@@ -9,7 +9,7 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair, _single
 
-from mmcv.utils import deprecated_api_warning
+from mmcv.utils import IS_MLU_AVAILABLE, deprecated_api_warning
 from ..cnn import CONV_LAYERS
 from ..utils import ext_loader, print_log
 from .modulated_deform_conv import ModulatedDeformConv2dFunction
@@ -434,3 +434,65 @@ class DeformConv2dPack(DeformConv2d):
         super()._load_from_state_dict(state_dict, prefix, local_metadata,
                                       strict, missing_keys, unexpected_keys,
                                       error_msgs)
+
+
+if IS_MLU_AVAILABLE:
+    import torchvision
+    from torchvision.ops import deform_conv2d as tv_deform_conv2d
+
+    from mmcv.utils import digit_version
+
+    @CONV_LAYERS.register_module('DCN', force=True)
+    class DeformConv2dPack_MLU(DeformConv2d):
+        """This class is the DCN implementation of the MLU device. The MLU
+        backend support of the operator has been implemented in torchvision.
+        The mmcv registration mechanism is used for multiplexing here. The
+        torchvision implementation of DCN is called.
+
+        Args:
+            in_channels (int): Same as nn.Conv2d.
+            out_channels (int): Same as nn.Conv2d.
+            kernel_size (int or tuple[int]): Same as nn.Conv2d.
+            stride (int): Same as nn.Conv2d, while tuple is not supported.
+            padding (int): Same as nn.Conv2d, while tuple is not supported.
+            dilation (int): Same as nn.Conv2d, while tuple is not supported.
+            groups (int): Same as nn.Conv2d.
+            bias (bool or str): If specified as `auto`, it will be decided by
+                the norm_cfg. Bias will be set as True if norm_cfg is None,
+                otherwise False.
+            im2col_step (int): Number of samples processed by
+                im2col_cuda_kernel per call. It will work when ``batch_size``
+                > ``im2col_step``, but ``batch_size`` must be divisible by
+                ``im2col_step``. Default: 32. `New in version 1.7.2.
+                Currently not supported on MLU devices.`
+        """
+
+        def __init__(self, *args, **kwargs):
+            assert digit_version(torchvision.__version__) >= digit_version(
+                '0.10.0a0'), 'the version of torchvision should be >= 0.10.0'
+            super().__init__(*args, **kwargs)
+
+            self.conv_offset = nn.Conv2d(
+                self.in_channels,
+                self.deform_groups * 2 * self.kernel_size[0] *
+                self.kernel_size[1],
+                kernel_size=self.kernel_size,
+                stride=_pair(self.stride),
+                padding=_pair(self.padding),
+                dilation=_pair(self.dilation),
+                bias=True)
+            self.init_offset()
+
+        def init_offset(self):
+            self.conv_offset.weight.data.zero_()
+            self.conv_offset.bias.data.zero_()
+
+        def forward(self, x: Tensor) -> Tensor:  # type: ignore
+            cur_im2col_step = min(self.im2col_step, x.size(0))
+            assert (x.size(0) % cur_im2col_step
+                    ) == 0, 'batch size must be divisible by im2col_step'
+            offset = self.conv_offset(x)
+            x = x.type_as(offset)
+            weight = self.weight.type_as(x)
+            return tv_deform_conv2d(x, offset, weight, None, self.stride,
+                                    self.padding, self.dilation)

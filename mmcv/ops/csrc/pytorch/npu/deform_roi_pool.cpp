@@ -45,11 +45,11 @@ void deform_roi_pool_backward_npu(Tensor grad_output, Tensor input, Tensor rois,
   int64_t sampling_ratio_ = (int64_t)sampling_ratio;
   OpCommand cmd;
   cmd.Name("DeformableRoiPoolGrad")
-      .Input(grad_input)
+      .Input(grad_output)
       .Input(input)
       .Input(rois)
       .Input(offset)
-      .Output(grad_output)
+      .Output(grad_input)
       .Output(grad_offset)
       .Attr("output_size", output_size)
       .Attr("spatial_scale", spatial_scale)
