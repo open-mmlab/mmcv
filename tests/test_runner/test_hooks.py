@@ -6,6 +6,7 @@ CommandLine:
     xdoctest tests/test_hooks.py zero
 """
 import logging
+import os
 import os.path as osp
 import platform
 import random
@@ -21,6 +22,7 @@ import torch.nn as nn
 from torch.nn.init import constant_
 from torch.utils.data import DataLoader
 
+from mmcv import IS_NPU_AVAILABLE
 from mmcv.fileio.file_client import PetrelBackend
 # yapf: disable
 from mmcv.runner import (CheckpointHook, ClearMLLoggerHook, DvcliveLoggerHook,
@@ -2073,3 +2075,92 @@ def test_gradient_cumulative_fp16_optimizer_hook():
     assert torch.allclose(runner_1.model.fc.bias, runner_2.model.fc.bias)
     shutil.rmtree(runner_1.work_dir)
     shutil.rmtree(runner_2.work_dir)
+
+
+@pytest.mark.dome
+@pytest.mark.skipif(
+    not IS_NPU_AVAILABLE, reason='Ascend PyTorch and npu devices not exist')
+def test_npu_profiling_hook():
+
+    class ToyModel(nn.Module):
+
+        def __init__(self):
+            super().__init__()
+            self.fp16_enabled = False
+            self.fc = nn.Linear(3, 2)
+            nn.init.constant_(self.fc.weight, 1.)
+            nn.init.constant_(self.fc.bias, 1.)
+
+        @auto_fp16(apply_to=('x', ))
+        def forward(self, x):
+            x = self.fc(x)
+            return x
+
+        def train_step(self, x, optimizer, **kwargs):
+            return dict(loss=self(x).mean(), num_samples=x.shape[0])
+
+        def val_step(self, x, optimizer, **kwargs):
+            return dict(loss=self(x).mean(), num_samples=x.shape[0])
+
+    def build_toy_runner(config=dict(type='EpochBasedRunner', max_epochs=3)):
+        model = ToyModel().npu()
+        optimizer = torch.optim.SGD(model.parameters(), lr=0.02)
+        tmp_dir = tempfile.mkdtemp()
+
+        runner = build_runner(
+            config,
+            default_args=dict(
+                model=model,
+                work_dir=tmp_dir,
+                optimizer=optimizer,
+                logger=logging.getLogger(),
+                meta=dict()))
+        return runner
+
+    # test epoch based runner
+    data = torch.rand((6, 3)).npu()
+    loader = DataLoader(data, batch_size=1)
+    runner = build_toy_runner()
+    profiler_path = osp.join(runner.work_dir, './cann_profiling')
+    profiler_config = dict(
+        type='NPUProfilerHook',
+        result_path=profiler_path,
+        exit_after_profiling=False)
+    runner.register_custom_hooks([profiler_config])
+    runner.run([loader], [('train', 1)])
+
+    # test the path to save the profiling results file
+    assert osp.exists(profiler_path) and os.listdir(profiler_path)
+    shutil.rmtree(runner.work_dir)
+
+    # Turn on E2E profiling
+    loader = DataLoader(data, batch_size=3)
+    runner = build_toy_runner()
+    profiler_path = osp.join(runner.work_dir, './cann_profiling')
+    profiler_config = dict(
+        type='NPUProfilerHook',
+        result_path=profiler_path,
+        exit_after_profiling=False,
+        use_e2e_profiler=True)
+    runner.register_custom_hooks([profiler_config])
+    runner.run([loader], [('train', 1)])
+
+    # test the path to save the profiling results file
+    assert osp.exists(profiler_path) and os.listdir(profiler_path)
+    shutil.rmtree(runner.work_dir)
+
+    # Turn on GE profiling
+    loader = DataLoader(data, batch_size=3)
+    runner = build_toy_runner()
+    profiler_path = osp.join(runner.work_dir, './cann_profiling')
+    profiler_config = dict(
+        type='NPUProfilerHook',
+        result_path=profiler_path,
+        exit_after_profiling=False,
+        ge_profiling_to_std_out=True)
+    runner.register_custom_hooks([profiler_config])
+    runner.run([loader], [('train', 1)])
+
+    # test the path to save the profiling results file
+    assert osp.exists(profiler_path) and os.listdir(profiler_path)
+    shutil.rmtree(runner.work_dir)

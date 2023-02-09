@@ -25,7 +25,7 @@ from .momentum_updater import (CosineAnnealingMomentumUpdaterHook,
                                StepMomentumUpdaterHook)
 from .optimizer import (Fp16OptimizerHook, GradientCumulativeFp16OptimizerHook,
                         GradientCumulativeOptimizerHook, OptimizerHook)
-from .profiler import ProfilerHook
+from .profiler import NPUProfilerHook, ProfilerHook
 from .sampler_seed import DistSamplerSeedHook
 from .sync_buffer import SyncBuffersHook
 
@@ -42,7 +42,8 @@ __all__ = [
     'StepMomentumUpdaterHook', 'CosineAnnealingMomentumUpdaterHook',
     'CyclicMomentumUpdaterHook', 'OneCycleMomentumUpdaterHook',
     'SyncBuffersHook', 'EMAHook', 'EvalHook', 'DistEvalHook', 'ProfilerHook',
-    'GradientCumulativeOptimizerHook', 'GradientCumulativeFp16OptimizerHook',
-    'SegmindLoggerHook', 'LinearAnnealingLrUpdaterHook',
-    'LinearAnnealingMomentumUpdaterHook', 'ClearMLLoggerHook'
+    'NPUProfilerHook', 'GradientCumulativeOptimizerHook',
+    'GradientCumulativeFp16OptimizerHook', 'SegmindLoggerHook',
+    'LinearAnnealingLrUpdaterHook', 'LinearAnnealingMomentumUpdaterHook',
+    'ClearMLLoggerHook'
 ]
