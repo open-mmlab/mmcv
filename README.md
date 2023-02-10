@@ -47,7 +47,7 @@ It supports the following systems:
 - Windows
 - macOS
 
-See the [documentation](http://mmcv.readthedocs.io/en/2.x) for more features and usage.
+See the [documentation](https://mmcv.readthedocs.io/en/2.x) for more features and usage.
 
 Note: MMCV requires Python 3.7+.
 
@@ -110,9 +110,6 @@ mim install "mmcv-lite>=2.0.0rc1"
 
 ## FAQ
 
-If you face some installation issues, CUDA related issues or RuntimeErrors,
-you may first refer to this [Frequently Asked Questions](https://mmcv.readthedocs.io/en/2.x/faq.html).
-
 If you face installation problems or runtime issues, you may first refer to this [Frequently Asked Questions](https://mmcv.readthedocs.io/en/2.x/faq.html) to see if there is a solution. If the problem is still not solved, feel free to open an [issue](https://github.com/open-mmlab/mmcv/issues).
 
 ## Citation
@@ -140,6 +137,7 @@ MMCV is released under the Apache 2.0 license, while some specific operations in
 
 - [MMEngine](https://github.com/open-mmlab/mmengine): OpenMMLab foundational library for training deep learning models.
 - [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab foundational library for computer vision.
+- [MMEval](https://github.com/open-mmlab/mmeval): A unified evaluation library for multiple machine learning libraries.
 - [MIM](https://github.com/open-mmlab/mim): MIM installs OpenMMLab packages.
 - [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab image classification toolbox and benchmark.
 - [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab detection toolbox and benchmark.
