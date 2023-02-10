@@ -39,7 +39,7 @@ MMCV 是一个面向计算机视觉的基础库，它提供了以下功能：
 - [图像和标注结果可视化](https://mmcv.readthedocs.io/zh_CN/2.x/understand_mmcv/visualization.html)
 - [图像变换](https://mmcv.readthedocs.io/zh_CN/2.x/understand_mmcv/data_transform.html)
 - [多种 CNN 网络结构](https://mmcv.readthedocs.io/zh_CN/2.x/understand_mmcv/cnn.html)
-- [高质量实现的常见 CUDA 算子](https://mmcv.readthedocs.io/zh_CN/2.x/understand_mmcv/ops.html)
+- [高质量实现的常见 CPU 和 CUDA 算子](https://mmcv.readthedocs.io/zh_CN/2.x/understand_mmcv/ops.html)
 
 MMCV 支持多种平台，包括：
 
@@ -49,16 +49,16 @@ MMCV 支持多种平台，包括：
 
 如想了解更多特性和使用，请参考[文档](http://mmcv.readthedocs.io/zh_CN/2.x)。
 
-提示: MMCV 需要 Python 3.7 以上版本。
+提示：MMCV 需要 Python 3.7 以上版本。
 
 ## 安装
 
 MMCV 有两个版本：
 
-- **mmcv**: 完整版，包含所有的特性以及丰富的开箱即用的 CUDA 算子。注意完整版本可能需要更长时间来编译。
-- **mmcv-lite**: 精简版，不包含 CUDA 算子但包含其余所有特性和功能，类似 MMCV 1.0 之前的版本。如果你不需要使用 CUDA 算子的话，精简版可以作为一个考虑选项。
+- **mmcv**：完整版，包含所有的特性以及丰富的开箱即用的 CUDA 算子。注意完整版本可能需要更长时间来编译。
+- **mmcv-lite**：精简版，不包含 CUDA 算子但包含其余所有特性和功能，类似 MMCV 1.0 之前的版本。如果你不需要使用 CUDA 算子的话，精简版可以作为一个考虑选项。
 
-**注意**: 请不要在同一个环境中安装两个版本，否则可能会遇到类似 `ModuleNotFound` 的错误。在安装一个版本之前，需要先卸载另一个。`如果 CUDA 可用，强烈推荐安装 mmcv`。
+**注意**：请不要在同一个环境中安装两个版本，否则可能会遇到类似 `ModuleNotFound` 的错误。在安装一个版本之前，需要先卸载另一个。`如果 CUDA 可用，强烈推荐安装 mmcv`。
 
 ### 安装 mmcv
 
@@ -71,7 +71,7 @@ pip install -U openmim
 mim install "mmcv>=2.0.0rc1"
 ```
 
-如果需要指定 mmcv 的版本，可以使用以下命令
+如果需要指定 mmcv 的版本，可以使用以下命令：
 
 ```bash
 mim install mmcv==2.0.0rc3
@@ -112,18 +112,32 @@ mim install "mmcv-lite>=2.0.0rc1"
 
 如果你遇到了安装问题或者运行时问题，请查看[问题解决页面](https://mmcv.readthedocs.io/zh_CN/2.x/faq.html)是否已有解决方案。如果问题仍然没有解决，欢迎提 [issue](https://github.com/open-mmlab/mmcv/issues)。
 
+## 引用
+
+如果你觉得本项目对你的研究工作有所帮助，请参考如下 bibtex 引用 MMCV：
+
+```latex
+@misc{mmcv,
+    title={{MMCV: OpenMMLab} Computer Vision Foundation},
+    author={MMCV Contributors},
+    howpublished = {\url{https://github.com/open-mmlab/mmcv}},
+    year={2018}
+}
+```
+
 ## 贡献指南
 
 我们感谢所有的贡献者为改进和提升 MMCV 所作出的努力。请参考[贡献指南](CONTRIBUTING.md)来了解参与项目贡献的相关指引。
 
 ## 许可证
 
-`MMCV` 目前以 Apache 2.0 的许可证发布，但是其中有一部分功能并不是使用的 Apache2.0 许可证，我们在 [许可证](LICENSES.md) 中详细地列出了这些功能以及他们对应的许可证，如果您正在从事盈利性活动，请谨慎参考此文档。
+MMCV 目前以 Apache 2.0 的许可证发布，但是其中有一部分功能使用其他的许可证。我们在[许可证](LICENSES.md)中详细地列出了这些功能以及他们对应的许可证，如果您正在从事盈利性活动，请谨慎参考此文档。
 
 ## OpenMMLab 的其他项目
 
 - [MMEngine](https://github.com/open-mmlab/mmengine): OpenMMLab 深度学习模型训练基础库
 - [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab 计算机视觉基础库
+- [MMEval](https://github.com/open-mmlab/mmeval): 统一开放的跨框架算法评测库
 - [MIM](https://github.com/open-mmlab/mim): MIM 是 OpenMMlab 项目、算法、模型的统一入口
 - [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab 图像分类工具箱
 - [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab 目标检测工具箱
@@ -146,7 +160,7 @@ mim install "mmcv-lite>=2.0.0rc1"
 
 ## 欢迎加入 OpenMMLab 社区
 
-扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=K0QI8ByU)，或添加微信小助手”OpenMMLabwx“加入官方交流微信群。
+扫描下方的二维码可关注 OpenMMLab 团队的[知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的[官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=K0QI8ByU)，或添加微信小助手“OpenMMLabwx”加入官方交流微信群。
 
 <div align="center">
 <img src="https://user-images.githubusercontent.com/25839884/205870927-39f4946d-8751-4219-a4c0-740117558fd7.jpg" height="400" />  <img src="https://user-images.githubusercontent.com/25839884/203904835-62392033-02d4-4c73-a68c-c9e4c1e2b07f.jpg" height="400" /> <img src="https://user-images.githubusercontent.com/25839884/205872898-e2e6009d-c6bb-4d27-8d07-117e697a3da8.jpg" height="400" />
