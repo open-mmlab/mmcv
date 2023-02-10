@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/en/mmcv-logo.png" width="300"/>
+  <img src="https://raw.github.com/open-mmlab/mmcv/master/docs/en/mmcv-logo.png" width="300"/>
   <div>&nbsp;</div>
   <div align="center">
     <b><font size="5">OpenMMLab 官网</font></b>
@@ -19,15 +19,15 @@
   <div>&nbsp;</div>
 </div>
 
-[![docs](https://img.shields.io/badge/docs-2.x-blue)](https://mmcv.readthedocs.io/zh_CN/2.x/)
-[![platform](https://img.shields.io/badge/platform-Linux%7CWindows%7CmacOS-blue)](https://mmcv.readthedocs.io/zh_CN/2.x/get_started/installation.html)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mmcv)](https://pypi.org/project/mmcv/)
-[![pytorch](https://img.shields.io/badge/pytorch-1.6~1.13-orange)](https://pytorch.org/get-started/previous-versions/)
-[![cuda](https://img.shields.io/badge/cuda-9.2~11.7-green)](https://developer.nvidia.com/cuda-downloads)
-[![PyPI](https://img.shields.io/pypi/v/mmcv)](https://pypi.org/project/mmcv)
+[![docs](http://img.shields.io/badge/docs-2.x-blue)](https://mmcv.readthedocs.io/zh_CN/2.x/)
+[![platform](http://img.shields.io/badge/platform-Linux%7CWindows%7CmacOS-blue)](https://mmcv.readthedocs.io/zh_CN/2.x/get_started/installation.html)
+[![PyPI - Python Version](http://img.shields.io/pypi/pyversions/mmcv)](https://pypi.org/project/mmcv/)
+[![pytorch](http://img.shields.io/badge/pytorch-1.6~1.13-orange)](https://pytorch.org/get-started/previous-versions/)
+[![cuda](http://img.shields.io/badge/cuda-9.2~11.7-green)](https://developer.nvidia.com/cuda-downloads)
+[![PyPI](http://img.shields.io/pypi/v/mmcv)](https://pypi.org/project/mmcv)
 [![badge](https://github.com/open-mmlab/mmcv/workflows/build/badge.svg)](https://github.com/open-mmlab/mmcv/actions)
 [![codecov](https://codecov.io/gh/open-mmlab/mmcv/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmcv)
-[![license](https://img.shields.io/github/license/open-mmlab/mmcv.svg)](https://github.com/open-mmlab/mmcv/blob/master/LICENSE)
+[![license](http://img.shields.io/github/license/open-mmlab/mmcv.svg)](https://github.com/open-mmlab/mmcv/blob/master/LICENSE)
 
 [English](README.md) | 简体中文
 
@@ -127,7 +127,7 @@ mim install "mmcv-lite>=2.0.0rc1"
 
 ## 贡献指南
 
-我们感谢所有的贡献者为改进和提升 MMCV 所作出的努力。请参考[贡献指南](CONTRIBUTING.md)来了解参与项目贡献的相关指引。
+我们感谢所有的贡献者为改进和提升 MMCV 所作出的努力。请参考[贡献指南](CONTRIBUTING_zh-CN.md)来了解参与项目贡献的相关指引。
 
 ## 许可证
 
@@ -163,7 +163,7 @@ MMCV 目前以 Apache 2.0 的许可证发布，但是其中有一部分功能使
 扫描下方的二维码可关注 OpenMMLab 团队的[知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的[官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=K0QI8ByU)，或添加微信小助手“OpenMMLabwx”加入官方交流微信群。
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/25839884/205870927-39f4946d-8751-4219-a4c0-740117558fd7.jpg" height="400" />  <img src="https://user-images.githubusercontent.com/25839884/203904835-62392033-02d4-4c73-a68c-c9e4c1e2b07f.jpg" height="400" /> <img src="https://user-images.githubusercontent.com/25839884/205872898-e2e6009d-c6bb-4d27-8d07-117e697a3da8.jpg" height="400" />
+<img src="http://user-images.githubusercontent.com/25839884/205870927-39f4946d-8751-4219-a4c0-740117558fd7.jpg" height="400" />  <img src="http://user-images.githubusercontent.com/25839884/203904835-62392033-02d4-4c73-a68c-c9e4c1e2b07f.jpg" height="400" /> <img src="http://user-images.githubusercontent.com/25839884/205872898-e2e6009d-c6bb-4d27-8d07-117e697a3da8.jpg" height="400" />
 </div>
 
 我们会在 OpenMMLab 社区为大家
