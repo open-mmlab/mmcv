@@ -178,7 +178,7 @@ class MultiScaleDeformableAttention(BaseModule):
     Args:
         embed_dims (int): The embedding dimension of Attention.
             Default: 256.
-        num_heads (int): Parallel attention heads. Default: 64.
+        num_heads (int): Parallel attention heads. Default: 8.
         num_levels (int): The number of feature map used in
             Attention. Default: 4.
         num_points (int): The number of sampling points for
