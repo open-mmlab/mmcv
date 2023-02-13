@@ -270,6 +270,21 @@ def get_extensions():
             extension = CppExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/mps'))
+        elif (os.getenv('FORCE_NPU', '0') == '1'):
+            print(f'Compiling {ext_name} only with CPU and NPU')
+            try:
+                from torch_npu.utils.cpp_extension import NpuExtension
+                define_macros += [('MMCV_WITH_NPU', None)]
+                extension = NpuExtension
+            except Exception:
+                raise ImportError('can not find any torch_npu')
+            # src
+            op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/common/npu/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/npu/*.cpp')
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/npu'))
         else:
             print(f'Compiling {ext_name} only with CPU')
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \

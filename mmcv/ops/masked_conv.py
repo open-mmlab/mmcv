@@ -45,6 +45,24 @@ class MaskedConv2dFunction(Function):
                 'Stride could not only be 1 in masked_conv2d currently.')
         out_channel, in_channel, kernel_h, kernel_w = weight.size()
 
+        if features.device.type == 'npu':
+            import torch_npu
+            output = torch_npu.npu_conv2d(
+                features,
+                weight,
+                bias,
+                stride=(stride_h, stride_w),
+                padding=(pad_h, pad_w),
+                dilation=(1, 1),
+                groups=1)
+            if mask.size()[1:] != output.size()[2:]:
+                raise ValueError(
+                    'The mask is inconsistent with the shape of output_conv.')
+            mask = mask > 0
+            mask = mask.type(output.dtype)
+            output = output * mask
+            return output
+
         batch_size = features.size(0)
         out_h = int(
             math.floor(

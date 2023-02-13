@@ -4,6 +4,7 @@ from .assign_score_withk import assign_score_withk
 from .ball_query import ball_query
 from .bbox import bbox_overlaps
 from .bias_act import bias_act
+from .bezier_align import BezierAlign, bezier_align
 from .border_align import BorderAlign, border_align
 from .box_iou_quadri import box_iou_quadri
 from .box_iou_rotated import box_iou_rotated
@@ -106,5 +107,5 @@ __all__ = [
     'min_area_polygons', 'active_rotated_filter', 'convex_iou', 'convex_giou',
     'diff_iou_rotated_2d', 'diff_iou_rotated_3d', 'chamfer_distance',
     'PrRoIPool', 'prroi_pool', 'bias_act', 'filtered_lrelu', 'conv2d',
-    'conv_transpose2d', 'filter2d', 'upsample2d'
+    'conv_transpose2d', 'filter2d', 'upsample2d', 'BezierAlign', 'bezier_align'
 ]

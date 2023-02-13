@@ -11,6 +11,13 @@ from mmcv.transforms import LoadAnnotations, LoadImageFromFile
 class TestLoadImageFromFile:
 
     def test_load_img(self):
+        # file_client_args and backend_args can not be both set
+        with pytest.raises(
+                ValueError,
+                match='"file_client_args" and "backend_args" cannot be set'):
+            LoadImageFromFile(
+                file_client_args={'backend': 'disk'},
+                backend_args={'backend': 'disk'})
         data_prefix = osp.join(osp.dirname(__file__), '../data')
 
         results = dict(img_path=osp.join(data_prefix, 'color.jpg'))
@@ -23,7 +30,7 @@ class TestLoadImageFromFile:
         assert results['ori_shape'] == (300, 400)
         assert repr(transform) == transform.__class__.__name__ + \
             "(ignore_empty=False, to_float32=False, color_type='color', " + \
-            "imdecode_backend='cv2')"
+            "imdecode_backend='cv2', backend_args=None)"
 
         # to_float32
         transform = LoadImageFromFile(to_float32=True)
@@ -70,6 +77,15 @@ class TestLoadAnnotations:
                 'keypoints': [4, 5, 6]
             }]
         }
+
+    def test_init(self):
+        # file_client_args and backend_args can not be both set
+        with pytest.raises(
+                ValueError,
+                match='"file_client_args" and "backend_args" cannot be set'):
+            LoadAnnotations(
+                file_client_args={'backend': 'disk'},
+                backend_args={'backend': 'disk'})
 
     def test_load_bboxes(self):
         transform = LoadAnnotations(
@@ -131,4 +147,5 @@ class TestLoadAnnotations:
         assert repr(transform) == (
             'LoadAnnotations(with_bbox=True, '
             'with_label=False, with_seg=False, '
-            "with_keypoints=False, imdecode_backend='cv2')")
+            "with_keypoints=False, imdecode_backend='cv2', "
+            'backend_args=None)')

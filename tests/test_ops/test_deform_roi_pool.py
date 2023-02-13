@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
 
 _USING_PARROTS = True
 try:
@@ -126,6 +126,10 @@ class TestDeformRoIPool:
             assert np.allclose(x.grad.data.cpu().numpy(), np_grad, 1e-3)
 
     @pytest.mark.parametrize('device', [
+        pytest.param(
+            'npu',
+            marks=pytest.mark.skipif(
+                not IS_NPU_AVAILABLE, reason='requires NPU support')),
         pytest.param(
             'cuda',
             marks=pytest.mark.skipif(
