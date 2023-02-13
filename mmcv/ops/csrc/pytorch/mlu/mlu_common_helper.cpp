@@ -82,7 +82,7 @@ void MluOpTensorDescriptor::set_with_layout(Tensor t,
   if (layout == MLUOP_LAYOUT_NHWC || layout == MLUOP_LAYOUT_NDHWC ||
       layout == MLUOP_LAYOUT_NLC) {
     convertShapeAndStride(shape_info, stride_info);
-  } else {
+  } else if (layout == MLUOP_LAYOUT_HWCN) {
     auto convertDepthWiseConvShapeStride = [](const std::vector<int64_t>& vec,
                                               std::vector<int>& target_vec,
                                               std::vector<int>& stride_vec) {
