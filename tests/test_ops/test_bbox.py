@@ -52,7 +52,7 @@ class TestBBox:
         pytest.param(
             'npu',
             marks=pytest.mark.skipif(
-                not IS_NPU_AVAILABLE, reason='requires MPS support'))
+                not IS_NPU_AVAILABLE, reason='requires NPU support'))
     ])
     def test_bbox_overlaps_float(self, device):
         self._test_bbox_overlaps(device, dtype=torch.float)
@@ -69,7 +69,7 @@ class TestBBox:
         pytest.param(
             'npu',
             marks=pytest.mark.skipif(
-                not IS_NPU_AVAILABLE, reason='requires MPS support'))
+                not IS_NPU_AVAILABLE, reason='requires NPU support'))
     ])
     def test_bbox_overlaps_half(self, device):
         self._test_bbox_overlaps(device, dtype=torch.half)
