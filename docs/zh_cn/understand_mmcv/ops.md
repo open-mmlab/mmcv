@@ -7,7 +7,7 @@ MMCV 提供了检测、分割等任务中常用的算子
 | ActiveRotatedFilter          | √   | √    |     |     |        |
 | AssignScoreWithK             |     | √    |     |     |        |
 | BallQuery                    |     | √    |     |     |        |
-| BBoxOverlaps                 |     | √    | √   | √   |        |
+| BBoxOverlaps                 |     | √    | √   | √   | √      |
 | BorderAlign                  |     | √    |     |     |        |
 | BoxIouRotated                | √   | √    |     |     |        |
 | BoxIouQuadri                 | √   | √    |     |     |        |
@@ -25,7 +25,7 @@ MMCV 提供了检测、分割等任务中常用的算子
 | FurthestPointSample          |     | √    |     |     |        |
 | FurthestPointSampleWithDist  |     | √    |     |     |        |
 | FusedBiasLeakyrelu           |     | √    |     |     | √      |
-| GatherPoints                 |     | √    |     |     |        |
+| GatherPoints                 |     | √    |     |     | √      |
 | GroupPoints                  |     | √    |     |     |        |
 | Iou3d                        |     | √    | √   |     |        |
 | KNN                          |     | √    |     |     |        |
@@ -35,7 +35,7 @@ MMCV 提供了检测、分割等任务中常用的算子
 | ModulatedDeformConv2d        | √   | √    |     |     | √      |
 | MultiScaleDeformableAttn     |     | √    | √   |     |        |
 | NMS                          | √   | √    | √   |     | √      |
-| NMSRotated                   | √   | √    |     |     |        |
+| NMSRotated                   | √   | √    |     |     | √      |
 | NMSQuadri                    | √   | √    |     |     |        |
 | PixelGroup                   | √   |      |     |     |        |
 | PointsInBoxes                | √   | √    |     |     |        |

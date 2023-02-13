@@ -309,8 +309,8 @@ void box_iou_rotated(const Tensor boxes1, const Tensor boxes2, Tensor ious,
                      const int mode_flag, const bool aligned);
 
 Tensor nms_rotated(const Tensor dets, const Tensor scores, const Tensor order,
-                   const Tensor dets_sorted, const float iou_threshold,
-                   const int multi_label);
+                   const Tensor dets_sorted, const Tensor labels,
+                   const float iou_threshold, const int multi_label);
 
 Tensor upfirdn2d(const Tensor &input, const Tensor &kernel, int up_x, int up_y,
                  int down_x, int down_y, int pad_x0, int pad_x1, int pad_y0,
@@ -758,7 +758,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("mode_flag"), py::arg("aligned"));
   m.def("nms_rotated", &nms_rotated, "NMS for rotated boxes", py::arg("dets"),
         py::arg("scores"), py::arg("order"), py::arg("dets_sorted"),
-        py::arg("iou_threshold"), py::arg("multi_label"));
+        py::arg("labels"), py::arg("iou_threshold"), py::arg("multi_label"));
   m.def("ball_query_forward", &ball_query_forward, "ball_query_forward",
         py::arg("new_xyz_tensor"), py::arg("xyz_tensor"), py::arg("idx_tensor"),
         py::arg("b"), py::arg("n"), py::arg("m"), py::arg("min_radius"),
