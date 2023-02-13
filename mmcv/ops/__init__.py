@@ -3,8 +3,8 @@ from .active_rotated_filter import active_rotated_filter
 from .assign_score_withk import assign_score_withk
 from .ball_query import ball_query
 from .bbox import bbox_overlaps
-from .bias_act import bias_act
 from .bezier_align import BezierAlign, bezier_align
+from .bias_act import bias_act
 from .border_align import BorderAlign, border_align
 from .box_iou_quadri import box_iou_quadri
 from .box_iou_rotated import box_iou_rotated

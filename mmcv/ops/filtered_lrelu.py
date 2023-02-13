@@ -67,8 +67,8 @@ def filtered_lrelu(input: torch.Tensor,
     3. Pad the image with the specified number of zeros on each side
       (`padding`). Negative padding corresponds to cropping the image.
 
-    4. Convolve the image with the specified upsampling FIR filter 
-        (`filter_up`), shrinking it so that the footprint of all output pixels 
+    4. Convolve the image with the specified upsampling FIR filter
+        (`filter_up`), shrinking it so that the footprint of all output pixels
         lies within the input image.
 
     5. Multiply each value by the provided gain factor (`gain`).
@@ -78,8 +78,8 @@ def filtered_lrelu(input: torch.Tensor,
     7. Clamp each value between -clamp and +clamp, if `clamp` parameter is
        provided.
 
-    8. Convolve the image with the specified downsampling FIR filter 
-        (`filter_down`), shrinking it so that the footprint of all output 
+    8. Convolve the image with the specified downsampling FIR filter
+        (`filter_down`), shrinking it so that the footprint of all output
         pixels lies within the input image.
 
     9. Downsample the image by keeping every Nth pixel (`down`).

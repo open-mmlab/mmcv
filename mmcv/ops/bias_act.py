@@ -140,7 +140,7 @@ def bias_act(input: torch.Tensor,
         input (torch.Tensor): Input activation tensor. Can be of any shape.
         bias (torch.Tensor): Bias vector, or `None` to disable.
             Must be a 1D tensor of the same type as `input`. The shape must
-            be known, and it must match the dimension of `input` corresponding 
+            be known, and it must match the dimension of `input` corresponding
             to `dim`. Defaults to None.
         dim (int): The dimension in `input` corresponding to the elements of
             `bias`. The value of `dim` is ignored if `b` is not specified.
@@ -199,10 +199,10 @@ def _bias_act_ref(input: torch.Tensor,
     Args:
         input (torch.Tensor): Input activation tensor. Can be of any shape.
         bias (torch.Tensor): Bias vector, or `None` to disable.
-            Must be a 1D tensor of the same type as `input`. The shape must 
+            Must be a 1D tensor of the same type as `input`. The shape must
             be known, and it must match the dimension of `input` corresponding
             to `dim`. Defaults to None.
-        dim (int): The dimension in `input` corresponding to the elements of 
+        dim (int): The dimension in `input` corresponding to the elements of
             `bias`. The value of `dim` is ignored if `b` is not specified.
             Defaults to 1.
         act (str): Name of the activation function to evaluate, or `"linear"`
