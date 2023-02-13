@@ -140,7 +140,7 @@ def _upfirdn2d_ref(input: torch.Tensor,
     Args:
         input (torch.Tensor): Float32/float64/float16 input tensor of the shape
             `[batch_size, num_channels, in_height, in_width]`.
-        f (torch.Tensor): Float32 FIR filter of the shape `[filter_height,
+        filter (torch.Tensor): Float32 FIR filter of the shape `[filter_height,
             filter_width]` (non-separable), `[filter_taps]` (separable), or
             `None` (identity).
         up (int): Integer upsampling factor. Can be a single int or a
@@ -235,7 +235,7 @@ def _upfirdn2d_cuda(up: int = 1,
 
     Returns:
         torch.Tensor: Tensor of the shape `[batch_size, num_channels,
-            out_height, out_width]`
+        out_height, out_width]`
     """
     # Parse arguments.
     upx, upy = _parse_scaling(up)
@@ -335,7 +335,7 @@ def filter2d(input: torch.Tensor,
 
     Returns:
         Tensor of the shape `[batch_size, num_channels, out_height,
-            out_width]`.
+        out_width]`.
     """
     padx0, padx1, pady0, pady1 = _parse_padding(padding)
     fw, fh = _get_filter_size(filter)
@@ -387,7 +387,7 @@ def upsample2d(input: torch.Tensor,
 
     Returns:
         torch.Tensor: Tensor of the shape `[batch_size, num_channels,
-            out_height, out_width]`
+        out_height, out_width]`
     """
     upx, upy = _parse_scaling(up)
     padx0, padx1, pady0, pady1 = _parse_padding(padding)
@@ -441,7 +441,7 @@ def downsample2d(input: torch.Tensor,
 
     Returns:
         torch.Tensor: Tensor of the shape `[batch_size, num_channels,
-            out_height, out_width]`.
+        out_height, out_width]`.
     """
     downx, downy = _parse_scaling(down)
     padx0, padx1, pady0, pady1 = _parse_padding(padding)

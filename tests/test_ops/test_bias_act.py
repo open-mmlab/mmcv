@@ -3,6 +3,7 @@ import pytest
 import torch
 
 from mmcv.ops import bias_act
+from mmcv.ops.bias_act import EasyDict
 
 _USING_PARROTS = True
 try:
@@ -92,6 +93,7 @@ class TestBiasAct:
         # test with different act
         out = bias_act(self.input_tensor.cuda(), self.bias.cuda(), act='relu')
         assert out.shape == (1, 3)
+
         out = bias_act(self.input_tensor.cuda(), self.bias.cuda(), act='lrelu')
         assert out.shape == (1, 3)
         out = bias_act(self.input_tensor.cuda(), self.bias.cuda(), act='tanh')
@@ -128,3 +130,15 @@ class TestBiasAct:
             self.input_tensor.cuda(), self.bias.cuda(), act='lrelu', clamp=0.2)
         assert out1.max() <= 0.5
         assert out2.max() <= 0.5
+
+    def test_easy_dict(self):
+        easy_dict = EasyDict(
+            func=lambda x, **_: x,
+            def_alpha=0,
+            def_gain=1,
+            cuda_idx=1,
+            ref='',
+            has_2nd_grad=False)
+        _ = easy_dict.def_alpha
+        easy_dict.def_alpha = 1
+        del easy_dict.def_alpha

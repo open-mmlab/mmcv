@@ -111,13 +111,15 @@ _conv2d_gradfix_cache: Dict = dict()
 _null_tensor = torch.empty([0])
 
 
-def _conv2d_gradfix(transpose: bool, weight_shape: Tuple[int, ...],
-                    stride: Union[int, Tuple[int,
-                                             ...]], padding: Union[int,
-                                                                   Tuple[int,
-                                                                         ...]],
-                    output_padding: Union[int, Tuple[int, ...]],
-                    dilation: Union[int, Tuple[int, ...]], groups: int):
+def _conv2d_gradfix(
+    transpose: bool,
+    weight_shape: Tuple[int, ...],
+    stride: Union[int, Tuple[int, ...]],
+    padding: Union[int, Tuple[int, ...]],
+    output_padding: Union[int, Tuple[int, ...]],
+    dilation: Union[int, Tuple[int, ...]],
+    groups: int,
+):
     # Parse arguments.
     ndim = 2
     weight_shape = tuple(weight_shape)

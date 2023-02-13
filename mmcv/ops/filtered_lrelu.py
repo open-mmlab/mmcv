@@ -45,8 +45,8 @@ def _parse_padding(padding):
 
 
 def filtered_lrelu(input: torch.Tensor,
-                   fu: Optional[torch.Tensor] = None,
-                   fd: Optional[torch.Tensor] = None,
+                   filter_up: Optional[torch.Tensor] = None,
+                   filter_down: Optional[torch.Tensor] = None,
                    bias: Optional[torch.Tensor] = None,
                    up: int = 1,
                    down: int = 1,
@@ -60,27 +60,27 @@ def filtered_lrelu(input: torch.Tensor,
 
     Performs the following sequence of operations for each channel:
 
-    1. Add channel-specific bias if provided (`b`).
+    1. Add channel-specific bias if `bias` is provided.
 
     2. Upsample the image by inserting N-1 zeros after each pixel (`up`).
 
     3. Pad the image with the specified number of zeros on each side
       (`padding`). Negative padding corresponds to cropping the image.
 
-    4. Convolve the image with the specified upsampling FIR filter (`fu`),
-       shrinking it so that the footprint of all output pixels lies within the
-       input image.
+    4. Convolve the image with the specified upsampling FIR filter 
+        (`filter_up`), shrinking it so that the footprint of all output pixels 
+        lies within the input image.
 
     5. Multiply each value by the provided gain factor (`gain`).
 
     6. Apply leaky ReLU activation function to each value.
 
     7. Clamp each value between -clamp and +clamp, if `clamp` parameter is
-    provided.
+       provided.
 
-    8. Convolve the image with the specified downsampling FIR filter (`fd`),
-       shrinking it so that the footprint of all output pixels lies within the
-       input image.
+    8. Convolve the image with the specified downsampling FIR filter 
+        (`filter_down`), shrinking it so that the footprint of all output 
+        pixels lies within the input image.
 
     9. Downsample the image by keeping every Nth pixel (`down`).
 
@@ -91,16 +91,16 @@ def filtered_lrelu(input: torch.Tensor,
     Args:
         input (torch.Tensor): Float32/float16/float64 input tensor of the shape
             `[batch_size, num_channels, in_height, in_width]`.
-        fu (torch.Tensor): Float32 upsampling FIR filter of the shape
+        filter_up (torch.Tensor): Float32 upsampling FIR filter of the shape
             `[filter_height, filter_width]` (non-separable), `[filter_taps]`
             (separable), or `None` (identity). Defaults to None.
-        fd (torch.Tensor): Float32 downsampling FIR filter of the
+        filter_down (torch.Tensor): Float32 downsampling FIR filter of the
             shape `[filter_height, filter_width]` (non-separable),
             `[filter_taps]` (separable), or `None` (identity).
             Defaults to None.
         bias (torch.Tensor): Bias vector, or `None` to disable. Must be
-            a 1D tensor of the same type as `x`. The length of vector must must
-            match the channel dimension of `x`. Defaults to None.
+            a 1D tensor of the same type as `input`. The length of vector must
+            match the channel dimension of `input`. Defaults to None.
         up (int): Integer upsampling factor. Defaults to 1.
         down (int): Integer downsampling factor. Defaults to 1.
         padding (int): Padding with respect to the upsampled image. Can be a
@@ -119,7 +119,7 @@ def filtered_lrelu(input: torch.Tensor,
 
     Returns:
         Tensor of the shape `[batch_size, num_channels, out_height,
-                out_width]`.
+        out_width]`.
     """
     assert isinstance(input, torch.Tensor)
     if use_custom_op and input.is_cuda:
@@ -130,11 +130,12 @@ def filtered_lrelu(input: torch.Tensor,
             gain=gain,
             slope=slope,
             clamp=clamp,
-            flip_filter=flip_filter).apply(input, fu, fd, bias, None, 0, 0)
+            flip_filter=flip_filter).apply(input, filter_up, filter_down, bias,
+                                           None, 0, 0)
     return _filtered_lrelu_ref(
         input,
-        fu=fu,
-        fd=fd,
+        filter_up=filter_up,
+        filter_down=filter_down,
         bias=bias,
         up=up,
         down=down,
@@ -146,8 +147,8 @@ def filtered_lrelu(input: torch.Tensor,
 
 
 def _filtered_lrelu_ref(input: torch.Tensor,
-                        fu: Optional[torch.Tensor] = None,
-                        fd: Optional[torch.Tensor] = None,
+                        filter_up: Optional[torch.Tensor] = None,
+                        filter_down: Optional[torch.Tensor] = None,
                         bias: Optional[torch.Tensor] = None,
                         up: int = 1,
                         down: int = 1,
@@ -162,16 +163,16 @@ def _filtered_lrelu_ref(input: torch.Tensor,
     Args:
         input (torch.Tensor): Float32/float16/float64 input tensor of the shape
             `[batch_size, num_channels, in_height, in_width]`.
-        fu (torch.Tensor): Float32 upsampling FIR filter of the shape
+        filter_up (torch.Tensor): Float32 upsampling FIR filter of the shape
             `[filter_height, filter_width]` (non-separable), `[filter_taps]`
             (separable), or `None` (identity). Defaults to None.
-        fd (torch.Tensor): Float32 downsampling FIR filter of the
+        filter_down (torch.Tensor): Float32 downsampling FIR filter of the
             shape `[filter_height, filter_width]` (non-separable),
             `[filter_taps]` (separable), or `None` (identity).
             Defaults to None.
         bias (torch.Tensor): Bias vector, or `None` to disable. Must be
-            a 1D tensor of the same type as `x`. The length of vector must must
-            match the channel dimension of `x`. Defaults to None.
+            a 1D tensor of the same type as `input`. The length of vector must
+            match the channel dimension of `input`. Defaults to None.
         up (int): Integer upsampling factor. Defaults to 1.
         down (int): Integer downsampling factor. Defaults to 1.
         padding (int): Padding with respect to the upsampled image. Can be a
@@ -181,18 +182,18 @@ def _filtered_lrelu_ref(input: torch.Tensor,
             Defaults to np.sqrt(2).
         slope (float): Slope on the negative side of leaky ReLU.
             Defaults to 0.2.
-        clamp (float | int): Maximum magnitude for leaky ReLU
+        clamp (float or int): Maximum magnitude for leaky ReLU
             output. Defaults to None.
         flip_filter (bool): False = convolution, True = correlation.
             Defaults to False.
 
     Returns:
         Tensor of the shape `[batch_size, num_channels, out_height,
-                out_width]`.
+        out_width]`.
     """
     assert isinstance(input, torch.Tensor) and input.ndim == 4
-    fu_w, fu_h = _get_filter_size(fu)
-    fd_w, fd_h = _get_filter_size(fd)
+    filter_up_w, filter_up_h = _get_filter_size(filter_up)
+    filter_down_w, filter_down_h = _get_filter_size(filter_down)
     if bias is not None:
         assert isinstance(bias, torch.Tensor) and bias.dtype == input.dtype
     assert isinstance(up, int) and up >= 1
@@ -205,29 +206,30 @@ def _filtered_lrelu_ref(input: torch.Tensor,
     # Calculate output size.
     batch_size, channels, in_h, in_w = input.shape
     in_dtype = input.dtype
-    out_w = (in_w * up + (px0 + px1) - (fu_w - 1) - (fd_w - 1) +
-             (down - 1)) // down
-    out_h = (in_h * up + (py0 + py1) - (fu_h - 1) - (fd_h - 1) +
-             (down - 1)) // down
+    out_w = (in_w * up + (px0 + px1) - (filter_up_w - 1) -
+             (filter_down_w - 1) + (down - 1)) // down
+    out_h = (in_h * up + (py0 + py1) - (filter_up_h - 1) -
+             (filter_down_h - 1) + (down - 1)) // down
 
     # Compute using existing ops.
-    x = bias_act(input=input, bias=bias)  # Apply bias.
-    x = upfirdn2d(
-        input=x,
-        filter=fu,
+    output = bias_act(input=input, bias=bias)  # Apply bias.
+    output = upfirdn2d(
+        input=output,
+        filter=filter_up,
         up=up,
         padding=[px0, px1, py0, py1],
         gain=up**2,
         flip_filter=flip_filter)  # Upsample.
-    x = bias_act(
-        input=x, act='lrelu', alpha=slope, gain=gain,
+    output = bias_act(
+        input=output, act='lrelu', alpha=slope, gain=gain,
         clamp=clamp)  # Bias, leaky ReLU, clamp.
-    x = upfirdn2d(
-        input=x, filter=fd, down=down, flip_filter=flip_filter)  # Downsample.
+    output = upfirdn2d(
+        input=output, filter=filter_down, down=down,
+        flip_filter=flip_filter)  # Downsample.
 
-    assert x.shape == (batch_size, channels, out_h, out_w)
-    assert x.dtype == in_dtype
-    return x
+    assert output.shape == (batch_size, channels, out_h, out_w)
+    assert output.dtype == in_dtype
+    return output
 
 
 _filtered_lrelu_cuda_cache: Dict = dict()
@@ -252,14 +254,14 @@ def _filtered_lrelu_cuda(up: int = 1,
             Defaults to np.sqrt(2).
         slope (float): Slope on the negative side of leaky ReLU.
             Defaults to 0.2.
-        clamp (float | int): Maximum magnitude for leaky ReLU
+        clamp (float or int): Maximum magnitude for leaky ReLU
             output. Defaults to None.
         flip_filter (bool): False = convolution, True = correlation.
             Defaults to False.
 
     Returns:
         Tensor of the shape `[batch_size, num_channels, out_height,
-                out_width]`.
+        out_width]`.
     """
     assert isinstance(up, int) and up >= 1
     assert isinstance(down, int) and down >= 1
@@ -277,32 +279,33 @@ def _filtered_lrelu_cuda(up: int = 1,
         return _filtered_lrelu_cuda_cache[key]
 
     # Forward op.
-    class FilteredLReluCuda(torch.autograd.Function):
+    class FilteredLReluCuda(torch.autograd.filter_upnction):
 
         @staticmethod
-        def forward(ctx, input, fu, fd, bias, si, sx, sy):
+        def forward(ctx, input, filter_up, filter_down, bias, si, sx, sy):
             # pylint: disable=arguments-differ
             assert isinstance(input, torch.Tensor) and input.ndim == 4
 
             # Replace empty up/downsample kernels with full 1x1 kernels
             # (faster than separable).
-            if fu is None:
-                fu = torch.ones([1, 1],
-                                dtype=torch.float32,
-                                device=input.device)
-            if fd is None:
-                fd = torch.ones([1, 1],
-                                dtype=torch.float32,
-                                device=input.device)
-            assert 1 <= fu.ndim <= 2
-            assert 1 <= fd.ndim <= 2
+            if filter_up is None:
+                filter_up = torch.ones([1, 1],
+                                       dtype=torch.float32,
+                                       device=input.device)
+            if filter_down is None:
+                filter_down = torch.ones([1, 1],
+                                         dtype=torch.float32,
+                                         device=input.device)
+            assert 1 <= filter_up.ndim <= 2
+            assert 1 <= filter_down.ndim <= 2
 
             # Replace separable 1x1 kernels with full 1x1 kernels when scale
             # factor is 1.
-            if up == 1 and fu.ndim == 1 and fu.shape[0] == 1:
-                fu = fu.square()[None]
-            if down == 1 and fd.ndim == 1 and fd.shape[0] == 1:
-                fd = fd.square()[None]
+            if up == 1 and filter_up.ndim == 1 and filter_up.shape[0] == 1:
+                filter_up = filter_up.square()[None]
+            if down == 1 and filter_down.ndim == 1 and filter_down.shape[
+                    0] == 1:
+                filter_down = filter_down.square()[None]
 
             # Missing sign input tensor.
             if si is None:
@@ -338,9 +341,9 @@ def _filtered_lrelu_cuda(up: int = 1,
                         'but concurrent execution is not supported',
                         RuntimeWarning)
                 y, so, return_code = ext_module.filtered_lrelu(
-                    input, fu, fd, bias, si.to(input.device), up, down, px0,
-                    px1, py0, py1, sx, sy, gain, slope, clamp, flip_filter,
-                    write_signs)
+                    input, filter_up, filter_down, bias, si.to(input.device),
+                    up, down, px0, px1, py0, py1, sx, sy, gain, slope, clamp,
+                    flip_filter, write_signs)
             else:
                 return_code = -1
 
@@ -357,7 +360,7 @@ def _filtered_lrelu_cuda(up: int = 1,
                 y = input.add(bias.unsqueeze(-1).unsqueeze(-1))  # Add bias.
                 y = upfirdn2d(
                     input=y,
-                    filter=fu,
+                    filter=filter_up,
                     up=up,
                     padding=[px0, px1, py0, py1],
                     gain=float(up**2),
@@ -367,11 +370,14 @@ def _filtered_lrelu_cuda(up: int = 1,
                                                     gain, slope, clamp,
                                                     write_signs)
                 y = upfirdn2d(
-                    input=y, filter=fd, down=down,
+                    input=y,
+                    filter=filter_down,
+                    down=down,
                     flip_filter=flip_filter)  # Downsample.
 
             # Prepare for gradient computation.
-            ctx.save_for_backward(fu, fd, (si if si.numel() else so))
+            ctx.save_for_backward(filter_up, filter_down,
+                                  (si if si.numel() else so))
             ctx.x_shape = input.shape
             ctx.y_shape = y.shape
             ctx.s_ofs = sx, sy
@@ -379,7 +385,7 @@ def _filtered_lrelu_cuda(up: int = 1,
 
         @staticmethod
         def backward(ctx, dy):  # pylint: disable=arguments-differ
-            fu, fd, si = ctx.saved_tensors
+            filter_up, filter_down, si = ctx.saved_tensors
             _, _, xh, xw = ctx.x_shape
             _, _, yh, yw = ctx.y_shape
             sx, sy = ctx.s_ofs
@@ -398,15 +404,17 @@ def _filtered_lrelu_cuda(up: int = 1,
 
             if ctx.needs_input_grad[0] or ctx.needs_input_grad[3]:
                 pp = [
-                    (fu.shape[-1] - 1) + (fd.shape[-1] - 1) - px0,
+                    (filter_up.shape[-1] - 1) + (filter_down.shape[-1] - 1) -
+                    px0,
                     xw * up - yw * down + px0 - (up - 1),
-                    (fu.shape[0] - 1) + (fd.shape[0] - 1) - py0,
+                    (filter_up.shape[0] - 1) + (filter_down.shape[0] - 1) -
+                    py0,
                     xh * up - yh * down + py0 - (up - 1),
                 ]
                 gg = gain * (up**2) / (down**2)
                 ff = (not flip_filter)
-                sx = sx - (fu.shape[-1] - 1) + px0
-                sy = sy - (fu.shape[0] - 1) + py0
+                sx = sx - (filter_up.shape[-1] - 1) + px0
+                sy = sy - (filter_up.shape[0] - 1) + py0
                 dx = _filtered_lrelu_cuda(
                     up=down,
                     down=up,
@@ -414,7 +422,8 @@ def _filtered_lrelu_cuda(up: int = 1,
                     gain=gg,
                     slope=slope,
                     clamp=None,
-                    flip_filter=ff).apply(dy, fd, fu, None, si, sx, sy)
+                    flip_filter=ff).apply(dy, filter_down, filter_up, None, si,
+                                          sx, sy)
 
             if ctx.needs_input_grad[3]:
                 db = dx.sum([0, 2, 3])

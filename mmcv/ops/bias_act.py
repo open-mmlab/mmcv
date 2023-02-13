@@ -128,7 +128,7 @@ def bias_act(input: torch.Tensor,
              use_custom_op: bool = True):
     r"""Fused bias and activation function.
 
-    Adds bias `b` to activation tensor `input`, and evaluates activation
+    Adds `bias` to activation tensor `input`, and evaluates activation
     function `act`, and scales the result by `gain`. Each of the steps is
     optional.
 
@@ -139,17 +139,17 @@ def bias_act(input: torch.Tensor,
     Args:
         input (torch.Tensor): Input activation tensor. Can be of any shape.
         bias (torch.Tensor): Bias vector, or `None` to disable.
-            Must be a 1D tensor of the same type as `x`. The shape must be
-            known, and it must match the dimension of `x` corresponding to
-            `dim`. Defaults to None.
-        dim (int): The dimension in `x` corresponding to the elements of `b`.
-            The value of `dim` is ignored if `b` is not specified.
+            Must be a 1D tensor of the same type as `input`. The shape must
+            be known, and it must match the dimension of `input` corresponding 
+            to `dim`. Defaults to None.
+        dim (int): The dimension in `input` corresponding to the elements of
+            `bias`. The value of `dim` is ignored if `b` is not specified.
             Defaults to 1.
         act (str): Name of the activation function to evaluate, or `"linear"`
             to disable. Can be e.g. "relu", "lrelu", "tanh", "sigmoid",
             "swish", etc. See `activation_funcs` for a full list. `None` is not
             allowed. Defaults to `linear`.
-        alpha (float | int): Shape parameter for the activation
+        alpha (float or int): Shape parameter for the activation
             function, or `None` to use the default. Defaults to None.
         gain (float): Scaling factor for the output tensor, or `None`
             to use default. See `activation_funcs` for the default scaling of
@@ -161,7 +161,7 @@ def bias_act(input: torch.Tensor,
             Defaults to True.
 
     Returns:
-        torch.Tensor: Tensor of the same shape and datatype as `x`.
+        torch.Tensor: Tensor of the same shape and datatype as `input`.
     """
     assert isinstance(input, torch.Tensor)
     if use_custom_op and input.is_cuda:
@@ -188,7 +188,7 @@ def _bias_act_ref(input: torch.Tensor,
     """Slow reference implementation of `bias_act()` using standard PyTorch
     ops.
 
-    Adds bias `b` to activation tensor `input`, and evaluates activation
+    Adds `bias` to activation tensor `input`, and evaluates activation
     function `act`, and scales the result by `gain`. Each of the steps is
     optional.
 
@@ -199,17 +199,17 @@ def _bias_act_ref(input: torch.Tensor,
     Args:
         input (torch.Tensor): Input activation tensor. Can be of any shape.
         bias (torch.Tensor): Bias vector, or `None` to disable.
-            Must be a 1D tensor of the same type as `x`. The shape must be
-            known, and it must match the dimension of `x` corresponding to
-            `dim`. Defaults to None.
-        dim (int): The dimension in `x` corresponding to the elements of `b`.
-            The value of `dim` is ignored if `b` is not specified.
+            Must be a 1D tensor of the same type as `input`. The shape must 
+            be known, and it must match the dimension of `input` corresponding
+            to `dim`. Defaults to None.
+        dim (int): The dimension in `input` corresponding to the elements of 
+            `bias`. The value of `dim` is ignored if `b` is not specified.
             Defaults to 1.
         act (str): Name of the activation function to evaluate, or `"linear"`
             to disable. Can be e.g. "relu", "lrelu", "tanh", "sigmoid",
             "swish", etc. See `activation_funcs` for a full list. `None` is not
             allowed. Defaults to `linear`.
-        alpha (float | int): Shape parameter for the activation
+        alpha (float or int): Shape parameter for the activation
             function, or `None` to use the default. Defaults to None.
         gain (float): Scaling factor for the output tensor, or `None`
             to use default. See `activation_funcs` for the default scaling of
@@ -220,7 +220,7 @@ def _bias_act_ref(input: torch.Tensor,
             Defaults to None.
 
     Returns:
-        torch.Tensor: Tensor of the same shape and datatype as `x`.
+        torch.Tensor: Tensor of the same shape and datatype as `input`.
     """
     assert isinstance(input, torch.Tensor)
     assert clamp is None or clamp >= 0
