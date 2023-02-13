@@ -5,7 +5,7 @@ from typing import Dict, Optional
 from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
-
+import torch
 
 @HOOKS.register_module()
 class ClearMLLoggerHook(LoggerHook):
@@ -54,6 +54,16 @@ class ClearMLLoggerHook(LoggerHook):
         task_kwargs = self.init_kwargs if self.init_kwargs else {}
         self.task = self.clearml.Task.init(**task_kwargs)
         self.task_logger = self.task.get_logger()
+
+        optimizer = runner.optimizer
+        if isinstance(optimizer, torch.optim.Optimizer):
+            optimizer_name = type(optimizer).__name__
+            # Connect optimizer config to clearml
+            self.task.connect(optimizer, name=optimizer_name)
+        elif isinstance(optimizer, dict):
+            for name, optim in optimizer.items():
+                if isinstance(optim, torch.optim.Optimizer):
+                    self.task.connect(optim, name=name)
 
     @master_only
     def log(self, runner) -> None:
