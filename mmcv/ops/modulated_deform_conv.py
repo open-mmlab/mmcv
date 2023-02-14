@@ -356,11 +356,9 @@ class ModulatedDeformConv2dPack(ModulatedDeformConv2d):
 
 if IS_MLU_AVAILABLE:
     import torchvision
+    from torchvision.ops import deform_conv2d as tv_deform_conv2d
 
     from mmcv.utils import digit_version
-    assert digit_version(torchvision.__version__) >= digit_version(
-        '0.10.0a0'), 'the version of torchvision should be >= 0.10.0'
-    from torchvision.ops import deform_conv2d as tv_deform_conv2d
 
     @CONV_LAYERS.register_module('DCNv2', force=True)
     class ModulatedDeformConv2dPack_MLU(ModulatedDeformConv2d):
@@ -383,6 +381,8 @@ if IS_MLU_AVAILABLE:
         """
 
         def __init__(self, *args, **kwargs):
+            assert digit_version(torchvision.__version__) >= digit_version(
+                '0.10.0a0'), 'the version of torchvision should be >= 0.10.0'
             super().__init__(*args, **kwargs)
             self.conv_offset = nn.Conv2d(
                 self.in_channels,
