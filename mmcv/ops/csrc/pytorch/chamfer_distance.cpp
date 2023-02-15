@@ -4,10 +4,11 @@
 
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"
-
+#ifdef MMCV_WITH_DIOPI
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include "diopi.hpp"
+#endif
 
 void chamfer_distance_forward_impl(const Tensor xyz1, const Tensor xyz2,
                                    const Tensor dist1, const Tensor dist2,
@@ -27,7 +28,7 @@ void chamfer_distance_backward_impl(const Tensor xyz1, const Tensor xyz2,
 void chamfer_distance_forward(const Tensor xyz1, const Tensor xyz2,
                               const Tensor dist1, const Tensor dist2,
                               const Tensor idx1, const Tensor idx2) {
-  // chamfer_distance_forward_impl(xyz1, xyz2, dist1, dist2, idx1, idx2);
+#ifdef MMCV_WITH_DIOPI
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
   auto xyz1_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&xyz1));
@@ -37,14 +38,16 @@ void chamfer_distance_forward(const Tensor xyz1, const Tensor xyz2,
   auto idx1_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&idx1));
   auto idx2_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&idx2));
   diopiChamferDistance(ch, xyz1_p, xyz2_p, dist1_p, dist2_p, idx1_p, idx2_p);
+#else
+  chamfer_distance_forward_impl(xyz1, xyz2, dist1, dist2, idx1, idx2);
+#endif
 }
 
 void chamfer_distance_backward(const Tensor xyz1, const Tensor xyz2,
                                Tensor idx1, Tensor idx2, Tensor graddist1,
                                Tensor graddist2, Tensor gradxyz1,
                                Tensor gradxyz2) {
-  // chamfer_distance_backward_impl(xyz1, xyz2, idx1, idx2, graddist1, graddist2,
-  //                                gradxyz1, gradxyz2);
+#ifdef MMCV_WITH_DIOPI
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
   auto xyz1_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&xyz1));
@@ -57,4 +60,8 @@ void chamfer_distance_backward(const Tensor xyz1, const Tensor xyz2,
   auto gradxyz2_p = reinterpret_cast<diopiTensorHandle_t>(&gradxyz2);
   diopiChamferDistanceBackward(ch, xyz1_p, xyz2_p, idx1_p, idx2_p,graddist1_p,
                                graddist2_p, gradxyz1_p, gradxyz2_p);
+#else
+  chamfer_distance_backward_impl(xyz1, xyz2, idx1, idx2, graddist1, graddist2,
+                                 gradxyz1, gradxyz2);
+#endif
 }

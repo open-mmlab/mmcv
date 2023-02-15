@@ -210,13 +210,15 @@ def get_extensions():
         include_dirs = []
         op_files = glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') +\
             glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') +\
-            glob.glob('./mmcv/ops/csrc/parrots/*.cpp') +\
-            glob.glob('./mmcv/ops/csrc/diopi_impl/cuda/*.cpp')
+            glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
+        if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
+            op_files += glob.glob('./mmcv/ops/csrc/diopi_impl/cuda/*.cpp')
         op_files.remove('./mmcv/ops/csrc/pytorch/cuda/iou3d_cuda.cu')
 
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
-        include_dirs.append(os.path.abspath('./DIOPI/include'))
+        if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
+            include_dirs.append(os.path.abspath('./DIOPI/include'))
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
         extra_compile_args = {
             'nvcc': [cuda_args, '-std=c++14'] if cuda_args else ['-std=c++14'],
@@ -229,6 +231,8 @@ def get_extensions():
                 '-D__CUDA_NO_HALF_CONVERSIONS__',
                 '-D__CUDA_NO_HALF2_OPERATORS__',
             ]
+        if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
+            define_macros += [('MMCV_WITH_DIOPI', None)]
         ext_ops = Extension(
             name=ext_name,
             sources=op_files,
@@ -294,16 +298,18 @@ def get_extensions():
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') + \
-                glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cpp') + \
-                glob.glob('./mmcv/ops/csrc/diopi_impl/cuda/*.cpp') +\
-                glob.glob('./mmcv/ops/csrc/diopi_rt/torch/*.cpp')
+                glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cpp')
+            if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
+                op_files += glob.glob('./mmcv/ops/csrc/diopi_impl/cuda/*.cpp')
+                op_files += glob.glob('./mmcv/ops/csrc/diopi_rt/torch/*.cpp')
             extension = CUDAExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/pytorch'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
-            include_dirs.append(os.path.abspath('./DIOPI/include'))
-            include_dirs.append(
-                os.path.abspath('./mmcv/ops/csrc/diopi_rt/torch'))
+            if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
+                include_dirs.append(os.path.abspath('./DIOPI/include'))
+                include_dirs.append(
+                    os.path.abspath('./mmcv/ops/csrc/diopi_rt/torch'))
         elif (hasattr(torch, 'is_mlu_available') and
                 torch.is_mlu_available()) or \
                 os.getenv('FORCE_MLU', '0') == '1':
