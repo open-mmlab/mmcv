@@ -1,6 +1,5 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"
 
@@ -9,9 +8,9 @@ void correlation_forward_impl(Tensor input1, Tensor input2, Tensor output,
                               int padW, int dilationH, int dilationW,
                               int dilation_patchH, int dilation_patchW, int dH,
                               int dW) {
-    DISPATCH_DEVICE_IMPL(correlation_forward_impl, input1, input2, output, kH, kW,
-                         patchH, patchW, padH, padW, dilationH, dilationW,
-                         dilation_patchH, dilation_patchW, dH, dW);
+  DISPATCH_DEVICE_IMPL(correlation_forward_impl, input1, input2, output, kH, kW,
+                       patchH, patchW, padH, padW, dilationH, dilationW,
+                       dilation_patchH, dilation_patchW, dH, dW);
 }
 
 void correlation_backward_impl(Tensor grad_output, Tensor input1, Tensor input2,
