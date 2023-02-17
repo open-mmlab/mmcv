@@ -59,7 +59,7 @@ __device__ __forceinline__ phalf warpReduceSum(phalf val) {
     __PHALF(val) += __shfl_down(val, offset);
 #else
     __PHALF(val) +=
-        __shfl_down_sync(FULL_MASK, static_cast<__half>(__PHALF(val)), offset);
+        __shfl_down_sync(FULL_MASK, __PHALF(val).operator __half(), offset);
 #endif
   return val;
 }
