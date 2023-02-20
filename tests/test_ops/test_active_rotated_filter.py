@@ -256,22 +256,3 @@ def test_active_rotated_filter(device):
     assert np.allclose(output.data.cpu().numpy(), expected_output, atol=1e-3)
     assert np.allclose(
         feature.grad.data.cpu().numpy(), expected_grad, atol=1e-3)
-
-
-@pytest.mark.parametrize('device', [
-    pytest.param(
-        'cuda',
-        marks=pytest.mark.skipif(
-            not torch.cuda.is_available(), reason='requires CUDA support')),
-])
-def test_active_rotated_filter_diopi(device):
-    feature = torch.tensor(
-        np_feature, dtype=torch.float, device=device, requires_grad=True)
-    indices = torch.tensor(np_indices, dtype=torch.int, device=device)
-    output = active_rotated_filter(feature, indices)
-    output.backward(torch.ones_like(output))
-    print(output)
-    print(feature)
-    assert np.allclose(output.data.cpu().numpy(), expected_output, atol=1e-3)
-    assert np.allclose(
-        feature.grad.data.cpu().numpy(), expected_grad, atol=1e-3)
