@@ -310,6 +310,8 @@ def get_extensions():
                 include_dirs.append(os.path.abspath('./DIOPI/include'))
                 include_dirs.append(
                     os.path.abspath('./mmcv/ops/csrc/diopi_rt/torch'))
+            if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
+                define_macros += [('MMCV_WITH_DIOPI', None)]
         elif (hasattr(torch, 'is_mlu_available') and
                 torch.is_mlu_available()) or \
                 os.getenv('FORCE_MLU', '0') == '1':

@@ -29,9 +29,15 @@ void chamfer_distance_forward(const Tensor xyz1, const Tensor xyz2,
                               const Tensor dist1, const Tensor dist2,
                               const Tensor idx1, const Tensor idx2) {
 #ifdef MMCV_WITH_DIOPI
+  auto xyz1_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&xyz1));
+  diopiDevice_t device;
+  diopiGetTensorDevice(xyz1_p, &device);
+  if (device == diopi_host) {
+      chamfer_distance_forward_impl(xyz1, xyz2, dist1, dist2, idx1, idx2);
+      return;
+  }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
-  auto xyz1_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&xyz1));
   auto xyz2_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&xyz2));
   auto dist1_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&dist1));
   auto dist2_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&dist2));

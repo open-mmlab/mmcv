@@ -13,7 +13,7 @@ using namespace at;
 Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
                              int offset);
 
-diopiError_t diopiNms(diopiContextHandle_t ctx, diopiTensorHandle_t *out,
+diopiError_t diopiNmsMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t *out,
                       diopiConstTensorHandle_t dets,
                       diopiConstTensorHandle_t scores, double iouThreshold,
                       int64_t offset) {
