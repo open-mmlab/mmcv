@@ -14,8 +14,8 @@ Tensor NMSCUDAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
                              int offset);
 
 diopiError_t diopiNms(diopiContextHandle_t ctx, diopiTensorHandle_t *out,
-                      const diopiTensorHandle_t dets,
-                      const diopiTensorHandle_t scores, double iouThreshold,
+                      diopiConstTensorHandle_t dets,
+                      diopiConstTensorHandle_t scores, double iouThreshold,
                       int64_t offset) {
   auto atDets = ::impl::aten::buildATen(dets);
   auto atScores = ::impl::aten::buildATen(scores);
@@ -32,8 +32,8 @@ void ChamferDistanceBackwardCUDAKernelLauncher(
     Tensor grad_dist1, Tensor grad_dist2, Tensor grad_xyz1, Tensor grad_xyz2);
 
 diopiError_t
-diopiChamferDistance(diopiContextHandle_t ctx, const diopiTensorHandle_t xyz1,
-                     const diopiTensorHandle_t xyz2, diopiTensorHandle_t dist1,
+diopiChamferDistance(diopiContextHandle_t ctx, diopiConstTensorHandle_t xyz1,
+                     diopiConstTensorHandle_t xyz2, diopiTensorHandle_t dist1,
                      diopiTensorHandle_t dist2, diopiTensorHandle_t idx1,
                      diopiTensorHandle_t idx2) {
   auto xyz1_in = ::impl::aten::buildATen(xyz1);
@@ -47,10 +47,10 @@ diopiChamferDistance(diopiContextHandle_t ctx, const diopiTensorHandle_t xyz1,
 }
 
 diopiError_t diopiChamferDistanceBackward(
-    diopiContextHandle_t ctx, const diopiTensorHandle_t xyz1,
-    const diopiTensorHandle_t xyz2, const diopiTensorHandle_t idx1,
-    const diopiTensorHandle_t idx2, const diopiTensorHandle_t grad_dist1,
-    const diopiTensorHandle_t grad_dist2, diopiTensorHandle_t grad_xyz1,
+    diopiContextHandle_t ctx, diopiConstTensorHandle_t xyz1,
+    diopiConstTensorHandle_t xyz2, diopiConstTensorHandle_t idx1,
+    diopiConstTensorHandle_t idx2, diopiConstTensorHandle_t grad_dist1,
+    diopiConstTensorHandle_t grad_dist2, diopiTensorHandle_t grad_xyz1,
     diopiTensorHandle_t grad_xyz2) {
   auto xyz1_in = ::impl::aten::buildATen(xyz1);
   auto xyz2_in = ::impl::aten::buildATen(xyz2);
@@ -128,8 +128,8 @@ void ActiveRotatedFilterBackwardCUDAKernelLauncher(const Tensor grad_out,
                                                    Tensor grad_in);
 
 diopiError_t diopiActiveRotatedFilter(diopiContextHandle_t ctx,
-                                      const diopiTensorHandle_t input,
-                                      const diopiTensorHandle_t indices,
+                                      diopiConstTensorHandle_t input,
+                                      diopiConstTensorHandle_t indices,
                                       diopiTensorHandle_t output) {
   auto input_in = ::impl::aten::buildATen(input);
   auto indices_in = ::impl::aten::buildATen(indices);
@@ -139,8 +139,8 @@ diopiError_t diopiActiveRotatedFilter(diopiContextHandle_t ctx,
 }
 
 diopiError_t diopiActiveRotatedFilterBackward(
-    diopiContextHandle_t ctx, const diopiTensorHandle_t grad_out,
-    const diopiTensorHandle_t indices, diopiTensorHandle_t grad_in) {
+    diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_out,
+    diopiConstTensorHandle_t indices, diopiTensorHandle_t grad_in) {
   auto grad_out_in = ::impl::aten::buildATen(grad_out);
   auto indices_in = ::impl::aten::buildATen(indices);
   auto grad_in_out = ::impl::aten::buildATen(grad_in);
@@ -160,10 +160,10 @@ void AssignScoreWithKBackwardCUDAKernelLauncher(
     Tensor &grad_centers, Tensor &grad_scores);
 
 diopiError_t diopiAssignScoreWithk(diopiContextHandle_t ctx,
-                                   const diopiTensorHandle_t points,
-                                   const diopiTensorHandle_t centers,
-                                   const diopiTensorHandle_t scores,
-                                   const diopiTensorHandle_t knn_idx,
+                                   diopiConstTensorHandle_t points,
+                                   diopiConstTensorHandle_t centers,
+                                   diopiConstTensorHandle_t scores,
+                                   diopiConstTensorHandle_t knn_idx,
                                    diopiTensorHandle_t output, int64_t B,
                                    int64_t N0, int64_t N1, int64_t M, int64_t K,
                                    int64_t O, int64_t aggregate) {
@@ -178,9 +178,9 @@ diopiError_t diopiAssignScoreWithk(diopiContextHandle_t ctx,
 }
 
 diopiError_t diopiAssignScoreWithkBackward(
-    diopiContextHandle_t ctx, const diopiTensorHandle_t grad_out,
-    const diopiTensorHandle_t points, const diopiTensorHandle_t centers,
-    const diopiTensorHandle_t scores, const diopiTensorHandle_t knn_idx,
+    diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_out,
+    diopiConstTensorHandle_t points, diopiConstTensorHandle_t centers,
+    diopiConstTensorHandle_t scores, diopiConstTensorHandle_t knn_idx,
     diopiTensorHandle_t grad_points, diopiTensorHandle_t grad_centers,
     diopiTensorHandle_t grad_scores, int64_t B, int64_t N0, int64_t N1,
     int64_t M, int64_t K, int64_t O, int64_t aggregate) {
@@ -203,8 +203,8 @@ void BBoxOverlapsCUDAKernelLauncher(const Tensor bboxes1, const Tensor bboxes2,
                                     const bool aligned, const int offset);
 
 diopiError_t diopiBboxOverlaps(diopiContextHandle_t ctx,
-                               const diopiTensorHandle_t bboxes1,
-                               const diopiTensorHandle_t bboxes2,
+                               diopiConstTensorHandle_t bboxes1,
+                               diopiConstTensorHandle_t bboxes2,
                                diopiTensorHandle_t ious, const int64_t mode,
                                const bool aligned, const int64_t offset) {
   auto bboxes1_in = ::impl::aten::buildATen(bboxes1);
@@ -226,8 +226,8 @@ void BorderAlignBackwardCUDAKernelLauncher(const Tensor &grad_output,
                                            const int pool_size);
 
 diopiError_t
-diopiBorderAlign(diopiContextHandle_t ctx, const diopiTensorHandle_t input,
-                 const diopiTensorHandle_t boxes, diopiTensorHandle_t output,
+diopiBorderAlign(diopiContextHandle_t ctx, diopiConstTensorHandle_t input,
+                 diopiConstTensorHandle_t boxes, diopiTensorHandle_t output,
                  diopiTensorHandle_t argmax_idx, const int64_t pool_size) {
   auto input_in = ::impl::aten::buildATen(input);
   auto boxes_in = ::impl::aten::buildATen(boxes);
@@ -238,9 +238,9 @@ diopiBorderAlign(diopiContextHandle_t ctx, const diopiTensorHandle_t input,
 }
 
 diopiError_t diopiBorderAlignBackward(diopiContextHandle_t ctx,
-                                      const diopiTensorHandle_t grad_output,
-                                      const diopiTensorHandle_t boxes,
-                                      const diopiTensorHandle_t argmax_idx,
+                                      diopiConstTensorHandle_t grad_output,
+                                      diopiConstTensorHandle_t boxes,
+                                      diopiConstTensorHandle_t argmax_idx,
                                       diopiTensorHandle_t grad_input,
                                       const int64_t pool_size) {
   auto grad_output_in = ::impl::aten::buildATen(grad_output);
@@ -258,8 +258,8 @@ void ConvexGIoUCUDAKernelLauncher(const Tensor pointsets, const Tensor polygons,
                                   Tensor output);
 
 diopiError_t diopiConvexIou(diopiContextHandle_t ctx,
-                            const diopiTensorHandle_t pointsets,
-                            const diopiTensorHandle_t polygons,
+                            diopiConstTensorHandle_t pointsets,
+                            diopiConstTensorHandle_t polygons,
                             diopiTensorHandle_t ious) {
   auto pointsets_in = ::impl::aten::buildATen(pointsets);
   auto polygons_in = ::impl::aten::buildATen(polygons);
@@ -268,8 +268,8 @@ diopiError_t diopiConvexIou(diopiContextHandle_t ctx,
 }
 
 diopiError_t diopiConvexGiou(diopiContextHandle_t ctx,
-                             const diopiTensorHandle_t pointsets,
-                             const diopiTensorHandle_t polygons,
+                             diopiConstTensorHandle_t pointsets,
+                             diopiConstTensorHandle_t polygons,
                              diopiTensorHandle_t output) {
   auto pointsets_in = ::impl::aten::buildATen(pointsets);
   auto polygons_in = ::impl::aten::buildATen(polygons);
@@ -409,7 +409,7 @@ diopiError_t diopiKnn(diopiContextHandle_t ctx, diopiTensorHandle_t xyz_tensor,
 void MinAreaPolygonsCUDAKernelLauncher(const Tensor pointsets, Tensor polygons);
 
 diopiError_t diopiMinAreaPolygons(diopiContextHandle_t ctx,
-                                  const diopiTensorHandle_t pointsets,
+                                  diopiConstTensorHandle_t pointsets,
                                   diopiTensorHandle_t polygons) {
   auto pointsets_in = ::impl::aten::buildATen(pointsets);
   auto polygons_out = ::impl::aten::buildATen(polygons);
