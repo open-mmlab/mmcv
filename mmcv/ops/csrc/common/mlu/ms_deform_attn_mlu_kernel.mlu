@@ -41,7 +41,7 @@
  *
  ****************************************************************************************/
 
-#define TWELVE_SPLIT 12
+#define  TWELVE_SPLIT 12
 #define ALIGN_NUM 32
 #define ALIGN_NUM_FOR_REDUCE 32
 #define LEN_FLOAT sizeof(float)
@@ -178,7 +178,7 @@ __mlu_global__ void MLUKernelMsDeformAttnForwardDefault(
 
   const size_t spatial_size = PAD_UP(2 * sizeof(int32_t), NFU_ALIGN_SIZE);
   const size_t span_num_deal =
-      PAD_DOWN((MAX_NRAM_SIZE - spatial_size) / TWELVE_SPLIT / sizeof(T),
+     PAD_DOWN((MAX_NRAM_SIZE - spatial_size) / TWELVE_SPLIT / sizeof(T),
                NFU_ALIGN_SIZE);
   const size_t align_num = NFU_ALIGN_SIZE;
   const int32_t channels_seg_num = channels / span_num_deal;
@@ -563,7 +563,7 @@ __mlu_global__ void MLUKernelMsDeformAttnForwardSmallChannel(
   size_t span_num_deal =
       PAD_DOWN((MAX_NRAM_SIZE - spatial_size - level_start_index_size -
                 sampling_loc_size - attn_weight_size) /
-                   TWELVE_SPLIT / sizeof(T),
+                  TWELVE_SPLIT / sizeof(T),
                NFU_ALIGN_SIZE);
   const int32_t channels_seg_num = channels / span_num_deal;
   const size_t channels_rem = channels % span_num_deal;
@@ -1475,6 +1475,7 @@ void __mlu_func__ computeGridMaskAndOffset(
   __bang_and(mask4, mask4, nram_h_high_temp, num_deal_grid);
 #endif
 }
+
 void __mlu_func__ loadValue(
     float *nram_grad_output_tl, float *nram_grad_output_tr,
     float *nram_grad_output_bl, float *nram_grad_output_br,
@@ -1547,7 +1548,8 @@ void __mlu_func__ computeGradValue(
     float *nram_w4, int32_t num_per_time_real, const int32_t num_heads,
     const int32_t num_levels, const int32_t num_points, const int32_t num_query,
     int32_t num_deal_grid, int32_t grid_offset, const int32_t spatial_size,
-    const int32_t qid_stride) {
+    const int32_t qid_stride, float *nram_grid_offset1,
+    float *nram_grid_offset2) {
 #if __BANG_ARCH__ >= 322
   __bang_transpose(grad_temp3, grad_temp1,
                    deal_num_real * num_per_time_real * num_heads,
@@ -1562,19 +1564,26 @@ void __mlu_func__ computeGradValue(
   __bang_cycle_mul(grad_temp1, grad_temp4, nram_w1,
                    num_deal_grid * deal_num_real, num_deal_grid);
   __bang_transpose(grad_temp3, grad_temp1, deal_num_real, num_deal_grid);
+  for(int32_t loop = 0; loop < num_deal_grid; ++loop) {
+    nram_grid_offset1[loop] =
+    ((loop + grid_offset) / num_query / num_heads / num_levels / num_points) * spatial_size * qid_stride;
+  }
+  __bang_transpose(nram_grid_offset2, nram_grid_offset1,
+                       num_per_time_real * num_heads * num_levels, num_points);
+  __bang_int322float((float *)nram_level_start_index, nram_level_start_index, num_levels, 0);
+  __bang_mul_scalar(
+      nram_grid_offset1, (float *)nram_level_start_index, qid_stride, num_levels);
+  __bang_cycle_add(nram_grid_offset2, nram_grid_offset2, nram_grid_offset1, num_deal_grid, num_levels);
+  __bang_transpose(nram_grid_offset1, nram_grid_offset2, num_points,
+  num_per_time_real * num_heads * num_levels);
+  __bang_add(nram_offset1, nram_offset1, nram_grid_offset1, num_deal_grid);
+  __bang_add(nram_offset2, nram_offset2, nram_grid_offset1, num_deal_grid);
+  __bang_add(nram_offset3, nram_offset3, nram_grid_offset1, num_deal_grid);
+  __bang_add(nram_offset4, nram_offset4, nram_grid_offset1, num_deal_grid);
   for (int32_t loop = 0; loop < num_deal_grid; ++loop) {
-    const int32_t b_col =
-        (grid_offset + loop) / num_query / num_heads / num_levels / num_points;
-    const int32_t l_col = (grid_offset + loop) / num_points % num_levels;
-    // const int32_t m_col = (grid_offset + loop) / num_levels / num_points %
-    // num_heads;
-    const int32_t level_start_id = nram_level_start_index[l_col];
-    int32_t value_offset_temp =
-        b_col * spatial_size * qid_stride + level_start_id * qid_stride;
     if (mask2[loop]) {
       __bang_atomic_add((float *)(grad_temp3 + loop * deal_num_real),
-                        (float *)(grad_value + value_offset_temp +
-                                  int32_t(nram_offset1[loop])),
+                        (float *)(grad_value + int32_t(nram_offset1[loop])),
                         (float *)(grad_temp3 + loop * deal_num_real),
                         deal_num_real);
     }
@@ -1583,16 +1592,9 @@ void __mlu_func__ computeGradValue(
                    num_deal_grid * deal_num_real, num_deal_grid);
   __bang_transpose(grad_temp3, grad_temp1, deal_num_real, num_deal_grid);
   for (int32_t loop = 0; loop < num_deal_grid; ++loop) {
-    const int32_t b_col =
-        (grid_offset + loop) / num_query / num_heads / num_levels / num_points;
-    const int32_t l_col = (grid_offset + loop) / num_points % num_levels;
-    const int32_t level_start_id = nram_level_start_index[l_col];
-    int32_t value_offset_temp =
-        b_col * spatial_size * qid_stride + level_start_id * qid_stride;
     if (mask1[loop]) {
       __bang_atomic_add((float *)(grad_temp3 + loop * deal_num_real),
-                        (float *)(grad_value + value_offset_temp +
-                                  int32_t(nram_offset2[loop])),
+                        (float *)(grad_value + int32_t(nram_offset2[loop])),
                         (float *)(grad_temp3 + loop * deal_num_real),
                         deal_num_real);
     }
@@ -1601,16 +1603,9 @@ void __mlu_func__ computeGradValue(
                    num_deal_grid * deal_num_real, num_deal_grid);
   __bang_transpose(grad_temp3, grad_temp1, deal_num_real, num_deal_grid);
   for (int32_t loop = 0; loop < num_deal_grid; ++loop) {
-    const int32_t b_col =
-        (grid_offset + loop) / num_query / num_heads / num_levels / num_points;
-    const int32_t l_col = (grid_offset + loop) / num_points % num_levels;
-    const int32_t level_start_id = nram_level_start_index[l_col];
-    int32_t value_offset_temp =
-        b_col * spatial_size * qid_stride + level_start_id * qid_stride;
     if (mask4[loop]) {
       __bang_atomic_add((float *)(grad_temp3 + loop * deal_num_real),
-                        (float *)(grad_value + value_offset_temp +
-                                  int32_t(nram_offset3[loop])),
+                        (float *)(grad_value + int32_t(nram_offset3[loop])),
                         (float *)(grad_temp3 + loop * deal_num_real),
                         deal_num_real);
     }
@@ -1620,16 +1615,9 @@ void __mlu_func__ computeGradValue(
                    num_deal_grid * deal_num_real, num_deal_grid);
   __bang_transpose(grad_temp3, grad_temp1, deal_num_real, num_deal_grid);
   for (int32_t loop = 0; loop < num_deal_grid; ++loop) {
-    const int32_t b_col =
-        (grid_offset + loop) / num_query / num_heads / num_levels / num_points;
-    const int32_t l_col = (grid_offset + loop) / num_points % num_levels;
-    const int32_t level_start_id = nram_level_start_index[l_col];
-    int32_t value_offset_temp =
-        b_col * spatial_size * qid_stride + level_start_id * qid_stride;
     if (mask3[loop]) {
       __bang_atomic_add((float *)(grad_temp3 + loop * deal_num_real),
-                        (float *)(grad_value + value_offset_temp +
-                                  int32_t(nram_offset4[loop])),
+                        (float *)(grad_value + int32_t(nram_offset4[loop])),
                         (float *)(grad_temp3 + loop * deal_num_real),
                         deal_num_real);
     }
@@ -1970,12 +1958,15 @@ __mlu_global__ void MLUUnion1KernelMsDeformAttnBackwardSmallChannelsKernel(
               num_per_time_theory, num_heads, deal_num_real, num_per_time_real,
               num_deal_grid, num_query, num_levels, num_points, grid_offset,
               spatial_size, qid_stride);
+    float *nram_grid_offset1 = nram_loc_h;
+    float *nram_grid_offset2 = nram_loc_w;
     computeGradValue(
         grad_temp1, grad_temp2, grad_temp3, grad_temp4, mask1, mask2, mask3,
         mask4, nram_offset1, nram_offset2, nram_offset3, nram_offset4,
         nram_level_start_index, deal_num_real, grad_value, nram_w1, nram_w2,
         nram_w3, nram_w4, num_per_time_real, num_heads, num_levels, num_points,
-        num_query, num_deal_grid, grid_offset, spatial_size, qid_stride);
+        num_query, num_deal_grid, grid_offset, spatial_size, qid_stride,
+        nram_grid_offset1, nram_grid_offset2);
 
     // compute grad_weight
     float *grad_weight = grad_temp1;
