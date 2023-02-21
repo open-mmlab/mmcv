@@ -31,7 +31,7 @@ We implement common ops used in detection, segmentation, etc.
 | KNN                          |     | √    |     |     |        |
 | MaskedConv                   |     | √    | √   |     | √      |
 | MergeCells                   |     | √    |     |     |        |
-| MinAreaPolygon               |     | √    |     |     |        |
+| MinAreaPolygon               | √   | √    |     |     | √      |
 | ModulatedDeformConv2d        | √   | √    | √   |     | √      |
 | MultiScaleDeformableAttn     |     | √    | √   |     |        |
 | NMS                          | √   | √    | √   |     | √      |
