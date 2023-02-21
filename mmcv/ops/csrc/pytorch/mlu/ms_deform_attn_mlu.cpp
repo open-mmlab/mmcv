@@ -101,7 +101,7 @@ MsDeformAttnForwardPolicy msDeformAttnForwardPolicyFunc(
   int32_t nram_size = torch_mlu::getDeviceAttr(cnrtAttrNramSizePerMcore);
   if (num_levels * num_points * 3 * sizeof(int32_t) > nram_size) {
     return MS_DEFORM_ATTN_FORWARD_DEFAULT;
-  } else if (channels > nram_size / 12 / sizeof(float)) {
+  } else if (channels > nram_size / 12 / sizeof(float) || channels > 96 || channels < 16) {
     return MS_DEFORM_ATTN_FORWARD_DEFAULT;
   } else {
     return MS_DEFORM_ATTN_FORWARD_SMALL_CHANNEL;

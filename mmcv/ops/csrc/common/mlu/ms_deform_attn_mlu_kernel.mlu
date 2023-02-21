@@ -540,6 +540,20 @@ __mlu_global__ void MLUKernelMsDeformAttnForwardDefault(
   return;
 }
 
+#define TWELVE_SPLIT 12
+#define ELE_COUNT 32
+
+__mlu_func__ void genMask0101(float *mask_ram, int32_t size) {
+  int32_t align_num = NFU_ALIGN_SIZE / sizeof(float);
+  for (int32_t i = 0; i < align_num; ++i) {
+    mask_ram[i] = i % 2;
+  }
+  __asm__ volatile("sync;");
+  __memcpy(mask_ram + align_num, mask_ram, NFU_ALIGN_SIZE, NRAM2NRAM, NFU_ALIGN_SIZE, 0,
+           size / align_num - 2);
+  __asm__ volatile("sync;");
+}
+
 template <typename T>
 __mlu_global__ void MLUKernelMsDeformAttnForwardSmallChannel(
     const char *data_value_gdram, const char *data_spatial_shapes_gdram,
@@ -548,467 +562,394 @@ __mlu_global__ void MLUKernelMsDeformAttnForwardSmallChannel(
     const int32_t batch_size, const int32_t num_keys, const int32_t num_heads,
     const int32_t channels, const int32_t num_levels, const int32_t num_queries,
     const int32_t num_points, char *data_col_gdram) {
+#if __BANG_ARCH__ >= 300
   if (coreId == 0x80) {
     return;
   }
 
-  const size_t spatial_size =
-      PAD_UP(num_levels * 2 * sizeof(int32_t), NFU_ALIGN_SIZE);
-  const size_t level_start_index_size =
-      PAD_UP(num_levels * sizeof(int32_t), NFU_ALIGN_SIZE);
-  size_t sampling_loc_size =
-      PAD_UP(num_levels * num_points * 2 * sizeof(T), NFU_ALIGN_SIZE);
-  size_t attn_weight_size =
-      PAD_UP(num_levels * num_points * sizeof(T), NFU_ALIGN_SIZE);
-  size_t span_num_deal =
-      PAD_DOWN((MAX_NRAM_SIZE - spatial_size - level_start_index_size -
-                sampling_loc_size - attn_weight_size) /
-                  TWELVE_SPLIT / sizeof(T),
-               NFU_ALIGN_SIZE);
-  const int32_t channels_seg_num = channels / span_num_deal;
-  const size_t channels_rem = channels % span_num_deal;
-  int32_t load_loc_weight_idx = 0;
-  int32_t load_loc_weight_seg = 1;
-  if (channels_seg_num == 0) {
-    span_num_deal = PAD_UP(channels, NFU_ALIGN_SIZE);
-    attn_weight_size =
-        PAD_DOWN((MAX_NRAM_SIZE - spatial_size - level_start_index_size -
-                  TWELVE_SPLIT * span_num_deal * sizeof(T)) /
-                     3,
-                 num_levels * num_points * sizeof(T));
-    attn_weight_size = PAD_DOWN(attn_weight_size, NFU_ALIGN_SIZE);
-    sampling_loc_size = attn_weight_size * 2;
-    load_loc_weight_seg =
-        attn_weight_size / (num_levels * num_points * sizeof(T));
+  size_t block_num_per_core, batch_start, deal_g, offset_g;
+  size_t block_num_rem = 0;
+  const size_t grid_total = num_queries * num_heads * num_levels * num_points;
+  if (batch_size >= taskDim) {
+    block_num_rem = batch_size % taskDim;
+    block_num_per_core = taskId < block_num_rem ? batch_size / taskDim + 1 : batch_size / taskDim;
+    batch_start = taskId < block_num_rem ? taskId * block_num_per_core
+                                         : taskId * block_num_per_core + block_num_rem;
+    deal_g = grid_total;
+    offset_g = 0;
+  } else {
+    size_t skip_n = taskDim / batch_size;
+    batch_start = taskId / skip_n;
+    block_num_per_core = batch_start >= batch_size ? 0 : 1;
+    deal_g = PAD_UP(grid_total / skip_n, num_levels * num_points);
+    size_t id = taskId % skip_n;
+    offset_g = id * deal_g;
+    deal_g = id < (skip_n - 1) ? deal_g : grid_total - deal_g * (skip_n - 1);
   }
 
-#if __BANG_ARCH__ < 322
-  const size_t align_num = NFU_ALIGN_SIZE;
-  const size_t channels_align_rem = CEIL_ALIGN(channels_rem, align_num);
-#endif
+  const int32_t float_align = NFU_ALIGN_SIZE / sizeof(float);
+  int32_t deal_num;
+  int32_t cut_channel_iter = 2;
+
+  const size_t spatial_size = PAD_UP(num_levels * 2 * sizeof(int32_t), NFU_ALIGN_SIZE);
+  const size_t level_start_index_size = PAD_UP(num_levels * sizeof(int32_t), NFU_ALIGN_SIZE);
+
+  int32_t channel = channels;
+  int32_t mult;
+  while (true) {
+    deal_num =
+        (MAX_NRAM_SIZE - spatial_size - level_start_index_size) / (8 * channel + 7) / sizeof(T);
+    deal_num = PAD_DOWN(deal_num, float_align);
+    deal_num = PAD_DOWN(deal_num, num_levels * num_points);
+    if (deal_num > 0) {
+      break;
+    } else {
+      channel = channels / cut_channel_iter;
+      cut_channel_iter += 2;
+    }
+  }
+  mult = channel;
+
+  const int32_t c_rep = channels / channel;
+  const int32_t c_rem = channels % channel;
+
+  const int32_t g_rep = deal_g / deal_num;
+  const int32_t g_rem = deal_g % deal_num;
+
+  // nram buffer alloc
   char *data_spatial_shapes_nram = nram_buffer;
   char *data_level_start_index_nram = data_spatial_shapes_nram + spatial_size;
-  char *data_sampling_loc_nram =
-      data_level_start_index_nram + level_start_index_size;
-  char *data_attn_weight_nram = data_sampling_loc_nram + sampling_loc_size;
-  char *ping_data_value_p1_nram = data_attn_weight_nram + attn_weight_size;
-  char *ping_data_value_p2_nram =
-      ping_data_value_p1_nram + span_num_deal * sizeof(T);
-  char *ping_data_value_p3_nram =
-      ping_data_value_p2_nram + span_num_deal * sizeof(T);
-  char *ping_data_value_p4_nram =
-      ping_data_value_p3_nram + span_num_deal * sizeof(T);
-  char *ping_data_col_nram =
-      ping_data_value_p4_nram + span_num_deal * sizeof(T);
-  char *pong_data_value_p1_nram =
-      ping_data_col_nram + span_num_deal * sizeof(T);
-  char *pong_data_value_p2_nram =
-      pong_data_value_p1_nram + span_num_deal * sizeof(T);
-  char *pong_data_value_p3_nram =
-      pong_data_value_p2_nram + span_num_deal * sizeof(T);
-  char *pong_data_value_p4_nram =
-      pong_data_value_p3_nram + span_num_deal * sizeof(T);
-  char *pong_data_col_nram =
-      pong_data_value_p4_nram + span_num_deal * sizeof(T);
-  char *auxiliary_a = pong_data_col_nram + span_num_deal * sizeof(T);
-  char *auxiliary_b = auxiliary_a + span_num_deal * sizeof(T);
-  const size_t ping_pong_gap = 5 * span_num_deal * sizeof(T);
-  size_t data_col_ping_pong_idx = 0;
+  char *input_tl = data_level_start_index_nram + level_start_index_size;
+  char *input_tr = input_tl + deal_num * mult * sizeof(T);
+  char *input_bl = input_tr + deal_num * mult * sizeof(T);
+  char *input_br = input_bl + deal_num * mult * sizeof(T);
+  char *weight_tl = input_tl + 4 * deal_num * mult * sizeof(T);
+  char *weight_tr = weight_tl + deal_num * mult * sizeof(T);
+  char *weight_bl = weight_tr + deal_num * mult * sizeof(T);
+  char *weight_br = weight_bl + deal_num * mult * sizeof(T);
+  char *mask_tl = weight_br + deal_num * mult * sizeof(T);
+  char *mask_tr = mask_tl + deal_num * sizeof(T);
+  char *mask_bl = mask_tr + deal_num * sizeof(T);
+  char *mask_br = mask_bl + deal_num * sizeof(T);
+  char *point_ram = mask_br + deal_num * sizeof(T);
+  char *index_tl = point_ram + deal_num * sizeof(T);
+  char *index_bl = index_tl + deal_num * sizeof(T);
 
-  const int32_t block_num_rem =
-      (batch_size * num_queries * num_heads) % taskDim;
-  const int32_t block_num_per_core =
-      taskId < block_num_rem
-          ? (batch_size * num_queries * num_heads) / taskDim + 1
-          : (batch_size * num_queries * num_heads) / taskDim;
-  const int32_t idx_start = taskId < block_num_rem
-                                ? taskId * block_num_per_core
-                                : taskId * block_num_per_core + block_num_rem;
+  // nram space reuse
+  char *grid_ram = weight_tl;
+  char *mask_ram = weight_bl;
+  char *coord_x = input_bl;
+  char *coord_y = coord_x + deal_num * sizeof(T);
+  char *coord_x_low = input_tl;
+  char *coord_y_low = coord_x_low + deal_num * sizeof(T);
+  char *coord_x_low_int = weight_tl;
+  char *coord_y_low_int = weight_tr;
+  char *spatial_x = mask_tl;
+  char *spatial_y = mask_tr;
+  char *spatial_x_float = weight_bl;
+  char *spatial_y_float = weight_br;
+  char *spatial_x_temp = mask_bl;
+  char *spatial_y_temp = mask_br;
+  char *base_ptr_offset = weight_tl;
+  char *auxiliary_a = point_ram;
+  char *auxiliary_b = weight_bl;
 
   __memcpy_async(data_spatial_shapes_nram, data_spatial_shapes_gdram,
                  num_levels * 2 * sizeof(int32_t), GDRAM2NRAM);
   __memcpy_async(data_level_start_index_nram, data_level_start_index_gdram,
                  num_levels * sizeof(int32_t), GDRAM2NRAM);
+  __asm__ volatile("sync;");
 
-  for (int32_t cur_idx = idx_start; cur_idx < idx_start + block_num_per_core;
-       ++cur_idx) {
-    // cur_idx = batch_idx * num_queries * num_heads + query_idx * num_heads +
-    // head_idx
-    const int32_t head_idx = cur_idx % num_heads;
-    const int32_t batch_idx = (cur_idx / num_heads) / num_queries;
-
-    const char *data_value_gdram_start =
-        data_value_gdram +
-        batch_idx * num_keys * num_heads * channels * sizeof(T);
-    char *data_col_gdram_start =
-        data_col_gdram + cur_idx * channels * sizeof(T);
-
-    if (load_loc_weight_seg == 1 ||
-        (load_loc_weight_idx % load_loc_weight_seg) == 0) {
-      const char *data_sampling_loc_gdram_start =
-          data_sampling_loc_gdram +
-          cur_idx * num_levels * num_points * 2 * sizeof(T);
-      const char *data_attn_weight_gdram_start =
-          data_attn_weight_gdram +
-          cur_idx * num_levels * num_points * sizeof(T);
-      const int32_t load_loc_weight_size =
-          (block_num_per_core - load_loc_weight_idx) < load_loc_weight_seg
-              ? block_num_per_core - load_loc_weight_idx
-              : load_loc_weight_seg;
-      __memcpy_async(
-          data_sampling_loc_nram, data_sampling_loc_gdram_start,
-          load_loc_weight_size * num_levels * num_points * 2 * sizeof(T),
-          GDRAM2NRAM);
-      __memcpy_async(data_attn_weight_nram, data_attn_weight_gdram_start,
-                     load_loc_weight_size * num_levels * num_points * sizeof(T),
-                     GDRAM2NRAM);
-      __asm__ volatile("sync;");
-    }
-    const int32_t load_loc_weight_offset =
-        (load_loc_weight_idx % load_loc_weight_seg) * num_levels * num_points;
-
-    for (int32_t c_seg_idx = 0; c_seg_idx < channels_seg_num; ++c_seg_idx) {
-      __bang_write_value(
-          (T *)(ping_data_col_nram + data_col_ping_pong_idx * ping_pong_gap),
-          span_num_deal, (T)0);
-      // load data
-      // level_idx = 0, point_idx = 0
-      int32_t spatial_h = ((int32_t *)data_spatial_shapes_nram)[0];
-      int32_t spatial_w = ((int32_t *)data_spatial_shapes_nram)[1];
-      const char *data_value_ptr =
-          data_value_gdram_start + c_seg_idx * span_num_deal * sizeof(T);
-      T loc_w = ((T *)data_sampling_loc_nram)[load_loc_weight_offset * 2];
-      T loc_h = ((T *)data_sampling_loc_nram)[load_loc_weight_offset * 2 + 1];
-      T weight = ((T *)data_attn_weight_nram)[load_loc_weight_offset];
-      T x = loc_w * spatial_w - 0.5;
-      T y = loc_h * spatial_h - 0.5;
-      if (y > -1 && x > -1 && y < spatial_h && x < spatial_w) {
-        loadNeighborPointsData(
-            (T *)data_value_ptr, (T *)ping_data_value_p1_nram,
-            (T *)ping_data_value_p2_nram, (T *)ping_data_value_p3_nram,
-            (T *)ping_data_value_p4_nram, span_num_deal, spatial_w, spatial_h,
-            num_heads, channels, x, y, head_idx);
-      }
-      T spatial_h_next_point = 0;
-      T spatial_w_next_point = 0;
-      T weight_next_point = 0;
-      T x_next_point = 0;
-      T y_next_point = 0;
-      __asm__ volatile("sync;");
-
-      for (int32_t level_idx = 0; level_idx < num_levels; ++level_idx) {
-        for (int32_t point_idx = 0; point_idx < num_points; ++point_idx) {
-          // load data
-          if (point_idx == num_points - 1 && level_idx == num_levels - 1) {
-            // last point no need to load data, continue to compute
-          } else if (point_idx == num_points - 1) {
-            const int32_t level_start_id =
-                ((int32_t *)data_level_start_index_nram)[level_idx + 1];
-            const int32_t spatial_h_ptr = (level_idx + 1) << 1;
-            spatial_h_next_point =
-                ((int32_t *)data_spatial_shapes_nram)[spatial_h_ptr];
-            spatial_w_next_point =
-                ((int32_t *)data_spatial_shapes_nram)[spatial_h_ptr + 1];
-            data_value_ptr = data_value_gdram_start +
-                             (level_start_id * num_heads * channels +
-                              c_seg_idx * span_num_deal) *
-                                 sizeof(T);
-            loc_w = ((T *)data_sampling_loc_nram)[(load_loc_weight_offset +
-                                                   level_idx * num_points +
-                                                   point_idx + 1) *
-                                                  2];
-            loc_h = ((T *)data_sampling_loc_nram)[(load_loc_weight_offset +
-                                                   level_idx * num_points +
-                                                   point_idx + 1) *
-                                                      2 +
-                                                  1];
-            weight_next_point =
-                ((T *)data_attn_weight_nram)[load_loc_weight_offset +
-                                             level_idx * num_points +
-                                             point_idx + 1];
-            x_next_point = loc_w * spatial_w_next_point - 0.5;
-            y_next_point = loc_h * spatial_h_next_point - 0.5;
-            if (y_next_point > -1 && x_next_point > -1 &&
-                y_next_point < spatial_h_next_point &&
-                x_next_point < spatial_w_next_point) {
-              loadNeighborPointsData(
-                  (T *)data_value_ptr,
-                  (T *)(ping_data_value_p1_nram +
-                        ((level_idx * num_points + point_idx + 1) % 2) *
-                            ping_pong_gap),
-                  (T *)(ping_data_value_p2_nram +
-                        ((level_idx * num_points + point_idx + 1) % 2) *
-                            ping_pong_gap),
-                  (T *)(ping_data_value_p3_nram +
-                        ((level_idx * num_points + point_idx + 1) % 2) *
-                            ping_pong_gap),
-                  (T *)(ping_data_value_p4_nram +
-                        ((level_idx * num_points + point_idx + 1) % 2) *
-                            ping_pong_gap),
-                  span_num_deal, spatial_w_next_point, spatial_h_next_point,
-                  num_heads, channels, x_next_point, y_next_point, head_idx);
-            }
-          } else {
-            spatial_h_next_point = spatial_h;
-            spatial_w_next_point = spatial_w;
-            loc_w = ((T *)data_sampling_loc_nram)[(load_loc_weight_offset +
-                                                   level_idx * num_points +
-                                                   point_idx + 1) *
-                                                  2];
-            loc_h = ((T *)data_sampling_loc_nram)[(load_loc_weight_offset +
-                                                   level_idx * num_points +
-                                                   point_idx + 1) *
-                                                      2 +
-                                                  1];
-            weight_next_point =
-                ((T *)data_attn_weight_nram)[load_loc_weight_offset +
-                                             level_idx * num_points +
-                                             point_idx + 1];
-            x_next_point = loc_w * spatial_w - 0.5;
-            y_next_point = loc_h * spatial_h - 0.5;
-            if (y_next_point > -1 && x_next_point > -1 &&
-                y_next_point < spatial_h && x_next_point < spatial_w) {
-              loadNeighborPointsData(
-                  (T *)data_value_ptr,
-                  (T *)(ping_data_value_p1_nram +
-                        ((level_idx * num_points + point_idx + 1) % 2) *
-                            ping_pong_gap),
-                  (T *)(ping_data_value_p2_nram +
-                        ((level_idx * num_points + point_idx + 1) % 2) *
-                            ping_pong_gap),
-                  (T *)(ping_data_value_p3_nram +
-                        ((level_idx * num_points + point_idx + 1) % 2) *
-                            ping_pong_gap),
-                  (T *)(ping_data_value_p4_nram +
-                        ((level_idx * num_points + point_idx + 1) % 2) *
-                            ping_pong_gap),
-                  span_num_deal, spatial_w, spatial_h, num_heads, channels,
-                  x_next_point, y_next_point, head_idx);
-            }
-          }
-
-          // compute
-          if (y > -1 && x > -1 && y < spatial_h && x < spatial_w) {
-            computeMsDeformAttn(
-                (T *)(ping_data_value_p1_nram +
-                      ((level_idx * num_points + point_idx) % 2) *
-                          ping_pong_gap),
-                (T *)(ping_data_value_p2_nram +
-                      ((level_idx * num_points + point_idx) % 2) *
-                          ping_pong_gap),
-                (T *)(ping_data_value_p3_nram +
-                      ((level_idx * num_points + point_idx) % 2) *
-                          ping_pong_gap),
-                (T *)(ping_data_value_p4_nram +
-                      ((level_idx * num_points + point_idx) % 2) *
-                          ping_pong_gap),
-                (T *)auxiliary_a, (T *)auxiliary_b,
-                (T *)(ping_data_col_nram +
-                      data_col_ping_pong_idx * ping_pong_gap),
-                weight, span_num_deal, spatial_w, spatial_h, x, y);
-          }
-
-          spatial_w = spatial_w_next_point;
-          spatial_h = spatial_h_next_point;
-          weight = weight_next_point;
-          x = x_next_point;
-          y = y_next_point;
-          __asm__ volatile("sync;");
+  for (int32_t batch_idx = batch_start; batch_idx < batch_start + block_num_per_core; ++batch_idx) {
+    for (int32_t grid_iter = 0; grid_iter <= g_rep; ++grid_iter) {
+      int32_t io_data_num = deal_num;
+      const int32_t grid_off_base = batch_idx * grid_total + offset_g + grid_iter * deal_num;
+      if (grid_iter == g_rep) {
+        if (g_rem == 0) {
+          continue;
+        } else {
+          io_data_num = g_rem;
         }
       }
-      // store
-      __memcpy_async(
-          data_col_gdram_start + c_seg_idx * span_num_deal * sizeof(T),
-          ping_data_col_nram + data_col_ping_pong_idx * ping_pong_gap,
-          span_num_deal * sizeof(T), NRAM2GDRAM);
-      data_col_ping_pong_idx = (data_col_ping_pong_idx + 1) % 2;
-    }
 
-    if (channels_rem > 0) {
-#if __BANG_ARCH__ >= 322
-      __bang_write_value(
-          (T *)(ping_data_col_nram + data_col_ping_pong_idx * ping_pong_gap),
-          channels_rem, (T)0);
-#else
-      __bang_write_value(
-          (T *)(ping_data_col_nram + data_col_ping_pong_idx * ping_pong_gap),
-          channels_align_rem, (T)0);
-#endif
-      // load data
-      // level_idx = 0, point_idx = 0
-      int32_t spatial_h = ((int32_t *)data_spatial_shapes_nram)[0];
-      int32_t spatial_w = ((int32_t *)data_spatial_shapes_nram)[1];
-      const char *data_value_ptr =
-          data_value_gdram_start + channels_seg_num * span_num_deal * sizeof(T);
-      T loc_w = ((T *)data_sampling_loc_nram)[load_loc_weight_offset * 2];
-      T loc_h = ((T *)data_sampling_loc_nram)[load_loc_weight_offset * 2 + 1];
-      T weight = ((T *)data_attn_weight_nram)[load_loc_weight_offset];
-      T x = loc_w * spatial_w - 0.5;
-      T y = loc_h * spatial_h - 0.5;
-      if (y > -1 && x > -1 && y < spatial_h && x < spatial_w) {
-        loadNeighborPointsData(
-            (T *)data_value_ptr, (T *)ping_data_value_p1_nram,
-            (T *)ping_data_value_p2_nram, (T *)ping_data_value_p3_nram,
-            (T *)ping_data_value_p4_nram, channels_rem, spatial_w, spatial_h,
-            num_heads, channels, x, y, head_idx);
-      }
-      T spatial_h_next_point = 0;
-      T spatial_w_next_point = 0;
-      T weight_next_point = 0;
-      T x_next_point = 0;
-      T y_next_point = 0;
+      char *data_col_gdram_start =
+          data_col_gdram +
+          (batch_idx * num_queries * num_heads * channels +
+           (offset_g + grid_iter * deal_num) / (num_levels * num_points) * channels) *
+              sizeof(float);
+
+      // load data_sampling_loc
+      __memcpy_async(grid_ram, data_sampling_loc_gdram + grid_off_base * 2 * sizeof(float),
+                     io_data_num * 2 * sizeof(float), GDRAM2NRAM);
+      genMask0101((float *)mask_ram, deal_num * 2);
       __asm__ volatile("sync;");
 
-      for (int32_t level_idx = 0; level_idx < num_levels; ++level_idx) {
-        for (int32_t point_idx = 0; point_idx < num_points; ++point_idx) {
-          // load data
-          if (point_idx == num_points - 1 && level_idx == num_levels - 1) {
-            // last point no need to load data, continue to compute
-          } else if (point_idx == num_points - 1) {
-            const int32_t level_start_id =
-                ((int32_t *)data_level_start_index_nram)[level_idx + 1];
-            const int32_t spatial_h_ptr = (level_idx + 1) << 1;
-            spatial_h_next_point =
-                ((int32_t *)data_spatial_shapes_nram)[spatial_h_ptr];
-            spatial_w_next_point =
-                ((int32_t *)data_spatial_shapes_nram)[spatial_h_ptr + 1];
-            data_value_ptr = data_value_gdram_start +
-                             (level_start_id * num_heads * channels +
-                              channels_seg_num * span_num_deal) *
-                                 sizeof(T);
-            loc_w = ((T *)data_sampling_loc_nram)[(load_loc_weight_offset +
-                                                   level_idx * num_points +
-                                                   point_idx + 1) *
-                                                  2];
-            loc_h = ((T *)data_sampling_loc_nram)[(load_loc_weight_offset +
-                                                   level_idx * num_points +
-                                                   point_idx + 1) *
-                                                      2 +
-                                                  1];
-            weight_next_point =
-                ((T *)data_attn_weight_nram)[load_loc_weight_offset +
-                                             level_idx * num_points +
-                                             point_idx + 1];
-            x_next_point = loc_w * spatial_w_next_point - 0.5;
-            y_next_point = loc_h * spatial_h_next_point - 0.5;
-            if (y_next_point > -1 && x_next_point > -1 &&
-                y_next_point < spatial_h_next_point &&
-                x_next_point < spatial_w_next_point) {
-              loadNeighborPointsData(
-                  (T *)data_value_ptr,
-                  (T *)(ping_data_value_p1_nram +
-                        ((level_idx * num_points + point_idx + 1) % 2) *
-                            ping_pong_gap),
-                  (T *)(ping_data_value_p2_nram +
-                        ((level_idx * num_points + point_idx + 1) % 2) *
-                            ping_pong_gap),
-                  (T *)(ping_data_value_p3_nram +
-                        ((level_idx * num_points + point_idx + 1) % 2) *
-                            ping_pong_gap),
-                  (T *)(ping_data_value_p4_nram +
-                        ((level_idx * num_points + point_idx + 1) % 2) *
-                            ping_pong_gap),
-                  channels_rem, spatial_w_next_point, spatial_h_next_point,
-                  num_heads, channels, x_next_point, y_next_point, head_idx);
-            }
-          } else {
-            spatial_w_next_point = spatial_w;
-            spatial_h_next_point = spatial_h;
-            loc_w = ((T *)data_sampling_loc_nram)[(load_loc_weight_offset +
-                                                   level_idx * num_points +
-                                                   point_idx + 1) *
-                                                  2];
-            loc_h = ((T *)data_sampling_loc_nram)[(load_loc_weight_offset +
-                                                   level_idx * num_points +
-                                                   point_idx + 1) *
-                                                      2 +
-                                                  1];
-            weight_next_point =
-                ((T *)data_attn_weight_nram)[load_loc_weight_offset +
-                                             level_idx * num_points +
-                                             point_idx + 1];
-            x_next_point = loc_w * spatial_w - 0.5;
-            y_next_point = loc_h * spatial_h - 0.5;
-            if (y_next_point > -1 && x_next_point > -1 &&
-                y_next_point < spatial_h && x_next_point < spatial_w) {
-              loadNeighborPointsData(
-                  (T *)data_value_ptr,
-                  (T *)(ping_data_value_p1_nram +
-                        ((level_idx * num_points + point_idx + 1) % 2) *
-                            ping_pong_gap),
-                  (T *)(ping_data_value_p2_nram +
-                        ((level_idx * num_points + point_idx + 1) % 2) *
-                            ping_pong_gap),
-                  (T *)(ping_data_value_p3_nram +
-                        ((level_idx * num_points + point_idx + 1) % 2) *
-                            ping_pong_gap),
-                  (T *)(ping_data_value_p4_nram +
-                        ((level_idx * num_points + point_idx + 1) % 2) *
-                            ping_pong_gap),
-                  channels_rem, spatial_w, spatial_h, num_heads, channels,
-                  x_next_point, y_next_point, head_idx);
-            }
-          }
+      // generate x and y coordinate vector
+      // generate spatial_x and spatial_y spatial vector
+      __bang_collect((float *)coord_y, (float *)grid_ram, (float *)mask_ram, deal_num * 2);  // y
+      __bang_collect((float *)spatial_x_temp, (float *)data_spatial_shapes_nram, (float *)mask_ram,
+                     num_levels * 2);  // spatial_x
+      __bang_not((float *)mask_ram, (float *)mask_ram, deal_num * 2);
+      __bang_collect((float *)coord_x, (float *)grid_ram, (float *)mask_ram, deal_num * 2);  // x
+      __bang_collect((float *)spatial_y_temp, (float *)data_spatial_shapes_nram, (float *)mask_ram,
+                     num_levels * 2);  // spatial_y
 
-          // compute
-          if (y > -1 && x > -1 && y < spatial_h && x < spatial_w) {
-#if __BANG_ARCH__ >= 322
-            computeMsDeformAttn(
-                (T *)(ping_data_value_p1_nram +
-                      ((level_idx * num_points + point_idx) % 2) *
-                          ping_pong_gap),
-                (T *)(ping_data_value_p2_nram +
-                      ((level_idx * num_points + point_idx) % 2) *
-                          ping_pong_gap),
-                (T *)(ping_data_value_p3_nram +
-                      ((level_idx * num_points + point_idx) % 2) *
-                          ping_pong_gap),
-                (T *)(ping_data_value_p4_nram +
-                      ((level_idx * num_points + point_idx) % 2) *
-                          ping_pong_gap),
-                (T *)auxiliary_a, (T *)auxiliary_b,
-                (T *)(ping_data_col_nram +
-                      data_col_ping_pong_idx * ping_pong_gap),
-                weight, channels_rem, spatial_w, spatial_h, x, y);
-#else
-            computeMsDeformAttn(
-                (T *)(ping_data_value_p1_nram +
-                      ((level_idx * num_points + point_idx) % 2) *
-                          ping_pong_gap),
-                (T *)(ping_data_value_p2_nram +
-                      ((level_idx * num_points + point_idx) % 2) *
-                          ping_pong_gap),
-                (T *)(ping_data_value_p3_nram +
-                      ((level_idx * num_points + point_idx) % 2) *
-                          ping_pong_gap),
-                (T *)(ping_data_value_p4_nram +
-                      ((level_idx * num_points + point_idx) % 2) *
-                          ping_pong_gap),
-                (T *)auxiliary_a, (T *)auxiliary_b,
-                (T *)(ping_data_col_nram +
-                      data_col_ping_pong_idx * ping_pong_gap),
-                weight, channels_align_rem, spatial_w, spatial_h, x, y);
-#endif
-          }
+      for (int32_t i = 0; i < num_levels; i++) {
+        __bang_write_value((int32_t *)spatial_x + i * num_points, num_points,
+                           ((int32_t *)spatial_x_temp)[i]);
+        __bang_write_value((int32_t *)spatial_y + i * num_points, num_points,
+                           ((int32_t *)spatial_y_temp)[i]);
+      }
 
-          spatial_w = spatial_w_next_point;
-          spatial_h = spatial_h_next_point;
-          weight = weight_next_point;
-          x = x_next_point;
-          y = y_next_point;
-          __asm__ volatile("sync;");
+      __bang_int322float_rd((float *)spatial_x_float, (int32_t *)spatial_x, num_levels * num_points,
+                            0);
+      __bang_int322float_rd((float *)spatial_y_float, (int32_t *)spatial_y, num_levels * num_points,
+                            0);
+
+      // map x from [0, 1] to [0, spatial_x]; map y from [0, 1] to [0, spatial_y]
+      __bang_cycle_mul((float *)coord_x, (float *)coord_x, (float *)spatial_x_float, deal_num,
+                       num_levels * num_points);
+      __bang_sub_scalar((float *)coord_x, (float *)coord_x, (float)0.5, deal_num);
+      __bang_cycle_mul((float *)coord_y, (float *)coord_y, (float *)spatial_y_float, deal_num,
+                       num_levels * num_points);
+      __bang_sub_scalar((float *)coord_y, (float *)coord_y, (float)0.5, deal_num);
+
+      __bang_floor((float *)coord_x_low, (float *)coord_x, deal_num);
+      __bang_floor((float *)coord_y_low, (float *)coord_y, deal_num);
+
+      // calc index_tl
+      const int32_t w_stride = num_heads * channels;
+      __bang_float2int32_rd((int32_t *)coord_x_low_int, (float *)coord_x_low, deal_num, 0);
+      __bang_float2int32_rd((int32_t *)coord_y_low_int, (float *)coord_y_low, deal_num, 0);
+      __bang_cycle_mul((int32_t *)index_tl, (int32_t *)coord_y_low_int, (int32_t *)spatial_x,
+                       deal_num, num_levels * num_points);
+      __bang_add((int32_t *)index_tl, (int32_t *)index_tl, (int32_t *)coord_x_low_int, deal_num);
+      __bang_mul_scalar((int32_t *)index_tl, (int32_t *)index_tl, w_stride, deal_num);
+
+      const int32_t deal_lp_num = deal_num / (num_levels * num_points);
+      const int32_t h_rep = deal_lp_num / num_heads;
+      const int32_t h_rem = deal_lp_num % num_heads;
+      const int32_t head_start =
+          ((offset_g + grid_iter * deal_num) / (num_levels * num_points)) % num_heads;
+      for (int32_t iter = 0; iter < num_heads; ++iter) {
+        ((int32_t *)base_ptr_offset)[iter] = ((head_start + iter) % num_heads) * channels;
+      }
+      if (h_rep > 0) {
+        __memcpy((int32_t *)base_ptr_offset + num_heads, (int32_t *)base_ptr_offset,
+                 num_heads * sizeof(int32_t), NRAM2NRAM, num_heads * sizeof(int32_t), 0,
+                 h_rep - 1);
+      }
+      if (h_rep > 0 && h_rem > 0) {
+        __memcpy((int32_t *)base_ptr_offset + h_rep * num_heads, (int32_t *)base_ptr_offset,
+                 h_rem * sizeof(int32_t), NRAM2NRAM);
+      }
+      __bang_transpose((int32_t *)auxiliary_a, (int32_t *)index_tl, deal_lp_num,
+                       num_levels * num_points);
+      __bang_cycle_add((int32_t *)auxiliary_a, (int32_t *)auxiliary_a, (int32_t *)base_ptr_offset,
+                       deal_num, deal_lp_num);
+      __bang_transpose((int32_t *)index_tl, (int32_t *)auxiliary_a, num_levels * num_points,
+                       deal_lp_num);
+
+      // calc index_bl
+      __bang_mul_scalar((int32_t *)auxiliary_a, (int32_t *)spatial_x, w_stride, deal_num);
+      __bang_cycle_add((int32_t *)index_bl, (int32_t *)index_tl, (int32_t *)auxiliary_a, deal_num,
+                       num_levels * num_points);
+
+      // calc mask_tl, mask_tr, mask_bl, mask_br
+      __bang_sub_scalar((float *)spatial_x_float, (float *)spatial_x_float, (float)1.0, deal_num);
+      __bang_sub_scalar((float *)spatial_y_float, (float *)spatial_y_float, (float)1.0, deal_num);
+      // mask_tl : 0 <= coord_x_low < spatial_x && 0 <= coord_y_low < spatial_y
+      __bang_ge_scalar((float *)mask_bl, (float *)coord_x_low, (float)0, deal_num);
+      __bang_cycle_le((float *)mask_br, (float *)coord_x_low, (float *)spatial_x_float, deal_num,
+                      num_levels * num_points);
+      __bang_and((float *)mask_bl, (float *)mask_bl, (float *)mask_br, deal_num);
+
+      __bang_ge_scalar((float *)mask_tr, (float *)coord_y_low, (float)0, deal_num);
+      __bang_cycle_le((float *)mask_br, (float *)coord_y_low, (float *)spatial_y_float, deal_num,
+                      num_levels * num_points);
+      __bang_and((float *)mask_tr, (float *)mask_tr, (float *)mask_br, deal_num);
+      __bang_and((float *)mask_tl, (float *)mask_tr, (float *)mask_bl, deal_num);
+
+      // mask_tr : 0 <= coord_x_high < spatial_x && 0 <= coord_y_low < spatial_y
+      __bang_ge_scalar((float *)mask_br, (float *)coord_x_low, (float)(-1.0), deal_num);
+      __bang_cycle_lt((float *)auxiliary_a, (float *)coord_x_low, (float *)spatial_x_float,
+                      deal_num, num_levels * num_points);
+      __bang_and((float *)mask_br, (float *)mask_br, (float *)auxiliary_a, deal_num);
+      __bang_and((float *)mask_tr, (float *)mask_tr, (float *)mask_br, deal_num);
+
+      // mask_bl : 0 <= coord_x_low < spatial_x && 0 <= coord_y_high < spatial_y
+      __bang_ge_scalar((float *)auxiliary_a, (float *)coord_y_low, (float)(-1.0), deal_num);
+      __bang_cycle_lt((float *)auxiliary_b, (float *)coord_y_low, (float *)spatial_y_float,
+                      deal_num, num_levels * num_points);
+      __bang_and((float *)auxiliary_a, (float *)auxiliary_a, (float *)auxiliary_b, deal_num);
+      __bang_and((float *)mask_bl, (float *)mask_bl, (float *)auxiliary_a, deal_num);
+
+      // mask_br : 0 <= coord_x_high < spatial_x && 0 <= coord_y_high < spatial_y
+      __bang_and((float *)mask_br, (float *)mask_br, (float *)auxiliary_a, deal_num);
+
+      // calc inner point num
+      __bang_mul_scalar((float *)weight_tl, (float *)mask_tl, (float)7.0, deal_num);
+      __bang_mul_scalar((float *)weight_tr, (float *)mask_tr, (float)5.0, deal_num);
+      __bang_add((float *)weight_tl, (float *)weight_tl, (float *)weight_tr, deal_num);
+      __bang_mul_scalar((float *)weight_tr, (float *)mask_bl, (float)3.0, deal_num);
+      __bang_add((float *)point_ram, (float *)weight_tr, (float *)mask_br, deal_num);
+      __bang_add((float *)point_ram, (float *)point_ram, (float *)weight_tl, deal_num);
+
+      // calc interpolation weight
+      __bang_sub((float *)weight_bl, (float *)coord_x_low, (float *)coord_x, deal_num);
+      __bang_sub((float *)weight_br, (float *)coord_y_low, (float *)coord_y, deal_num);
+      __bang_add_scalar((float *)weight_bl, (float *)weight_bl, (float)1.0, deal_num);
+      __bang_add_scalar((float *)weight_br, (float *)weight_br, (float)1.0, deal_num);
+
+      __bang_sub((float *)weight_tl, (float *)coord_x, (float *)coord_x_low, deal_num);
+      __bang_sub((float *)weight_tr, (float *)coord_y, (float *)coord_y_low, deal_num);
+      __bang_mul((float *)input_tl, (float *)weight_bl, (float *)weight_br, deal_num);
+      __bang_mul((float *)input_tl + deal_num, (float *)weight_br, (float *)weight_tl, deal_num);
+      __bang_mul((float *)input_tl + 2 * deal_num, (float *)weight_bl, (float *)weight_tr,
+                 deal_num);
+      __bang_mul((float *)input_tl + 3 * deal_num, (float *)weight_tl, (float *)weight_tr,
+                 deal_num);
+
+      __asm__ volatile("sync;");
+
+      // extend weight
+      const int32_t w_rep = channel / ELE_COUNT * ELE_COUNT;
+      const int32_t w_rem = channel % ELE_COUNT;
+      if (w_rem != 0) {
+        const int32_t data_sz = 1 * sizeof(float);
+        const int32_t dst_str = channel * sizeof(float);
+        for (int32_t iter = w_rep; iter < channel; ++iter) {
+          __memcpy_async((float *)weight_tl + iter, (float *)input_tl, data_sz, NRAM2NRAM, dst_str,
+                         data_sz, 4 * deal_num - 1);
         }
       }
-      // store
-      __memcpy_async(
-          data_col_gdram_start + channels_seg_num * span_num_deal * sizeof(T),
-          ping_data_col_nram + data_col_ping_pong_idx * ping_pong_gap,
-          channels_rem * sizeof(T), NRAM2GDRAM);
-      data_col_ping_pong_idx = (data_col_ping_pong_idx + 1) % 2;
+      if (w_rep != 0) {
+        for (int32_t i = 0; i < 4 * deal_num; i++) {
+          __bang_write_value((float *)weight_tl + i * channel, w_rep, ((float *)input_tl)[i]);
+        }
+      }
+
+      __asm__ volatile("sync;");
+
+      const char *data_value_gdram_start =
+          data_value_gdram + batch_idx * num_keys * num_heads * channels * sizeof(float);
+      const int32_t c_str = deal_num * channel * sizeof(float);
+      const int32_t cs_str = num_heads * channels * sizeof(float);
+
+      for (int32_t c_iter = 0; c_iter <= c_rep; ++c_iter) {
+        int32_t c_real_num = channel;
+        if (c_iter == c_rep) {
+          if (c_rem == 0) {
+            continue;
+          } else {
+            c_real_num = c_rem;
+          }
+        }
+
+        __bang_write_zero((float *)input_tl, 4 * deal_num * channel);
+        __asm__ volatile("sync;");
+
+        // load data_value
+        for (int32_t p_idx = 0; p_idx < io_data_num; ++p_idx) {
+          const int32_t inner_point_num = (int32_t)((float *)point_ram)[p_idx];
+          const int32_t tl_offset = ((int32_t *)index_tl)[p_idx];
+          const int32_t bl_offset = ((int32_t *)index_bl)[p_idx];
+          const int32_t level_start_id =
+              ((int32_t *)data_level_start_index_nram)[(p_idx / num_points) % num_levels];
+          const char *data_value_ptr =
+              data_value_gdram_start +
+              (level_start_id * num_heads * channels + c_iter * channel) * sizeof(float);
+
+          switch (inner_point_num) {
+            case 16:  // 4 points are cached.
+              __memcpy_async((float *)input_tl + p_idx * channel,
+                             (float *)data_value_ptr + tl_offset, c_real_num * sizeof(float),
+                             GDRAM2NRAM, c_str, cs_str, 1);
+              __memcpy_async((float *)input_bl + p_idx * channel,
+                             (float *)data_value_ptr + bl_offset, c_real_num * sizeof(float),
+                             GDRAM2NRAM, c_str, cs_str, 1);
+              break;
+            case 12:  // 2 points are cached. (top_left, top_right)
+              __memcpy_async((float *)input_tl + p_idx * channel,
+                             (float *)data_value_ptr + tl_offset, c_real_num * sizeof(float),
+                             GDRAM2NRAM, c_str, cs_str, 1);
+              break;
+            case 4:  // 2 points are cached. (bottom_left, bottom_right)
+              __memcpy_async((float *)input_bl + p_idx * channel,
+                             (float *)data_value_ptr + bl_offset, c_real_num * sizeof(float),
+                             GDRAM2NRAM, c_str, cs_str, 1);
+              break;
+            case 10:  // 2 points are cached. (top_left, bottom_left)
+              __memcpy_async((float *)input_tl + p_idx * channel,
+                             (float *)data_value_ptr + tl_offset, c_real_num * sizeof(float),
+                             GDRAM2NRAM);
+              __memcpy_async((float *)input_bl + p_idx * channel,
+                             (float *)data_value_ptr + bl_offset, c_real_num * sizeof(float),
+                             GDRAM2NRAM);
+              break;
+            case 6:  // 2 points are cached. (top_right, bottom_right)
+              __memcpy_async((float *)input_tr + p_idx * channel,
+                             (float *)data_value_ptr + tl_offset + num_heads * channels,
+                             c_real_num * sizeof(float), GDRAM2NRAM);
+              __memcpy_async((float *)input_br + p_idx * channel,
+                             (float *)data_value_ptr + bl_offset + num_heads * channels,
+                             c_real_num * sizeof(float), GDRAM2NRAM);
+              break;
+            case 7:  // 1 point is cached. (top_left)
+              __memcpy_async((float *)input_tl + p_idx * channel,
+                             (float *)data_value_ptr + tl_offset, c_real_num * sizeof(float),
+                             GDRAM2NRAM);
+              break;
+            case 5:  // 1 point is cached. (top_right)
+              __memcpy_async((float *)input_tr + p_idx * channel,
+                             (float *)data_value_ptr + tl_offset + num_heads * channels,
+                             c_real_num * sizeof(float), GDRAM2NRAM);
+              break;
+            case 3:  // 1 point is cached. (bottom_left)
+              __memcpy_async((float *)input_bl + p_idx * channel,
+                             (float *)data_value_ptr + bl_offset, c_real_num * sizeof(float),
+                             GDRAM2NRAM);
+              break;
+            case 1:  // 1 point is cached. (bottom_right)
+              __memcpy_async((float *)input_br + p_idx * channel,
+                             (float *)data_value_ptr + bl_offset + num_heads * channels,
+                             c_real_num * sizeof(float), GDRAM2NRAM);
+              break;
+            default:
+              continue;
+          }
+        }
+
+        __asm__ volatile("sync;");
+
+        // interpolation
+        __bang_mul((float *)input_tl, (float *)input_tl, (float *)weight_tl,
+                   4 * deal_num * channel);
+        __bang_add((float *)input_tl, (float *)input_tl, (float *)input_bl, 2 * deal_num * channel);
+        __bang_add((float *)input_tl, (float *)input_tl, (float *)input_tr, deal_num * channel);
+
+        // load attention weight
+        void *attn_weight = mask_tl;
+        __memcpy((float *)attn_weight, (float *)data_attn_weight_gdram + grid_off_base,
+                 io_data_num * sizeof(float), GDRAM2NRAM);
+
+        // calc data_col, muladd attention weight
+        __bang_transpose((float *)input_tr, (float *)input_tl, deal_num, channel);
+        __bang_cycle_mul((float *)input_tr, (float *)input_tr, (float *)attn_weight,
+                         deal_num * channel, deal_num);
+        __bang_transpose((float *)input_tl, (float *)input_tr, channel, deal_num);
+        __bang_sumpool((float *)input_bl, (float *)input_tl, channel, 1, io_data_num, 1,
+                       num_levels * num_points, num_levels * num_points, 1);
+
+        // store
+        __memcpy((float *)data_col_gdram_start + c_iter * channel, (float *)input_bl,
+                 c_real_num * sizeof(float), NRAM2GDRAM, channels * sizeof(float),
+                 channel * sizeof(float), (io_data_num / (num_levels * num_points)) - 1);
+      }
     }
-    load_loc_weight_idx += 1;
   }
   __asm__ volatile("sync;");
+#endif
   return;
 }
 
