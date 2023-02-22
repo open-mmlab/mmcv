@@ -262,7 +262,7 @@ void ROIAlignBackwardMLUKernelLauncher(
     grad_input_ptr = &grad_input_;
     PARROTS_CALLCNRT(
         cnrtMemsetAsync(grad_input_ptr->data(), 0, grad_input_ptr->nbytes(), queue));
-    PARROTS_CALLCNRT(cnrtSyncQueue(queue));
+    ctx.getStream().synchronize();
   }
 
   cnrtJobType_t k_type = CNRT_FUNC_TYPE_UNION1;
