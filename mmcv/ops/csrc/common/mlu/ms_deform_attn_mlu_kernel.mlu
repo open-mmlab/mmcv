@@ -41,9 +41,10 @@
  *
  ****************************************************************************************/
 
-#define  TWELVE_SPLIT 12
+#define TWELVE_SPLIT 12
 #define ALIGN_NUM 32
 #define ALIGN_NUM_FOR_REDUCE 32
+#define ELE_COUNT 32
 #define LEN_FLOAT sizeof(float)
 
 __nram__ char nram_buffer[MAX_NRAM_SIZE];
@@ -539,9 +540,6 @@ __mlu_global__ void MLUKernelMsDeformAttnForwardDefault(
   __asm__ volatile("sync;");
   return;
 }
-
-#define TWELVE_SPLIT 12
-#define ELE_COUNT 32
 
 __mlu_func__ void genMask0101(float *mask_ram, int32_t size) {
   int32_t align_num = NFU_ALIGN_SIZE / sizeof(float);
@@ -1499,7 +1497,7 @@ void __mlu_func__ computeGradValue(
                    deal_num_real);
   __bang_cycle_mul(grad_temp3, grad_temp3, grad_temp1,
                    num_deal_grid * deal_num_real,
-                   deal_num_real * num_per_time_real * num_heads);  // clpxh
+                   deal_num_real * num_per_time_real * num_heads);
   __bang_transpose(grad_temp4, grad_temp3, num_levels * num_points,
                    deal_num_real * num_per_time_real * num_heads);
   __bang_cycle_mul(grad_temp1, grad_temp4, nram_w1,
