@@ -1576,6 +1576,7 @@ void __mlu_func__ computeGradAttnWeight(
     int32_t grid_offset) {
 #if __BANG_ARCH__ >= 322
   __bang_write_zero(grad_w_weight, 2 * offset_nram);
+
   // grad_output_nram_tl
   __bang_transpose(grad_weight, nram_grad_output_tl, num_deal_grid,
                    deal_num_real);
