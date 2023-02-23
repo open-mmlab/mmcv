@@ -32,6 +32,7 @@
 /****************************************************************************************
  *
  * NRAM partition backward:
+ * default kernel
  * | grad_output_nram   | grad_output_nram_temp | grad_weight       |
  * | grad_h_weight      | grad_w_weight         | top_grad          |
  * | top_grad_temp      | spatial_shapes_nram   | sampling_loc_nram |
@@ -39,6 +40,20 @@
  * | deal_size          | deal_size             | deal_size         |
  * | deal_size          | deal_size             | 64bytes           |
  *
+ * small channel kernel
+ * |  nram_grad_output_tl   |   nram_grad_output_tr   |   nram_grad_output_bl  |
+ * |  nram_grad_output_br   |         grad_temp1      |        grad_temp2      |
+ * |      grad_temp3        |         grad_temp4      |        nram_loc_w      |
+ * |     nram_loc_h         |         nram_h_low      |        nram_w_low      |
+ * |     nram_h_high        |        nram_w_high      |       nram_h_low_temp  |
+ * |   nram_h_high_temp     |         nram_hw         |         nram_hh        |
+ * |        nram_lw         |         nram_lh         | nram_h_low_ptr_offset  |
+ * | nram_h_high_ptr_offset |  nram_w_low_ptr_offset  | nram_w_high_ptr_offset |
+ * |        nram_w1         |         nram_w2         |         nram_w3        |
+ * |        nram_w4         |     nram_grad_weight    |        nram_base_ptr   |
+ * |    nram_offset_temp    |        nram_offset1     |        nram_offset2    |
+ * |     nram_offset3       |        nram_offset4     |     nram_w_low_temp    |
+ * |  nram_spatial_shapes   | nram_level_start_index  |     nram_h_stride      |
  ****************************************************************************************/
 
 #define TWELVE_SPLIT 12
@@ -179,7 +194,7 @@ __mlu_global__ void MLUKernelMsDeformAttnForwardDefault(
 
   const size_t spatial_size = PAD_UP(2 * sizeof(int32_t), NFU_ALIGN_SIZE);
   const size_t span_num_deal =
-     PAD_DOWN((MAX_NRAM_SIZE - spatial_size) / TWELVE_SPLIT / sizeof(T),
+      PAD_DOWN((MAX_NRAM_SIZE - spatial_size) / TWELVE_SPLIT / sizeof(T),
                NFU_ALIGN_SIZE);
   const size_t align_num = NFU_ALIGN_SIZE;
   const int32_t channels_seg_num = channels / span_num_deal;
@@ -547,8 +562,8 @@ __mlu_func__ void genMask0101(float *mask_ram, int32_t size) {
     mask_ram[i] = i % 2;
   }
   __asm__ volatile("sync;");
-  __memcpy(mask_ram + align_num, mask_ram, NFU_ALIGN_SIZE, NRAM2NRAM, NFU_ALIGN_SIZE, 0,
-           size / align_num - 2);
+  __memcpy(mask_ram + align_num, mask_ram, NFU_ALIGN_SIZE, NRAM2NRAM,
+           NFU_ALIGN_SIZE, 0, size / align_num - 2);
   __asm__ volatile("sync;");
 }
 
@@ -570,9 +585,11 @@ __mlu_global__ void MLUKernelMsDeformAttnForwardSmallChannel(
   const size_t grid_total = num_queries * num_heads * num_levels * num_points;
   if (batch_size >= taskDim) {
     block_num_rem = batch_size % taskDim;
-    block_num_per_core = taskId < block_num_rem ? batch_size / taskDim + 1 : batch_size / taskDim;
-    batch_start = taskId < block_num_rem ? taskId * block_num_per_core
-                                         : taskId * block_num_per_core + block_num_rem;
+    block_num_per_core = taskId < block_num_rem ? batch_size / taskDim + 1
+                                                : batch_size / taskDim;
+    batch_start = taskId < block_num_rem
+                      ? taskId * block_num_per_core
+                      : taskId * block_num_per_core + block_num_rem;
     deal_g = grid_total;
     offset_g = 0;
   } else {
@@ -589,14 +606,16 @@ __mlu_global__ void MLUKernelMsDeformAttnForwardSmallChannel(
   int32_t deal_num;
   int32_t cut_channel_iter = 2;
 
-  const size_t spatial_size = PAD_UP(num_levels * 2 * sizeof(int32_t), NFU_ALIGN_SIZE);
-  const size_t level_start_index_size = PAD_UP(num_levels * sizeof(int32_t), NFU_ALIGN_SIZE);
+  const size_t spatial_size =
+      PAD_UP(num_levels * 2 * sizeof(int32_t), NFU_ALIGN_SIZE);
+  const size_t level_start_index_size =
+      PAD_UP(num_levels * sizeof(int32_t), NFU_ALIGN_SIZE);
 
   int32_t channel = channels;
   int32_t mult;
   while (true) {
-    deal_num =
-        (MAX_NRAM_SIZE - spatial_size - level_start_index_size) / (8 * channel + 7) / sizeof(T);
+    deal_num = (MAX_NRAM_SIZE - spatial_size - level_start_index_size) /
+               (8 * channel + 7) / sizeof(T);
     deal_num = PAD_DOWN(deal_num, float_align);
     deal_num = PAD_DOWN(deal_num, num_levels * num_points);
     if (deal_num > 0) {
@@ -658,10 +677,12 @@ __mlu_global__ void MLUKernelMsDeformAttnForwardSmallChannel(
                  num_levels * sizeof(int32_t), GDRAM2NRAM);
   __asm__ volatile("sync;");
 
-  for (int32_t batch_idx = batch_start; batch_idx < batch_start + block_num_per_core; ++batch_idx) {
+  for (int32_t batch_idx = batch_start;
+       batch_idx < batch_start + block_num_per_core; ++batch_idx) {
     for (int32_t grid_iter = 0; grid_iter <= g_rep; ++grid_iter) {
       int32_t io_data_num = deal_num;
-      const int32_t grid_off_base = batch_idx * grid_total + offset_g + grid_iter * deal_num;
+      const int32_t grid_off_base =
+          batch_idx * grid_total + offset_g + grid_iter * deal_num;
       if (grid_iter == g_rep) {
         if (g_rem == 0) {
           continue;
@@ -671,25 +692,30 @@ __mlu_global__ void MLUKernelMsDeformAttnForwardSmallChannel(
       }
 
       char *data_col_gdram_start =
-          data_col_gdram +
-          (batch_idx * num_queries * num_heads * channels +
-           (offset_g + grid_iter * deal_num) / (num_levels * num_points) * channels) *
-              sizeof(float);
+          data_col_gdram + (batch_idx * num_queries * num_heads * channels +
+                            (offset_g + grid_iter * deal_num) /
+                                (num_levels * num_points) * channels) *
+                               sizeof(float);
 
       // load data_sampling_loc
-      __memcpy_async(grid_ram, data_sampling_loc_gdram + grid_off_base * 2 * sizeof(float),
-                     io_data_num * 2 * sizeof(float), GDRAM2NRAM);
+      __memcpy_async(
+          grid_ram, data_sampling_loc_gdram + grid_off_base * 2 * sizeof(float),
+          io_data_num * 2 * sizeof(float), GDRAM2NRAM);
       genMask0101((float *)mask_ram, deal_num * 2);
       __asm__ volatile("sync;");
 
       // generate x and y coordinate vector
       // generate spatial_x and spatial_y spatial vector
-      __bang_collect((float *)coord_y, (float *)grid_ram, (float *)mask_ram, deal_num * 2);  // y
-      __bang_collect((float *)spatial_x_temp, (float *)data_spatial_shapes_nram, (float *)mask_ram,
+      __bang_collect((float *)coord_y, (float *)grid_ram, (float *)mask_ram,
+                     deal_num * 2);  // y
+      __bang_collect((float *)spatial_x_temp, (float *)data_spatial_shapes_nram,
+                     (float *)mask_ram,
                      num_levels * 2);  // spatial_x
       __bang_not((float *)mask_ram, (float *)mask_ram, deal_num * 2);
-      __bang_collect((float *)coord_x, (float *)grid_ram, (float *)mask_ram, deal_num * 2);  // x
-      __bang_collect((float *)spatial_y_temp, (float *)data_spatial_shapes_nram, (float *)mask_ram,
+      __bang_collect((float *)coord_x, (float *)grid_ram, (float *)mask_ram,
+                     deal_num * 2);  // x
+      __bang_collect((float *)spatial_y_temp, (float *)data_spatial_shapes_nram,
+                     (float *)mask_ram,
                      num_levels * 2);  // spatial_y
 
       for (int32_t i = 0; i < num_levels; i++) {
@@ -699,114 +725,161 @@ __mlu_global__ void MLUKernelMsDeformAttnForwardSmallChannel(
                            ((int32_t *)spatial_y_temp)[i]);
       }
 
-      __bang_int322float_rd((float *)spatial_x_float, (int32_t *)spatial_x, num_levels * num_points,
-                            0);
-      __bang_int322float_rd((float *)spatial_y_float, (int32_t *)spatial_y, num_levels * num_points,
-                            0);
+      __bang_int322float_rd((float *)spatial_x_float, (int32_t *)spatial_x,
+                            num_levels * num_points, 0);
+      __bang_int322float_rd((float *)spatial_y_float, (int32_t *)spatial_y,
+                            num_levels * num_points, 0);
 
-      // map x from [0, 1] to [0, spatial_x]; map y from [0, 1] to [0, spatial_y]
-      __bang_cycle_mul((float *)coord_x, (float *)coord_x, (float *)spatial_x_float, deal_num,
+      // map x from [0, 1] to [0, spatial_x]; map y from [0, 1] to [0,
+      // spatial_y]
+      __bang_cycle_mul((float *)coord_x, (float *)coord_x,
+                       (float *)spatial_x_float, deal_num,
                        num_levels * num_points);
-      __bang_sub_scalar((float *)coord_x, (float *)coord_x, (float)0.5, deal_num);
-      __bang_cycle_mul((float *)coord_y, (float *)coord_y, (float *)spatial_y_float, deal_num,
+      __bang_sub_scalar((float *)coord_x, (float *)coord_x, (float)0.5,
+                        deal_num);
+      __bang_cycle_mul((float *)coord_y, (float *)coord_y,
+                       (float *)spatial_y_float, deal_num,
                        num_levels * num_points);
-      __bang_sub_scalar((float *)coord_y, (float *)coord_y, (float)0.5, deal_num);
+      __bang_sub_scalar((float *)coord_y, (float *)coord_y, (float)0.5,
+                        deal_num);
 
       __bang_floor((float *)coord_x_low, (float *)coord_x, deal_num);
       __bang_floor((float *)coord_y_low, (float *)coord_y, deal_num);
 
       // calc index_tl
       const int32_t w_stride = num_heads * channels;
-      __bang_float2int32_rd((int32_t *)coord_x_low_int, (float *)coord_x_low, deal_num, 0);
-      __bang_float2int32_rd((int32_t *)coord_y_low_int, (float *)coord_y_low, deal_num, 0);
-      __bang_cycle_mul((int32_t *)index_tl, (int32_t *)coord_y_low_int, (int32_t *)spatial_x,
-                       deal_num, num_levels * num_points);
-      __bang_add((int32_t *)index_tl, (int32_t *)index_tl, (int32_t *)coord_x_low_int, deal_num);
-      __bang_mul_scalar((int32_t *)index_tl, (int32_t *)index_tl, w_stride, deal_num);
+      __bang_float2int32_rd((int32_t *)coord_x_low_int, (float *)coord_x_low,
+                            deal_num, 0);
+      __bang_float2int32_rd((int32_t *)coord_y_low_int, (float *)coord_y_low,
+                            deal_num, 0);
+      __bang_cycle_mul((int32_t *)index_tl, (int32_t *)coord_y_low_int,
+                       (int32_t *)spatial_x, deal_num, num_levels * num_points);
+      __bang_add((int32_t *)index_tl, (int32_t *)index_tl,
+                 (int32_t *)coord_x_low_int, deal_num);
+      __bang_mul_scalar((int32_t *)index_tl, (int32_t *)index_tl, w_stride,
+                        deal_num);
 
       const int32_t deal_lp_num = deal_num / (num_levels * num_points);
       const int32_t h_rep = deal_lp_num / num_heads;
       const int32_t h_rem = deal_lp_num % num_heads;
       const int32_t head_start =
-          ((offset_g + grid_iter * deal_num) / (num_levels * num_points)) % num_heads;
+          ((offset_g + grid_iter * deal_num) / (num_levels * num_points)) %
+          num_heads;
       for (int32_t iter = 0; iter < num_heads; ++iter) {
-        ((int32_t *)base_ptr_offset)[iter] = ((head_start + iter) % num_heads) * channels;
+        ((int32_t *)base_ptr_offset)[iter] =
+            ((head_start + iter) % num_heads) * channels;
       }
       if (h_rep > 0) {
-        __memcpy((int32_t *)base_ptr_offset + num_heads, (int32_t *)base_ptr_offset,
-                 num_heads * sizeof(int32_t), NRAM2NRAM, num_heads * sizeof(int32_t), 0,
-                 h_rep - 1);
+        __memcpy((int32_t *)base_ptr_offset + num_heads,
+                 (int32_t *)base_ptr_offset, num_heads * sizeof(int32_t),
+                 NRAM2NRAM, num_heads * sizeof(int32_t), 0, h_rep - 1);
       }
       if (h_rep > 0 && h_rem > 0) {
-        __memcpy((int32_t *)base_ptr_offset + h_rep * num_heads, (int32_t *)base_ptr_offset,
-                 h_rem * sizeof(int32_t), NRAM2NRAM);
+        __memcpy((int32_t *)base_ptr_offset + h_rep * num_heads,
+                 (int32_t *)base_ptr_offset, h_rem * sizeof(int32_t),
+                 NRAM2NRAM);
       }
       __bang_transpose((int32_t *)auxiliary_a, (int32_t *)index_tl, deal_lp_num,
                        num_levels * num_points);
-      __bang_cycle_add((int32_t *)auxiliary_a, (int32_t *)auxiliary_a, (int32_t *)base_ptr_offset,
-                       deal_num, deal_lp_num);
-      __bang_transpose((int32_t *)index_tl, (int32_t *)auxiliary_a, num_levels * num_points,
-                       deal_lp_num);
+      __bang_cycle_add((int32_t *)auxiliary_a, (int32_t *)auxiliary_a,
+                       (int32_t *)base_ptr_offset, deal_num, deal_lp_num);
+      __bang_transpose((int32_t *)index_tl, (int32_t *)auxiliary_a,
+                       num_levels * num_points, deal_lp_num);
 
       // calc index_bl
-      __bang_mul_scalar((int32_t *)auxiliary_a, (int32_t *)spatial_x, w_stride, deal_num);
-      __bang_cycle_add((int32_t *)index_bl, (int32_t *)index_tl, (int32_t *)auxiliary_a, deal_num,
+      __bang_mul_scalar((int32_t *)auxiliary_a, (int32_t *)spatial_x, w_stride,
+                        deal_num);
+      __bang_cycle_add((int32_t *)index_bl, (int32_t *)index_tl,
+                       (int32_t *)auxiliary_a, deal_num,
                        num_levels * num_points);
 
       // calc mask_tl, mask_tr, mask_bl, mask_br
-      __bang_sub_scalar((float *)spatial_x_float, (float *)spatial_x_float, (float)1.0, deal_num);
-      __bang_sub_scalar((float *)spatial_y_float, (float *)spatial_y_float, (float)1.0, deal_num);
+      __bang_sub_scalar((float *)spatial_x_float, (float *)spatial_x_float,
+                        (float)1.0, deal_num);
+      __bang_sub_scalar((float *)spatial_y_float, (float *)spatial_y_float,
+                        (float)1.0, deal_num);
       // mask_tl : 0 <= coord_x_low < spatial_x && 0 <= coord_y_low < spatial_y
-      __bang_ge_scalar((float *)mask_bl, (float *)coord_x_low, (float)0, deal_num);
-      __bang_cycle_le((float *)mask_br, (float *)coord_x_low, (float *)spatial_x_float, deal_num,
+      __bang_ge_scalar((float *)mask_bl, (float *)coord_x_low, (float)0,
+                       deal_num);
+      __bang_cycle_le((float *)mask_br, (float *)coord_x_low,
+                      (float *)spatial_x_float, deal_num,
                       num_levels * num_points);
-      __bang_and((float *)mask_bl, (float *)mask_bl, (float *)mask_br, deal_num);
+      __bang_and((float *)mask_bl, (float *)mask_bl, (float *)mask_br,
+                 deal_num);
 
-      __bang_ge_scalar((float *)mask_tr, (float *)coord_y_low, (float)0, deal_num);
-      __bang_cycle_le((float *)mask_br, (float *)coord_y_low, (float *)spatial_y_float, deal_num,
+      __bang_ge_scalar((float *)mask_tr, (float *)coord_y_low, (float)0,
+                       deal_num);
+      __bang_cycle_le((float *)mask_br, (float *)coord_y_low,
+                      (float *)spatial_y_float, deal_num,
                       num_levels * num_points);
-      __bang_and((float *)mask_tr, (float *)mask_tr, (float *)mask_br, deal_num);
-      __bang_and((float *)mask_tl, (float *)mask_tr, (float *)mask_bl, deal_num);
+      __bang_and((float *)mask_tr, (float *)mask_tr, (float *)mask_br,
+                 deal_num);
+      __bang_and((float *)mask_tl, (float *)mask_tr, (float *)mask_bl,
+                 deal_num);
 
       // mask_tr : 0 <= coord_x_high < spatial_x && 0 <= coord_y_low < spatial_y
-      __bang_ge_scalar((float *)mask_br, (float *)coord_x_low, (float)(-1.0), deal_num);
-      __bang_cycle_lt((float *)auxiliary_a, (float *)coord_x_low, (float *)spatial_x_float,
-                      deal_num, num_levels * num_points);
-      __bang_and((float *)mask_br, (float *)mask_br, (float *)auxiliary_a, deal_num);
-      __bang_and((float *)mask_tr, (float *)mask_tr, (float *)mask_br, deal_num);
+      __bang_ge_scalar((float *)mask_br, (float *)coord_x_low, (float)(-1.0),
+                       deal_num);
+      __bang_cycle_lt((float *)auxiliary_a, (float *)coord_x_low,
+                      (float *)spatial_x_float, deal_num,
+                      num_levels * num_points);
+      __bang_and((float *)mask_br, (float *)mask_br, (float *)auxiliary_a,
+                 deal_num);
+      __bang_and((float *)mask_tr, (float *)mask_tr, (float *)mask_br,
+                 deal_num);
 
       // mask_bl : 0 <= coord_x_low < spatial_x && 0 <= coord_y_high < spatial_y
-      __bang_ge_scalar((float *)auxiliary_a, (float *)coord_y_low, (float)(-1.0), deal_num);
-      __bang_cycle_lt((float *)auxiliary_b, (float *)coord_y_low, (float *)spatial_y_float,
-                      deal_num, num_levels * num_points);
-      __bang_and((float *)auxiliary_a, (float *)auxiliary_a, (float *)auxiliary_b, deal_num);
-      __bang_and((float *)mask_bl, (float *)mask_bl, (float *)auxiliary_a, deal_num);
+      __bang_ge_scalar((float *)auxiliary_a, (float *)coord_y_low,
+                       (float)(-1.0), deal_num);
+      __bang_cycle_lt((float *)auxiliary_b, (float *)coord_y_low,
+                      (float *)spatial_y_float, deal_num,
+                      num_levels * num_points);
+      __bang_and((float *)auxiliary_a, (float *)auxiliary_a,
+                 (float *)auxiliary_b, deal_num);
+      __bang_and((float *)mask_bl, (float *)mask_bl, (float *)auxiliary_a,
+                 deal_num);
 
-      // mask_br : 0 <= coord_x_high < spatial_x && 0 <= coord_y_high < spatial_y
-      __bang_and((float *)mask_br, (float *)mask_br, (float *)auxiliary_a, deal_num);
+      // mask_br : 0 <= coord_x_high < spatial_x && 0 <= coord_y_high <
+      // spatial_y
+      __bang_and((float *)mask_br, (float *)mask_br, (float *)auxiliary_a,
+                 deal_num);
 
       // calc inner point num
-      __bang_mul_scalar((float *)weight_tl, (float *)mask_tl, (float)7.0, deal_num);
-      __bang_mul_scalar((float *)weight_tr, (float *)mask_tr, (float)5.0, deal_num);
-      __bang_add((float *)weight_tl, (float *)weight_tl, (float *)weight_tr, deal_num);
-      __bang_mul_scalar((float *)weight_tr, (float *)mask_bl, (float)3.0, deal_num);
-      __bang_add((float *)point_ram, (float *)weight_tr, (float *)mask_br, deal_num);
-      __bang_add((float *)point_ram, (float *)point_ram, (float *)weight_tl, deal_num);
+      __bang_mul_scalar((float *)weight_tl, (float *)mask_tl, (float)7.0,
+                        deal_num);
+      __bang_mul_scalar((float *)weight_tr, (float *)mask_tr, (float)5.0,
+                        deal_num);
+      __bang_add((float *)weight_tl, (float *)weight_tl, (float *)weight_tr,
+                 deal_num);
+      __bang_mul_scalar((float *)weight_tr, (float *)mask_bl, (float)3.0,
+                        deal_num);
+      __bang_add((float *)point_ram, (float *)weight_tr, (float *)mask_br,
+                 deal_num);
+      __bang_add((float *)point_ram, (float *)point_ram, (float *)weight_tl,
+                 deal_num);
 
       // calc interpolation weight
-      __bang_sub((float *)weight_bl, (float *)coord_x_low, (float *)coord_x, deal_num);
-      __bang_sub((float *)weight_br, (float *)coord_y_low, (float *)coord_y, deal_num);
-      __bang_add_scalar((float *)weight_bl, (float *)weight_bl, (float)1.0, deal_num);
-      __bang_add_scalar((float *)weight_br, (float *)weight_br, (float)1.0, deal_num);
+      __bang_sub((float *)weight_bl, (float *)coord_x_low, (float *)coord_x,
+                 deal_num);
+      __bang_sub((float *)weight_br, (float *)coord_y_low, (float *)coord_y,
+                 deal_num);
+      __bang_add_scalar((float *)weight_bl, (float *)weight_bl, (float)1.0,
+                        deal_num);
+      __bang_add_scalar((float *)weight_br, (float *)weight_br, (float)1.0,
+                        deal_num);
 
-      __bang_sub((float *)weight_tl, (float *)coord_x, (float *)coord_x_low, deal_num);
-      __bang_sub((float *)weight_tr, (float *)coord_y, (float *)coord_y_low, deal_num);
-      __bang_mul((float *)input_tl, (float *)weight_bl, (float *)weight_br, deal_num);
-      __bang_mul((float *)input_tl + deal_num, (float *)weight_br, (float *)weight_tl, deal_num);
-      __bang_mul((float *)input_tl + 2 * deal_num, (float *)weight_bl, (float *)weight_tr,
+      __bang_sub((float *)weight_tl, (float *)coord_x, (float *)coord_x_low,
                  deal_num);
-      __bang_mul((float *)input_tl + 3 * deal_num, (float *)weight_tl, (float *)weight_tr,
+      __bang_sub((float *)weight_tr, (float *)coord_y, (float *)coord_y_low,
                  deal_num);
+      __bang_mul((float *)input_tl, (float *)weight_bl, (float *)weight_br,
+                 deal_num);
+      __bang_mul((float *)input_tl + deal_num, (float *)weight_br,
+                 (float *)weight_tl, deal_num);
+      __bang_mul((float *)input_tl + 2 * deal_num, (float *)weight_bl,
+                 (float *)weight_tr, deal_num);
+      __bang_mul((float *)input_tl + 3 * deal_num, (float *)weight_tl,
+                 (float *)weight_tr, deal_num);
 
       __asm__ volatile("sync;");
 
@@ -817,20 +890,22 @@ __mlu_global__ void MLUKernelMsDeformAttnForwardSmallChannel(
         const int32_t data_sz = 1 * sizeof(float);
         const int32_t dst_str = channel * sizeof(float);
         for (int32_t iter = w_rep; iter < channel; ++iter) {
-          __memcpy_async((float *)weight_tl + iter, (float *)input_tl, data_sz, NRAM2NRAM, dst_str,
-                         data_sz, 4 * deal_num - 1);
+          __memcpy_async((float *)weight_tl + iter, (float *)input_tl, data_sz,
+                         NRAM2NRAM, dst_str, data_sz, 4 * deal_num - 1);
         }
       }
       if (w_rep != 0) {
         for (int32_t i = 0; i < 4 * deal_num; i++) {
-          __bang_write_value((float *)weight_tl + i * channel, w_rep, ((float *)input_tl)[i]);
+          __bang_write_value((float *)weight_tl + i * channel, w_rep,
+                             ((float *)input_tl)[i]);
         }
       }
 
       __asm__ volatile("sync;");
 
       const char *data_value_gdram_start =
-          data_value_gdram + batch_idx * num_keys * num_heads * channels * sizeof(float);
+          data_value_gdram +
+          batch_idx * num_keys * num_heads * channels * sizeof(float);
       const int32_t c_str = deal_num * channel * sizeof(float);
       const int32_t cs_str = num_heads * channels * sizeof(float);
 
@@ -853,65 +928,75 @@ __mlu_global__ void MLUKernelMsDeformAttnForwardSmallChannel(
           const int32_t tl_offset = ((int32_t *)index_tl)[p_idx];
           const int32_t bl_offset = ((int32_t *)index_bl)[p_idx];
           const int32_t level_start_id =
-              ((int32_t *)data_level_start_index_nram)[(p_idx / num_points) % num_levels];
+              ((int32_t *)data_level_start_index_nram)[(p_idx / num_points) %
+                                                       num_levels];
           const char *data_value_ptr =
               data_value_gdram_start +
-              (level_start_id * num_heads * channels + c_iter * channel) * sizeof(float);
+              (level_start_id * num_heads * channels + c_iter * channel) *
+                  sizeof(float);
 
           switch (inner_point_num) {
             case 16:  // 4 points are cached.
               __memcpy_async((float *)input_tl + p_idx * channel,
-                             (float *)data_value_ptr + tl_offset, c_real_num * sizeof(float),
-                             GDRAM2NRAM, c_str, cs_str, 1);
+                             (float *)data_value_ptr + tl_offset,
+                             c_real_num * sizeof(float), GDRAM2NRAM, c_str,
+                             cs_str, 1);
               __memcpy_async((float *)input_bl + p_idx * channel,
-                             (float *)data_value_ptr + bl_offset, c_real_num * sizeof(float),
-                             GDRAM2NRAM, c_str, cs_str, 1);
+                             (float *)data_value_ptr + bl_offset,
+                             c_real_num * sizeof(float), GDRAM2NRAM, c_str,
+                             cs_str, 1);
               break;
             case 12:  // 2 points are cached. (top_left, top_right)
               __memcpy_async((float *)input_tl + p_idx * channel,
-                             (float *)data_value_ptr + tl_offset, c_real_num * sizeof(float),
-                             GDRAM2NRAM, c_str, cs_str, 1);
+                             (float *)data_value_ptr + tl_offset,
+                             c_real_num * sizeof(float), GDRAM2NRAM, c_str,
+                             cs_str, 1);
               break;
             case 4:  // 2 points are cached. (bottom_left, bottom_right)
               __memcpy_async((float *)input_bl + p_idx * channel,
-                             (float *)data_value_ptr + bl_offset, c_real_num * sizeof(float),
-                             GDRAM2NRAM, c_str, cs_str, 1);
+                             (float *)data_value_ptr + bl_offset,
+                             c_real_num * sizeof(float), GDRAM2NRAM, c_str,
+                             cs_str, 1);
               break;
             case 10:  // 2 points are cached. (top_left, bottom_left)
               __memcpy_async((float *)input_tl + p_idx * channel,
-                             (float *)data_value_ptr + tl_offset, c_real_num * sizeof(float),
-                             GDRAM2NRAM);
+                             (float *)data_value_ptr + tl_offset,
+                             c_real_num * sizeof(float), GDRAM2NRAM);
               __memcpy_async((float *)input_bl + p_idx * channel,
-                             (float *)data_value_ptr + bl_offset, c_real_num * sizeof(float),
-                             GDRAM2NRAM);
+                             (float *)data_value_ptr + bl_offset,
+                             c_real_num * sizeof(float), GDRAM2NRAM);
               break;
             case 6:  // 2 points are cached. (top_right, bottom_right)
-              __memcpy_async((float *)input_tr + p_idx * channel,
-                             (float *)data_value_ptr + tl_offset + num_heads * channels,
-                             c_real_num * sizeof(float), GDRAM2NRAM);
-              __memcpy_async((float *)input_br + p_idx * channel,
-                             (float *)data_value_ptr + bl_offset + num_heads * channels,
-                             c_real_num * sizeof(float), GDRAM2NRAM);
+              __memcpy_async(
+                  (float *)input_tr + p_idx * channel,
+                  (float *)data_value_ptr + tl_offset + num_heads * channels,
+                  c_real_num * sizeof(float), GDRAM2NRAM);
+              __memcpy_async(
+                  (float *)input_br + p_idx * channel,
+                  (float *)data_value_ptr + bl_offset + num_heads * channels,
+                  c_real_num * sizeof(float), GDRAM2NRAM);
               break;
             case 7:  // 1 point is cached. (top_left)
               __memcpy_async((float *)input_tl + p_idx * channel,
-                             (float *)data_value_ptr + tl_offset, c_real_num * sizeof(float),
-                             GDRAM2NRAM);
+                             (float *)data_value_ptr + tl_offset,
+                             c_real_num * sizeof(float), GDRAM2NRAM);
               break;
             case 5:  // 1 point is cached. (top_right)
-              __memcpy_async((float *)input_tr + p_idx * channel,
-                             (float *)data_value_ptr + tl_offset + num_heads * channels,
-                             c_real_num * sizeof(float), GDRAM2NRAM);
+              __memcpy_async(
+                  (float *)input_tr + p_idx * channel,
+                  (float *)data_value_ptr + tl_offset + num_heads * channels,
+                  c_real_num * sizeof(float), GDRAM2NRAM);
               break;
             case 3:  // 1 point is cached. (bottom_left)
               __memcpy_async((float *)input_bl + p_idx * channel,
-                             (float *)data_value_ptr + bl_offset, c_real_num * sizeof(float),
-                             GDRAM2NRAM);
+                             (float *)data_value_ptr + bl_offset,
+                             c_real_num * sizeof(float), GDRAM2NRAM);
               break;
             case 1:  // 1 point is cached. (bottom_right)
-              __memcpy_async((float *)input_br + p_idx * channel,
-                             (float *)data_value_ptr + bl_offset + num_heads * channels,
-                             c_real_num * sizeof(float), GDRAM2NRAM);
+              __memcpy_async(
+                  (float *)input_br + p_idx * channel,
+                  (float *)data_value_ptr + bl_offset + num_heads * channels,
+                  c_real_num * sizeof(float), GDRAM2NRAM);
               break;
             default:
               continue;
@@ -923,26 +1008,33 @@ __mlu_global__ void MLUKernelMsDeformAttnForwardSmallChannel(
         // interpolation
         __bang_mul((float *)input_tl, (float *)input_tl, (float *)weight_tl,
                    4 * deal_num * channel);
-        __bang_add((float *)input_tl, (float *)input_tl, (float *)input_bl, 2 * deal_num * channel);
-        __bang_add((float *)input_tl, (float *)input_tl, (float *)input_tr, deal_num * channel);
+        __bang_add((float *)input_tl, (float *)input_tl, (float *)input_bl,
+                   2 * deal_num * channel);
+        __bang_add((float *)input_tl, (float *)input_tl, (float *)input_tr,
+                   deal_num * channel);
 
         // load attention weight
         void *attn_weight = mask_tl;
-        __memcpy((float *)attn_weight, (float *)data_attn_weight_gdram + grid_off_base,
+        __memcpy((float *)attn_weight,
+                 (float *)data_attn_weight_gdram + grid_off_base,
                  io_data_num * sizeof(float), GDRAM2NRAM);
 
         // calc data_col, muladd attention weight
-        __bang_transpose((float *)input_tr, (float *)input_tl, deal_num, channel);
-        __bang_cycle_mul((float *)input_tr, (float *)input_tr, (float *)attn_weight,
-                         deal_num * channel, deal_num);
-        __bang_transpose((float *)input_tl, (float *)input_tr, channel, deal_num);
-        __bang_sumpool((float *)input_bl, (float *)input_tl, channel, 1, io_data_num, 1,
-                       num_levels * num_points, num_levels * num_points, 1);
+        __bang_transpose((float *)input_tr, (float *)input_tl, deal_num,
+                         channel);
+        __bang_cycle_mul((float *)input_tr, (float *)input_tr,
+                         (float *)attn_weight, deal_num * channel, deal_num);
+        __bang_transpose((float *)input_tl, (float *)input_tr, channel,
+                         deal_num);
+        __bang_sumpool((float *)input_bl, (float *)input_tl, channel, 1,
+                       io_data_num, 1, num_levels * num_points,
+                       num_levels * num_points, 1);
 
         // store
-        __memcpy((float *)data_col_gdram_start + c_iter * channel, (float *)input_bl,
-                 c_real_num * sizeof(float), NRAM2GDRAM, channels * sizeof(float),
-                 channel * sizeof(float), (io_data_num / (num_levels * num_points)) - 1);
+        __memcpy((float *)data_col_gdram_start + c_iter * channel,
+                 (float *)input_bl, c_real_num * sizeof(float), NRAM2GDRAM,
+                 channels * sizeof(float), channel * sizeof(float),
+                 (io_data_num / (num_levels * num_points)) - 1);
       }
     }
   }
@@ -1503,18 +1595,21 @@ void __mlu_func__ computeGradValue(
   __bang_cycle_mul(grad_temp1, grad_temp4, nram_w1,
                    num_deal_grid * deal_num_real, num_deal_grid);
   __bang_transpose(grad_temp3, grad_temp1, deal_num_real, num_deal_grid);
-  for(int32_t loop = 0; loop < num_deal_grid; ++loop) {
-    nram_grid_offset1[loop] =
-    ((loop + grid_offset) / num_query / num_heads / num_levels / num_points) * spatial_size * qid_stride;
+  for (int32_t loop = 0; loop < num_deal_grid; ++loop) {
+    nram_grid_offset1[loop] = ((loop + grid_offset) / num_query / num_heads /
+                               num_levels / num_points) *
+                              spatial_size * qid_stride;
   }
   __bang_transpose(nram_grid_offset2, nram_grid_offset1,
-                       num_per_time_real * num_heads * num_levels, num_points);
-  __bang_int322float((float *)nram_level_start_index, nram_level_start_index, num_levels, 0);
-  __bang_mul_scalar(
-      nram_grid_offset1, (float *)nram_level_start_index, qid_stride, num_levels);
-  __bang_cycle_add(nram_grid_offset2, nram_grid_offset2, nram_grid_offset1, num_deal_grid, num_levels);
+                   num_per_time_real * num_heads * num_levels, num_points);
+  __bang_int322float((float *)nram_level_start_index, nram_level_start_index,
+                     num_levels, 0);
+  __bang_mul_scalar(nram_grid_offset1, (float *)nram_level_start_index,
+                    qid_stride, num_levels);
+  __bang_cycle_add(nram_grid_offset2, nram_grid_offset2, nram_grid_offset1,
+                   num_deal_grid, num_levels);
   __bang_transpose(nram_grid_offset1, nram_grid_offset2, num_points,
-  num_per_time_real * num_heads * num_levels);
+                   num_per_time_real * num_heads * num_levels);
   __bang_add(nram_offset1, nram_offset1, nram_grid_offset1, num_deal_grid);
   __bang_add(nram_offset2, nram_offset2, nram_grid_offset1, num_deal_grid);
   __bang_add(nram_offset3, nram_offset3, nram_grid_offset1, num_deal_grid);
