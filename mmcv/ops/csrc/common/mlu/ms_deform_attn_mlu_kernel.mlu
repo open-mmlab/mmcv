@@ -1496,6 +1496,7 @@ void __mlu_func__ computeGridMaskAndOffset(
                    num_per_time_real * num_heads * num_levels, num_points);
   __bang_cycle_le(mask3, mask3, (float *)(nram_spatial_shapes), num_deal_grid,
                   num_levels);
+                  
   __bang_transpose(nram_h_low_temp, mask3, num_points,
                    num_per_time_real * num_heads * num_levels);
   __bang_and(mask4, mask4, nram_h_low_temp, num_deal_grid);

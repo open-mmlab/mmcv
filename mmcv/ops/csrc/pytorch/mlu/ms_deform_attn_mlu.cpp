@@ -49,7 +49,7 @@ typedef enum {
 MsDeformAttnBackwardKernelPolicy msDeformAttnBackwardPolicyFunc(
     const int32_t channels, const int32_t num_levels, const int32_t num_points,
     const int32_t num_heads) {
-  const int32_t nram_size = torch_mlu::getDeviceAttr(cnrtAttrNramSizePerMcore);    
+  const int32_t nram_size = torch_mlu::getDeviceAttr(cnrtAttrNramSizePerMcore);
   const int num_hlp = num_heads * num_levels * num_points;
   int num_per_time_theory = (nram_size - num_levels * sizeof(float) -
                              3 * num_levels * sizeof(int32_t)) /
@@ -101,7 +101,8 @@ MsDeformAttnForwardPolicy msDeformAttnForwardPolicyFunc(
   int32_t nram_size = torch_mlu::getDeviceAttr(cnrtAttrNramSizePerMcore);
   if (num_levels * num_points * 3 * sizeof(int32_t) > nram_size) {
     return MS_DEFORM_ATTN_FORWARD_DEFAULT;
-  } else if (channels > nram_size / 12 / sizeof(float) || channels > 96 || channels < 16) {
+  } else if (channels > nram_size / 12 / sizeof(float) || channels > 96 ||
+             channels < 16) {
     return MS_DEFORM_ATTN_FORWARD_DEFAULT;
   } else {
     return MS_DEFORM_ATTN_FORWARD_SMALL_CHANNEL;
@@ -471,8 +472,9 @@ void ms_deform_attn_mlu_backward(
   // launch kernel
   CNLOG(INFO) << "Launch Kernel MLUKernelMsDeformAttnBackward<<<" << k_dim.x
               << ", " << k_dim.y << ", " << k_dim.z << ">>>";
-  MsDeformAttnBackwardKernelPolicy kernelPolicy = 
-      msDeformAttnBackwardPolicyFunc(channels, num_levels, num_points, num_heads);
+  MsDeformAttnBackwardKernelPolicy kernelPolicy =
+      msDeformAttnBackwardPolicyFunc(channels, num_levels, num_points,
+                                     num_heads);
   switch (kernelPolicy) {
     default: {
       VLOG(5) << "NotImplemented.";
