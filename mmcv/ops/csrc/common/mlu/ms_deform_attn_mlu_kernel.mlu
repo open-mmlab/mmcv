@@ -1669,7 +1669,7 @@ void __mlu_func__ computeGradAttnWeight(
     float *nram_w2, float *nram_w3, float *nram_w4, int32_t offset_nram,
     int32_t num_deal_grid, int32_t deal_num_real, int32_t num_per_time_real,
     const int32_t num_heads, const int32_t num_levels, const int32_t num_points,
-    int32_t grid_offset) {
+    int32_t grid_offset, float *nram_h_high_temp) {
 #if __BANG_ARCH__ >= 322
   __bang_write_zero(grad_w_weight, 2 * offset_nram);
 
@@ -1734,17 +1734,14 @@ void __mlu_func__ computeGradAttnWeight(
   __bang_transpose(nram_grad_output_br, nram_grad_output_tl, deal_num_real,
                    num_deal_grid);
 
-  __bang_transpose(nram_grad_output_tr, nram_grad_output_br,
-                   num_per_time_real * num_heads,
-                   num_points * num_levels * deal_num_real);
-  __bang_transpose(grad_temp1, grad_temp2, num_per_time_real * num_heads,
-                   deal_num_real);
-  __bang_cycle_mul(nram_grad_output_tr, nram_grad_output_tr, grad_temp1,
-                   num_deal_grid * deal_num_real,
-                   num_per_time_real * num_heads * deal_num_real);
-  __bang_transpose(nram_grad_output_br, nram_grad_output_tr,
-                   num_points * num_levels * deal_num_real,
-                   num_per_time_real * num_heads);
+  for (int i = 0; i < num_deal_grid; ++i) {
+    if (nram_h_high_temp[i]) {
+      int num_xh = i / (num_levels * num_points);
+      __bang_mul(nram_grad_output_br + i * deal_num_real,
+                 nram_grad_output_br + i * deal_num_real,
+                 grad_temp2 + num_xh * deal_num_real, deal_num_real);
+    }
+  }
   __bang_transpose((float *)nram_grad_output_tr, (float *)nram_grad_output_br,
                    num_deal_grid, deal_num_real);
   recursiveSumPool(nram_grad_output_tr, num_deal_grid, deal_num_real,
@@ -1761,7 +1758,8 @@ void __mlu_func__ computeGradSampingLoc(
     int32_t *nram_spatial_shapes, float *grad_temp1, float *grad_temp2,
     float *nram_grad_weight, int32_t num_deal_grid, int32_t deal_num_real,
     int32_t num_per_time_real, const int32_t num_heads,
-    const int32_t num_levels, const int32_t num_points, int32_t grid_offset) {
+    const int32_t num_levels, const int32_t num_points, int32_t grid_offset,
+    float *nram_h_high_temp) {
 #if __BANG_ARCH__ >= 322
   __bang_transpose(nram_grad_output_tl, grad_h_weight,
                    num_per_time_real * num_heads * num_levels * deal_num_real,
@@ -1789,8 +1787,15 @@ void __mlu_func__ computeGradSampingLoc(
                    num_levels * num_points * deal_num_real,
                    num_per_time_real * num_heads);
 
-  __bang_mul(grad_h_weight, grad_h_weight, grad_temp1,
-             num_deal_grid * deal_num_real);
+  for (int i = 0; i < num_deal_grid; ++i) {
+    if (nram_h_high_temp[i])
+
+    {
+      __bang_mul(grad_h_weight + i * deal_num_real,
+                 grad_h_weight + i * deal_num_real,
+                 grad_temp1 + i * deal_num_real, deal_num_real);
+    }
+  }
   __bang_transpose(nram_grad_output_tl, grad_h_weight, num_deal_grid,
                    deal_num_real);
   __memcpy_async(grad_h_weight, nram_grad_output_tl,
@@ -1807,8 +1812,15 @@ void __mlu_func__ computeGradSampingLoc(
                    num_points * deal_num_real,
                    num_per_time_real * num_heads * num_levels);
 
-  __bang_mul(grad_w_weight, grad_w_weight, grad_temp1,
-             num_deal_grid * deal_num_real);
+  for (int i = 0; i < num_deal_grid; ++i) {
+    if (nram_h_high_temp[i])
+
+    {
+      __bang_mul(grad_w_weight + i * deal_num_real,
+                 grad_w_weight + i * deal_num_real,
+                 grad_temp1 + i * deal_num_real, deal_num_real);
+    }
+  }
   __bang_transpose(nram_grad_output_tl, grad_w_weight, num_deal_grid,
                    deal_num_real);
   __memcpy(grad_w_weight, nram_grad_output_tl,
@@ -2014,14 +2026,15 @@ __mlu_global__ void MLUUnion1KernelMsDeformAttnBackwardSmallChannelsKernel(
         grad_attn_weight, nram_hw, nram_hh, nram_lw, nram_lh, grad_h_weight,
         nram_w1, nram_w2, nram_w3, nram_w4, offset_nram, num_deal_grid,
         deal_num_real, num_per_time_real, num_heads, num_levels, num_points,
-        grid_offset);
+        grid_offset, nram_h_high_temp);
 
     // compute grad_sampling_loc
-    computeGradSampingLoc(
-        grad_sampling_loc, nram_grad_output_tl, nram_grad_output_tr,
-        grad_h_weight, grad_w_weight, nram_spatial_shapes, grad_temp1,
-        grad_temp2, nram_grad_weight, num_deal_grid, deal_num_real,
-        num_per_time_real, num_heads, num_levels, num_points, grid_offset);
+    computeGradSampingLoc(grad_sampling_loc, nram_grad_output_tl,
+                          nram_grad_output_tr, grad_h_weight, grad_w_weight,
+                          nram_spatial_shapes, grad_temp1, grad_temp2,
+                          nram_grad_weight, num_deal_grid, deal_num_real,
+                          num_per_time_real, num_heads, num_levels, num_points,
+                          grid_offset, nram_h_high_temp);
   }
 #endif
 }
