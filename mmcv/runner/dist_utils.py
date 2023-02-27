@@ -48,7 +48,6 @@ def init_dist(launcher: str, backend: str = 'nccl', **kwargs) -> None:
 
 
 def _init_dist_pytorch(backend: str, **kwargs) -> None:
-    # TODO: use local_rank instead of rank % num_gpus
     rank = int(os.environ['RANK'])
     if IS_MLU_AVAILABLE:
         import torch_mlu  # noqa: F401
@@ -68,8 +67,7 @@ def _init_dist_pytorch(backend: str, **kwargs) -> None:
             world_size=int(os.environ['WORLD_SIZE']),
             **kwargs)
     else:
-        num_gpus = torch.cuda.device_count()
-        torch.cuda.set_device(rank % num_gpus)
+        torch.cuda.set_device(os.environ['LOCAL_RANK'])
         dist.init_process_group(backend=backend, **kwargs)
 
 
