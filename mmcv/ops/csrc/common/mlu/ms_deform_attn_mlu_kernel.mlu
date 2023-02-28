@@ -1733,19 +1733,30 @@ void __mlu_func__ computeGradAttnWeight(
              num_deal_grid * deal_num_real);
   __bang_transpose(nram_grad_output_br, nram_grad_output_tl, deal_num_real,
                    num_deal_grid);
+  __bang_transpose(nram_grad_output_tr, nram_grad_output_br,
+                   num_per_time_real * num_heads,
+                   num_points * num_levels * deal_num_real);
+  __bang_transpose(grad_temp1, grad_temp2, num_per_time_real * num_heads,
+                   deal_num_real);
+  __bang_cycle_mul(nram_grad_output_tr, nram_grad_output_tr, grad_temp1,
+                   num_deal_grid * deal_num_real,
+                   num_per_time_real * num_heads * deal_num_real);
+  __bang_transpose(nram_grad_output_br, nram_grad_output_tr,
+                   num_points * num_levels * deal_num_real,
+                   num_per_time_real * num_heads);
 
-  for (int i = 0; i < num_deal_grid; ++i) {
-    if (nram_h_high_temp[i]) {
-      int num_xh = i / (num_levels * num_points);
-      __bang_mul(nram_grad_output_br + i * deal_num_real,
-                 nram_grad_output_br + i * deal_num_real,
-                 grad_temp2 + num_xh * deal_num_real, deal_num_real);
-    }
-  }
   __bang_transpose((float *)nram_grad_output_tr, (float *)nram_grad_output_br,
                    num_deal_grid, deal_num_real);
   recursiveSumPool(nram_grad_output_tr, num_deal_grid, deal_num_real,
                    ALIGN_NUM);
+  __bang_float2int32(
+      (int *)nram_h_high_temp, nram_h_high_temp, num_deal_grid, 0);
+      __nram__ int table[2] = {0, (int)0xffffffff};
+  __bang_lut_s32(
+        (int *)nram_h_high_temp, (int *)nram_h_high_temp, (int *)table, num_deal_grid, 64);
+  __bang_band((char *)nram_grad_output_tr, (char *)nram_grad_output_tr, 
+        (char *)nram_h_high_temp, num_deal_grid * sizeof(float));
+
   __bang_atomic_add((float *)nram_grad_output_tr,
                     (float *)grad_attn_weight + grid_offset,
                     (float *)nram_grad_output_tr, num_deal_grid);
@@ -1786,22 +1797,19 @@ void __mlu_func__ computeGradSampingLoc(
   __bang_transpose(grad_temp1, nram_grad_output_tr,
                    num_levels * num_points * deal_num_real,
                    num_per_time_real * num_heads);
-
-  for (int i = 0; i < num_deal_grid; ++i) {
-    if (nram_h_high_temp[i])
-
-    {
-      __bang_mul(grad_h_weight + i * deal_num_real,
-                 grad_h_weight + i * deal_num_real,
-                 grad_temp1 + i * deal_num_real, deal_num_real);
-    }
-  }
+  __bang_mul(grad_h_weight, grad_h_weight, grad_temp1,
+             num_deal_grid * deal_num_real);
   __bang_transpose(nram_grad_output_tl, grad_h_weight, num_deal_grid,
                    deal_num_real);
   __memcpy_async(grad_h_weight, nram_grad_output_tl,
                  num_deal_grid * deal_num_real * sizeof(float), NRAM2NRAM);
   recursiveSumPool(grad_h_weight, num_deal_grid, deal_num_real, ALIGN_NUM);
-
+  __nram__ int table[2] = {0, (int)0xffffffff};
+  __bang_lut_s32(
+    (int *)nram_h_high_temp, (int *)nram_h_high_temp, (int *)table, num_deal_grid, 64);
+  __bang_band(
+    (char *)grad_h_weight, (char *)grad_h_weight, (char *)nram_h_high_temp,
+    num_deal_grid * sizeof(float));
   __bang_transpose(nram_grad_output_tl, grad_w_weight,
                    num_per_time_real * num_heads * num_levels * deal_num_real,
                    num_points);
@@ -1811,21 +1819,18 @@ void __mlu_func__ computeGradSampingLoc(
   __bang_transpose(grad_w_weight, nram_grad_output_tl,
                    num_points * deal_num_real,
                    num_per_time_real * num_heads * num_levels);
-
-  for (int i = 0; i < num_deal_grid; ++i) {
-    if (nram_h_high_temp[i])
-
-    {
-      __bang_mul(grad_w_weight + i * deal_num_real,
-                 grad_w_weight + i * deal_num_real,
-                 grad_temp1 + i * deal_num_real, deal_num_real);
-    }
-  }
+  __bang_mul(grad_w_weight, grad_w_weight, grad_temp1,
+             num_deal_grid * deal_num_real);
   __bang_transpose(nram_grad_output_tl, grad_w_weight, num_deal_grid,
                    deal_num_real);
   __memcpy(grad_w_weight, nram_grad_output_tl,
            num_deal_grid * deal_num_real * sizeof(float), NRAM2NRAM);
   recursiveSumPool(grad_w_weight, num_deal_grid, deal_num_real, ALIGN_NUM);
+  __bang_lut_s32(
+    (int *)nram_h_high_temp, (int *)nram_h_high_temp, (int *)table, num_deal_grid, 64);
+  __bang_band(
+      (char *)grad_w_weight, (char *)grad_w_weight, (char *)nram_h_high_temp, num_deal_grid * sizeof(
+        float));
 
   __memcpy(grad_w_weight + num_deal_grid, grad_h_weight,
            num_deal_grid * sizeof(float), NRAM2NRAM);
