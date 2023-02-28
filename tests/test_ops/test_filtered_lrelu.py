@@ -11,8 +11,8 @@ class TestFilteredLrelu:
     def setup_class(cls):
         cls.input_tensor = torch.randn((1, 3, 16, 16), requires_grad=True)
         cls.bias = torch.randn(3, requires_grad=True)
-        cls.fu = torch.randn((2, 2))
-        cls.fd = torch.randn((2, 2))
+        cls.filter_up = torch.randn((2, 2))
+        cls.filter_down = torch.randn((2, 2))
 
     def test_filtered_lrelu_cpu(self):
         out = filtered_lrelu(self.input_tensor, bias=self.bias)
@@ -21,34 +21,34 @@ class TestFilteredLrelu:
         out = filtered_lrelu(
             self.input_tensor,
             bias=self.bias,
-            fu=self.fu,
-            fd=self.fd,
+            filter_up=self.filter_up,
+            filter_down=self.filter_down,
             up=2,
             down=2,
             padding=1,
             clamp=0.5)
         assert out.shape == (1, 3, 16, 16)
 
-        # test with different fu
-        fu = torch.randn((4, 4))
+        # test with different filter_up
+        filter_up = torch.randn((4, 4))
         out = filtered_lrelu(
             self.input_tensor,
             bias=self.bias,
-            fu=fu,
-            fd=self.fd,
+            filter_up=filter_up,
+            filter_down=self.filter_down,
             up=2,
             down=2,
             padding=2,
             clamp=0.5)
         assert out.shape == (1, 3, 16, 16)
 
-        # test with different fd
-        fd = torch.randn((4, 4))
+        # test with different filter_down
+        filter_down = torch.randn((4, 4))
         out = filtered_lrelu(
             self.input_tensor,
             bias=self.bias,
-            fu=self.fu,
-            fd=fd,
+            filter_up=self.filter_up,
+            filter_down=filter_down,
             up=2,
             down=2,
             padding=2,
@@ -61,8 +61,8 @@ class TestFilteredLrelu:
         out = filtered_lrelu(
             input_tensor,
             bias=bias,
-            fu=self.fu,
-            fd=self.fd,
+            filter_up=self.filter_up,
+            filter_down=self.filter_down,
             up=2,
             down=2,
             padding=1,
@@ -73,8 +73,8 @@ class TestFilteredLrelu:
         out = filtered_lrelu(
             self.input_tensor,
             bias=self.bias,
-            fu=self.fu,
-            fd=self.fd,
+            filter_up=self.filter_up,
+            filter_down=self.filter_down,
             up=4,
             down=2,
             padding=1,
@@ -85,8 +85,8 @@ class TestFilteredLrelu:
         out = filtered_lrelu(
             self.input_tensor,
             bias=self.bias,
-            fu=self.fu,
-            fd=self.fd,
+            filter_up=self.filter_up,
+            filter_down=self.filter_down,
             up=2,
             down=4,
             padding=1,
@@ -121,34 +121,34 @@ class TestFilteredLrelu:
         out = filtered_lrelu(
             self.input_tensor.cuda(),
             bias=self.bias.cuda(),
-            fu=self.fu.cuda(),
-            fd=self.fd.cuda(),
+            filter_up=self.filter_up.cuda(),
+            filter_down=self.filter_down.cuda(),
             up=2,
             down=2,
             padding=1,
             clamp=0.5)
         assert out.shape == (1, 3, 16, 16)
 
-        # test with different fu
-        fu = torch.randn((4, 4))
+        # test with different filter_up
+        filter_up = torch.randn((4, 4))
         out = filtered_lrelu(
             self.input_tensor.cuda(),
             bias=self.bias.cuda(),
-            fu=fu.cuda(),
-            fd=self.fd.cuda(),
+            filter_up=filter_up.cuda(),
+            filter_down=self.filter_down.cuda(),
             up=2,
             down=2,
             padding=2,
             clamp=0.5)
         assert out.shape == (1, 3, 16, 16)
 
-        # test with different fd
-        fd = torch.randn((4, 4))
+        # test with different filter_down
+        filter_down = torch.randn((4, 4))
         out = filtered_lrelu(
             self.input_tensor.cuda(),
             bias=self.bias.cuda(),
-            fu=self.fu.cuda(),
-            fd=fd.cuda(),
+            filter_up=self.filter_up.cuda(),
+            filter_down=filter_down.cuda(),
             up=2,
             down=2,
             padding=2,
@@ -161,8 +161,8 @@ class TestFilteredLrelu:
         out = filtered_lrelu(
             input_tensor.cuda(),
             bias=bias.cuda(),
-            fu=self.fu.cuda(),
-            fd=self.fd.cuda(),
+            filter_up=self.filter_up.cuda(),
+            filter_down=self.filter_down.cuda(),
             up=2,
             down=2,
             padding=1,
@@ -173,8 +173,8 @@ class TestFilteredLrelu:
         out = filtered_lrelu(
             self.input_tensor.cuda(),
             bias=self.bias.cuda(),
-            fu=self.fu.cuda(),
-            fd=self.fd.cuda(),
+            filter_up=self.filter_up.cuda(),
+            filter_down=self.filter_down.cuda(),
             up=4,
             down=2,
             padding=1,
@@ -185,8 +185,8 @@ class TestFilteredLrelu:
         out = filtered_lrelu(
             self.input_tensor.cuda(),
             bias=self.bias.cuda(),
-            fu=self.fu.cuda(),
-            fd=self.fd.cuda(),
+            filter_up=self.filter_up.cuda(),
+            filter_down=self.filter_down.cuda(),
             up=2,
             down=4,
             padding=1,

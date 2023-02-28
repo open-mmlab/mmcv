@@ -279,7 +279,7 @@ def _filtered_lrelu_cuda(up: int = 1,
         return _filtered_lrelu_cuda_cache[key]
 
     # Forward op.
-    class FilteredLReluCuda(torch.autograd.filter_upnction):
+    class FilteredLReluCuda(torch.autograd.Function):
 
         @staticmethod
         def forward(ctx, input, filter_up, filter_down, bias, si, sx, sy):
