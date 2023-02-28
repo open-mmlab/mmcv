@@ -7,7 +7,7 @@ We implement common ops used in detection, segmentation, etc.
 | ActiveRotatedFilter          | √   | √    |     |     |        |
 | AssignScoreWithK             |     | √    |     |     |        |
 | BallQuery                    |     | √    |     |     |        |
-| BBoxOverlaps                 |     | √    | √   | √   |        |
+| BBoxOverlaps                 |     | √    | √   | √   | √      |
 | BorderAlign                  |     | √    |     |     |        |
 | BoxIouRotated                | √   | √    |     |     |        |
 | BoxIouQuadri                 | √   | √    |     |     |        |
@@ -25,7 +25,7 @@ We implement common ops used in detection, segmentation, etc.
 | FurthestPointSample          |     | √    |     |     |        |
 | FurthestPointSampleWithDist  |     | √    |     |     |        |
 | FusedBiasLeakyrelu           |     | √    |     |     | √      |
-| GatherPoints                 |     | √    |     |     |        |
+| GatherPoints                 |     | √    |     |     | √      |
 | GroupPoints                  |     | √    |     |     |        |
 | Iou3d                        |     | √    | √   |     |        |
 | KNN                          |     | √    |     |     |        |
@@ -35,7 +35,7 @@ We implement common ops used in detection, segmentation, etc.
 | ModulatedDeformConv2d        | √   | √    |     |     | √      |
 | MultiScaleDeformableAttn     |     | √    | √   |     |        |
 | NMS                          | √   | √    | √   |     | √      |
-| NMSRotated                   | √   | √    |     |     |        |
+| NMSRotated                   | √   | √    |     |     | √      |
 | NMSQuadri                    | √   | √    |     |     |        |
 | PixelGroup                   | √   |      |     |     |        |
 | PointsInBoxes                | √   | √    |     |     |        |
