@@ -68,11 +68,10 @@ def _init_dist_pytorch(backend: str, **kwargs) -> None:
             **kwargs)
     else:
         num_gpus = torch.cuda.device_count()
-        local_rank = os.environ.get('LOCAL_RANK', None)
-        if local_rank is not None:
-            local_rank = int(local_rank)
-        else:
-            local_rank = rank % num_gpus
+        local_rank = rank % num_gpus
+        local_rank_env = os.environ.get('LOCAL_RANK', None)
+        if local_rank_env is not None:
+            local_rank = int(local_rank_env)
         torch.cuda.set_device(local_rank)
         dist.init_process_group(backend=backend, **kwargs)
 
@@ -105,11 +104,10 @@ def _init_dist_slurm(backend: str, port: Optional[int] = None) -> None:
     ntasks = int(os.environ['SLURM_NTASKS'])
     node_list = os.environ['SLURM_NODELIST']
     num_gpus = torch.cuda.device_count()
-    local_rank = os.environ.get('SLURM_LOCALID', None)
-    if local_rank is not None:
-        local_rank = int(local_rank)
-    else:
-        local_rank = proc_id % num_gpus
+    local_rank = proc_id % num_gpus
+    local_rank_env = os.environ.get('SLURM_LOCALID', None)
+    if local_rank_env is not None:
+        local_rank = int(local_rank_env)
     torch.cuda.set_device(local_rank)
     addr = subprocess.getoutput(
         f'scontrol show hostname {node_list} | head -n1')
