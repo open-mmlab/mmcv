@@ -67,7 +67,8 @@ def _init_dist_pytorch(backend: str, **kwargs) -> None:
             world_size=int(os.environ['WORLD_SIZE']),
             **kwargs)
     else:
-        torch.cuda.set_device(os.environ['LOCAL_RANK'])
+        num_gpus = torch.cuda.device_count()
+        torch.cuda.set_device(os.environ.get('LOCAL_RANK', None) or rank % num_gpus)
         dist.init_process_group(backend=backend, **kwargs)
 
 
