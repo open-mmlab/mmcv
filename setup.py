@@ -276,6 +276,8 @@ def get_extensions():
             extra_compile_args['cxx'] = ['-std=c++14']
 
         include_dirs = []
+        library_dirs = []
+        libraries = []
 
         is_rocm_pytorch = False
         try:
@@ -301,15 +303,20 @@ def get_extensions():
                 glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cpp')
             if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
                 op_files += glob.glob('./mmcv/ops/csrc/diopi_impl/cuda/*.cpp')
-                op_files += glob.glob('./mmcv/ops/csrc/diopi_rt/torch/*.cpp')
             extension = CUDAExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/pytorch'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
             if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
                 include_dirs.append(os.path.abspath('./DIOPI/include'))
-                include_dirs.append(
-                    os.path.abspath('./mmcv/ops/csrc/diopi_rt/torch'))
+                # for include diopi.h
+                include_dirs.append('/mnt/petrelfs/dongkaixing/codes/codes-test/mmcv_cokedong/mmcv_dipu/dipu_poc/torch_dipu/csrc_dipu/diopirt')
+                include_dirs.append('/mnt/petrelfs/dongkaixing/codes/codes-test/mmcv_cokedong/mmcv_dipu/dipu_poc')
+                # DIPU_ROOT
+                library_dirs += ['/mnt/petrelfs/dongkaixing/codes/codes-test/mmcv_cokedong/mmcv_dipu/dipu_poc/build']
+                # DIOPI_ROOT
+                library_dirs += ['/mnt/petrelfs/dongkaixing/codes/codes-test/mmcv_cokedong/mmcv_dipu/ConformanceTest-DIOPI/lib']
+                libraries += ['torch_dipu']
             if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
                 define_macros += [('MMCV_WITH_DIOPI', None)]
         elif (hasattr(torch, 'is_mlu_available') and
@@ -387,7 +394,9 @@ def get_extensions():
             sources=op_files,
             include_dirs=include_dirs,
             define_macros=define_macros,
-            extra_compile_args=extra_compile_args)
+            extra_compile_args=extra_compile_args,
+            library_dirs=library_dirs,
+            libraries=libraries)
         extensions.append(ext_ops)
 
     if EXT_TYPE == 'pytorch' and os.getenv('MMCV_WITH_ORT', '0') != '0':

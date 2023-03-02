@@ -4,7 +4,7 @@
 #ifdef MMCV_WITH_DIOPI
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
-#include "diopi.hpp"
+#include "diopi.h"
 #endif
 
 Tensor nms_impl(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
@@ -31,7 +31,7 @@ Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
     if (device == diopi_host) {
         return nms_impl(boxes, scores, iou_threshold, offset);
     }
-    diopiContext ctx;
+    diopiContext ctx(at::cuda::getCurrentCUDAStream());
     diopiContextHandle_t ch = &ctx;
     Tensor out;
     auto outp = reinterpret_cast<diopiTensorHandle_t>(&out);

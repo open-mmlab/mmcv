@@ -7,7 +7,7 @@
 #ifdef MMCV_WITH_DIOPI
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
-#include "diopi.hpp"
+#include "diopi.h"
 #endif
 
 void chamfer_distance_forward_impl(const Tensor xyz1, const Tensor xyz2,
@@ -36,7 +36,7 @@ void chamfer_distance_forward(const Tensor xyz1, const Tensor xyz2,
       chamfer_distance_forward_impl(xyz1, xyz2, dist1, dist2, idx1, idx2);
       return;
   }
-  diopiContext ctx;
+  diopiContext ctx(at::cuda::getCurrentCUDAStream());
   diopiContextHandle_t ch = &ctx;
   auto xyz2_p = reinterpret_cast<diopiConstTensorHandle_t>(&xyz2);
   auto dist1_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&dist1));
@@ -62,7 +62,7 @@ void chamfer_distance_backward(const Tensor xyz1, const Tensor xyz2,
                                  gradxyz1, gradxyz2);
       return;
   }
-  diopiContext ctx;
+  diopiContext ctx(at::cuda::getCurrentCUDAStream());
   diopiContextHandle_t ch = &ctx;
   auto xyz2_p = reinterpret_cast<diopiConstTensorHandle_t>(&xyz2);
   auto idx1_p = reinterpret_cast<diopiTensorHandle_t>(&idx1);
