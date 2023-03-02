@@ -25,7 +25,8 @@ std::vector<std::vector<int> > nms_match_impl(Tensor dets,
 
 Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
   #ifdef MMCV_WITH_DIOPI
-    auto boxes_p = reinterpret_cast<diopiTensorHandle_t>(&boxes);
+    // auto boxes_p = reinterpret_cast<diopiTensorHandle_t>(&boxes);
+    auto boxes_p = dipu::diopi::toDiopiTensorHandle(boxes);
     diopiDevice_t device;
     diopiGetTensorDevice(boxes_p, &device);
     if (device == diopi_host) {
@@ -34,9 +35,9 @@ Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
     diopiContext ctx(at::cuda::getCurrentCUDAStream());
     diopiContextHandle_t ch = &ctx;
     Tensor out;
-    auto outp = reinterpret_cast<diopiTensorHandle_t>(&out);
+    auto outp = dipu::diopi::toDiopiTensorHandle(out);
     diopiTensorHandle_t* outhandle = &outp;
-    auto scores_p = reinterpret_cast<diopiTensorHandle_t>(&scores);
+    auto scores_p = dipu::diopi::toDiopiTensorHandle(scores);
     diopiNmsMmcv(ch, outhandle, boxes_p, scores_p, iou_threshold, offset);
     auto tensorhandle = reinterpret_cast<Tensor*>(*outhandle);
     return *tensorhandle;

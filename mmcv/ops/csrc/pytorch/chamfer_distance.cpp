@@ -29,7 +29,7 @@ void chamfer_distance_forward(const Tensor xyz1, const Tensor xyz2,
                               const Tensor dist1, const Tensor dist2,
                               const Tensor idx1, const Tensor idx2) {
 #ifdef MMCV_WITH_DIOPI
-  auto xyz1_p = reinterpret_cast<diopiConstTensorHandle_t>(&xyz1);
+  auto xyz1_p = dipu::diopi::toDiopiTensorHandle(xyz1);
   diopiDevice_t device;
   diopiGetTensorDevice(xyz1_p, &device);
   if (device == diopi_host) {
@@ -38,11 +38,11 @@ void chamfer_distance_forward(const Tensor xyz1, const Tensor xyz2,
   }
   diopiContext ctx(at::cuda::getCurrentCUDAStream());
   diopiContextHandle_t ch = &ctx;
-  auto xyz2_p = reinterpret_cast<diopiConstTensorHandle_t>(&xyz2);
-  auto dist1_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&dist1));
-  auto dist2_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&dist2));
-  auto idx1_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&idx1));
-  auto idx2_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&idx2));
+  auto xyz2_p = dipu::diopi::toDiopiTensorHandle(xyz2);
+  auto dist1_p = dipu::diopi::toDiopiTensorHandle(dist1);
+  auto dist2_p = dipu::diopi::toDiopiTensorHandle(dist2);
+  auto idx1_p = dipu::diopi::toDiopiTensorHandle(idx1);
+  auto idx2_p = dipu::diopi::toDiopiTensorHandle(idx2);
   diopiChamferDistance(ch, xyz1_p, xyz2_p, dist1_p, dist2_p, idx1_p, idx2_p);
 #else
   chamfer_distance_forward_impl(xyz1, xyz2, dist1, dist2, idx1, idx2);
@@ -54,7 +54,7 @@ void chamfer_distance_backward(const Tensor xyz1, const Tensor xyz2,
                                Tensor graddist2, Tensor gradxyz1,
                                Tensor gradxyz2) {
 #ifdef MMCV_WITH_DIOPI
-  auto xyz1_p = reinterpret_cast<diopiConstTensorHandle_t>(&xyz1);
+  auto xyz1_p = dipu::diopi::toDiopiTensorHandle(xyz1);
   diopiDevice_t device;
   diopiGetTensorDevice(xyz1_p, &device);
   if (device == diopi_host) {
@@ -64,13 +64,13 @@ void chamfer_distance_backward(const Tensor xyz1, const Tensor xyz2,
   }
   diopiContext ctx(at::cuda::getCurrentCUDAStream());
   diopiContextHandle_t ch = &ctx;
-  auto xyz2_p = reinterpret_cast<diopiConstTensorHandle_t>(&xyz2);
-  auto idx1_p = reinterpret_cast<diopiTensorHandle_t>(&idx1);
-  auto idx2_p = reinterpret_cast<diopiTensorHandle_t>(&idx2);
-  auto graddist1_p = reinterpret_cast<diopiTensorHandle_t>(&graddist1);
-  auto graddist2_p = reinterpret_cast<diopiTensorHandle_t>(&graddist2);
-  auto gradxyz1_p = reinterpret_cast<diopiTensorHandle_t>(&gradxyz1);
-  auto gradxyz2_p = reinterpret_cast<diopiTensorHandle_t>(&gradxyz2);
+  auto xyz2_p = dipu::diopi::toDiopiTensorHandle(xyz2);
+  auto idx1_p = dipu::diopi::toDiopiTensorHandle(idx1);
+  auto idx2_p = dipu::diopi::toDiopiTensorHandle(idx2);
+  auto graddist1_p = dipu::diopi::toDiopiTensorHandle(graddist1);
+  auto graddist2_p = dipu::diopi::toDiopiTensorHandle(graddist2);
+  auto gradxyz1_p = dipu::diopi::toDiopiTensorHandle(gradxyz1);
+  auto gradxyz2_p = dipu::diopi::toDiopiTensorHandle(gradxyz2);
   diopiChamferDistanceBackward(ch, xyz1_p, xyz2_p, idx1_p, idx2_p,graddist1_p,
                                graddist2_p, gradxyz1_p, gradxyz2_p);
 #else
