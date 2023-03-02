@@ -51,3 +51,12 @@ def is_npu_available() -> bool:
 
 
 IS_NPU_AVAILABLE = is_npu_available()
+
+def is_dipu_available() -> bool:
+    try:
+        import torch_dipu
+        return True
+    except Exception:
+        return False
+
+IS_DIPU_AVAILABLE = is_dipu_available()
