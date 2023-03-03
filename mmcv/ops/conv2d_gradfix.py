@@ -100,8 +100,8 @@ def _should_use_custom_op(input):
     return True
 
 
-def _tuple_of_ints(xs, ndim):
-    xs = tuple(xs) if isinstance(xs, (tuple, list)) else (xs, ) * ndim
+def _to_tuple(x, ndim):
+    xs = tuple(x) if isinstance(x, (tuple, list)) else (x, ) * ndim
     assert len(xs) == ndim
     assert all(isinstance(x, int) for x in xs)
     return xs
@@ -123,10 +123,10 @@ def _conv2d_gradfix(
     # Parse arguments.
     ndim = 2
     weight_shape = tuple(weight_shape)
-    stride = _tuple_of_ints(stride, ndim)
-    padding = _tuple_of_ints(padding, ndim)
-    output_padding = _tuple_of_ints(output_padding, ndim)
-    dilation = _tuple_of_ints(dilation, ndim)
+    stride = _to_tuple(stride, ndim)
+    padding = _to_tuple(padding, ndim)
+    output_padding = _to_tuple(output_padding, ndim)
+    dilation = _to_tuple(dilation, ndim)
 
     # Lookup from cache.
     key = (transpose, weight_shape, stride, padding, output_padding, dilation,
@@ -144,10 +144,10 @@ def _conv2d_gradfix(
     if not transpose:
         assert all(output_padding[i] == 0 for i in range(ndim))  # type: ignore
     else:  # transpose
-        assert all(0 <= output_padding[i] < max(  # type: ignore
-            stride[i],  # type: ignore
-            dilation[i])  # type: ignore
-                   for i in range(ndim))
+        for i in range(ndim):
+            assert 0 <= output_padding[i] < max(  # type: ignore
+                stride[i],  # type: ignore
+                dilation[i])  # type: ignore
 
     # Helpers.
     common_kwargs = dict(

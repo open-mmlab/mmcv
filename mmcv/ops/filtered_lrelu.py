@@ -15,33 +15,12 @@ import torch
 
 from ..utils import ext_loader
 from .bias_act import bias_act
-from .upfirdn2d import upfirdn2d
+from .upfirdn2d import _get_filter_size, _parse_padding, upfirdn2d
 
 ext_module = ext_loader.load_ext('_ext',
                                  ['filtered_lrelu', 'filtered_lrelu_act_'])
 
 _plugin = None
-
-
-def _get_filter_size(f):
-    if f is None:
-        return 1, 1
-    assert isinstance(f, torch.Tensor)
-    assert 1 <= f.ndim <= 2
-    return f.shape[-1], f.shape[0]  # width, height
-
-
-def _parse_padding(padding):
-    if isinstance(padding, int):
-        padding = [padding, padding]
-    assert isinstance(padding, (list, tuple))
-    assert all(isinstance(x, (int, np.integer)) for x in padding)
-    padding = [int(x) for x in padding]
-    if len(padding) == 2:
-        px, py = padding
-        padding = [px, px, py, py]
-    px0, px1, py0, py1 = padding
-    return px0, px1, py0, py1
 
 
 def filtered_lrelu(input: torch.Tensor,
