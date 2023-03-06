@@ -424,6 +424,10 @@ class BaseRunner(metaclass=ABCMeta):
             if policy_type == policy_type.lower():
                 policy_type = policy_type.title()
             hook_type = policy_type + 'LrUpdaterHook'
+
+            if policy_type == 'ReduceLROnPlateau':
+                hook_type = "ReduceLROnPlateauHook"
+
             lr_config['type'] = hook_type
             hook = mmcv.build_from_cfg(lr_config, HOOKS)
         else:

@@ -6,7 +6,7 @@ from typing import Callable, List, Optional, Union
 import mmcv
 from mmcv import runner
 from .hook import HOOKS, Hook
-
+from .average_loss import AverageLoss
 
 class LrUpdaterHook(Hook):
     """LR Scheduler in MMCV.
@@ -156,6 +156,67 @@ class LrUpdaterHook(Hook):
                 warmup_lr = self.get_warmup_lr(cur_iter)
                 self._set_lr(runner, warmup_lr)
 
+@HOOKS.register_module()
+class ReduceLROnPlateauHook(LrUpdaterHook):
+    """
+        Multiply learning rate with 'factor' when (smoothed) training loss enters a plateau.
+    """
+
+    def __init__(self, factor=0.2, patience=250, threshold=0.01, min_lr=1e-6, smoothing_window_size=500, **kwargs):
+        self.factor = factor
+        self.patience = patience
+        self.threshold = threshold
+        self.min_lr = min_lr
+
+        self.wait_count = 0
+        self.factor_count = 0
+        self.min_loss = float('inf')
+
+        self.average_loss = AverageLoss(name="training loss", n=smoothing_window_size)
+
+        super(ReduceLROnPlateauHook, self).__init__(**kwargs)
+
+    def get_lr(self, runner, base_lr):
+        lr = max(self.min_lr, base_lr * (self.factor ** self.factor_count))
+        return lr
+
+    def after_train_iter(self, runner):
+        train_loss = runner.outputs['loss']
+
+        self.average_loss.update(train_loss.item())
+        avg_train_loss = self.average_loss.average()
+        runner.log_buffer.output['smoothed_train_loss'] = avg_train_loss
+        
+        dynamic_threshold = self.min_loss - self.threshold
+
+        if avg_train_loss < dynamic_threshold:
+            self.min_loss = avg_train_loss
+            self.wait_count = 0
+        else:
+            self.wait_count += 1
+
+        if self.wait_count == self.patience:
+            self.factor_count += 1
+            self.wait_count = 0
+
+    def after_train_epoch(self, runner):
+        train_loss = runner.outputs['loss']
+
+        self.average_loss.update(train_loss.item())
+        avg_train_loss = self.average_loss.average()
+        runner.log_buffer.output['smoothed_train_loss'] = avg_train_loss
+
+        dynamic_threshold = self.min_loss - self.threshold
+
+        if train_loss < dynamic_threshold:
+            self.min_loss = train_loss
+            self.wait_count = 0
+        else:
+            self.wait_count += 1
+
+        if self.wait_count == self.patience:
+            self.factor_count += 1
+            self.wait_count = 0
 
 @HOOKS.register_module()
 class FixedLrUpdaterHook(LrUpdaterHook):
