@@ -61,7 +61,7 @@ class NeptuneLoggerHook(LoggerHook):
             import neptune
         except ImportError:
             raise ImportError(
-                'Please run "pip install neptune-client" to install neptune')
+                'Please run "pip install neptune" to install neptune')
         self.neptune = neptune
         self.run = None
 
