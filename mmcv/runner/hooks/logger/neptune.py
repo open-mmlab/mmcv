@@ -58,7 +58,7 @@ class NeptuneLoggerHook(LoggerHook):
 
     def import_neptune(self) -> None:
         try:
-            import neptune.new as neptune
+            import neptune
         except ImportError:
             raise ImportError(
                 'Please run "pip install neptune-client" to install neptune')
@@ -68,9 +68,9 @@ class NeptuneLoggerHook(LoggerHook):
     @master_only
     def before_run(self, runner) -> None:
         if self.init_kwargs:
-            self.run = self.neptune.init(**self.init_kwargs)
+            self.run = self.neptune.init_run(**self.init_kwargs)
         else:
-            self.run = self.neptune.init()
+            self.run = self.neptune.init_run()
 
     @master_only
     def log(self, runner) -> None:
