@@ -467,6 +467,15 @@ def nms_rotated(dets: Tensor,
                          dim=1)
         return dets, keep_inds
 
+    if dets.device.type == 'mlu':
+        order = scores.new_empty(0, dtype=torch.long)
+        keep_inds = ext_module.nms_rotated(dets_cw, scores, order, dets_cw,
+                                           input_labels, iou_threshold,
+                                           multi_label)
+        dets = torch.cat((dets[keep_inds], scores[keep_inds].reshape(-1, 1)),
+                         dim=1)
+        return dets, keep_inds
+
     if multi_label:
         dets_wl = torch.cat((dets_cw, labels.unsqueeze(1)), 1)  # type: ignore
     else:

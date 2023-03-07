@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE, IS_MLU_AVAILABLE
 
 
 class TestNmsRotated:
@@ -16,7 +16,11 @@ class TestNmsRotated:
         pytest.param(
             'cuda',
             marks=pytest.mark.skipif(
-                not IS_CUDA_AVAILABLE, reason='requires CUDA support'))
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'mlu',
+            marks=pytest.mark.skipif(
+                not IS_MLU_AVAILABLE, reason='requires MLU support'))
     ])
     def test_ml_nms_rotated(self, device):
         from mmcv.ops import nms_rotated
@@ -58,7 +62,11 @@ class TestNmsRotated:
         pytest.param(
             'cuda',
             marks=pytest.mark.skipif(
-                not IS_CUDA_AVAILABLE, reason='requires CUDA support'))
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'mlu',
+            marks=pytest.mark.skipif(
+                not IS_MLU_AVAILABLE, reason='requires MLU support'))
     ])
     def test_nms_rotated(self, device):
         from mmcv.ops import nms_rotated

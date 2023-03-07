@@ -17,6 +17,11 @@ Tensor nms_rotated_npu(const Tensor dets, const Tensor scores,
                        const Tensor labels, const float iou_threshold);
 #endif
 
+#ifdef MMCV_WITH_MLU
+Tensor nms_rotated_mlu(const Tensor dets, const Tensor scores,
+                       const float iou_threshold);
+#endif
+
 // Interface for Python
 // inline is needed to prevent multiple function definitions when this header is
 // included by different cpps
@@ -36,6 +41,12 @@ Tensor nms_rotated(const Tensor dets, const Tensor scores, const Tensor order,
     return nms_rotated_npu(dets, scores, labels, iou_threshold);
 #else
     AT_ERROR("Not compiled with NPU support");
+#endif
+  } else if (dets.device().type() == at::kMLU) {
+#ifdef MMCV_WITH_MLU
+    return nms_rotated_mlu(dets, scores, iou_threshold);
+#else
+    AT_ERROR("Not compiled with MLU support");
 #endif
   }
 
