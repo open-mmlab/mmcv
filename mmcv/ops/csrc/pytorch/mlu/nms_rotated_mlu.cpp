@@ -12,31 +12,11 @@
 #include "mlu_common_helper.h"
 
 Tensor nms_rotated_mlu(Tensor boxes, Tensor scores, float iou_threshold) {
-  // dimension parameters check
-  TORCH_CHECK(boxes.dim() == 2, "boxes should be a 2d tensor, got ",
-              boxes.dim(), "D");
-  TORCH_CHECK(boxes.size(1) == 5,
-              "boxes should have 5 elements in dimension 1, got ",
-              boxes.size(1));
-  TORCH_CHECK(scores.dim() == 1, "scores should be a 1d tensor, got ",
-              scores.dim(), "D");
-
-  TORCH_CHECK(boxes.size(0) == scores.size(0), "boxes and scores should have",
-              " same elements in dimension 0, boxes got ", boxes.size(0),
-              ", scores got ", scores.size(0));
-
-  // data type check
-  TORCH_CHECK(boxes.scalar_type() == scores.scalar_type(),
-              "boxes should have the same type as scores");
-  TORCH_CHECK(boxes.scalar_type() == at::kFloat,
-              "data type of boxes should be Float, got ", boxes.scalar_type());
-
   if (boxes.numel() == 0) {
     return at::empty({0}, boxes.options().dtype(at::kLong));
   }
 
   int boxes_num = boxes.size(0);
-
   auto boxes_ = torch_mlu::cnnl::ops::cnnl_contiguous(boxes);
   auto scores_ = torch_mlu::cnnl::ops::cnnl_contiguous(scores);
   auto output = at::empty({boxes_num}, boxes.options().dtype(at::kInt));
