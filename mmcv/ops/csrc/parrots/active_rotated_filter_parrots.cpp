@@ -4,13 +4,17 @@
 #include <parrots/foundation/ssattrs.hpp>
 
 #include "active_rotated_filter_pytorch.h"
+#ifdef MMCV_WITH_DIOPI
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <parrots/diopi.hpp>
+#endif
 
 using namespace parrots;
 
 #ifdef MMCV_WITH_CUDA
+
+#ifdef MMCV_WITH_DIOPI
 void active_rotated_filter_forward_cuda_parrots_diopi(
     CudaContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
     OperatorBase::out_list_t& outs) {
@@ -32,6 +36,27 @@ void active_rotated_filter_backward_cuda_parrots_diopi(
   auto grad_in = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
   PARROTS_CALLDIOPI(diopiActiveRotatedFilterBackward(ch, grad_out, indices, grad_in));
 }
+#else
+void active_rotated_filter_forward_cuda_parrots(
+    CudaContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
+    OperatorBase::out_list_t& outs) {
+  auto input = buildATensor(ctx, ins[0]);
+  auto indices = buildATensor(ctx, ins[1]);
+  auto output = buildATensor(ctx, outs[0]);
+  active_rotated_filter_forward(input, indices, output);
+}
+
+
+void active_rotated_filter_backward_cuda_parrots(
+    CudaContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
+    OperatorBase::out_list_t& outs) {
+  auto grad_out = buildATensor(ctx, ins[0]);
+  auto indices = buildATensor(ctx, ins[1]);
+  auto grad_in = buildATensor(ctx, outs[0]);
+  active_rotated_filter_backward(grad_out, indices, grad_in);
+}
+#endif
+
 #endif
 
 void active_rotated_filter_forward_cpu_parrots(
@@ -57,7 +82,11 @@ PARROTS_EXTENSION_REGISTER(active_rotated_filter_forward)
     .output(1)
     .apply(active_rotated_filter_forward_cpu_parrots)
 #ifdef MMCV_WITH_CUDA
+#ifdef MMCV_WITH_DIOPI
     .apply(active_rotated_filter_forward_cuda_parrots_diopi)
+#else
+    .apply(active_rotated_filter_forward_cuda_parrots)
+#endif
 #endif
     .done();
 
@@ -66,6 +95,10 @@ PARROTS_EXTENSION_REGISTER(active_rotated_filter_backward)
     .output(1)
     .apply(active_rotated_filter_backward_cpu_parrots)
 #ifdef MMCV_WITH_CUDA
+#ifdef MMCV_WITH_DIOPI
     .apply(active_rotated_filter_backward_cuda_parrots_diopi)
+#else
+    .apply(active_rotated_filter_backward_cuda_parrots)
+#endif
 #endif
     .done();
