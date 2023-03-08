@@ -9,7 +9,7 @@ We implement common ops used in detection, segmentation, etc.
 | BallQuery                    |     | √    | √   |     |        |
 | BBoxOverlaps                 |     | √    | √   | √   | √      |
 | BorderAlign                  |     | √    |     |     |        |
-| BoxIouRotated                | √   | √    |     |     |        |
+| BoxIouRotated                | √   | √    |     |     | √      |
 | BoxIouQuadri                 | √   | √    |     |     |        |
 | CARAFE                       |     | √    | √   |     |        |
 | ChamferDistance              |     | √    |     |     |        |

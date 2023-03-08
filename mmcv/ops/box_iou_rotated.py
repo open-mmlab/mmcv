@@ -139,6 +139,11 @@ def box_iou_rotated(bboxes1: torch.Tensor,
         flip_mat[-1] = -1
         bboxes1 = bboxes1 * flip_mat
         bboxes2 = bboxes2 * flip_mat
+    if bboxes1.device.type == 'npu':
+        scale_mat = bboxes1.new_ones(bboxes1.shape[-1])
+        scale_mat[-1] = 1.0 / 0.0174532
+        bboxes1 = bboxes1 * scale_mat
+        bboxes2 = bboxes2 * scale_mat
     bboxes1 = bboxes1.contiguous()
     bboxes2 = bboxes2.contiguous()
     ext_module.box_iou_rotated(
