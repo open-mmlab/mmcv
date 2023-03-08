@@ -11,7 +11,8 @@
  *************************************************************************/
 #include "mlu_common_helper.h"
 
-Tensor nms_rotated_mlu(Tensor boxes, Tensor scores, float iou_threshold) {
+Tensor nms_rotated_mlu(const Tensor boxes, const Tensor scores,
+                       const float iou_threshold) {
   if (boxes.numel() == 0) {
     return at::empty({0}, boxes.options().dtype(at::kLong));
   }
