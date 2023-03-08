@@ -42,11 +42,9 @@ Tensor nms_rotated(const Tensor dets, const Tensor scores, const Tensor order,
 #else
     AT_ERROR("Not compiled with NPU support");
 #endif
-  } else if (dets.device().type() == at::kMLU) {
 #ifdef MMCV_WITH_MLU
+  } else if (dets.device().type() == at::kMLU) {
     return nms_rotated_mlu(dets, scores, iou_threshold);
-#else
-    AT_ERROR("Not compiled with MLU support");
 #endif
   }
 
