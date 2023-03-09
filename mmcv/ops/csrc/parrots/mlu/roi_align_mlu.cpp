@@ -252,7 +252,6 @@ void ROIAlignBackwardMLUKernelLauncher(
     grad_ptr = &grad_tmp;
   }
 
-  auto queue = ctx.getStream().native();
   DArrayLite* grad_input_ptr = &grad_input;
   DArrayLite grad_input_;
   if (grad.spec().probableMemoryFormat() != MemoryFormat::ChannelsLast) {
@@ -260,9 +259,7 @@ void ROIAlignBackwardMLUKernelLauncher(
         DArrayShape(batch_size, channels, height, width),
         MemoryFormat::ChannelsLast));
     grad_input_ptr = &grad_input_;
-    PARROTS_CALLCNRT(
-        cnrtMemsetAsync(grad_input_ptr->data(), 0, grad_input_ptr->nbytes(), queue));
-    ctx.getStream().synchronize();
+    fill(ctx, grad_input_, 0);
   }
 
   cnrtJobType_t k_type = CNRT_FUNC_TYPE_UNION1;
@@ -273,6 +270,7 @@ void ROIAlignBackwardMLUKernelLauncher(
   dim_y = (dim_y > union_number) ? union_number : dim_y;
   cnrtDim3_t k_dim = {dim_x, dim_y, 1};
   cnrtDataType_t k_dtype = getCnrtDataType(grad.elemType());
+  auto queue = ctx.getStream().native();
 
   KernelRoiAlignBackward(
       k_dim, k_type, queue, k_dtype, const_cast<void*>(grad_ptr->data()),
