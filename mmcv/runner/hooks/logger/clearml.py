@@ -2,10 +2,11 @@
 
 from typing import Dict, Optional
 
+import torch
+
 from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
-import torch
 
 
 @HOOKS.register_module()
