@@ -444,7 +444,7 @@ __mlu_global__ void MLUUnion1KernelPoint2Voxel(int32_t *coors,
     const int32_t repeat = deal_total_num / deal_num;
     const int32_t rem = deal_total_num % deal_num;
     int32_t rem_align = CEIL_ALIGN(rem, NFU_ALIGN_SIZE);
-    
+
 #if __BANG_ARCH__ >= 322
     rem_align = rem;
 #endif
