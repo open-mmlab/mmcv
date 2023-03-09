@@ -7,6 +7,7 @@ from ..hook import HOOKS
 from .base import LoggerHook
 import torch
 
+
 @HOOKS.register_module()
 class ClearMLLoggerHook(LoggerHook):
     """Class to log metrics with clearml.
