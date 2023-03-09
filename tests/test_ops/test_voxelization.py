@@ -4,7 +4,7 @@ import pytest
 import torch
 
 from mmcv.ops import Voxelization
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
 
 
 def _get_voxel_points_indices(points, coors, voxel):
@@ -164,6 +164,41 @@ def test_voxelization_mlu(device_type):
     device = torch.device(device_type)
 
     # test hard_voxelization on mlu
+    points = points.contiguous().to(device)
+    coors, voxels, num_points_per_voxel = hard_voxelization.forward(points)
+    coors = coors.cpu().detach().numpy()
+    voxels = voxels.cpu().detach().numpy()
+    num_points_per_voxel = num_points_per_voxel.cpu().detach().numpy()
+    assert np.all(coors == expected_coors)
+    assert np.all(voxels == expected_voxels)
+    assert np.all(num_points_per_voxel == expected_num_points_per_voxel)
+
+
+@pytest.mark.parametrize('device_type', [
+    pytest.param(
+        'npu',
+        marks=pytest.mark.skipif(
+            not IS_NPU_AVAILABLE, reason='requires NPU support'))
+])
+def test_voxelization_npu(device_type):
+    voxel_size = [0.5, 0.5, 0.5]
+    point_cloud_range = [0, -40, -3, 70.4, 40, 1]
+
+    voxel_dict = np.load(
+        'tests/data/for_3d_ops/test_voxel.npy', allow_pickle=True).item()
+    expected_coors = voxel_dict['coors']
+    expected_voxels = voxel_dict['voxels']
+    expected_num_points_per_voxel = voxel_dict['num_points_per_voxel']
+    points = voxel_dict['points']
+
+    points = torch.tensor(points)
+    max_num_points = 1000
+    hard_voxelization = Voxelization(voxel_size, point_cloud_range,
+                                     max_num_points)
+
+    device = torch.device(device_type)
+
+    # test hard_voxelization on npu
     points = points.contiguous().to(device)
     coors, voxels, num_points_per_voxel = hard_voxelization.forward(points)
     coors = coors.cpu().detach().numpy()
