@@ -197,10 +197,17 @@ void nms_parrots<CambContext>(CambContext& ctx, const SSElement& attr,
       .get("iou_threshold", iou_threshold)
       .get("offset", offset)
       .done();
-  const auto& boxes = ins[0];
+  const auto& raw_boxes = ins[0];
   const auto& scores = ins[1];
   auto& out = outs[0];
-  NMSMLUKernelLauncher(ctx, boxes, scores, out, iou_threshold, offset);
+  DArrayLite bboxes;
+  if (raw_boxes.elemType() != scores.elemType() && scores.elemType() == Prim::Float16) {
+    bboxes = ctx.createDArrayLite(raw_boxes.spec().withElemType(Prim::Float16));
+    cast(ctx, raw_boxes, bboxes);
+  } else {
+    bboxes = raw_boxes;
+  }
+  NMSMLUKernelLauncher(ctx, bboxes, scores, out, iou_threshold, offset);
   return;
 }
 #endif  //  PARROTS_USE_CAMB
