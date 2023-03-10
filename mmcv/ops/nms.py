@@ -458,7 +458,7 @@ def nms_rotated(dets: Tensor,
         input_labels = scores.new_empty(0, dtype=torch.int)
     else:
         input_labels = labels
-    if dets.device.type == 'npu' or 'mlu':
+    if dets.device.type in ('npu', 'mlu'):
         order = scores.new_empty(0, dtype=torch.long)
         keep_inds = ext_module.nms_rotated(dets_cw, scores, order, dets_cw,
                                            input_labels, iou_threshold,
