@@ -150,7 +150,7 @@ template <typename T> at::Tensor buildATen(T tensor) {
   c10::DeviceType atDevice = getATenDevice(device);
 
   void *data = nullptr;
-  diopiGetTensorData(const_cast<diopiTensorHandle_t *>(&tensor), &data);
+  diopiGetTensorData(const_cast<diopiTensorHandle_t>(tensor), &data);
 
   diopiSize_t shape;
   diopiGetTensorShape(tensor, &shape);

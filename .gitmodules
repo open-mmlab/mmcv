@@ -1,3 +1,6 @@
 [submodule "DIOPI"]
 	path = DIOPI
 	url = https://github.com/OpenComputeLab/DIOPI.git
+[submodule "ConformanceTest-DIOPI"]
+	path = ConformanceTest-DIOPI
+	url = git@github.com:OpenComputeLab/ConformanceTest-DIOPI.git

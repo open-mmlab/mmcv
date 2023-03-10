@@ -149,15 +149,15 @@ c10::DeviceType device2DeviceType(const diopiDevice_t device) {
 #define CAST_TENSOR_HANDLE(th) reinterpret_cast<at::Tensor *>(th)
 #define CAST_CONST_TENSOR_HANDLE(th) reinterpret_cast<const at::Tensor*>(th)
 
-DIOPI_API diopiError_t diopiGetTensorData(diopiTensorHandle_t *th,
+DIOPI_API diopiError_t diopiGetTensorData(diopiTensorHandle_t th,
                                           void **pptr) {
-  *pptr = CAST_TENSOR_HANDLE(*th)->data_ptr();
+  *pptr = CAST_TENSOR_HANDLE(th)->data_ptr();
   return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiGetTensorDataConst(diopiConstTensorHandle_t *th,
+DIOPI_API diopiError_t diopiGetTensorDataConst(diopiConstTensorHandle_t th,
                                                const void **pptr) {
-  *pptr = CAST_CONST_TENSOR_HANDLE(*th)->data_ptr();
+  *pptr = CAST_CONST_TENSOR_HANDLE(th)->data_ptr();
   return diopiSuccess;
 }
 

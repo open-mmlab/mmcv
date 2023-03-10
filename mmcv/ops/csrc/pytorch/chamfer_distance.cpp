@@ -39,10 +39,10 @@ void chamfer_distance_forward(const Tensor xyz1, const Tensor xyz2,
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
   auto xyz2_p = reinterpret_cast<diopiConstTensorHandle_t>(&xyz2);
-  auto dist1_p = reinterpret_cast<diopiConstTensorHandle_t>(&dist1);
-  auto dist2_p = reinterpret_cast<diopiConstTensorHandle_t>(&dist2);
-  auto idx1_p = reinterpret_cast<diopiConstTensorHandle_t>(&idx1);
-  auto idx2_p = reinterpret_cast<diopiConstTensorHandle_t>(&idx2);
+  auto dist1_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&dist1));
+  auto dist2_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&dist2));
+  auto idx1_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&idx2));
+  auto idx2_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&idx2));
   diopiChamferDistance(ch, xyz1_p, xyz2_p, dist1_p, dist2_p, idx1_p, idx2_p);
 #else
   chamfer_distance_forward_impl(xyz1, xyz2, dist1, dist2, idx1, idx2);
