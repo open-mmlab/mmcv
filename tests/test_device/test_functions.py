@@ -3,7 +3,8 @@ import pytest
 import torch
 
 from mmcv.device._functions import Scatter, scatter
-from mmcv.utils import IS_MLU_AVAILABLE, IS_MPS_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import (IS_MLU_AVAILABLE, IS_MPS_AVAILABLE, IS_NPU_AVAILABLE,
+                        IS_XPU_AVAILABLE)
 
 
 def test_scatter():
@@ -49,6 +50,17 @@ def test_scatter():
         outputs = scatter(input=inputs, devices=[0])
         for input, output in zip(inputs, outputs):
             assert torch.allclose(input.to('mps'), output)
+
+    # if the device is XPU, copy the input from CPU to XPU
+    if IS_XPU_AVAILABLE:
+        input = torch.zeros([1, 3, 3, 3])
+        output = scatter(input=input, devices=[0])
+        assert torch.allclose(input.to('xpu'), output)
+
+        inputs = [torch.zeros([1, 3, 3, 3]), torch.zeros([1, 4, 4, 4])]
+        outputs = scatter(input=inputs, devices=[0])
+        for input, output in zip(inputs, outputs):
+            assert torch.allclose(input.to('xpu'), output)
 
     # input should be a tensor or list of tensor
     with pytest.raises(Exception):
