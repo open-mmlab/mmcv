@@ -114,7 +114,6 @@ activation_funcs = {
         has_2nd_grad=True),
 }
 
-_plugin = None
 _null_tensor = torch.empty([0])
 
 
