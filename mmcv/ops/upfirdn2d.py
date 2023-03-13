@@ -10,7 +10,6 @@
 """Custom PyTorch ops for efficient resampling of 2D images."""
 from typing import Dict, List, Union
 
-import numpy as np
 import torch
 
 from ..utils import ext_loader
@@ -197,8 +196,7 @@ def _upfirdn2d_ref(input: torch.Tensor,
         filter = filter.flip(list(range(filter.ndim)))
 
     # Convolve with the filter.
-    filter = filter[np.newaxis,
-                    np.newaxis].repeat([num_channels, 1] + [1] * filter.ndim)
+    filter = filter[None, None].repeat([num_channels, 1] + [1] * filter.ndim)
     if filter.ndim == 4:
         x = conv2d(input=x, weight=filter, groups=num_channels)
     else:

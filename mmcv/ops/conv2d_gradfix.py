@@ -42,7 +42,7 @@ def conv2d(input: torch.Tensor,
         warnings.warn('Since '
                       'aten:cudnn_convolution_backward_weight is '
                       f'not supported in torch=={torch.__version__},'
-                      ' rolloing back to `torch.nn.functional.conv2d`')
+                      ' rolling back to `torch.nn.functional.conv2d`')
         flag = False
     if _should_use_custom_op(input) and flag:
         return _conv2d_gradfix(
