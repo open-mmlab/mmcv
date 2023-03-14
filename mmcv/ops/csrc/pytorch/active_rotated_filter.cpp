@@ -4,6 +4,11 @@
 
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"
+#ifdef MMCV_WITH_DIOPI
+#include <diopi/diopirt.h>
+#include <diopi/functions.h>
+#include "diopi.hpp"
+#endif
 
 void active_rotated_filter_forward_impl(const Tensor input,
                                         const Tensor indices, Tensor output) {
@@ -19,10 +24,40 @@ void active_rotated_filter_backward_impl(const Tensor grad_out,
 
 void active_rotated_filter_forward(const Tensor input, const Tensor indices,
                                    Tensor output) {
+#ifdef MMCV_WITH_DIOPI
+  auto input_p = reinterpret_cast<diopiConstTensorHandle_t>(&input);
+  diopiDevice_t device;
+  diopiGetTensorDevice(input_p, &device);
+  if (device == diopi_host) {
+      active_rotated_filter_forward_impl(input, indices, output);
+      return;
+  }
+  diopiContext ctx;
+  diopiContextHandle_t ch = &ctx;
+  auto indices_p = reinterpret_cast<diopiConstTensorHandle_t>(&indices);
+  auto out_p = reinterpret_cast<diopiTensorHandle_t>(&output);
+  diopiActiveRotatedFilter(ch, input_p, indices_p, out_p);
+#else
   active_rotated_filter_forward_impl(input, indices, output);
+#endif
 }
 
 void active_rotated_filter_backward(const Tensor grad_out, const Tensor indices,
                                     Tensor grad_in) {
+#ifdef MMCV_WITH_DIOPI
+  auto grad_out_p = reinterpret_cast<diopiConstTensorHandle_t>(&grad_out);
+  diopiDevice_t device;
+  diopiGetTensorDevice(grad_out_p, &device);
+  if (device == diopi_host) {
+      active_rotated_filter_backward_impl(grad_out, indices, grad_in);
+      return;
+  }
+  diopiContext ctx;
+  diopiContextHandle_t ch = &ctx;
+  auto indices_p = reinterpret_cast<diopiConstTensorHandle_t>(&indices);
+  auto grad_in_p = reinterpret_cast<diopiTensorHandle_t>(&grad_in);
+  diopiActiveRotatedFilterBackward(ch, grad_out_p, indices_p, grad_in_p);
+#else
   active_rotated_filter_backward_impl(grad_out, indices, grad_in);
+#endif
 }
