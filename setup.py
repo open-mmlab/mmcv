@@ -213,16 +213,18 @@ def get_extensions():
         op_files = glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') +\
             glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') +\
             glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
-        # if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
-        #     op_files += glob.glob('./mmcv/ops/csrc/diopi_impl/cuda/*.cpp')
+        if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
+            # op_files += glob.glob('./mmcv/ops/csrc/diopi_impl/cuda/*.cpp')
+            op_files += glob.glob(
+                './mmcv/ops/csrc/DIOPI-IMPL/cuda/functions/*.cu')
         op_files.remove('./mmcv/ops/csrc/pytorch/cuda/iou3d_cuda.cu')
 
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
         if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
             include_dirs.append(os.path.abspath('./DIOPI/include'))
-            library_dirs += ['./ConformanceTest-DIOPI/lib/no_runtime']
-            libraries += ['diopi_impl']
+            # library_dirs += ['./ConformanceTest-DIOPI/lib/no_runtime']
+            # libraries += ['diopi_impl']
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
         extra_compile_args = {
             'nvcc': [cuda_args, '-std=c++14'] if cuda_args else ['-std=c++14'],
