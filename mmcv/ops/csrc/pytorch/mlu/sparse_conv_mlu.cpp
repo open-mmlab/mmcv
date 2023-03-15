@@ -23,7 +23,6 @@ std::vector<torch::Tensor> GetIndicePairsForwardMLUKernelLauncher(
     std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
     std::vector<int64_t> padding, std::vector<int64_t> dilation,
     std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose) {
-
   // The following code is copied from
   // mmcv/ops/csrc/pytorch/cuda/spconv_ops_cuda.cu to ensure the output is
   // available for network train. The outputs of this function have correct
@@ -45,12 +44,13 @@ std::vector<torch::Tensor> GetIndicePairsForwardMLUKernelLauncher(
   }
   torch::Tensor indicePairs = at::full({kernelVolume, 2, numAct}, -1,
                                        indices.options().dtype(at::kInt));
-  torch::Tensor indiceNum = at::zeros({kernelVolume},
-                            indices.options().dtype(at::kInt));
-  int out_size = sub_m == 1 ?
-                 numAct : std::min(numAct * kernelVolume, batch * outputVolume);
-  torch::Tensor out_indices = at::zeros({out_size, coorDim + 1},
-                            indices.options().dtype(at::kInt));
+  torch::Tensor indiceNum =
+      at::zeros({kernelVolume}, indices.options().dtype(at::kInt));
+  int out_size = sub_m == 1
+                     ? numAct
+                     : std::min(numAct * kernelVolume, batch * outputVolume);
+  torch::Tensor out_indices =
+      at::zeros({out_size, coorDim + 1}, indices.options().dtype(at::kInt));
   auto indices_contiguous = torch_mlu::cnnl::ops::cnnl_contiguous(
       indices, at::MemoryFormat::Contiguous);
   auto indicePairs_contiguous = torch_mlu::cnnl::ops::cnnl_contiguous(
@@ -67,56 +67,58 @@ std::vector<torch::Tensor> GetIndicePairsForwardMLUKernelLauncher(
   std::vector<int> stride32;
   std::vector<int> dilation32;
   for (int i = 0; i < NDim; i++) {
-      input_space.push_back(spatialShape[i]);
-      filter_space.push_back(kernelSize[i]);
-      output_space.push_back(outSpatialShape[i]);
-      padding32.push_back(padding[i]);
-      stride32.push_back(stride[i]);
-      dilation32.push_back(dilation[i]);
+    input_space.push_back(spatialShape[i]);
+    filter_space.push_back(kernelSize[i]);
+    output_space.push_back(outSpatialShape[i]);
+    padding32.push_back(padding[i]);
+    stride32.push_back(stride[i]);
+    dilation32.push_back(dilation[i]);
   }
-  MluOpTensorDescriptor indices_desc, out_indices_desc,
-                        indicePairs_desc, indiceNum_desc;
+  MluOpTensorDescriptor indices_desc, out_indices_desc, indicePairs_desc,
+      indiceNum_desc;
   indices_desc.set(indices_contiguous);
   indicePairs_desc.set(indicePairs_contiguous);
   indiceNum_desc.set(indiceNum_contiguous);
   out_indices_desc.set(out_indices_contiguous);
   {
-      mluOpTensorLayout_t layout = MLUOP_LAYOUT_ARRAY;
-      mluOpDataType_t dtype = MLUOP_DTYPE_INT32;
-      std::vector<int> dims;
-      dims = {numAct, coorDim + 1};
-      mluOpSetTensorDescriptor(indices_desc.desc(), layout, dtype,
+    mluOpTensorLayout_t layout = MLUOP_LAYOUT_ARRAY;
+    mluOpDataType_t dtype = MLUOP_DTYPE_INT32;
+    std::vector<int> dims;
+    dims = {numAct, coorDim + 1};
+    mluOpSetTensorDescriptor(indices_desc.desc(), layout, dtype, dims.size(),
+                             dims.data());
+    dims = {kernelVolume, 2, numAct};
+    mluOpSetTensorDescriptor(indicePairs_desc.desc(), layout, dtype,
                              dims.size(), dims.data());
-      dims = {kernelVolume, 2, numAct};
-      mluOpSetTensorDescriptor(indicePairs_desc.desc(), layout, dtype,
-                             dims.size(), dims.data());
-      dims = {kernelVolume};
-      mluOpSetTensorDescriptor(indiceNum_desc.desc(), layout, dtype,
-                             dims.size(), dims.data());
-      dims = {out_size, coorDim + 1};
-      mluOpSetTensorDescriptor(out_indices_desc.desc(), layout, dtype,
+    dims = {kernelVolume};
+    mluOpSetTensorDescriptor(indiceNum_desc.desc(), layout, dtype, dims.size(),
+                             dims.data());
+    dims = {out_size, coorDim + 1};
+    mluOpSetTensorDescriptor(out_indices_desc.desc(), layout, dtype,
                              dims.size(), dims.data());
   }
 
   mluOpSparseConvolutionDescriptor_t sparse_conv_desc;
   mluOpCreateSparseConvolutionDescriptor(&sparse_conv_desc);
-  mluOpSetSparseConvolutionDescriptor(sparse_conv_desc, NDim + 2, batch,
-  padding32.data(), stride32.data(), dilation32.data(), input_space.data(),
-  filter_space.data(), output_space.data(), sub_m, transpose, 0);
+  mluOpSetSparseConvolutionDescriptor(
+      sparse_conv_desc, NDim + 2, batch, padding32.data(), stride32.data(),
+      dilation32.data(), input_space.data(), filter_space.data(),
+      output_space.data(), sub_m, transpose, 0);
 
   auto handle = mluOpGetCurrentHandle();
   size_t workspace_size = 0;
-  mluOpGetIndicePairsWorkspaceSize(handle, sparse_conv_desc, indices_desc.desc(),
-        indicePairs_desc.desc(), out_indices_desc.desc(), indiceNum_desc.desc(),
-        &workspace_size);
-  auto indice_workspace_size = at::empty(workspace_size,
-        indices.options().dtype(at::kByte));
+  mluOpGetIndicePairsWorkspaceSize(
+      handle, sparse_conv_desc, indices_desc.desc(), indicePairs_desc.desc(),
+      out_indices_desc.desc(), indiceNum_desc.desc(), &workspace_size);
+  auto indice_workspace_size =
+      at::empty(workspace_size, indices.options().dtype(at::kByte));
 
   auto indices_impl = torch_mlu::getMluTensorImpl(indices_contiguous);
   auto out_indices_impl = torch_mlu::getMluTensorImpl(out_indices_contiguous);
   auto indicePairs_impl = torch_mlu::getMluTensorImpl(indicePairs_contiguous);
   auto indiceNum_impl = torch_mlu::getMluTensorImpl(indiceNum_contiguous);
-  auto indice_workspace_impl = torch_mlu::getMluTensorImpl(indice_workspace_size);
+  auto indice_workspace_impl =
+      torch_mlu::getMluTensorImpl(indice_workspace_size);
 
   auto indices_ptr = indices_impl->cnnlMalloc();
   auto out_indices_ptr = out_indices_impl->cnnlMalloc();
@@ -124,17 +126,18 @@ std::vector<torch::Tensor> GetIndicePairsForwardMLUKernelLauncher(
   auto indiceNum_ptr = indiceNum_impl->cnnlMalloc();
   auto indice_workspace_ptr = indice_workspace_impl->cnnlMalloc();
 
-  mluOpGetIndicePairs(handle, sparse_conv_desc, indices_desc.desc(), indices_ptr,
-        indice_workspace_ptr, workspace_size, indicePairs_desc.desc(),
-        indicePairs_ptr, out_indices_desc.desc(), out_indices_ptr,
-        indiceNum_desc.desc(), indiceNum_ptr);
+  mluOpGetIndicePairs(handle, sparse_conv_desc, indices_desc.desc(),
+                      indices_ptr, indice_workspace_ptr, workspace_size,
+                      indicePairs_desc.desc(), indicePairs_ptr,
+                      out_indices_desc.desc(), out_indices_ptr,
+                      indiceNum_desc.desc(), indiceNum_ptr);
   int num_act_out = 0;
   mluOpGetSparseConvolutionNumActOut(sparse_conv_desc, &num_act_out);
   mluOpDestroySparseConvolutionDescriptor(sparse_conv_desc);
   if (!sub_m) {
-      return {out_indices.slice(0, 0, num_act_out), indicePairs, indiceNum};
+    return {out_indices.slice(0, 0, num_act_out), indicePairs, indiceNum};
   } else {
-      return {indices, indicePairs, indiceNum};
+    return {indices, indicePairs, indiceNum};
   }
 }
 
@@ -180,26 +183,32 @@ torch::Tensor IndiceConvForwardMLUKernelLauncher(
 
     // features_desc
     mluOpGetTensorDescriptor(features_desc.desc(), &layout, &dtype, &dim, dims);
-    mluOpSetTensorDescriptor(features_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims);
+    mluOpSetTensorDescriptor(features_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype,
+                             dim, dims);
 
     // filters_desc
     mluOpGetTensorDescriptor(filters_desc.desc(), &layout, &dtype, &dim, dims);
-    mluOpSetTensorDescriptor(filters_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims);
+    mluOpSetTensorDescriptor(filters_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype,
+                             dim, dims);
 
     // indice_pairs_desc
-    mluOpGetTensorDescriptor(indice_pairs_desc.desc(), &layout, &dtype, &dim, dims);
-    mluOpSetTensorDescriptor(indice_pairs_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims);
+    mluOpGetTensorDescriptor(indice_pairs_desc.desc(), &layout, &dtype, &dim,
+                             dims);
+    mluOpSetTensorDescriptor(indice_pairs_desc.desc(), MLUOP_LAYOUT_ARRAY,
+                             dtype, dim, dims);
 
     // output_desc
     mluOpGetTensorDescriptor(output_desc.desc(), &layout, &dtype, &dim, dims);
-    mluOpSetTensorDescriptor(output_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims);
+    mluOpSetTensorDescriptor(output_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim,
+                             dims);
   }
 
   auto handle = mluOpGetCurrentHandle();
   size_t workspace_size = 0;
   mluOpGetIndiceConvolutionForwardWorkspaceSize(
-      handle, features_desc.desc(), filters_desc.desc(), indice_pairs_desc.desc(),
-      output_desc.desc(), indice_num, numActOut, _inverse, _subM, &workspace_size);
+      handle, features_desc.desc(), filters_desc.desc(),
+      indice_pairs_desc.desc(), output_desc.desc(), indice_num, numActOut,
+      _inverse, _subM, &workspace_size);
 
   auto workspace =
       at::empty(workspace_size, features.options().dtype(at::kByte));
@@ -216,11 +225,12 @@ torch::Tensor IndiceConvForwardMLUKernelLauncher(
 
   //  outputs
   auto output_impl = torch_mlu::getMluTensorImpl(output);
-  auto output_ptr = output_impl->cnnlMalloc();                                                                                                                                                               
+  auto output_ptr = output_impl->cnnlMalloc();
   mluOpIndiceConvolutionForward(
-      handle, features_desc.desc(), features_ptr, filters_desc.desc(), filters_ptr,
-      indice_pairs_desc.desc(), indice_pairs_ptr, indice_num, numActOut, _inverse, _subM,
-      workspace_ptr, workspace_size, output_desc.desc(), output_ptr);
+      handle, features_desc.desc(), features_ptr, filters_desc.desc(),
+      filters_ptr, indice_pairs_desc.desc(), indice_pairs_ptr, indice_num,
+      numActOut, _inverse, _subM, workspace_ptr, workspace_size,
+      output_desc.desc(), output_ptr);
 
   return output;
 }

@@ -92,7 +92,7 @@ std::vector<torch::Tensor> get_indice_pairs_forward(
 #else
     AT_ERROR("get_indice_pairs is not compiled with GPU support");
 #endif
-#ifdef MMCV_WITH_MLU 
+#ifdef MMCV_WITH_MLU
   } else if (indices.device().type() == at::kMLU) {
     return get_indice_pairs_forward_mlu<NDim>(
         indices, batchSize, outSpatialShape, spatialShape, kernelSize, stride,
