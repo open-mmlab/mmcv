@@ -12,6 +12,10 @@ void bbox_overlaps_npu(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
   if (mode == 1) {
     modeStr = "iof";
   }
+  float offset_ = 1;
+  if (offset == 0) {
+    offset_ = 0.01;
+  }
   at::Tensor bboxes = at::ones_like(bboxes2);
   at::Tensor gtboxes = at::ones_like(bboxes1);
   bboxes = aligned ? bboxes2.transpose(0, 1) : bboxes2;
@@ -22,7 +26,7 @@ void bbox_overlaps_npu(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
       .Input(gtboxes)
       .Output(ious)
       .Attr("mode", modeStr)
-      .Attr("eps", (float)offset)
+      .Attr("eps", offset_)
       .Attr("aligned", aligned)
       .Run();
 }
