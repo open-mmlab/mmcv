@@ -33,9 +33,9 @@ void ChamferDistanceBackwardCUDAKernelLauncher(
 
 diopiError_t
 diopiChamferDistance(diopiContextHandle_t ctx, diopiConstTensorHandle_t xyz1,
-                     diopiConstTensorHandle_t xyz2, diopiConstTensorHandle_t dist1,
-                     diopiConstTensorHandle_t dist2, diopiConstTensorHandle_t idx1,
-                     diopiConstTensorHandle_t idx2) {
+                     diopiConstTensorHandle_t xyz2, diopiTensorHandle_t dist1,
+                     diopiTensorHandle_t dist2, diopiTensorHandle_t idx1,
+                     diopiTensorHandle_t idx2) {
   auto xyz1_in = ::impl::aten::buildATen(xyz1);
   auto xyz2_in = ::impl::aten::buildATen(xyz2);
   auto dist1_out = ::impl::aten::buildATen(dist1);
