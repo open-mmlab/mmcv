@@ -76,7 +76,7 @@ void assign_score_withk_backward(const Tensor& grad_out, const Tensor& points,
   auto centers_p = reinterpret_cast<diopiConstTensorHandle_t>(&centers);
   auto scores_p = reinterpret_cast<diopiConstTensorHandle_t>(&scores);
   auto knn_idx_p = reinterpret_cast<diopiConstTensorHandle_t>(&knn_idx);
-  auto grad_points_p = reinterpret_cast<diopiConstTensorHandle_t>(&grad_points);
+  auto grad_points_p = reinterpret_cast<diopiTensorHandle_t>(&grad_points);
   auto grad_centers_p = reinterpret_cast<diopiTensorHandle_t>(&grad_centers);
   auto grad_scores_p = reinterpret_cast<diopiTensorHandle_t>(&grad_scores);
   diopiAssignScoreWithkBackward(ch, grad_out_p, points_p, centers_p, scores_p, knn_idx_p,
