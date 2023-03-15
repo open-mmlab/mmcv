@@ -223,8 +223,6 @@ def get_extensions():
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
         if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
             include_dirs.append(os.path.abspath('./DIOPI/include'))
-            # library_dirs += ['./ConformanceTest-DIOPI/lib/no_runtime']
-            # libraries += ['diopi_impl']
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
         extra_compile_args = {
             'nvcc': [cuda_args, '-std=c++14'] if cuda_args else ['-std=c++14'],
@@ -323,8 +321,6 @@ def get_extensions():
                 include_dirs.append(os.path.abspath('./DIOPI/include'))
                 include_dirs.append(
                     os.path.abspath('./mmcv/ops/csrc/diopi_rt/torch'))
-                # library_dirs += ['./ConformanceTest-DIOPI/lib/no_runtime']
-                # libraries += ['diopi_impl']
             if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
                 define_macros += [('MMCV_WITH_DIOPI', None)]
         elif (hasattr(torch, 'is_mlu_available') and
