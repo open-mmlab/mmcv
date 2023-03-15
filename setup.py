@@ -208,8 +208,6 @@ def get_extensions():
         # define_macros = [('MMCV_USE_PARROTS', None)]
         define_macros = []
         include_dirs = []
-        library_dirs = []
-        libraries = []
         op_files = glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') +\
             glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') +\
             glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
@@ -243,8 +241,6 @@ def get_extensions():
             include_dirs=include_dirs,
             define_macros=define_macros,
             extra_compile_args=extra_compile_args,
-            library_dirs=library_dirs,
-            libraries=libraries,
             cuda=True,
             pytorch=True)
         extensions.append(ext_ops)
@@ -282,8 +278,6 @@ def get_extensions():
             extra_compile_args['cxx'] = ['-std=c++14']
 
         include_dirs = []
-        library_dirs = []
-        libraries = []
 
         is_rocm_pytorch = False
         try:
@@ -398,9 +392,7 @@ def get_extensions():
             sources=op_files,
             include_dirs=include_dirs,
             define_macros=define_macros,
-            extra_compile_args=extra_compile_args,
-            library_dirs=library_dirs,
-            libraries=libraries)
+            extra_compile_args=extra_compile_args)
         extensions.append(ext_ops)
 
     if EXT_TYPE == 'pytorch' and os.getenv('MMCV_WITH_ORT', '0') != '0':
