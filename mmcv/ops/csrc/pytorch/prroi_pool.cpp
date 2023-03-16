@@ -48,7 +48,7 @@ void prroi_pool_forward(Tensor input, Tensor rois, Tensor output,
   auto rois_p = reinterpret_cast<diopiTensorHandle_t>(&rois);
   auto output_p = reinterpret_cast<diopiTensorHandle_t>(&output);
   // diopiPrroiPool(ch, input_p, rois_p, output_p, pooled_height, pooled_width,
-                 spatial_scale);
+  //               spatial_scale);
 #else
   prroi_pool_forward_impl(input, rois, output, pooled_height, pooled_width,
                           spatial_scale);
@@ -72,7 +72,7 @@ void prroi_pool_backward(Tensor grad_output, Tensor rois, Tensor grad_input,
   auto rois_p = reinterpret_cast<diopiTensorHandle_t>(&rois);
   auto grad_input_p = reinterpret_cast<diopiTensorHandle_t>(&grad_input);
   // diopiPrroiPoolbackward(ch, grad_output_p, rois_p, grad_input_p, pooled_height,
-                         pooled_width, spatial_scale);
+  //                       pooled_width, spatial_scale);
 #else
   prroi_pool_backward_impl(grad_output, rois, grad_input, pooled_height,
                            pooled_width, spatial_scale);
@@ -98,7 +98,7 @@ void prroi_pool_coor_backward(Tensor output, Tensor grad_output, Tensor input,
   auto rois_p = reinterpret_cast<diopiTensorHandle_t>(&rois);
   auto grad_rois_p = reinterpret_cast<diopiTensorHandle_t>(&grad_rois);
   // diopiPrroiPoolCoorBackward(ch, output_p, grad_output_p, input_p, rois_p,
-      grad_rois_p, pooled_height, pooled_width, spatial_scale);
+  //    grad_rois_p, pooled_height, pooled_width, spatial_scale);
 #else
   prroi_pool_coor_backward_impl(output, grad_output, input, rois, grad_rois,
                                 pooled_height, pooled_width, spatial_scale);
