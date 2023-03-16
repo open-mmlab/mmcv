@@ -7,6 +7,7 @@
 #ifdef MMCV_WITH_DIOPI
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
+#include <diopi/functions_mmcv.h>
 #include <parrots/diopi.hpp>
 #endif
 
