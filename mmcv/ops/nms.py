@@ -461,7 +461,7 @@ def nms_rotated(dets: Tensor,
     if dets.device.type == 'npu':
         order = scores.new_empty(0, dtype=torch.long)
         for i in range(dets.size()[0]):
-            dets_cw[i][4] *= 57.29578 # radians to angle
+            dets_cw[i][4] *= 57.29578  # radians to angle
         keep_inds = ext_module.nms_rotated(dets_cw, scores, order, dets_cw,
                                            input_labels, iou_threshold,
                                            multi_label)
