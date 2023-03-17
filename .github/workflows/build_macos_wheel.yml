@@ -65,7 +65,7 @@ name: build macos wheel
 #           name: ${{matrix.torch}}
 #           path: dist/
 
-on: pull request
+on: pull_request
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
