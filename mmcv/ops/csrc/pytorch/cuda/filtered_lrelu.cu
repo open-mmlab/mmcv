@@ -12,6 +12,7 @@
 #include <cstdint>
 
 #include "pytorch_cuda_helper.hpp"
+#include "pytorch_device_registry.hpp"
 
 //------------------------------------------------------------------------
 // CUDA kernel parameters.
@@ -1873,17 +1874,21 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
   // Done.
   return std::make_tuple(y, so, 0);
 }
-#else
-std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
+
+std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op_impl(
     torch::Tensor x, torch::Tensor fu, torch::Tensor fd, torch::Tensor b,
     torch::Tensor si, int up, int down, int px0, int px1, int py0, int py1,
     int sx, int sy, float gain, float slope, float clamp, bool flip_filters,
-    bool writeSigns) {
-  TORCH_CHECK(false,
-              "filtered_lrelu_op is not available. Please update your "
-              "compiler and cuda version.");
-  return std::tuple<torch::Tensor, torch::Tensor, int>();
-}
+    bool writeSigns);
+
+REGISTER_DEVICE_IMPL(filtered_lrelu_op_impl, CUDA, filtered_lrelu_op);
+
+#else
+
+#pragma message(                           \
+    "filtered_lrelu_op is not available. " \
+    "Please update your compiler and cuda version.")
+
 #endif
 #undef BUILD_FILTERED_LRELU_OP
 
