@@ -1592,6 +1592,11 @@ filtered_lrelu_kernel_spec choose_filtered_lrelu_kernel(
 #endif
 #endif
 
+#if CUDA_VERSION < 10020
+#undef BUILD_FILTERED_LRELU_OP
+#define BUILD_FILTERED_LRELU_OP 0
+#endif
+
 #if BUILD_FILTERED_LRELU_OP == 1
 std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
     torch::Tensor x, torch::Tensor fu, torch::Tensor fd, torch::Tensor b,
@@ -1876,7 +1881,7 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
     bool writeSigns) {
   TORCH_CHECK(false,
               "filtered_lrelu_op is not available. Please update your "
-              "compiler and try again.");
+              "compiler and cuda version.");
   return std::tuple<torch::Tensor, torch::Tensor, int>();
 }
 #endif
