@@ -30,9 +30,13 @@ Tensor diff_iou_rotated_sort_vertices_forward(Tensor vertices, Tensor mask,
   diopiTensorHandle_t* outhandle = &outp;
   auto mask_p = reinterpret_cast<diopiTensorHandle_t>(&mask);
   auto num_valid_p = reinterpret_cast<diopiTensorHandle_t>(&num_valid);
-  // diopiDiffIouRotatedSortVertices(ch, outhandle, vertices_p, mask_p, num_valid_p);
-  auto tensorhandle = reinterpret_cast<Tensor*>(*outhandle);
-  return *tensorhandle;
+  if (&diopiDiffIouRotatedSortVertices) {
+   diopiDiffIouRotatedSortVertices(ch, outhandle, vertices_p, mask_p, num_valid_p);
+   auto tensorhandle = reinterpret_cast<Tensor*>(*outhandle);
+   return *tensorhandle;
+  } else {
+   return diff_iou_rotated_sort_vertices_forward_impl(vertices, mask, num_valid);
+  }
 #else
   return diff_iou_rotated_sort_vertices_forward_impl(vertices, mask, num_valid);
 #endif

@@ -28,7 +28,11 @@ void convex_iou(const Tensor pointsets, const Tensor polygons, Tensor ious) {
   diopiContextHandle_t ch = &ctx;
   auto polygons_p = reinterpret_cast<diopiConstTensorHandle_t>(&polygons);
   auto ious_p = reinterpret_cast<diopiTensorHandle_t>(&ious);
-  diopiConvexIou(ch, pointsets_p, polygons_p, ious_p);
+  if (&diopiConvexIou) {
+   diopiConvexIou(ch, pointsets_p, polygons_p, ious_p);
+  } else {
+   convex_iou_impl(pointsets, polygons, ious);
+  }
 #else
   convex_iou_impl(pointsets, polygons, ious);
 #endif
@@ -52,7 +56,11 @@ void convex_giou(const Tensor pointsets, const Tensor polygons, Tensor output) {
   diopiContextHandle_t ch = &ctx;
   auto polygons_p = reinterpret_cast<diopiConstTensorHandle_t>(&polygons);
   auto output_p = reinterpret_cast<diopiTensorHandle_t>(&output);
-  diopiConvexGiou(ch, pointsets_p, polygons_p, output_p);
+  if (&diopiConvexGiou) {
+   diopiConvexGiou(ch, pointsets_p, polygons_p, output_p);
+  } else {
+   convex_giou_impl(pointsets, polygons, output);
+  }
 #else
   convex_giou_impl(pointsets, polygons, output);
 #endif

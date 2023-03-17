@@ -38,9 +38,13 @@ Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
     auto outp = reinterpret_cast<diopiTensorHandle_t>(&out);
     diopiTensorHandle_t* outhandle = &outp;
     auto scores_p = reinterpret_cast<diopiTensorHandle_t>(&scores);
-    // diopiNmsMmcv(ch, outhandle, boxes_p, scores_p, iou_threshold, offset);
-    auto tensorhandle = reinterpret_cast<Tensor*>(*outhandle);
-    return *tensorhandle;
+    if (&diopiNmsMmcv) {
+      diopiNmsMmcv(ch, outhandle, boxes_p, scores_p, iou_threshold, offset);
+      auto tensorhandle = reinterpret_cast<Tensor*>(*outhandle);
+      return *tensorhandle;
+    } else {
+      return nms_impl(boxes, scores, iou_threshold, offset);
+    }
   #else
       return nms_impl(boxes, scores, iou_threshold, offset);
   #endif

@@ -38,7 +38,11 @@ void border_align_forward(const Tensor &input, const Tensor &boxes,
   auto boxes_p = reinterpret_cast<diopiConstTensorHandle_t>(&boxes);
   auto output_p = reinterpret_cast<diopiTensorHandle_t>(&output);
   auto argmax_idx_p = reinterpret_cast<diopiTensorHandle_t>(&argmax_idx);
-  diopiBorderAlign(ch, input_p, boxes_p, output_p, argmax_idx_p, pool_size);
+  if (&diopiBorderAlign) {
+   diopiBorderAlign(ch, input_p, boxes_p, output_p, argmax_idx_p, pool_size);
+  } else {
+   border_align_forward_impl(input, boxes, output, argmax_idx, pool_size);
+  }
 #else
   border_align_forward_impl(input, boxes, output, argmax_idx, pool_size);
 #endif
@@ -61,8 +65,13 @@ void border_align_backward(const Tensor &grad_output, const Tensor &boxes,
   auto boxes_p = reinterpret_cast<diopiConstTensorHandle_t>(&boxes);
   auto argmax_idx_p = reinterpret_cast<diopiConstTensorHandle_t>(&argmax_idx);
   auto grad_input_p = reinterpret_cast<diopiTensorHandle_t>(&grad_input);
-  diopiBorderAlignBackward(ch, grad_output_p, boxes_p, argmax_idx_p, grad_input_p,
+  if (&diopiBorderAlignBackward) {
+   diopiBorderAlignBackward(ch, grad_output_p, boxes_p, argmax_idx_p, grad_input_p,
                              pool_size);
+  } else {
+   border_align_backward_impl(grad_output, boxes, argmax_idx, grad_input,
+                             pool_size);
+  }
 #else
   border_align_backward_impl(grad_output, boxes, argmax_idx, grad_input,
                              pool_size);

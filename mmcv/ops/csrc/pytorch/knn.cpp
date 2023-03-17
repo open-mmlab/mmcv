@@ -32,7 +32,12 @@ void knn_forward(Tensor xyz_tensor, Tensor new_xyz_tensor, Tensor idx_tensor,
   auto new_xyz_tensor_p = reinterpret_cast<diopiTensorHandle_t>(&new_xyz_tensor);
   auto idx_tensor_p = reinterpret_cast<diopiTensorHandle_t>(&idx_tensor);
   auto dist2_tensor_p = reinterpret_cast<diopiTensorHandle_t>(&dist2_tensor);
-  diopiKnn(ch, xyz_tensor_p, new_xyz_tensor_p, idx_tensor_p, dist2_tensor_p, b, n, m, nsample);
+  if (&diopiKnn) {
+   diopiKnn(ch, xyz_tensor_p, new_xyz_tensor_p, idx_tensor_p, dist2_tensor_p, b, n, m, nsample);
+  } else {
+   knn_forward_impl(b, n, m, nsample, xyz_tensor, new_xyz_tensor, idx_tensor,
+                   dist2_tensor);
+  }
 #else
   knn_forward_impl(b, n, m, nsample, xyz_tensor, new_xyz_tensor, idx_tensor,
                    dist2_tensor);
