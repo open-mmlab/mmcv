@@ -9,12 +9,13 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *************************************************************************/
+#include <torch/script.h>
+
+#include <vector>
+
 #include "mlu_common_helper.h"
 #include "pytorch_device_registry.hpp"
 #include "pytorch_mlu_helper.hpp"
-
-#include <torch/script.h>
-#include <vector>
 
 template <unsigned NDim>
 std::vector<torch::Tensor> GetIndicePairsForwardMLUKernelLauncher(
