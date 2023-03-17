@@ -1,71 +1,6 @@
 name: build macos wheel
 
-# on: push
-
-# concurrency:
-#   group: ${{ github.workflow }}-${{ github.ref }}
-#   cancel-in-progress: true
-
-# jobs:
-#   build_macos10_wheel:
-#     runs-on: macos-10.15
-#     if: contains(github.event.head_commit.message, 'Bump version to')
-#     strategy:
-#       matrix:
-#         torch: [1.6.0, 1.7.0, 1.8.0, 1.9.0, 1.10.0, 1.11.0, 1.12.0, 1.13.0]
-#         python-version: [3.7, 3.8, 3.9, '3.10']
-#         include:
-#           - torch: 1.6.0
-#             torchvision: 0.7.0
-#           - torch: 1.7.0
-#             torchvision: 0.8.1
-#           - torch: 1.8.0
-#             torchvision: 0.9.0
-#           - torch: 1.9.0
-#             torchvision: 0.10.0
-#           - torch: 1.10.0
-#             torchvision: 0.11.0
-#           - torch: 1.11.0
-#             torchvision: 0.12.0
-#           - torch: 1.12.0
-#             torchvision: 0.13.0
-#           - torch: 1.13.0
-#             torchvision: 0.14.0
-#         exclude:
-#           - torch: 1.6.0
-#             python-version: 3.9
-#           - torch: 1.6.0
-#             python-version: '3.10'
-#           - torch: 1.7.0
-#             python-version: 3.9
-#           - torch: 1.7.0
-#             python-version: '3.10'
-#           - torch: 1.8.0
-#             python-version: '3.10'
-#           - torch: 1.9.0
-#             python-version: '3.10'
-#           - torch: 1.10.0
-#             python-version: '3.10'
-#     steps:
-#       - uses: actions/checkout@v2
-#       - name: Set up Python
-#         uses: actions/setup-python@v2
-#         with:
-#           python-version: ${{ matrix.python-version }}
-#       - name: Install psutil
-#         run: pip install psutil
-#       - name: Install PyTorch
-#         run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} --no-cache-dir
-#       - name: Build and install
-#         run: |
-#           pip install wheel
-#           python setup.py bdist_wheel
-#       - uses: actions/upload-artifact@v3
-#         with:
-#           name: ${{matrix.torch}}
-#           path: dist/
-
-on: pull_request
+on: push
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -74,14 +9,47 @@ concurrency:
 jobs:
   build_macos10_wheel:
     runs-on: macos-10.15
-    # if: contains(github.event.head_commit.message, 'Bump version to')
+    if: contains(github.event.head_commit.message, 'Bump version to')
     strategy:
       matrix:
-        torch: [2.0.0]
-        python-version: [3.8, 3.9, '3.10', '3.11']
+        torch: [1.6.0, 1.7.0, 1.8.0, 1.9.0, 1.10.0, 1.11.0, 1.12.0, 1.13.0, 2.0.0]
+        python-version: [3.7, 3.8, 3.9, '3.10', '3.11']
         include:
+          - torch: 1.6.0
+            torchvision: 0.7.0
+          - torch: 1.7.0
+            torchvision: 0.8.1
+          - torch: 1.8.0
+            torchvision: 0.9.0
+          - torch: 1.9.0
+            torchvision: 0.10.0
+          - torch: 1.10.0
+            torchvision: 0.11.0
+          - torch: 1.11.0
+            torchvision: 0.12.0
+          - torch: 1.12.0
+            torchvision: 0.13.0
+          - torch: 1.13.0
+            torchvision: 0.14.0
           - torch: 2.0.0
             torchvision: 0.15.1
+        exclude:
+          - torch: 1.6.0
+            python-version: 3.9
+          - torch: 1.6.0
+            python-version: '3.10'
+          - torch: 1.7.0
+            python-version: 3.9
+          - torch: 1.7.0
+            python-version: '3.10'
+          - torch: 1.8.0
+            python-version: '3.10'
+          - torch: 1.9.0
+            python-version: '3.10'
+          - torch: 1.10.0
+            python-version: '3.10'
+          - torch: 2.0.0
+            python-version: 3.7
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
