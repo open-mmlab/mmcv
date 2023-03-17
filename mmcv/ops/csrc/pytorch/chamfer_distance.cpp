@@ -76,7 +76,7 @@ void chamfer_distance_backward(const Tensor xyz1, const Tensor xyz2,
   auto graddist2_p = reinterpret_cast<diopiTensorHandle_t>(&graddist2);
   auto gradxyz1_p = reinterpret_cast<diopiTensorHandle_t>(&gradxyz1);
   auto gradxyz2_p = reinterpret_cast<diopiTensorHandle_t>(&gradxyz2);
-  if (&) {
+  if (&diopiChamferDistanceBackward) {
    diopiChamferDistanceBackward(ch, xyz1_p, xyz2_p, idx1_p, idx2_p, graddist1_p,
                                graddist2_p, gradxyz1_p, gradxyz2_p);
   } else {
