@@ -24,11 +24,11 @@ int hard_voxelize_forward_npu(const at::Tensor &points, at::Tensor &voxels,
 
   at::Tensor voxel_size_cpu = at::from_blob(
       const_cast<float *>(voxel_size.data()), {3}, dtype(at::kFloat));
-  voxel_size_npu = voxel_size_cpu.to(points.device());
+  at::Tensor voxel_size_npu = voxel_size_cpu.to(points.device());
 
   at::Tensor coors_range_cpu = at::from_blob(
       const_cast<float *>(coors_range.data()), {6}, dtype(at::kFloat));
-  coors_range_npu = coors_range_cpu.to(points.device());
+  at::Tensor coors_range_npu = coors_range_cpu.to(points.device());
 
   int64_t max_points_ = (int64_t)max_points;
   int64_t max_voxels_ = (int64_t)max_voxels;
