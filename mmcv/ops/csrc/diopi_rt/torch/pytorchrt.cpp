@@ -14,6 +14,18 @@
 
 #include "diopi.hpp"
 
+diopiTensorHandle_t toDiopiTensorHandle(at::Tensor& tensor) {
+  return reinterpret_cast<diopiTensorHandle_t>(&tensor);
+}
+
+diopiConstTensorHandle_t toDiopiTensorHandle(const at::Tensor& tensor) {
+  return reinterpret_cast<diopiConstTensorHandle_t>(&tensor);
+}
+
+diopiTensorHandle_t toDiopiTensorHandleWithConstCase(const at::Tensor& tensor) {
+  return reinterpret_cast<diopiTensorHandle_t>(const_cast<at::Tensor*>(&tensor));
+}
+
 extern "C" {
 
 static char szVersion[256] = {0};
@@ -144,18 +156,6 @@ c10::DeviceType device2DeviceType(const diopiDevice_t device) {
   } else {
     std::cerr << "device dtype not supported";
   }
-}
-
-diopiTensorHandle_t toDiopiTensorHandle(at::Tensor& tensor) {
-  return reinterpret_cast<diopiTensorHandle_t>(&tensor);
-}
-
-diopiConstTensorHandle_t toDiopiTensorHandle(const at::Tensor& tensor) {
-  return reinterpret_cast<diopiConstTensorHandle_t>(&tensor);
-}
-
-diopiTensorHandle_t toDiopiTensorHandleWithConstCase(const at::Tensor& tensor) {
-  return reinterpret_cast<diopiTensorHandle_t>(const_cast<at::Tensor*>(&tensor));
 }
 
 #define CAST_TENSOR_HANDLE(th) reinterpret_cast<at::Tensor *>(th)
