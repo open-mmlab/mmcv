@@ -52,7 +52,7 @@ We implement common ops used in detection, segmentation, etc.
 | SigmoidFocalLoss             |     | √    | √   |     | √      |
 | SoftmaxFocalLoss             |     | √    |     |     | √      |
 | SoftNMS                      |     | √    |     |     |        |
-| Sparse Convolution           |     | √    |     |     |        |
+| Sparse Convolution           |     | √    | √   |     |        |
 | Synchronized BatchNorm       |     | √    |     |     |        |
 | ThreeInterpolate             |     | √    |     |     |        |
 | ThreeNN                      |     | √    | √   |     |        |

@@ -323,7 +323,7 @@ def get_extensions():
                 glob.glob(
                     './mlu-ops/bangc-ops/kernels/**/*.mlu', recursive=True)
             extra_objects = glob.glob(
-                './mlu-ops/bangc-ops/kernels/*/x86_64/*.o')
+                './mlu-ops/bangc-ops/kernels/kernel_wrapper/*.o')
             extension = MLUExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/mlu'))
