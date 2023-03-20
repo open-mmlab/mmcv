@@ -17,7 +17,7 @@ Tensor diff_iou_rotated_sort_vertices_forward_impl(Tensor vertices, Tensor mask,
 Tensor diff_iou_rotated_sort_vertices_forward(Tensor vertices, Tensor mask,
                                               Tensor num_valid) {
 #ifdef MMCV_WITH_DIOPI
-  auto vertices_p = reinterpret_cast<diopiTensorHandle_t>(&vertices);
+  auto vertices_p = toDiopiTensorHandle(&vertices);
   diopiDevice_t device;
   diopiGetTensorDevice(vertices_p, &device);
   if (device == diopi_host) {
@@ -26,10 +26,10 @@ Tensor diff_iou_rotated_sort_vertices_forward(Tensor vertices, Tensor mask,
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
   Tensor out;
-  auto outp = reinterpret_cast<diopiTensorHandle_t>(&out);
+  auto outp = toDiopiTensorHandle(&out);
   diopiTensorHandle_t* outhandle = &outp;
-  auto mask_p = reinterpret_cast<diopiTensorHandle_t>(&mask);
-  auto num_valid_p = reinterpret_cast<diopiTensorHandle_t>(&num_valid);
+  auto mask_p = toDiopiTensorHandle(&mask);
+  auto num_valid_p = toDiopiTensorHandle(&num_valid);
   if (&diopiDiffIouRotatedSortVertices) {
    diopiDiffIouRotatedSortVertices(ch, outhandle, vertices_p, mask_p, num_valid_p);
    auto tensorhandle = reinterpret_cast<Tensor*>(*outhandle);

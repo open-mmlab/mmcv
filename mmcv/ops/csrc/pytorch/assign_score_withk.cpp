@@ -33,7 +33,7 @@ void assign_score_withk_forward(const Tensor& points, const Tensor& centers,
                                 Tensor& output, int B, int N0, int N1, int M,
                                 int K, int O, int aggregate) {
 #ifdef MMCV_WITH_DIOPI
-  auto points_p = reinterpret_cast<diopiConstTensorHandle_t>(&points);
+  auto points_p = toDiopiTensorHandle(&points);
   diopiDevice_t device;
   diopiGetTensorDevice(points_p, &device);
   if (device == diopi_host) {
@@ -43,10 +43,10 @@ void assign_score_withk_forward(const Tensor& points, const Tensor& centers,
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
-  auto centers_p = reinterpret_cast<diopiConstTensorHandle_t>(&centers);
-  auto scores_p = reinterpret_cast<diopiConstTensorHandle_t>(&scores);
-  auto knn_idx_p = reinterpret_cast<diopiConstTensorHandle_t>(&knn_idx);
-  auto output_p = reinterpret_cast<diopiTensorHandle_t>(&output);
+  auto centers_p = toDiopiTensorHandle(&centers);
+  auto scores_p = toDiopiTensorHandle(&scores);
+  auto knn_idx_p = toDiopiTensorHandle(&knn_idx);
+  auto output_p = toDiopiTensorHandle(&output);
   if(&diopiAssignScoreWithk) {
    diopiAssignScoreWithk(ch, points_p, centers_p, scores_p, knn_idx_p, output_p, B, N0,
                                           N1, M, K, O, aggregate);
@@ -67,7 +67,7 @@ void assign_score_withk_backward(const Tensor& grad_out, const Tensor& points,
                                  int B, int N0, int N1, int M, int K, int O,
                                  int aggregate) {
 #ifdef MMCV_WITH_DIOPI
-  auto grad_out_p = reinterpret_cast<diopiConstTensorHandle_t>(&grad_out);
+  auto grad_out_p = toDiopiTensorHandle(&grad_out);
   diopiDevice_t device;
   diopiGetTensorDevice(grad_out_p, &device);
   if (device == diopi_host) {
@@ -78,13 +78,13 @@ void assign_score_withk_backward(const Tensor& grad_out, const Tensor& points,
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
-  auto points_p = reinterpret_cast<diopiConstTensorHandle_t>(&points);
-  auto centers_p = reinterpret_cast<diopiConstTensorHandle_t>(&centers);
-  auto scores_p = reinterpret_cast<diopiConstTensorHandle_t>(&scores);
-  auto knn_idx_p = reinterpret_cast<diopiConstTensorHandle_t>(&knn_idx);
-  auto grad_points_p = reinterpret_cast<diopiTensorHandle_t>(&grad_points);
-  auto grad_centers_p = reinterpret_cast<diopiTensorHandle_t>(&grad_centers);
-  auto grad_scores_p = reinterpret_cast<diopiTensorHandle_t>(&grad_scores);
+  auto points_p = toDiopiTensorHandle(&points);
+  auto centers_p = toDiopiTensorHandle(&centers);
+  auto scores_p = toDiopiTensorHandle(&scores);
+  auto knn_idx_p = toDiopiTensorHandle(&knn_idx);
+  auto grad_points_p = toDiopiTensorHandle(&grad_points);
+  auto grad_centers_p = toDiopiTensorHandle(&grad_centers);
+  auto grad_scores_p = toDiopiTensorHandle(&grad_scores);
   if (&diopiAssignScoreWithkBackward) {
       diopiAssignScoreWithkBackward(ch, grad_out_p, points_p, centers_p, scores_p, knn_idx_p,
                                     grad_points_p, grad_centers_p, grad_scores_p, B, N0, N1,

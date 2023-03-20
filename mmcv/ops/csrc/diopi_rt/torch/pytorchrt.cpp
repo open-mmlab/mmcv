@@ -146,6 +146,18 @@ c10::DeviceType device2DeviceType(const diopiDevice_t device) {
   }
 }
 
+diopiTensorHandle_t toDiopiTensorHandle(at::Tensor& tensor) {
+  return reinterpret_cast<diopiTensorHandle_t>(&tensor);
+}
+
+diopiConstTensorHandle_t toDiopiTensorHandle(const at::Tensor& tensor) {
+  return reinterpret_cast<diopiConstTensorHandle_t>(&tensor);
+}
+
+diopiTensorHandle_t toDiopiTensorHandleWithConstCase(const at::Tensor& tensor) {
+  return reinterpret_cast<diopiTensorHandle_t>(const_cast<at::Tensor*>(&tensor));
+}
+
 #define CAST_TENSOR_HANDLE(th) reinterpret_cast<at::Tensor *>(th)
 #define CAST_CONST_TENSOR_HANDLE(th) reinterpret_cast<const at::Tensor*>(th)
 

@@ -26,7 +26,7 @@ void border_align_forward(const Tensor &input, const Tensor &boxes,
                           Tensor output, Tensor argmax_idx,
                           const int pool_size) {
 #ifdef MMCV_WITH_DIOPI
-  auto input_p = reinterpret_cast<diopiConstTensorHandle_t>(&input);
+  auto input_p = toDiopiTensorHandle(&input);
   diopiDevice_t device;
   diopiGetTensorDevice(input_p, &device);
   if (device == diopi_host) {
@@ -35,9 +35,9 @@ void border_align_forward(const Tensor &input, const Tensor &boxes,
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
-  auto boxes_p = reinterpret_cast<diopiConstTensorHandle_t>(&boxes);
-  auto output_p = reinterpret_cast<diopiTensorHandle_t>(&output);
-  auto argmax_idx_p = reinterpret_cast<diopiTensorHandle_t>(&argmax_idx);
+  auto boxes_p = toDiopiTensorHandle(&boxes);
+  auto output_p = toDiopiTensorHandle(&output);
+  auto argmax_idx_p = toDiopiTensorHandle(&argmax_idx);
   if (&diopiBorderAlign) {
    diopiBorderAlign(ch, input_p, boxes_p, output_p, argmax_idx_p, pool_size);
   } else {
@@ -52,7 +52,7 @@ void border_align_backward(const Tensor &grad_output, const Tensor &boxes,
                            const Tensor &argmax_idx, Tensor grad_input,
                            const int pool_size) {
 #ifdef MMCV_WITH_DIOPI
-  auto grad_output_p = reinterpret_cast<diopiConstTensorHandle_t>(&grad_output);
+  auto grad_output_p = toDiopiTensorHandle(&grad_output);
   diopiDevice_t device;
   diopiGetTensorDevice(grad_output_p, &device);
   if (device == diopi_host) {
@@ -62,9 +62,9 @@ void border_align_backward(const Tensor &grad_output, const Tensor &boxes,
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
-  auto boxes_p = reinterpret_cast<diopiConstTensorHandle_t>(&boxes);
-  auto argmax_idx_p = reinterpret_cast<diopiConstTensorHandle_t>(&argmax_idx);
-  auto grad_input_p = reinterpret_cast<diopiTensorHandle_t>(&grad_input);
+  auto boxes_p = toDiopiTensorHandle(&boxes);
+  auto argmax_idx_p = toDiopiTensorHandle(&argmax_idx);
+  auto grad_input_p = toDiopiTensorHandle(&grad_input);
   if (&diopiBorderAlignBackward) {
    diopiBorderAlignBackward(ch, grad_output_p, boxes_p, argmax_idx_p, grad_input_p,
                              pool_size);

@@ -17,7 +17,7 @@ void convex_iou_impl(const Tensor pointsets, const Tensor polygons,
 
 void convex_iou(const Tensor pointsets, const Tensor polygons, Tensor ious) {
 #ifdef MMCV_WITH_DIOPI
-  auto pointsets_p = reinterpret_cast<diopiConstTensorHandle_t>(&pointsets);
+  auto pointsets_p = toDiopiTensorHandle(&pointsets);
   diopiDevice_t device;
   diopiGetTensorDevice(pointsets_p, &device);
   if (device == diopi_host) {
@@ -26,8 +26,8 @@ void convex_iou(const Tensor pointsets, const Tensor polygons, Tensor ious) {
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
-  auto polygons_p = reinterpret_cast<diopiConstTensorHandle_t>(&polygons);
-  auto ious_p = reinterpret_cast<diopiTensorHandle_t>(&ious);
+  auto polygons_p = toDiopiTensorHandle(&polygons);
+  auto ious_p = toDiopiTensorHandle(&ious);
   if (&diopiConvexIou) {
    diopiConvexIou(ch, pointsets_p, polygons_p, ious_p);
   } else {
@@ -45,7 +45,7 @@ void convex_giou_impl(const Tensor pointsets, const Tensor polygons,
 
 void convex_giou(const Tensor pointsets, const Tensor polygons, Tensor output) {
 #ifdef MMCV_WITH_DIOPI
-  auto pointsets_p = reinterpret_cast<diopiConstTensorHandle_t>(&pointsets);
+  auto pointsets_p = toDiopiTensorHandle(&pointsets);
   diopiDevice_t device;
   diopiGetTensorDevice(pointsets_p, &device);
   if (device == diopi_host) {
@@ -54,8 +54,8 @@ void convex_giou(const Tensor pointsets, const Tensor polygons, Tensor output) {
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
-  auto polygons_p = reinterpret_cast<diopiConstTensorHandle_t>(&polygons);
-  auto output_p = reinterpret_cast<diopiTensorHandle_t>(&output);
+  auto polygons_p = toDiopiTensorHandle(&polygons);
+  auto output_p = toDiopiTensorHandle(&output);
   if (&diopiConvexGiou) {
    diopiConvexGiou(ch, pointsets_p, polygons_p, output_p);
   } else {
