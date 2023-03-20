@@ -42,7 +42,7 @@ void chamfer_distance_forward(const Tensor xyz1, const Tensor xyz2,
   auto xyz2_p = reinterpret_cast<diopiConstTensorHandle_t>(&xyz2);
   auto dist1_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&dist1));
   auto dist2_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&dist2));
-  auto idx1_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&idx2));
+  auto idx1_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&idx1));
   auto idx2_p = reinterpret_cast<diopiTensorHandle_t>(const_cast<Tensor*>(&idx2));
   if (&diopiChamferDistance) {
    diopiChamferDistance(ch, xyz1_p, xyz2_p, dist1_p, dist2_p, idx1_p, idx2_p);
