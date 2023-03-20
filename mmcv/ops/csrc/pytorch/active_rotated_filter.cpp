@@ -26,7 +26,7 @@ void active_rotated_filter_backward_impl(const Tensor grad_out,
 void active_rotated_filter_forward(const Tensor input, const Tensor indices,
                                    Tensor output) {
 #ifdef MMCV_WITH_DIOPI
-  auto input_p = toDiopiTensorHandle(&input);
+  auto input_p = toDiopiTensorHandle(input);
   diopiDevice_t device;
   diopiGetTensorDevice(input_p, &device);
   if (device == diopi_host) {
@@ -35,8 +35,8 @@ void active_rotated_filter_forward(const Tensor input, const Tensor indices,
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
-  auto indices_p = toDiopiTensorHandle(&indices);
-  auto out_p = toDiopiTensorHandle(&output);
+  auto indices_p = toDiopiTensorHandle(indices);
+  auto out_p = toDiopiTensorHandle(output);
   if (&diopiActiveRotatedFilter) {
    diopiActiveRotatedFilter(ch, input_p, indices_p, out_p);
   } else {
@@ -50,7 +50,7 @@ void active_rotated_filter_forward(const Tensor input, const Tensor indices,
 void active_rotated_filter_backward(const Tensor grad_out, const Tensor indices,
                                     Tensor grad_in) {
 #ifdef MMCV_WITH_DIOPI
-  auto grad_out_p = toDiopiTensorHandle(&grad_out);
+  auto grad_out_p = toDiopiTensorHandle(grad_out);
   diopiDevice_t device;
   diopiGetTensorDevice(grad_out_p, &device);
   if (device == diopi_host) {
@@ -59,8 +59,8 @@ void active_rotated_filter_backward(const Tensor grad_out, const Tensor indices,
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
-  auto indices_p = toDiopiTensorHandle(&indices);
-  auto grad_in_p = toDiopiTensorHandle(&grad_in);
+  auto indices_p = toDiopiTensorHandle(indices);
+  auto grad_in_p = toDiopiTensorHandle(grad_in);
   if (&diopiActiveRotatedFilterBackward) {
    diopiActiveRotatedFilterBackward(ch, grad_out_p, indices_p, grad_in_p);
   } else {

@@ -30,7 +30,7 @@ void chamfer_distance_forward(const Tensor xyz1, const Tensor xyz2,
                               const Tensor dist1, const Tensor dist2,
                               const Tensor idx1, const Tensor idx2) {
 #ifdef MMCV_WITH_DIOPI
-  auto xyz1_p = toDiopiTensorHandle(&xyz1);
+  auto xyz1_p = toDiopiTensorHandle(xyz1);
   diopiDevice_t device;
   diopiGetTensorDevice(xyz1_p, &device);
   if (device == diopi_host) {
@@ -39,11 +39,11 @@ void chamfer_distance_forward(const Tensor xyz1, const Tensor xyz2,
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
-  auto xyz2_p = toDiopiTensorHandle(&xyz2);
-  auto dist1_p = toDiopiTensorHandleWithConstCase(&dist1);
-  auto dist2_p = toDiopiTensorHandleWithConstCase(&dist2);
-  auto idx1_p = toDiopiTensorHandleWithConstCase(&idx1);
-  auto idx2_p = toDiopiTensorHandleWithConstCase(&idx2);
+  auto xyz2_p = toDiopiTensorHandle(xyz2);
+  auto dist1_p = toDiopiTensorHandleWithConstCase(dist1);
+  auto dist2_p = toDiopiTensorHandleWithConstCase(dist2);
+  auto idx1_p = toDiopiTensorHandleWithConstCase(idx1);
+  auto idx2_p = toDiopiTensorHandleWithConstCase(idx2);
   if (&diopiChamferDistance) {
    diopiChamferDistance(ch, xyz1_p, xyz2_p, dist1_p, dist2_p, idx1_p, idx2_p);
   } else {
@@ -59,7 +59,7 @@ void chamfer_distance_backward(const Tensor xyz1, const Tensor xyz2,
                                Tensor graddist2, Tensor gradxyz1,
                                Tensor gradxyz2) {
 #ifdef MMCV_WITH_DIOPI
-  auto xyz1_p = toDiopiTensorHandle(&xyz1);
+  auto xyz1_p = toDiopiTensorHandle(xyz1);
   diopiDevice_t device;
   diopiGetTensorDevice(xyz1_p, &device);
   if (device == diopi_host) {
@@ -69,13 +69,13 @@ void chamfer_distance_backward(const Tensor xyz1, const Tensor xyz2,
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
-  auto xyz2_p = toDiopiTensorHandle(&xyz2);
-  auto idx1_p = toDiopiTensorHandle(&idx1);
-  auto idx2_p = toDiopiTensorHandle(&idx2);
-  auto graddist1_p = toDiopiTensorHandle(&graddist1);
-  auto graddist2_p = toDiopiTensorHandle(&graddist2);
-  auto gradxyz1_p = toDiopiTensorHandle(&gradxyz1);
-  auto gradxyz2_p = toDiopiTensorHandle(&gradxyz2);
+  auto xyz2_p = toDiopiTensorHandle(xyz2);
+  auto idx1_p = toDiopiTensorHandle(idx1);
+  auto idx2_p = toDiopiTensorHandle(idx2);
+  auto graddist1_p = toDiopiTensorHandle(graddist1);
+  auto graddist2_p = toDiopiTensorHandle(graddist2);
+  auto gradxyz1_p = toDiopiTensorHandle(gradxyz1);
+  auto gradxyz2_p = toDiopiTensorHandle(gradxyz2);
   if (&diopiChamferDistanceBackward) {
    diopiChamferDistanceBackward(ch, xyz1_p, xyz2_p, idx1_p, idx2_p, graddist1_p,
                                graddist2_p, gradxyz1_p, gradxyz2_p);

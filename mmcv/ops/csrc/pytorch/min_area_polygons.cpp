@@ -14,7 +14,7 @@ void min_area_polygons_impl(const Tensor pointsets, Tensor polygons) {
 
 void min_area_polygons(const Tensor pointsets, Tensor polygons) {
 #ifdef MMCV_WITH_DIOPI
-  auto pointsets_p = toDiopiTensorHandle(&pointsets);
+  auto pointsets_p = toDiopiTensorHandle(pointsets);
   diopiDevice_t device;
   diopiGetTensorDevice(pointsets_p, &device);
   if (device == diopi_host) {
@@ -23,7 +23,7 @@ void min_area_polygons(const Tensor pointsets, Tensor polygons) {
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
-  auto polygons_p = toDiopiTensorHandle(&polygons);
+  auto polygons_p = toDiopiTensorHandle(polygons);
   if (&diopiMinAreaPolygons) {
    diopiMinAreaPolygons(ch, pointsets_p, polygons_p);
   } else {
