@@ -113,13 +113,8 @@ def _test_roialign_allclose(device, dtype):
     pytest.param(
         torch.double,
         marks=pytest.mark.skipif(
-            IS_MLU_AVAILABLE,
-            reason='MLU does not support for 64-bit floating point')),
-    pytest.param(
-        torch.double,
-        marks=pytest.mark.skipif(
-            IS_NPU_AVAILABLE,
-            reason='NPU does not support for 64-bit floating point')),
+            IS_MLU_AVAILABLE or IS_NPU_AVAILABLE,
+            reason='MLU and NPU does not support for 64-bit floating point')),
     torch.half
 ])
 def test_roialign(device, dtype):
