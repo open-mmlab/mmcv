@@ -22,13 +22,13 @@ int hard_voxelize_forward_npu(const at::Tensor &points, at::Tensor &voxels,
   at::Tensor voxel_num = at_npu::native::NPUNativeFunctions::npu_dtype_cast(
       voxel_num_tmp, at::kInt);
 
-  at::Tensor voxel_size_tensor = at::from_blob(
+  at::Tensor voxel_size_cpu = at::from_blob(
       const_cast<float *>(voxel_size.data()), {3}, dtype(at::kFloat));
-  voxel_size_tensor.to(points.device());
+  voxel_size_npu = voxel_size_cpu.to(points.device());
 
-  at::Tensor coors_range_tensor = at::from_blob(
+  at::Tensor coors_range_cpu = at::from_blob(
       const_cast<float *>(coors_range.data()), {6}, dtype(at::kFloat));
-  coors_range_tensor.to(points.device());
+  coors_range_npu = coors_range_cpu.to(points.device());
 
   int64_t max_points_ = (int64_t)max_points;
   int64_t max_voxels_ = (int64_t)max_voxels;
