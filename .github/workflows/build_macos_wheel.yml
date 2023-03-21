@@ -1,6 +1,6 @@
 name: build macos wheel
 
-on: pull_request
+on: push
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
