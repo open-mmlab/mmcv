@@ -116,6 +116,10 @@ def bbox_overlaps(bboxes1: torch.Tensor,
     if rows * cols == 0:
         return ious
 
+    if torch.__version__ == 'parrots':
+        return _bbox_overlaps_cpu(
+            bboxes1, bboxes2, mode=mode, aligned=aligned, offset=offset)
+
     ext_module.bbox_overlaps(
         bboxes1, bboxes2, ious, mode=mode_flag, aligned=aligned, offset=offset)
 
