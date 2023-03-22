@@ -53,6 +53,14 @@ jobs:
           coverage run --branch --source mmcv -m pytest tests/
           coverage xml
           coverage report -m
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1.0.14
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          env_vars: OS,PYTHON
+          name: codecov-umbrella
+          fail_ci_if_error: false
   build_windows_without_ops:
     runs-on: ${{ matrix.os }}
     env:
