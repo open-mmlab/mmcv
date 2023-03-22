@@ -321,15 +321,25 @@ def get_extensions():
                 os.getenv('FORCE_MLU', '0') == '1':
             from torch_mlu.utils.cpp_extension import MLUExtension
             define_macros += [('MMCV_WITH_MLU', None)]
+            if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
+                define_macros += [('MMCV_WITH_DIOPI', None)]
+                define_macros += [('DIOPI_ATTR_WEAK', None)]
             mlu_args = os.getenv('MMCV_MLU_ARGS')
             extra_compile_args['cncc'] = [mlu_args] if mlu_args else []
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/mlu/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/common/mlu/*.mlu')
+            if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
+                op_files += glob.glob('./mmcv/ops/csrc/diopi_impl/camb/*.cpp')
+                op_files += glob.glob('./mmcv/ops/csrc/diopi_rt/camb/*.cpp')
             extension = MLUExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/mlu'))
+            if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
+                include_dirs.append(os.path.abspath('./DIOPI/include'))
+                include_dirs.append(
+                    os.path.abspath('./mmcv/ops/csrc/diopi_rt/camb'))
         elif (hasattr(torch.backends, 'mps')
               and torch.backends.mps.is_available()) or os.getenv(
                   'FORCE_MPS', '0') == '1':
