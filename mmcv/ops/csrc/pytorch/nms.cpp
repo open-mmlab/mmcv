@@ -38,7 +38,7 @@ Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
     auto outp = dipu::diopi::toDiopiTensorHandle(out);
     diopiTensorHandle_t* outhandle = &outp;
     auto scores_p = dipu::diopi::toDiopiTensorHandle(scores);
-    diopiNmsMmcv(ch, outhandle, boxes_p, scores_p, iou_threshold, offset);
+    // diopiNmsMmcv(ch, outhandle, boxes_p, scores_p, iou_threshold, offset);
     auto tensorhandle = reinterpret_cast<Tensor*>(*outhandle);
     return *tensorhandle;
   #else
