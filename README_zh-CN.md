@@ -22,8 +22,8 @@
 [![docs](https://img.shields.io/badge/docs-2.x-blue)](https://mmcv.readthedocs.io/zh_CN/2.x/)
 [![platform](https://img.shields.io/badge/platform-Linux%7CWindows%7CmacOS-blue)](https://mmcv.readthedocs.io/zh_CN/2.x/get_started/installation.html)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mmcv)](https://pypi.org/project/mmcv/)
-[![pytorch](https://img.shields.io/badge/pytorch-1.6~1.13-orange)](https://pytorch.org/get-started/previous-versions/)
-[![cuda](https://img.shields.io/badge/cuda-9.2~11.7-green)](https://developer.nvidia.com/cuda-downloads)
+[![pytorch](https://img.shields.io/badge/pytorch-1.8~2.0-orange)](https://pytorch.org/get-started/previous-versions/)
+[![cuda](https://img.shields.io/badge/cuda-10.1~11.8-green)](https://developer.nvidia.com/cuda-downloads)
 [![PyPI](https://img.shields.io/pypi/v/mmcv)](https://pypi.org/project/mmcv)
 [![badge](https://github.com/open-mmlab/mmcv/workflows/build/badge.svg)](https://github.com/open-mmlab/mmcv/actions)
 [![codecov](https://codecov.io/gh/open-mmlab/mmcv/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmcv)
@@ -68,13 +68,13 @@ MMCV 有两个版本：
 
 ```bash
 pip install -U openmim
-mim install "mmcv>=2.0.0rc1"
+mim install mmcv
 ```
 
 如果需要指定 mmcv 的版本，可以使用以下命令
 
 ```bash
-mim install mmcv==2.0.0rc3
+mim install mmcv==2.0.0
 ```
 
 如果发现上述的安装命令没有使用预编译包（以 `.whl` 结尾）而是使用源码包（以 `.tar.gz` 结尾）安装，则有可能是我们没有提供和当前环境的 PyTorch 版本、CUDA 版本相匹配的 mmcv 预编译包，此时，你可以[源码安装 mmcv](https://mmcv.readthedocs.io/zh_CN/2.x/get_started/build.html)。
@@ -84,7 +84,7 @@ mim install mmcv==2.0.0rc3
 
 Looking in links: https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html<br />
 Collecting mmcv<br />
-<b>Downloading https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/mmcv-2.0.0rc3-cp38-cp38-manylinux1_x86_64.whl</b>
+<b>Downloading https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/mmcv-2.0.0-cp38-cp38-manylinux1_x86_64.whl</b>
 
 </details>
 
@@ -92,8 +92,8 @@ Collecting mmcv<br />
 <summary>使用源码包的安装日志</summary>
 
 Looking in links: https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html<br />
-Collecting mmcv==2.0.0rc3<br />
-<b>Downloading mmcv-2.0.0rc3.tar.gz</b>
+Collecting mmcv==2.0.0<br />
+<b>Downloading mmcv-2.0.0.tar.gz</b>
 
 </details>
 
@@ -105,7 +105,7 @@ Collecting mmcv==2.0.0rc3<br />
 
 ```bash
 pip install -U openmim
-mim install "mmcv-lite>=2.0.0rc1"
+mim install mmcv-lite
 ```
 
 ## FAQ
