@@ -224,13 +224,13 @@ workflows:
       - build_without_ops:
           name: build_without_ops
           torch: 1.8.1
-          torchvision: 0.9.0
+          torchvision: 0.9.1
           requires:
             - build_without_torch
       - build_cpu:
           name: minimum_version_cpu
           torch: 1.8.1
-          torchvision: 0.9.0
+          torchvision: 0.9.1
           python: 3.7.4
           requires:
             - build_without_ops
