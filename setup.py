@@ -369,7 +369,9 @@ def get_extensions():
                         exit()
 
             define_macros += [('MMCV_WITH_MLU', None)]
-            mlu_args = os.getenv('MMCV_MLU_ARGS')
+            mlu_args = '-DNDEBUG '
+            mlu_args = os.getenv('MMCV_MLU_ARGS') if os.getenv(
+                'MMCV_MLU_ARGS') else mlu_args
             mluops_includes = []
             mluops_includes.append('-I' +
                                    os.path.abspath('./mlu-ops/bangc-ops'))
