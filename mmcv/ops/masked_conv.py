@@ -46,6 +46,8 @@ class MaskedConv2dFunction(Function):
         out_channel, in_channel, kernel_h, kernel_w = weight.size()
 
         if features.device.type == 'npu':
+            """For the NPU implementation of the masked_conv operator, it is
+            not recommended to use the scenario where bias=false."""
             import torch_npu
             output = torch_npu.npu_conv2d(
                 features,
