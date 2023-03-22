@@ -1,4 +1,4 @@
-ux version: 2.1
+version: 2.1
 
 # the default pipeline parameters, which will be updated according to
 # the results of the path-filtering orb
