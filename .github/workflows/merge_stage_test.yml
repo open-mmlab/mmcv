@@ -81,7 +81,7 @@ jobs:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
-        python-version: [3.8, 3.9]
+        python-version: [3.7, 3.9]
         torch: [1.8.1]
         include:
           - torch: 1.8.1
@@ -115,13 +115,9 @@ jobs:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
-        python-version: [3.7]
-        torch: [1.6.0, 1.7.1, 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.12.0, 1.13.0]
+        python-version: [3.8]
+        torch: [1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.12.0, 1.13.0, 2.0.0]
         include:
-          - torch: 1.6.0
-            torchvision: 0.7.0
-          - torch: 1.7.1
-            torchvision: 0.8.2
           - torch: 1.8.1
             torchvision: 0.9.1
           - torch: 1.9.1
@@ -134,6 +130,8 @@ jobs:
             torchvision: 0.13.0
           - torch: 1.13.0
             torchvision: 0.14.0
+          - torch: 2.0.0
+            torchvision: 0.15.1
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -154,14 +152,14 @@ jobs:
         run: pip install -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
-      - name: Run unittests and generate coverage report
+      - name: Run unit tests and generate coverage report
         run: |
           coverage run --branch --source mmcv -m pytest tests/
           coverage xml
           coverage report -m
       # Only upload coverage report for python3.7 && pytorch1.8.1 cpu
       - name: Upload coverage to Codecov
-        if: ${{matrix.torch == '1.8.1' && matrix.python-version == '3.7'}}
+        if: ${{matrix.torch == '1.8.1' && matrix.python-version == '3.8'}}
         uses: codecov/codecov-action@v1.0.14
         with:
           file: ./coverage.xml
@@ -175,7 +173,7 @@ jobs:
       image: pytorch/pytorch:1.8.1-cuda10.2-cudnn7-devel
     strategy:
       matrix:
-        python-version: [3.8]
+        python-version: [3.7]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -198,7 +196,41 @@ jobs:
         run: pip install -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
-      - name: Run unittests and generate coverage report
+      - name: Run unit tests and generate coverage report
+        run: |
+          coverage run --branch --source mmcv -m pytest tests/
+          coverage xml
+          coverage report -m
+  build_cu111:
+    runs-on: ubuntu-18.04
+    container:
+      image: pytorch/pytorch:1.8.1-cuda11.1-cudnn7-devel
+    strategy:
+      matrix:
+        python-version: [3.7]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Upgrade pip
+        run: pip install pip --upgrade
+      - name: Fetch GPG keys
+        run: |
+          apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
+          apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
+      - name: Install system dependencies
+        run: apt-get update && apt-get install -y git ffmpeg libturbojpeg
+      - name: Install MMEngine from main branch
+        run: pip install git+https://github.com/open-mmlab/mmengine.git@main
+      - name: Install ninja to speed the compilation
+        run: pip install ninja
+      - name: Build MMCV from source
+        run: pip install -e . -v
+      - name: Install unit tests dependencies
+        run: pip install -r requirements/test.txt
+      - name: Run unit tests and generate coverage report
         run: |
           coverage run --branch --source mmcv -m pytest tests/
           coverage xml
@@ -232,7 +264,7 @@ jobs:
         run: pip install -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
-      - name: Run unittests and generate coverage report
+      - name: Run unit tests and generate coverage report
         run: |
           coverage run --branch --source mmcv -m pytest tests
           coverage xml
@@ -247,10 +279,10 @@ jobs:
         python-version: [3.7]
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.7
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: ${{ matrix.python-version }}
       - name: Upgrade pip
         run: python -m pip install pip --upgrade
       - name: Install PyTorch
@@ -270,14 +302,18 @@ jobs:
     strategy:
       matrix:
         os: [windows-2019]
-        python: [3.7]
-        torch: [1.8.1, 1.10.1]
+        torch: [1.8.1, 2.0.0]
+        python-version: [3.8]
         include:
           - torch: 1.8.1
             torchvision: 0.9.1
-          - torch: 1.10.1
+            platform: cpu
+          - torch: 1.8.1
+            torchvision: 0.9.1
+            platform: cu111
+          - torch: 2.0.0
             torchvision: 0.11.2
-        platform: [cpu, cu111]
+            platform: cpu
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -287,7 +323,7 @@ jobs:
       - name: Upgrade pip
         run: python -m pip install pip --upgrade
       - name: Install PyTorch
-        run: pip install torch==1.8.1+${{matrix.platform}} torchvision==0.9.1+${{matrix.platform}} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html
+        run: pip install torch==${{matrix.torch}}+${{matrix.platform}} torchvision==${{matrix.torch}}+${{matrix.platform}} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html
       - name: Install MMEngine from main branch
         run: pip install git+https://github.com/open-mmlab/mmengine.git@main
       - name: Install ninja to speed the compilation
@@ -296,24 +332,22 @@ jobs:
         run: pip install -e .
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
-      - name: Run unittests
+      - name: Run unit tests
         run: pytest tests/ --ignore tests/test_image/test_io.py
   build_macos:
     runs-on: macos-latest
     strategy:
       matrix:
-        python-version: [3.7]
-        torch: [1.6.0, 1.8.1, 1.13.0]
+        python-version: [3.8]
+        torch: [1.8.1, 2.0.0]
         include:
-          - torch: 1.6.0
-            torchvision: 0.7.0
           - torch: 1.8.1
             torchvision: 0.9.1
-          - torch: 1.13.0
-            torchvision: 0.14.0
+          - torch: 2.0.0
+            torchvision: 0.15.1
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.7
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
@@ -331,5 +365,5 @@ jobs:
         run: pip install -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
-      - name: Run unittests
+      - name: Run unit tests
         run: pytest tests/
