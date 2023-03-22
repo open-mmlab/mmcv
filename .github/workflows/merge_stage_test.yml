@@ -204,7 +204,7 @@ jobs:
   build_cu111:
     runs-on: ubuntu-18.04
     container:
-      image: pytorch/pytorch:1.8.1-cuda11.1-cudnn7-devel
+      image: pytorch/pytorch:1.8.1-cuda11.1-cudnn8-devel
     strategy:
       matrix:
         python-version: [3.7]
@@ -312,7 +312,7 @@ jobs:
             torchvision: 0.9.1
             platform: cu111
           - torch: 2.0.0
-            torchvision: 0.11.2
+            torchvision: 0.15.1
             platform: cpu
     steps:
       - uses: actions/checkout@v2
