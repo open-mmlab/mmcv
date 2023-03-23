@@ -3,13 +3,26 @@ import numpy as np
 import pytest
 import torch
 
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
 
-@pytest.mark.skipif(
-    not torch.cuda.is_available(),
-    reason='GPU is required to test NMSRotated op')
+
 class TestNmsRotated:
 
-    def test_ml_nms_rotated(self):
+    @pytest.mark.parametrize('device', [
+        pytest.param(
+            'npu',
+            marks=pytest.mark.skipif(
+                not IS_NPU_AVAILABLE, reason='requires NPU support')),
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'mlu',
+            marks=pytest.mark.skipif(
+                not IS_MLU_AVAILABLE, reason='requires MLU support'))
+    ])
+    def test_ml_nms_rotated(self, device):
         from mmcv.ops import nms_rotated
         np_boxes = np.array(
             [[6.0, 3.0, 8.0, 7.0, 0.5, 0.7], [3.0, 6.0, 9.0, 11.0, 0.6, 0.8],
@@ -24,8 +37,8 @@ class TestNmsRotated:
             dtype=np.float32)
         np_expect_keep_inds = np.array([3, 1, 0], dtype=np.int64)
 
-        boxes = torch.from_numpy(np_boxes).cuda()
-        labels = torch.from_numpy(np_labels).cuda()
+        boxes = torch.from_numpy(np_boxes).to(device)
+        labels = torch.from_numpy(np_labels).to(device)
 
         # test cw angle definition
         dets, keep_inds = nms_rotated(boxes[:, :5], boxes[:, -1], 0.5, labels)
@@ -41,7 +54,21 @@ class TestNmsRotated:
         assert np.allclose(dets.cpu().numpy()[:, :5], np_expect_dets)
         assert np.allclose(keep_inds.cpu().numpy(), np_expect_keep_inds)
 
-    def test_nms_rotated(self):
+    @pytest.mark.parametrize('device', [
+        pytest.param(
+            'npu',
+            marks=pytest.mark.skipif(
+                not IS_NPU_AVAILABLE, reason='requires NPU support')),
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'mlu',
+            marks=pytest.mark.skipif(
+                not IS_MLU_AVAILABLE, reason='requires MLU support'))
+    ])
+    def test_nms_rotated(self, device):
         from mmcv.ops import nms_rotated
         np_boxes = np.array(
             [[6.0, 3.0, 8.0, 7.0, 0.5, 0.7], [3.0, 6.0, 9.0, 11.0, 0.6, 0.8],
@@ -55,7 +82,7 @@ class TestNmsRotated:
             dtype=np.float32)
         np_expect_keep_inds = np.array([3, 1, 0], dtype=np.int64)
 
-        boxes = torch.from_numpy(np_boxes).cuda()
+        boxes = torch.from_numpy(np_boxes).to(device)
 
         # test cw angle definition
         dets, keep_inds = nms_rotated(boxes[:, :5], boxes[:, -1], 0.5)

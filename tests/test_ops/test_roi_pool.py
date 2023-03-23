@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
 
 _USING_PARROTS = True
 try:
@@ -72,7 +72,6 @@ class TestRoiPool:
             x = torch.tensor(
                 np_input, dtype=dtype, device=device, requires_grad=True)
             rois = torch.tensor(np_rois, dtype=dtype, device=device)
-
             output = roi_pool(x, rois, (pool_h, pool_w), spatial_scale)
             output.backward(torch.ones_like(output))
             assert np.allclose(output.data.cpu().numpy(), np_output, 1e-3)
@@ -86,15 +85,19 @@ class TestRoiPool:
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
-                not IS_MLU_AVAILABLE, reason='requires MLU support'))
+                not IS_MLU_AVAILABLE, reason='requires MLU support')),
+        pytest.param(
+            'npu',
+            marks=pytest.mark.skipif(
+                not IS_NPU_AVAILABLE, reason='requires NPU support'))
     ])
     @pytest.mark.parametrize('dtype', [
         torch.float,
         pytest.param(
             torch.double,
             marks=pytest.mark.skipif(
-                IS_MLU_AVAILABLE,
-                reason='MLU does not support for 64-bit floating point')),
+                IS_MLU_AVAILABLE or IS_NPU_AVAILABLE,
+                reason='MLU, NPU does not support for 64-bit floating point')),
         torch.half
     ])
     def test_roipool_allclose(self, device, dtype):
