@@ -8,6 +8,7 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+
 #include <parrots/diopi.hpp>
 #endif
 
@@ -15,37 +16,44 @@ using namespace parrots;
 
 #ifdef MMCV_WITH_CUDA
 #ifdef MMCV_WITH_DIOPI
-void border_align_forward_cuda_parrots_diopi(CudaContext& ctx, const SSElement& attr,
-                                       const OperatorBase::in_list_t& ins,
-                                       OperatorBase::out_list_t& outs) {
+void border_align_forward_cuda_parrots_diopi(CudaContext& ctx,
+                                             const SSElement& attr,
+                                             const OperatorBase::in_list_t& ins,
+                                             OperatorBase::out_list_t& outs) {
   int pool_size;
   SSAttrs(attr).get<int>("pool_size", pool_size).done();
 
   diopiContext dctx(ctx);
   diopiContextHandle_t ch = &dctx;
-  auto input = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
-  auto boxes = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
+  auto input =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
+  auto boxes =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
 
   auto output = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
   auto argmax_idx = reinterpret_cast<diopiTensorHandle_t>(&outs[1]);
-  PARROTS_CALLDIOPI(diopiBorderAlign(ch, input, boxes, output, argmax_idx, pool_size));
+  PARROTS_CALLDIOPI(
+      diopiBorderAlign(ch, input, boxes, output, argmax_idx, pool_size));
 }
 
-void border_align_backward_cuda_parrots_diopi(CudaContext& ctx, const SSElement& attr,
-                                        const OperatorBase::in_list_t& ins,
-                                        OperatorBase::out_list_t& outs) {
+void border_align_backward_cuda_parrots_diopi(
+    CudaContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
+    OperatorBase::out_list_t& outs) {
   int pool_size;
   SSAttrs(attr).get<int>("pool_size", pool_size).done();
 
   diopiContext dctx(ctx);
   diopiContextHandle_t ch = &dctx;
-  auto top_grad = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
-  auto boxes = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
-  auto argmax_idx = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[2]));
+  auto top_grad =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
+  auto boxes =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
+  auto argmax_idx =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[2]));
 
   auto bottom_grad = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
-  PARROTS_CALLDIOPI(diopiBorderAlignBackward(ch, top_grad, boxes, argmax_idx, bottom_grad,
-                             pool_size));
+  PARROTS_CALLDIOPI(diopiBorderAlignBackward(ch, top_grad, boxes, argmax_idx,
+                                             bottom_grad, pool_size));
 }
 #else
 void border_align_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,
