@@ -141,7 +141,7 @@ jobs:
           command: pip install git+https://github.com/open-mmlab/mmengine.git@main
       - run:
           name: Install ninja to speed the compilation
-          command: pip install ninja
+          command: pip install ninja psutil
       - run:
           name: Create sdist and untar
           command: |
@@ -187,6 +187,9 @@ jobs:
       - run:
           name: Install MMEngine from main branch
           command: docker exec mmcv pip install git+https://github.com/open-mmlab/mmengine.git@main
+      - run:
+          name: Install ninja to speed the compilation
+          command: docker exec mmcv pip install ninja psutil
       - run:
           name: Build MMCV from source
           command: docker exec mmcv pip install -e . -v

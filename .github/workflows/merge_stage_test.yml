@@ -101,7 +101,7 @@ jobs:
       - name: Install MMEngine from main branch
         run: pip install git+https://github.com/open-mmlab/mmengine.git@main
       - name: Install ninja to speed the compilation
-        run: pip install ninja
+        run: pip install ninja psutil
       - name: Build MMCV from source
         run: pip install -e . -v
       - name: Install unit tests dependencies
@@ -147,7 +147,7 @@ jobs:
       - name: Install MMEngine from main branch
         run: pip install git+https://github.com/open-mmlab/mmengine.git@main
       - name: Install ninja to speed the compilation
-        run: pip install ninja
+        run: pip install ninja psutil
       - name: Build MMCV from source
         run: pip install -e . -v
       - name: Install unit tests dependencies
@@ -191,7 +191,7 @@ jobs:
       - name: Install MMEngine from main branch
         run: pip install git+https://github.com/open-mmlab/mmengine.git@main
       - name: Install ninja to speed the compilation
-        run: pip install ninja
+        run: pip install ninja psutil
       - name: Build MMCV from source
         run: pip install -e . -v
       - name: Install unit tests dependencies
@@ -225,7 +225,7 @@ jobs:
       - name: Install MMEngine from main branch
         run: pip install git+https://github.com/open-mmlab/mmengine.git@main
       - name: Install ninja to speed the compilation
-        run: pip install ninja
+        run: pip install ninja psutil
       - name: Build MMCV from source
         run: pip install -e . -v
       - name: Install unit tests dependencies
@@ -259,7 +259,7 @@ jobs:
       - name: Install MMEngine from main branch
         run: pip install git+https://github.com/open-mmlab/mmengine.git@main
       - name: Install ninja to speed the compilation
-        run: pip install ninja
+        run: pip install ninja psutil
       - name: Build MMCV from source
         run: pip install -e . -v
       - name: Install unit tests dependencies
@@ -290,7 +290,7 @@ jobs:
       - name: Install MMEngine from main branch
         run: pip install git+https://github.com/open-mmlab/mmengine.git@main
       - name: Install ninja to speed the compilation
-        run: pip install ninja
+        run: pip install ninja psutil
       - name: Build MMCV from source
         run: pip install -e .
       - name: Install unit tests dependencies
@@ -327,7 +327,7 @@ jobs:
       - name: Install MMEngine from main branch
         run: pip install git+https://github.com/open-mmlab/mmengine.git@main
       - name: Install ninja to speed the compilation
-        run: pip install ninja
+        run: pip install ninja psutil
       - name: Build MMCV from source
         run: pip install -e .
       - name: Install unit tests dependencies
@@ -360,7 +360,7 @@ jobs:
       - name: Install MMEngine from main branch
         run: pip install git+https://github.com/open-mmlab/mmengine.git@main
       - name: Install ninja to speed the compilation
-        run: pip install ninja
+        run: pip install ninja psutil
       - name: Build MMCV from source
         run: pip install -e . -v
       - name: Install unit tests dependencies
