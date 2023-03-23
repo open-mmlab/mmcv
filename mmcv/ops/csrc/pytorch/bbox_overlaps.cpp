@@ -5,6 +5,7 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+
 #include "diopi.hpp"
 #endif
 
@@ -21,17 +22,17 @@ void bbox_overlaps(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
   diopiDevice_t device;
   diopiGetTensorDevice(bboxes1_p, &device);
   if (device == diopi_host) {
-      bbox_overlaps_impl(bboxes1, bboxes2, ious, mode, aligned, offset);
-      return;
+    bbox_overlaps_impl(bboxes1, bboxes2, ious, mode, aligned, offset);
+    return;
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
   auto bboxes2_p = toDiopiTensorHandle(bboxes2);
   auto ious_p = toDiopiTensorHandle(ious);
   if (&diopiBboxOverlaps) {
-   diopiBboxOverlaps(ch, bboxes1_p, bboxes2_p, ious_p, mode, aligned, offset);
+    diopiBboxOverlaps(ch, bboxes1_p, bboxes2_p, ious_p, mode, aligned, offset);
   } else {
-   bbox_overlaps_impl(bboxes1, bboxes2, ious, mode, aligned, offset);
+    bbox_overlaps_impl(bboxes1, bboxes2, ious, mode, aligned, offset);
   }
 #else
   bbox_overlaps_impl(bboxes1, bboxes2, ious, mode, aligned, offset);

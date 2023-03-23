@@ -5,6 +5,7 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+
 #include "diopi.hpp"
 #endif
 
@@ -21,7 +22,8 @@ Tensor diff_iou_rotated_sort_vertices_forward(Tensor vertices, Tensor mask,
   diopiDevice_t device;
   diopiGetTensorDevice(vertices_p, &device);
   if (device == diopi_host) {
-      return diff_iou_rotated_sort_vertices_forward_impl(vertices, mask, num_valid);
+    return diff_iou_rotated_sort_vertices_forward_impl(vertices, mask,
+                                                       num_valid);
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
@@ -31,11 +33,13 @@ Tensor diff_iou_rotated_sort_vertices_forward(Tensor vertices, Tensor mask,
   auto mask_p = toDiopiTensorHandle(mask);
   auto num_valid_p = toDiopiTensorHandle(num_valid);
   if (&diopiDiffIouRotatedSortVertices) {
-   diopiDiffIouRotatedSortVertices(ch, outhandle, vertices_p, mask_p, num_valid_p);
-   auto tensorhandle = reinterpret_cast<Tensor*>(*outhandle);
-   return *tensorhandle;
+    diopiDiffIouRotatedSortVertices(ch, outhandle, vertices_p, mask_p,
+                                    num_valid_p);
+    auto tensorhandle = reinterpret_cast<Tensor*>(*outhandle);
+    return *tensorhandle;
   } else {
-   return diff_iou_rotated_sort_vertices_forward_impl(vertices, mask, num_valid);
+    return diff_iou_rotated_sort_vertices_forward_impl(vertices, mask,
+                                                       num_valid);
   }
 #else
   return diff_iou_rotated_sort_vertices_forward_impl(vertices, mask, num_valid);

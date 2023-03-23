@@ -5,6 +5,7 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+
 #include "diopi.hpp"
 #endif
 
@@ -30,8 +31,8 @@ void border_align_forward(const Tensor &input, const Tensor &boxes,
   diopiDevice_t device;
   diopiGetTensorDevice(input_p, &device);
   if (device == diopi_host) {
-      border_align_forward_impl(input, boxes, output, argmax_idx, pool_size);
-      return;
+    border_align_forward_impl(input, boxes, output, argmax_idx, pool_size);
+    return;
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
@@ -39,9 +40,9 @@ void border_align_forward(const Tensor &input, const Tensor &boxes,
   auto output_p = toDiopiTensorHandle(output);
   auto argmax_idx_p = toDiopiTensorHandle(argmax_idx);
   if (&diopiBorderAlign) {
-   diopiBorderAlign(ch, input_p, boxes_p, output_p, argmax_idx_p, pool_size);
+    diopiBorderAlign(ch, input_p, boxes_p, output_p, argmax_idx_p, pool_size);
   } else {
-   border_align_forward_impl(input, boxes, output, argmax_idx, pool_size);
+    border_align_forward_impl(input, boxes, output, argmax_idx, pool_size);
   }
 #else
   border_align_forward_impl(input, boxes, output, argmax_idx, pool_size);
@@ -56,9 +57,9 @@ void border_align_backward(const Tensor &grad_output, const Tensor &boxes,
   diopiDevice_t device;
   diopiGetTensorDevice(grad_output_p, &device);
   if (device == diopi_host) {
-      border_align_backward_impl(grad_output, boxes, argmax_idx, grad_input,
-                             pool_size);
-      return;
+    border_align_backward_impl(grad_output, boxes, argmax_idx, grad_input,
+                               pool_size);
+    return;
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
@@ -66,11 +67,11 @@ void border_align_backward(const Tensor &grad_output, const Tensor &boxes,
   auto argmax_idx_p = toDiopiTensorHandle(argmax_idx);
   auto grad_input_p = toDiopiTensorHandle(grad_input);
   if (&diopiBorderAlignBackward) {
-   diopiBorderAlignBackward(ch, grad_output_p, boxes_p, argmax_idx_p, grad_input_p,
-                             pool_size);
+    diopiBorderAlignBackward(ch, grad_output_p, boxes_p, argmax_idx_p,
+                             grad_input_p, pool_size);
   } else {
-   border_align_backward_impl(grad_output, boxes, argmax_idx, grad_input,
-                             pool_size);
+    border_align_backward_impl(grad_output, boxes, argmax_idx, grad_input,
+                               pool_size);
   }
 #else
   border_align_backward_impl(grad_output, boxes, argmax_idx, grad_input,

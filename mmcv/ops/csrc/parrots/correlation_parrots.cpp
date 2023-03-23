@@ -8,6 +8,7 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+
 #include <parrots/diopi.hpp>
 #endif
 
@@ -15,9 +16,10 @@ using namespace parrots;
 
 #ifdef MMCV_WITH_CUDA
 #ifdef MMCV_WITH_DIOPI
-void correlation_forward_cuda_parrots_diopi(CudaContext& ctx, const SSElement& attr,
-                                      const OperatorBase::in_list_t& ins,
-                                      OperatorBase::out_list_t& outs) {
+void correlation_forward_cuda_parrots_diopi(CudaContext& ctx,
+                                            const SSElement& attr,
+                                            const OperatorBase::in_list_t& ins,
+                                            OperatorBase::out_list_t& outs) {
   int kH, kW, patchH, patchW, padH, padW, dilationH, dilationW, dilation_patchH,
       dilation_patchW, dH, dW;
   SSAttrs(attr)
@@ -37,19 +39,22 @@ void correlation_forward_cuda_parrots_diopi(CudaContext& ctx, const SSElement& a
 
   diopiContext dctx(ctx);
   diopiContextHandle_t ch = &dctx;
-  auto input1 = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
-  auto input2 = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
+  auto input1 =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
+  auto input2 =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
 
   auto output = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
 
-  PARROTS_CALLDIOPI(diopiCorrelation(ch, input1, input2, output, kH, kW, patchH, patchW, padH,
-                      padW, dilationH, dilationW, dilation_patchH,
-                      dilation_patchW, dH, dW));
+  PARROTS_CALLDIOPI(diopiCorrelation(ch, input1, input2, output, kH, kW, patchH,
+                                     patchW, padH, padW, dilationH, dilationW,
+                                     dilation_patchH, dilation_patchW, dH, dW));
 }
 
-void correlation_backward_cuda_parrots_diopi(CudaContext& ctx, const SSElement& attr,
-                                       const OperatorBase::in_list_t& ins,
-                                       OperatorBase::out_list_t& outs) {
+void correlation_backward_cuda_parrots_diopi(CudaContext& ctx,
+                                             const SSElement& attr,
+                                             const OperatorBase::in_list_t& ins,
+                                             OperatorBase::out_list_t& outs) {
   int kH, kW, patchH, patchW, padH, padW, dilationH, dilationW, dilation_patchH,
       dilation_patchW, dH, dW;
   SSAttrs(attr)
@@ -69,16 +74,20 @@ void correlation_backward_cuda_parrots_diopi(CudaContext& ctx, const SSElement& 
 
   diopiContext dctx(ctx);
   diopiContextHandle_t ch = &dctx;
-  auto grad_output = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
-  auto input1 = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
-  auto input2 = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[2]));
+  auto grad_output =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
+  auto input1 =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
+  auto input2 =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[2]));
 
   auto grad_input1 = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
   auto grad_input2 = reinterpret_cast<diopiTensorHandle_t>(&outs[1]);
 
-  PARROTS_CALLDIOPI(diopiCorrelationBackward(ch, grad_output, input1, input2, grad_input1, grad_input2,
-                       kH, kW, patchH, patchW, padH, padW, dilationH, dilationW,
-                       dilation_patchH, dilation_patchW, dH, dW));
+  PARROTS_CALLDIOPI(diopiCorrelationBackward(
+      ch, grad_output, input1, input2, grad_input1, grad_input2, kH, kW, patchH,
+      patchW, padH, padW, dilationH, dilationW, dilation_patchH,
+      dilation_patchW, dH, dW));
 }
 #else
 void correlation_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,

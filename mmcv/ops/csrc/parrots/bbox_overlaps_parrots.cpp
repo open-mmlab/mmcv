@@ -8,6 +8,7 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+
 #include <parrots/diopi.hpp>
 #endif
 
@@ -20,8 +21,8 @@ using namespace parrots;
  * ious, const int mode, const bool aligned, const int offset);
  */
 void bbox_overlaps_parrots_diopi(CudaContext& ctx, const SSElement& attr,
-                           const OperatorBase::in_list_t& ins,
-                           OperatorBase::out_list_t& outs) {
+                                 const OperatorBase::in_list_t& ins,
+                                 OperatorBase::out_list_t& outs) {
   int mode, offset;
   bool aligned;
   SSAttrs(attr)
@@ -32,10 +33,13 @@ void bbox_overlaps_parrots_diopi(CudaContext& ctx, const SSElement& attr,
 
   diopiContext dctx(ctx);
   diopiContextHandle_t ch = &dctx;
-  auto bboxes1 = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
-  auto bboxes2 = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
+  auto bboxes1 =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
+  auto bboxes2 =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
   auto ious = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
-  PARROTS_CALLDIOPI(diopiBboxOverlaps(ch, bboxes1, bboxes2, ious, mode, aligned, offset));
+  PARROTS_CALLDIOPI(
+      diopiBboxOverlaps(ch, bboxes1, bboxes2, ious, mode, aligned, offset));
 }
 #else
 /*

@@ -7,6 +7,7 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+
 #include "diopi.hpp"
 #endif
 
@@ -21,17 +22,17 @@ void convex_iou(const Tensor pointsets, const Tensor polygons, Tensor ious) {
   diopiDevice_t device;
   diopiGetTensorDevice(pointsets_p, &device);
   if (device == diopi_host) {
-      convex_iou_impl(pointsets, polygons, ious);
-      return;
+    convex_iou_impl(pointsets, polygons, ious);
+    return;
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
   auto polygons_p = toDiopiTensorHandle(polygons);
   auto ious_p = toDiopiTensorHandle(ious);
   if (&diopiConvexIou) {
-   diopiConvexIou(ch, pointsets_p, polygons_p, ious_p);
+    diopiConvexIou(ch, pointsets_p, polygons_p, ious_p);
   } else {
-   convex_iou_impl(pointsets, polygons, ious);
+    convex_iou_impl(pointsets, polygons, ious);
   }
 #else
   convex_iou_impl(pointsets, polygons, ious);
@@ -49,17 +50,17 @@ void convex_giou(const Tensor pointsets, const Tensor polygons, Tensor output) {
   diopiDevice_t device;
   diopiGetTensorDevice(pointsets_p, &device);
   if (device == diopi_host) {
-      convex_giou_impl(pointsets, polygons, output);
-      return;
+    convex_giou_impl(pointsets, polygons, output);
+    return;
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
   auto polygons_p = toDiopiTensorHandle(polygons);
   auto output_p = toDiopiTensorHandle(output);
   if (&diopiConvexGiou) {
-   diopiConvexGiou(ch, pointsets_p, polygons_p, output_p);
+    diopiConvexGiou(ch, pointsets_p, polygons_p, output_p);
   } else {
-   convex_giou_impl(pointsets, polygons, output);
+    convex_giou_impl(pointsets, polygons, output);
   }
 #else
   convex_giou_impl(pointsets, polygons, output);

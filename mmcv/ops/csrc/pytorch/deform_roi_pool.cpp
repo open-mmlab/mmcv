@@ -5,6 +5,7 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+
 #include "diopi.hpp"
 #endif
 
@@ -37,10 +38,10 @@ void deform_roi_pool_forward(Tensor input, Tensor rois, Tensor offset,
   diopiDevice_t device;
   diopiGetTensorDevice(input_p, &device);
   if (device == diopi_host) {
-      deform_roi_pool_forward_impl(input, rois, offset, output, pooled_height,
-                               pooled_width, spatial_scale, sampling_ratio,
-                               gamma);
-      return;
+    deform_roi_pool_forward_impl(input, rois, offset, output, pooled_height,
+                                 pooled_width, spatial_scale, sampling_ratio,
+                                 gamma);
+    return;
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
@@ -48,13 +49,12 @@ void deform_roi_pool_forward(Tensor input, Tensor rois, Tensor offset,
   auto offset_p = toDiopiTensorHandle(offset);
   auto output_p = toDiopiTensorHandle(output);
   if (&diopiDeformRoiPool) {
-   diopiDeformRoiPool(ch, input_p, rois_p, offset_p, output_p, pooled_height,
-                               pooled_width, spatial_scale, sampling_ratio,
-                               gamma);
+    diopiDeformRoiPool(ch, input_p, rois_p, offset_p, output_p, pooled_height,
+                       pooled_width, spatial_scale, sampling_ratio, gamma);
   } else {
-   deform_roi_pool_forward_impl(input, rois, offset, output, pooled_height,
-                               pooled_width, spatial_scale, sampling_ratio,
-                               gamma);
+    deform_roi_pool_forward_impl(input, rois, offset, output, pooled_height,
+                                 pooled_width, spatial_scale, sampling_ratio,
+                                 gamma);
   }
 #else
   deform_roi_pool_forward_impl(input, rois, offset, output, pooled_height,
@@ -73,10 +73,10 @@ void deform_roi_pool_backward(Tensor grad_output, Tensor input, Tensor rois,
   diopiDevice_t device;
   diopiGetTensorDevice(grad_output_p, &device);
   if (device == diopi_host) {
-      deform_roi_pool_backward_impl(grad_output, input, rois, offset, grad_input,
-                                grad_offset, pooled_height, pooled_width,
-                                spatial_scale, sampling_ratio, gamma);
-      return;
+    deform_roi_pool_backward_impl(grad_output, input, rois, offset, grad_input,
+                                  grad_offset, pooled_height, pooled_width,
+                                  spatial_scale, sampling_ratio, gamma);
+    return;
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
@@ -86,13 +86,14 @@ void deform_roi_pool_backward(Tensor grad_output, Tensor input, Tensor rois,
   auto grad_input_p = toDiopiTensorHandle(grad_input);
   auto grad_offset_p = toDiopiTensorHandle(grad_offset);
   if (&diopiDeformRoiPoolBackward) {
-   diopiDeformRoiPoolBackward(ch, grad_output_p, input_p, rois_p, offset_p, grad_input_p,
-                                grad_offset_p, pooled_height, pooled_width,
-                                spatial_scale, sampling_ratio, gamma);
+    diopiDeformRoiPoolBackward(ch, grad_output_p, input_p, rois_p, offset_p,
+                               grad_input_p, grad_offset_p, pooled_height,
+                               pooled_width, spatial_scale, sampling_ratio,
+                               gamma);
   } else {
-   deform_roi_pool_backward_impl(grad_output, input, rois, offset, grad_input,
-                                grad_offset, pooled_height, pooled_width,
-                                spatial_scale, sampling_ratio, gamma);
+    deform_roi_pool_backward_impl(grad_output, input, rois, offset, grad_input,
+                                  grad_offset, pooled_height, pooled_width,
+                                  spatial_scale, sampling_ratio, gamma);
   }
 #else
   deform_roi_pool_backward_impl(grad_output, input, rois, offset, grad_input,

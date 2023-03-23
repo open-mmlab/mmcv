@@ -8,6 +8,7 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+
 #include <parrots/diopi.hpp>
 #endif
 
@@ -21,8 +22,10 @@ void active_rotated_filter_forward_cuda_parrots_diopi(
     OperatorBase::out_list_t& outs) {
   diopiContext dctx(ctx);
   diopiContextHandle_t ch = &dctx;
-  auto input = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
-  auto indices = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
+  auto input =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
+  auto indices =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
   auto output = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
   PARROTS_CALLDIOPI(diopiActiveRotatedFilter(ch, input, indices, output));
 }
@@ -32,10 +35,13 @@ void active_rotated_filter_backward_cuda_parrots_diopi(
     OperatorBase::out_list_t& outs) {
   diopiContext dctx(ctx);
   diopiContextHandle_t ch = &dctx;
-  auto grad_out = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
-  auto indices = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
+  auto grad_out =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
+  auto indices =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
   auto grad_in = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
-  PARROTS_CALLDIOPI(diopiActiveRotatedFilterBackward(ch, grad_out, indices, grad_in));
+  PARROTS_CALLDIOPI(
+      diopiActiveRotatedFilterBackward(ch, grad_out, indices, grad_in));
 }
 #else
 void active_rotated_filter_forward_cuda_parrots(
@@ -46,7 +52,6 @@ void active_rotated_filter_forward_cuda_parrots(
   auto output = buildATensor(ctx, outs[0]);
   active_rotated_filter_forward(input, indices, output);
 }
-
 
 void active_rotated_filter_backward_cuda_parrots(
     CudaContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,

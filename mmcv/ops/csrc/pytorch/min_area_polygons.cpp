@@ -5,6 +5,7 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+
 #include "diopi.hpp"
 #endif
 
@@ -18,16 +19,16 @@ void min_area_polygons(const Tensor pointsets, Tensor polygons) {
   diopiDevice_t device;
   diopiGetTensorDevice(pointsets_p, &device);
   if (device == diopi_host) {
-      min_area_polygons_impl(pointsets, polygons);
-      return;
+    min_area_polygons_impl(pointsets, polygons);
+    return;
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
   auto polygons_p = toDiopiTensorHandle(polygons);
   if (&diopiMinAreaPolygons) {
-   diopiMinAreaPolygons(ch, pointsets_p, polygons_p);
+    diopiMinAreaPolygons(ch, pointsets_p, polygons_p);
   } else {
-   min_area_polygons_impl(pointsets, polygons);
+    min_area_polygons_impl(pointsets, polygons);
   }
 #else
   min_area_polygons_impl(pointsets, polygons);

@@ -5,6 +5,7 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+
 #include "diopi.hpp"
 #endif
 
@@ -39,20 +40,20 @@ void prroi_pool_forward(Tensor input, Tensor rois, Tensor output,
   diopiDevice_t device;
   diopiGetTensorDevice(input_p, &device);
   if (device == diopi_host) {
-      prroi_pool_forward_impl(input, rois, output, pooled_height, pooled_width,
-                          spatial_scale);
-      return;
+    prroi_pool_forward_impl(input, rois, output, pooled_height, pooled_width,
+                            spatial_scale);
+    return;
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
   auto rois_p = toDiopiTensorHandle(rois);
   auto output_p = toDiopiTensorHandle(output);
   if (&diopiPrroiPool) {
-   diopiPrroiPool(ch, input_p, rois_p, output_p, pooled_height, pooled_width,
-                spatial_scale);
+    diopiPrroiPool(ch, input_p, rois_p, output_p, pooled_height, pooled_width,
+                   spatial_scale);
   } else {
-   prroi_pool_forward_impl(input, rois, output, pooled_height, pooled_width,
-                          spatial_scale);
+    prroi_pool_forward_impl(input, rois, output, pooled_height, pooled_width,
+                            spatial_scale);
   }
 #else
   prroi_pool_forward_impl(input, rois, output, pooled_height, pooled_width,
@@ -68,20 +69,20 @@ void prroi_pool_backward(Tensor grad_output, Tensor rois, Tensor grad_input,
   diopiDevice_t device;
   diopiGetTensorDevice(grad_output_p, &device);
   if (device == diopi_host) {
-      prroi_pool_backward_impl(grad_output, rois, grad_input, pooled_height,
-                           pooled_width, spatial_scale);
-      return;
+    prroi_pool_backward_impl(grad_output, rois, grad_input, pooled_height,
+                             pooled_width, spatial_scale);
+    return;
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
   auto rois_p = toDiopiTensorHandle(rois);
   auto grad_input_p = toDiopiTensorHandle(grad_input);
   if (&diopiPrroiPoolbackward) {
-   diopiPrroiPoolbackward(ch, grad_output_p, rois_p, grad_input_p, pooled_height,
-                        pooled_width, spatial_scale);
+    diopiPrroiPoolbackward(ch, grad_output_p, rois_p, grad_input_p,
+                           pooled_height, pooled_width, spatial_scale);
   } else {
-   prroi_pool_backward_impl(grad_output, rois, grad_input, pooled_height,
-                           pooled_width, spatial_scale);
+    prroi_pool_backward_impl(grad_output, rois, grad_input, pooled_height,
+                             pooled_width, spatial_scale);
   }
 #else
   prroi_pool_backward_impl(grad_output, rois, grad_input, pooled_height,
@@ -97,9 +98,9 @@ void prroi_pool_coor_backward(Tensor output, Tensor grad_output, Tensor input,
   diopiDevice_t device;
   diopiGetTensorDevice(grad_output_p, &device);
   if (device == diopi_host) {
-      prroi_pool_coor_backward_impl(output, grad_output, input, rois, grad_rois,
-                                pooled_height, pooled_width, spatial_scale);
-      return;
+    prroi_pool_coor_backward_impl(output, grad_output, input, rois, grad_rois,
+                                  pooled_height, pooled_width, spatial_scale);
+    return;
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
@@ -108,11 +109,12 @@ void prroi_pool_coor_backward(Tensor output, Tensor grad_output, Tensor input,
   auto rois_p = toDiopiTensorHandle(rois);
   auto grad_rois_p = toDiopiTensorHandle(grad_rois);
   if (&diopiPrroiPoolCoorBackward) {
-   diopiPrroiPoolCoorBackward(ch, output_p, grad_output_p, input_p, rois_p,
-       grad_rois_p, pooled_height, pooled_width, spatial_scale);
+    diopiPrroiPoolCoorBackward(ch, output_p, grad_output_p, input_p, rois_p,
+                               grad_rois_p, pooled_height, pooled_width,
+                               spatial_scale);
   } else {
-   prroi_pool_coor_backward_impl(output, grad_output, input, rois, grad_rois,
-                                pooled_height, pooled_width, spatial_scale);
+    prroi_pool_coor_backward_impl(output, grad_output, input, rois, grad_rois,
+                                  pooled_height, pooled_width, spatial_scale);
   }
 #else
   prroi_pool_coor_backward_impl(output, grad_output, input, rois, grad_rois,

@@ -7,6 +7,7 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+
 #include "diopi.hpp"
 #endif
 
@@ -23,9 +24,9 @@ void knn_forward(Tensor xyz_tensor, Tensor new_xyz_tensor, Tensor idx_tensor,
   diopiDevice_t device;
   diopiGetTensorDevice(xyz_tensor_p, &device);
   if (device == diopi_host) {
-      knn_forward_impl(b, n, m, nsample, xyz_tensor, new_xyz_tensor, idx_tensor,
-                   dist2_tensor);
-      return;
+    knn_forward_impl(b, n, m, nsample, xyz_tensor, new_xyz_tensor, idx_tensor,
+                     dist2_tensor);
+    return;
   }
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
@@ -33,10 +34,11 @@ void knn_forward(Tensor xyz_tensor, Tensor new_xyz_tensor, Tensor idx_tensor,
   auto idx_tensor_p = toDiopiTensorHandle(idx_tensor);
   auto dist2_tensor_p = toDiopiTensorHandle(dist2_tensor);
   if (&diopiKnn) {
-   diopiKnn(ch, xyz_tensor_p, new_xyz_tensor_p, idx_tensor_p, dist2_tensor_p, b, n, m, nsample);
+    diopiKnn(ch, xyz_tensor_p, new_xyz_tensor_p, idx_tensor_p, dist2_tensor_p,
+             b, n, m, nsample);
   } else {
-   knn_forward_impl(b, n, m, nsample, xyz_tensor, new_xyz_tensor, idx_tensor,
-                   dist2_tensor);
+    knn_forward_impl(b, n, m, nsample, xyz_tensor, new_xyz_tensor, idx_tensor,
+                     dist2_tensor);
   }
 #else
   knn_forward_impl(b, n, m, nsample, xyz_tensor, new_xyz_tensor, idx_tensor,

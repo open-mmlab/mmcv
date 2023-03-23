@@ -8,6 +8,7 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+
 #include <parrots/diopi.hpp>
 #endif
 
@@ -17,8 +18,8 @@ using namespace parrots;
 // Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset);
 template <typename T>
 void nms_parrots_diopi(T& ctx, const SSElement& attr,
-                 const OperatorBase::in_list_t& ins,
-                 OperatorBase::out_list_t& outs) {
+                       const OperatorBase::in_list_t& ins,
+                       OperatorBase::out_list_t& outs) {
   float iou_threshold;
   int offset;
   SSAttrs(attr)
@@ -27,12 +28,15 @@ void nms_parrots_diopi(T& ctx, const SSElement& attr,
       .done();
   diopiContext dctx(ctx);
   diopiContextHandle_t ch = &dctx;
-  auto dets = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
-  auto scores = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
+  auto dets =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
+  auto scores =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
   auto out = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
   auto outhandle = &out;
   // check result
-  PARROTS_CALLDIOPI(diopiNms(ch, outhandle, dets, scores, iou_threshold, offset));
+  PARROTS_CALLDIOPI(
+      diopiNms(ch, outhandle, dets, scores, iou_threshold, offset));
 }
 #else
 // Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset);

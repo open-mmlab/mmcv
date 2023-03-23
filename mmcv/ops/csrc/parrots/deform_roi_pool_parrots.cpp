@@ -8,6 +8,7 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+
 #include <parrots/diopi.hpp>
 #endif
 
@@ -20,10 +21,9 @@ using namespace parrots;
  *                                  int pooled_width, float spatial_scale,
  *                                  int sampling_ratio, float gamma);
  */
-void deform_roi_pool_forward_cuda_parrots_diopi(CudaContext& ctx,
-                                          const SSElement& attr,
-                                          const OperatorBase::in_list_t& ins,
-                                          OperatorBase::out_list_t& outs) {
+void deform_roi_pool_forward_cuda_parrots_diopi(
+    CudaContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
+    OperatorBase::out_list_t& outs) {
   int pooled_height;
   int pooled_width;
   float spatial_scale;
@@ -39,14 +39,17 @@ void deform_roi_pool_forward_cuda_parrots_diopi(CudaContext& ctx,
 
   diopiContext dctx(ctx);
   diopiContextHandle_t ch = &dctx;
-  auto input = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
-  auto rois = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
-  auto offset = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[2]));
+  auto input =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
+  auto rois =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
+  auto offset =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[2]));
 
   auto output = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
-  PARROTS_CALLDIOPI(diopiDeformRoiPool(ch, input, rois, offset, output, pooled_height,
-                               pooled_width, spatial_scale, sampling_ratio,
-                               gamma));
+  PARROTS_CALLDIOPI(diopiDeformRoiPool(ch, input, rois, offset, output,
+                                       pooled_height, pooled_width,
+                                       spatial_scale, sampling_ratio, gamma));
 }
 
 /*void deform_roi_pool_backward_cuda(Tensor grad_output, Tensor input,
@@ -56,10 +59,9 @@ void deform_roi_pool_forward_cuda_parrots_diopi(CudaContext& ctx,
  *                                   float spatial_scale, int sampling_ratio,
  *                                   float gamma);
  */
-void deform_roi_pool_backward_cuda_parrots_diopi(CudaContext& ctx,
-                                           const SSElement& attr,
-                                           const OperatorBase::in_list_t& ins,
-                                           OperatorBase::out_list_t& outs) {
+void deform_roi_pool_backward_cuda_parrots_diopi(
+    CudaContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
+    OperatorBase::out_list_t& outs) {
   int pooled_height;
   int pooled_width;
   float spatial_scale;
@@ -76,17 +78,21 @@ void deform_roi_pool_backward_cuda_parrots_diopi(CudaContext& ctx,
 
   diopiContext dctx(ctx);
   diopiContextHandle_t ch = &dctx;
-  auto grad_output = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
-  auto input = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
-  auto rois = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[2]));
-  auto offset = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[3]));
+  auto grad_output =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
+  auto input =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
+  auto rois =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[2]));
+  auto offset =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[3]));
 
   auto grad_input = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
   auto grad_offset = reinterpret_cast<diopiTensorHandle_t>(&outs[1]);
 
-  PARROTS_CALLDIOPI(diopiDeformRoiPoolBackward(ch, grad_output, input, rois, offset, grad_input,
-                                grad_offset, pooled_height, pooled_width,
-                                spatial_scale, sampling_ratio, gamma));
+  PARROTS_CALLDIOPI(diopiDeformRoiPoolBackward(
+      ch, grad_output, input, rois, offset, grad_input, grad_offset,
+      pooled_height, pooled_width, spatial_scale, sampling_ratio, gamma));
 }
 #else
 /*void deform_roi_pool_forward_cuda(Tensor input, Tensor rois, Tensor offset,

@@ -8,6 +8,7 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+
 #include <parrots/diopi.hpp>
 #endif
 
@@ -15,37 +16,44 @@ using namespace parrots;
 
 #ifdef MMCV_WITH_CUDA
 #ifdef MMCV_WITH_DIOPI
-void chamfer_distance_forward_cuda_parrots_diopi(CudaContext& ctx,
-                                           const SSElement& attr,
-                                           const OperatorBase::in_list_t& ins,
-                                           OperatorBase::out_list_t& outs) {
+void chamfer_distance_forward_cuda_parrots_diopi(
+    CudaContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
+    OperatorBase::out_list_t& outs) {
   diopiContext dctx(ctx);
   diopiContextHandle_t ch = &dctx;
-  auto xyz1 = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
-  auto xyz2 = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
+  auto xyz1 =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
+  auto xyz2 =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
   auto dist1 = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
   auto dist2 = reinterpret_cast<diopiTensorHandle_t>(&outs[1]);
   auto idx1 = reinterpret_cast<diopiTensorHandle_t>(&outs[2]);
   auto idx2 = reinterpret_cast<diopiTensorHandle_t>(&outs[3]);
-  PARROTS_CALLDIOPI(diopiChamferDistance(ch, xyz1, xyz2, dist1, dist2, idx1, idx2));
+  PARROTS_CALLDIOPI(
+      diopiChamferDistance(ch, xyz1, xyz2, dist1, dist2, idx1, idx2));
 }
 
-void chamfer_distance_backward_cuda_parrots_diopi(CudaContext& ctx,
-                                            const SSElement& attr,
-                                            const OperatorBase::in_list_t& ins,
-                                            OperatorBase::out_list_t& outs) {
+void chamfer_distance_backward_cuda_parrots_diopi(
+    CudaContext& ctx, const SSElement& attr, const OperatorBase::in_list_t& ins,
+    OperatorBase::out_list_t& outs) {
   diopiContext dctx(ctx);
   diopiContextHandle_t ch = &dctx;
-  auto xyz1 = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
-  auto xyz2 = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
-  auto idx1 = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[2]));
-  auto idx2 = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[3]));
-  auto graddist1 = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[4]));
-  auto graddist2 = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[5]));
+  auto xyz1 =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
+  auto xyz2 =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
+  auto idx1 =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[2]));
+  auto idx2 =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[3]));
+  auto graddist1 =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[4]));
+  auto graddist2 =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[5]));
   auto gradxyz1 = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
   auto gradxyz2 = reinterpret_cast<diopiTensorHandle_t>(&outs[1]);
-  PARROTS_CALLDIOPI(diopiChamferDistanceBackward(ch, xyz1, xyz2, idx1, idx2,
-    graddist1, graddist2, gradxyz1, gradxyz2));
+  PARROTS_CALLDIOPI(diopiChamferDistanceBackward(
+      ch, xyz1, xyz2, idx1, idx2, graddist1, graddist2, gradxyz1, gradxyz2));
 }
 
 #else

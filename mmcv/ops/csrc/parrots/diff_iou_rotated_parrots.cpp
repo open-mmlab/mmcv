@@ -8,6 +8,7 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+
 #include <parrots/diopi.hpp>
 #endif
 
@@ -20,12 +21,16 @@ void diff_iou_rotated_sort_vertices_forward_cuda_parrots_diopi(
     OperatorBase::out_list_t& outs) {
   diopiContext dctx(ctx);
   diopiContextHandle_t ch = &dctx;
-  auto vertices = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
-  auto mask = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
-  auto num_valid = reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[2]));
+  auto vertices =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
+  auto mask =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
+  auto num_valid =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[2]));
   auto out = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
   auto outhandle = &out;
-  PARROTS_CALLDIOPI(diopiDiffIouRotatedSortVertices(ch, outhandle, vertices, mask, num_valid));
+  PARROTS_CALLDIOPI(diopiDiffIouRotatedSortVertices(ch, outhandle, vertices,
+                                                    mask, num_valid));
 }
 #else
 void diff_iou_rotated_sort_vertices_forward_cuda_parrots(
