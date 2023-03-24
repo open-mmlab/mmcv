@@ -2,7 +2,7 @@ import glob
 import os
 import platform
 import re
-from pkg_resources import DistributionNotFound, get_distribution
+from pkg_resources import DistributionNotFound, get_distribution, parse_version
 from setuptools import find_packages, setup
 
 EXT_TYPE = ''
@@ -197,18 +197,10 @@ def get_extensions():
         # More details at https://github.com/pytorch/pytorch/pull/45956
         extra_compile_args = {'cxx': []}
 
-        # Since the PR (https://github.com/open-mmlab/mmcv/pull/1463) uses
-        # c++14 features, the argument ['std=c++14'] must be added here.
-        # However, in the windows environment, some standard libraries
-        # will depend on c++17 or higher. In fact, for the windows
-        # environment, the compiler will choose the appropriate compiler
-        # to compile those cpp files, so there is no need to add the
-        # argument
         if platform.system() != 'Windows':
             extra_compile_args['cxx'] = ['-std=c++14']
         else:
-            from packaging import version
-            if version.parse(torch.__version__) >= version.parse('2'):
+            if parse_version(torch.__version__) >= parse_version('2.0.0'):
                 extra_compile_args['cxx'] = ['/std:c++14']
 
         include_dirs = []
