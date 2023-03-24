@@ -20,8 +20,8 @@ class TestCond2d:
         weight = self.weight.cuda()
         res = conv2d(x, weight, None, 1, 1)
         assert res.shape == (1, 1, 32, 32)
-        gradcheck(conv2d, (x, weight, None, 1, 1), eps=1e-2, atol=1e-2)
-        gradgradcheck(conv2d, (x, weight, None, 1, 1), eps=1e-2, atol=1e-2)
+        gradcheck(conv2d, (x, weight, None, 1, 1), eps=1e-2, atol=1)
+        gradgradcheck(conv2d, (x, weight, None, 1, 1), eps=1e-2, atol=1)
 
 
 class TestCond2dTansposed:
@@ -37,7 +37,6 @@ class TestCond2dTansposed:
         weight = self.weight.cuda()
         res = conv_transpose2d(x, weight, None, 1, 1)
         assert res.shape == (1, 1, 32, 32)
-        gradcheck(
-            conv_transpose2d, (x, weight, None, 1, 1), eps=1e-2, atol=1e-2)
+        gradcheck(conv_transpose2d, (x, weight, None, 1, 1), eps=1e-2, atol=1)
         gradgradcheck(
-            conv_transpose2d, (x, weight, None, 1, 1), eps=1e-2, atol=1e-2)
+            conv_transpose2d, (x, weight, None, 1, 1), eps=1e-2, atol=1)

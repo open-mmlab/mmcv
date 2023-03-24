@@ -265,11 +265,9 @@ def _conv2d_gradfix(
             # Enhance the code referring to the discussion:
             # https://github.com/pytorch/pytorch/issues/74437
             if digit_version(torch.__version__) >= digit_version('1.11.0'):
-                empty_weight = torch.empty(
-                    weight_shape,
-                    dtype=input.dtype,
-                    layout=input.layout,
-                    device=input.device)
+                empty_weight = torch.tensor(
+                    0.0, dtype=input.dtype,
+                    device=input.device).expand(weight_shape)
                 output_padding = calc_output_padding(input.shape,
                                                      grad_output.shape)
                 return torch.ops.aten.convolution_backward(
