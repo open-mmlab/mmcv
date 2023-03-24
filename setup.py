@@ -206,6 +206,10 @@ def get_extensions():
         # argument
         if platform.system() != 'Windows':
             extra_compile_args['cxx'] = ['-std=c++14']
+        else:
+            from packaging import version
+            if version.parse(torch.__version__) >= version.parse('2'):
+                extra_compile_args['cxx'] = ['/std:c++14']
 
         include_dirs = []
 
