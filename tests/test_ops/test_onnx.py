@@ -3,7 +3,6 @@ import os
 
 import numpy as np
 import onnx
-import onnxruntime as rt
 import pytest
 import torch
 import torch.nn as nn
@@ -37,6 +36,7 @@ class WrapFunction(nn.Module):
 
 
 def test_roialign():
+    rt = pytest.importorskip('onnxruntime')
     try:
         from mmcv.ops import roi_align
     except (ImportError, ModuleNotFoundError):
@@ -106,6 +106,7 @@ def test_roialign():
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires GPU')
 def test_roipool():
+    rt = pytest.importorskip('onnxruntime')
     from mmcv.ops import roi_pool
 
     # roi pool config
@@ -204,7 +205,7 @@ def test_deform_conv():
     from mmcv.ops import DeformConv2dPack
     x = torch.randn(1, 2, 4, 4, device='cuda')
     _test_symbolic(
-        DeformConv2dPack(2, 4, 3, 1, 1).cuda(), x, 'MMCVDeformConv2d')
+        DeformConv2dPack(2, 4, 3, 1, 1).cuda(), (x, ), 'MMCVDeformConv2d')
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires GPU')
