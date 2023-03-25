@@ -1,6 +1,4 @@
-// Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-// modified from
-// https://github.com/csuhan/s2anet/blob/master/mmdet/ops/orn/src/cpu/ActiveRotatingFilter_cpu.cpp
+// Copyright(c) OpenMMLab.All rights reserved.
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"
 
