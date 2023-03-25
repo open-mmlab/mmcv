@@ -14,6 +14,8 @@ class MlflowLoggerHook(LoggerHook):
     It requires `MLflow`_ to be installed.
 
     Args:
+        tracking_uri (str, optional): uri of tracking uri.
+            Default None. If not None, store all log on mlflow server.
         exp_name (str, optional): Name of the experiment to be used.
             Default None. If not None, set the active experiment.
             If experiment does not exist, an experiment with provided name
@@ -37,6 +39,7 @@ class MlflowLoggerHook(LoggerHook):
     """
 
     def __init__(self,
+                 tracking_uri: Optional[str] = None,
                  exp_name: Optional[str] = None,
                  tags: Optional[Dict] = None,
                  params: Optional[Dict] = None,
@@ -47,6 +50,7 @@ class MlflowLoggerHook(LoggerHook):
                  by_epoch: bool = True):
         super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.import_mlflow()
+        self.tracking_uri = tracking_uri
         self.exp_name = exp_name
         self.tags = tags
         self.params = params
@@ -65,6 +69,8 @@ class MlflowLoggerHook(LoggerHook):
     @master_only
     def before_run(self, runner) -> None:
         super().before_run(runner)
+        if self.tracking_uri is not None:
+            self.mlflow.set_tracking_uri(self.tracking_uri)
         if self.exp_name is not None:
             self.mlflow.set_experiment(self.exp_name)
         if self.tags is not None:
