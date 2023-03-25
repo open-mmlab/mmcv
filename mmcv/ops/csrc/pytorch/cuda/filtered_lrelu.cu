@@ -7,7 +7,7 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 #include <c10/util/Half.h>
 #include <cuda_runtime.h>
-#include <torch/extension.h>
+#include <torch/types.h>
 
 #include <cstdint>
 
