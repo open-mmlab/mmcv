@@ -61,6 +61,40 @@ jobs:
           env_vars: OS,PYTHON
           name: codecov-umbrella
           fail_ci_if_error: false
+  build_cu111:
+    runs-on: ubuntu-18.04
+    container:
+      image: pytorch/pytorch:1.8.1-cuda11.1-cudnn8-devel
+    strategy:
+      matrix:
+        python-version: [3.7]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Upgrade pip
+        run: pip install pip --upgrade
+      - name: Fetch GPG keys
+        run: |
+          apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
+          apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
+      - name: Install system dependencies
+        run: apt-get update && apt-get install -y git ffmpeg libturbojpeg
+      - name: Install MMEngine from main branch
+        run: pip install git+https://github.com/open-mmlab/mmengine.git@main
+      - name: Install ninja to speed the compilation
+        run: pip install ninja psutil
+      - name: Build MMCV from source
+        run: pip install -e . -v
+      - name: Install unit tests dependencies
+        run: pip install -r requirements/test.txt
+      - name: Run unit tests and generate coverage report
+        run: |
+          coverage run --branch --source mmcv -m pytest tests/
+          coverage xml
+          coverage report -m
   build_windows_without_ops:
     runs-on: ${{ matrix.os }}
     env:
