@@ -292,7 +292,7 @@ jobs:
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
       - name: Build MMCV from source
-        run: pip install -e .
+        run: pip install -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unit tests
@@ -329,7 +329,7 @@ jobs:
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
       - name: Build MMCV from source
-        run: pip install -e .
+        run: pip install -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unit tests
