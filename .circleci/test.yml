@@ -199,6 +199,7 @@ jobs:
       - run:
           name: Run unit tests
           command: docker exec mmcv python -m pytest tests/
+
 workflows:
   pr_stage_lint:
     when: << pipeline.parameters.lint_only >>
