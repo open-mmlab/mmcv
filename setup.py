@@ -301,6 +301,11 @@ def get_extensions():
         if 'nvcc' in extra_compile_args and platform.system() != 'Windows':
             extra_compile_args['nvcc'] += ['-std=c++14']
 
+        # Add -O3 to speed up the runtime
+        extra_compile_args['cxx'] += ['-O3']
+        if 'nvcc' in extra_compile_args:
+            extra_compile_args['nvcc'] += ['-O3']
+
         ext_ops = extension(
             name=ext_name,
             sources=op_files,
