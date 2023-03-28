@@ -56,6 +56,17 @@ void deform_conv_backward_parameters(Tensor input, Tensor offset,
                                      int deformable_group, float scale,
                                      int im2col_step);
 
+void dcnv3_cuda_forward(Tensor input, Tensor offset, Tensor mask, int kH,
+                        int kW, int sH, int sW, int pH, int pW, 
+                        int dilationH, int dilationW, int group,
+                        int groupC, float offset_scale, int im2col_step);
+
+void dcnv3_cuda_backward(Tensor input, Tensor offset, Tensor mask, int kH,
+                        int kW, int sH, int sW, int pH, int pW, 
+                        int dilationH, int dilationW, int group,
+                        int groupC, float offset_scale, Tensor grad_output, 
+                        int im2col_step);
+
 void deform_roi_pool_forward(Tensor input, Tensor rois, Tensor offset,
                              Tensor output, int pooled_height, int pooled_width,
                              float spatial_scale, int sampling_ratio,
@@ -542,6 +553,18 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("dH"), py::arg("padW"), py::arg("padH"), py::arg("dilationW"),
         py::arg("dilationH"), py::arg("group"), py::arg("deformable_group"),
         py::arg("scale"), py::arg("im2col_step"));
+  m.def("dcnv3_cuda_forward", &dcnv3_cuda_forward, "dcnv3_cuda_forward",
+        py::arg("input"), py::arg("offset"), py::arg("mask"),
+        py::arg("kH"), py::arg("kW"), py::arg("sH"), py::arg("sW"),
+        py::arg("pH"), py::arg("pW"), py::arg("dilationH"), py::arg("dilationW"),
+        py::arg("group"), py::arg("groupC"), py::arg("offset_scale"),
+        py::arg("im2col_step"));
+  m.def("dcnv3_cuda_backward", &dcnv3_cuda_backward, "dcnv3_cuda_backward",
+        py::arg("input"), py::arg("offset"), py::arg("mask"),
+        py::arg("kH"), py::arg("kW"), py::arg("sH"), py::arg("sW"),
+        py::arg("pH"), py::arg("pW"), py::arg("dilationH"), py::arg("dilationW"),
+        py::arg("group"), py::arg("groupC"), py::arg("offset_scale"),
+        py::arg("grad_output"), py::arg("im2col_step"));
   m.def("deform_roi_pool_forward", &deform_roi_pool_forward,
         "deform roi pool forward", py::arg("input"), py::arg("rois"),
         py::arg("offset"), py::arg("output"), py::arg("pooled_height"),
