@@ -133,7 +133,10 @@ def box_iou_rotated(bboxes1: torch.Tensor,
     if aligned:
         ious = bboxes1.new_zeros(rows)
     else:
-        ious = bboxes1.new_zeros(rows * cols)
+        if bboxes1.device.type == 'mlu':
+            ious = bboxes1.new_zeros([rows, cols])
+        else:
+            ious = bboxes1.new_zeros(rows * cols)
     if not clockwise:
         flip_mat = bboxes1.new_ones(bboxes1.shape[-1])
         flip_mat[-1] = -1
