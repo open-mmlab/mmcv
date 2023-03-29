@@ -12,7 +12,7 @@
 */
 
 #include <vector>
-#include "dcnv3_im2col_cuda.cuh"
+#include "dcnv3_cuda_kernal.cuh"
 #include "pytorch_cuda_helper.hpp"
 
 #include <ATen/ATen.h>

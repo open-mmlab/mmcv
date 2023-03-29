@@ -6,25 +6,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from mmengine.logging import print_log
 from mmengine.registry import MODELS
-from mmengine.utils import deprecated_api_warning
 from torch import Tensor
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
-from torch.nn.modules.utils import _pair, _single
 
-from ..utils import ext_loader
-
-ext_module = ext_loader.load_ext('_ext', [
-    'dcnv3_cuda_forward', 'dcnv3_cuda_backward'])
-
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import division
-
-import torch
-import torch.nn.functional as F
-from torch.autograd import Function
-from torch.autograd.function import once_differentiable
 from torch.cuda.amp import custom_bwd, custom_fwd
 import DCNv3
 import warnings
@@ -33,6 +18,10 @@ from torch import nn
 import torch.nn.functional as F
 from torch.nn.init import xavier_uniform_, constant_
 
+from ..utils import ext_loader
+
+ext_module = ext_loader.load_ext('_ext', [
+    'dcnv3_cuda_forward', 'dcnv3_cuda_backward'])
 
 class DCNv3Function(Function):
     @staticmethod
@@ -54,7 +43,7 @@ class DCNv3Function(Function):
         ctx.group_channels = group_channels
         ctx.offset_scale = offset_scale
         ctx.im2col_step = im2col_step
-        output = DCNv3.dcnv3_forward(
+        output = ext_module.dcnv3_forward(
             input, offset, mask, kernel_h,
             kernel_w, stride_h, stride_w, pad_h,
             pad_w, dilation_h, dilation_w, group,
