@@ -56,6 +56,17 @@ void deform_conv_backward_parameters(Tensor input, Tensor offset,
                                      int deformable_group, float scale,
                                      int im2col_step);
 
+void dcnv3_cuda_forward(Tensor input, Tensor offset, Tensor mask, int kernel_h,
+                        int kernel_w, int stride_h, int stride_w, int pad_h,
+                        int pad_w, int dilation_h, int dilation_w, int group,
+                        int group_channels, float offset_scale, int im2col_step);
+
+void dcnv3_cuda_backward(Tensor input, Tensor offset, Tensor mask, int kernel_h,
+                         int kernel_w, int stride_h, int stride_w, int pad_h, 
+                         int pad_w, int dilation_h, int dilation_w, int group,
+                         int group_channels, float offset_scale, Tensor grad_output,
+                         int im2col_step);
+
 void deform_roi_pool_forward(Tensor input, Tensor rois, Tensor offset,
                              Tensor output, int pooled_height, int pooled_width,
                              float spatial_scale, int sampling_ratio,
@@ -542,6 +553,19 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("dH"), py::arg("padW"), py::arg("padH"), py::arg("dilationW"),
         py::arg("dilationH"), py::arg("group"), py::arg("deformable_group"),
         py::arg("scale"), py::arg("im2col_step"));
+  m.def("dcnv3_cuda_forward", &dcnv3_cuda_forward, "dcnv3_cuda_forward",
+        py::arg("input"), py::arg("offset"), py::arg("mask"),
+        py::arg("kernel_h"), py::arg("kernel_w"), py::arg("stride_h"), 
+        py::arg("stride_w"), py::arg("pad_h"), py::arg("pad_w"), 
+        py::arg("dilation_h"), py::arg("dilation_w"),py::arg("group"), 
+        py::arg("group_channels"), py::arg("offset_scale"), py::arg("im2col_step"));
+  m.def("dcnv3_cuda_backward", &dcnv3_cuda_backward, "dcnv3_cuda_backward",
+        py::arg("input"), py::arg("offset"), py::arg("mask"),
+        py::arg("kernel_h"), py::arg("kernel_w"), py::arg("stride_h"), 
+        py::arg("stride_w"), py::arg("pad_h"), py::arg("pad_w"), 
+        py::arg("dilation_h"), py::arg("dilation_w"),py::arg("group"), 
+        py::arg("group_channels"), py::arg("offset_scale"), 
+        py::arg("grad_output"), py::arg("im2col_step"));
   m.def("deform_roi_pool_forward", &deform_roi_pool_forward,
         "deform roi pool forward", py::arg("input"), py::arg("rois"),
         py::arg("offset"), py::arg("output"), py::arg("pooled_height"),
