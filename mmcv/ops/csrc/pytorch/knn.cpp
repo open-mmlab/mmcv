@@ -23,7 +23,9 @@ void knn_forward(Tensor xyz_tensor, Tensor new_xyz_tensor, Tensor idx_tensor,
   auto xyz_tensor_p = toDiopiTensorHandle(xyz_tensor);
   diopiDevice_t device;
   diopiGetTensorDevice(xyz_tensor_p, &device);
-  if (device == diopi_host) {
+  diopiDtype_t dtype;
+  diopiGetTensorDtype(xyz_tensor_p, &dtype);
+  if (device == diopi_host || dtype == diopi_dtype_float16) {
     knn_forward_impl(b, n, m, nsample, xyz_tensor, new_xyz_tensor, idx_tensor,
                      dist2_tensor);
     return;

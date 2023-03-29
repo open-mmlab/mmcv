@@ -37,7 +37,9 @@ void assign_score_withk_forward(const Tensor& points, const Tensor& centers,
   auto points_p = toDiopiTensorHandle(points);
   diopiDevice_t device;
   diopiGetTensorDevice(points_p, &device);
-  if (device == diopi_host) {
+  diopiDtype_t dtype;
+  diopiGetTensorDtype(points_p, &dtype);
+  if (device == diopi_host || dtype == diopi_dtype_float16) {
     assign_score_withk_forward_impl(B, N0, N1, M, K, O, aggregate, points,
                                     centers, scores, knn_idx, output);
     return;
@@ -71,7 +73,9 @@ void assign_score_withk_backward(const Tensor& grad_out, const Tensor& points,
   auto grad_out_p = toDiopiTensorHandle(grad_out);
   diopiDevice_t device;
   diopiGetTensorDevice(grad_out_p, &device);
-  if (device == diopi_host) {
+  diopiDtype_t dtype;
+  diopiGetTensorDtype(grad_out_p, &dtype);
+  if (device == diopi_host || dtype == diopi_dtype_float16) {
     assign_score_withk_backward_impl(B, N0, N1, M, K, O, aggregate, grad_out,
                                      points, centers, scores, knn_idx,
                                      grad_points, grad_centers, grad_scores);

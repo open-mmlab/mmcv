@@ -21,7 +21,9 @@ void bbox_overlaps(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
   auto bboxes1_p = toDiopiTensorHandle(bboxes1);
   diopiDevice_t device;
   diopiGetTensorDevice(bboxes1_p, &device);
-  if (device == diopi_host) {
+  diopiDtype_t dtype;
+  diopiGetTensorDtype(bboxes1_p, &dtype);
+  if (device == diopi_host || dtype == diopi_dtype_float16) {
     bbox_overlaps_impl(bboxes1, bboxes2, ious, mode, aligned, offset);
     return;
   }

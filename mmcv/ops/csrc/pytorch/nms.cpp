@@ -30,7 +30,9 @@ Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
   auto boxes_p = toDiopiTensorHandle(boxes);
   diopiDevice_t device;
   diopiGetTensorDevice(boxes_p, &device);
-  if (device == diopi_host) {
+  diopiDtype_t dtype;
+  diopiGetTensorDtype(boxes_p, &dtype);
+  if (device == diopi_host || dtype == diopi_dtype_float16) {
     return nms_impl(boxes, scores, iou_threshold, offset);
   }
   diopiContext ctx;

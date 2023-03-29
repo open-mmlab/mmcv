@@ -39,7 +39,9 @@ void prroi_pool_forward(Tensor input, Tensor rois, Tensor output,
   auto input_p = toDiopiTensorHandle(input);
   diopiDevice_t device;
   diopiGetTensorDevice(input_p, &device);
-  if (device == diopi_host) {
+  diopiDtype_t dtype;
+  diopiGetTensorDtype(input_p, &dtype);
+  if (device == diopi_host || dtype == diopi_dtype_float16) {
     prroi_pool_forward_impl(input, rois, output, pooled_height, pooled_width,
                             spatial_scale);
     return;
@@ -68,7 +70,9 @@ void prroi_pool_backward(Tensor grad_output, Tensor rois, Tensor grad_input,
   auto grad_output_p = toDiopiTensorHandle(grad_output);
   diopiDevice_t device;
   diopiGetTensorDevice(grad_output_p, &device);
-  if (device == diopi_host) {
+  diopiDtype_t dtype;
+  diopiGetTensorDtype(grad_output_p, &dtype);
+  if (device == diopi_host || dtype == diopi_dtype_float16) {
     prroi_pool_backward_impl(grad_output, rois, grad_input, pooled_height,
                              pooled_width, spatial_scale);
     return;
@@ -97,7 +101,9 @@ void prroi_pool_coor_backward(Tensor output, Tensor grad_output, Tensor input,
   auto grad_output_p = toDiopiTensorHandle(grad_output);
   diopiDevice_t device;
   diopiGetTensorDevice(grad_output_p, &device);
-  if (device == diopi_host) {
+  diopiDtype_t dtype;
+  diopiGetTensorDtype(grad_output_p, &dtype);
+  if (device == diopi_host || dtype == diopi_dtype_float16) {
     prroi_pool_coor_backward_impl(output, grad_output, input, rois, grad_rois,
                                   pooled_height, pooled_width, spatial_scale);
     return;

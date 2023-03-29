@@ -30,7 +30,9 @@ void border_align_forward(const Tensor &input, const Tensor &boxes,
   auto input_p = toDiopiTensorHandle(input);
   diopiDevice_t device;
   diopiGetTensorDevice(input_p, &device);
-  if (device == diopi_host) {
+  diopiDtype_t dtype;
+  diopiGetTensorDtype(input_p, &dtype);
+  if (device == diopi_host || dtype == diopi_dtype_float16) {
     border_align_forward_impl(input, boxes, output, argmax_idx, pool_size);
     return;
   }
@@ -56,7 +58,9 @@ void border_align_backward(const Tensor &grad_output, const Tensor &boxes,
   auto grad_output_p = toDiopiTensorHandle(grad_output);
   diopiDevice_t device;
   diopiGetTensorDevice(grad_output_p, &device);
-  if (device == diopi_host) {
+  diopiDtype_t dtype;
+  diopiGetTensorDtype(grad_output_p, &dtype);
+  if (device == diopi_host || dtype == diopi_dtype_float16) {
     border_align_backward_impl(grad_output, boxes, argmax_idx, grad_input,
                                pool_size);
     return;

@@ -37,7 +37,9 @@ void deform_roi_pool_forward(Tensor input, Tensor rois, Tensor offset,
   auto input_p = toDiopiTensorHandle(input);
   diopiDevice_t device;
   diopiGetTensorDevice(input_p, &device);
-  if (device == diopi_host) {
+  diopiDtype_t dtype;
+  diopiGetTensorDtype(input_p, &dtype);
+  if (device == diopi_host || dtype == diopi_dtype_float16) {
     deform_roi_pool_forward_impl(input, rois, offset, output, pooled_height,
                                  pooled_width, spatial_scale, sampling_ratio,
                                  gamma);
@@ -72,7 +74,9 @@ void deform_roi_pool_backward(Tensor grad_output, Tensor input, Tensor rois,
   auto grad_output_p = toDiopiTensorHandle(grad_output);
   diopiDevice_t device;
   diopiGetTensorDevice(grad_output_p, &device);
-  if (device == diopi_host) {
+  diopiDtype_t dtype;
+  diopiGetTensorDtype(grad_output_p, &dtype);
+  if (device == diopi_host || dtype == diopi_dtype_float16) {
     deform_roi_pool_backward_impl(grad_output, input, rois, offset, grad_input,
                                   grad_offset, pooled_height, pooled_width,
                                   spatial_scale, sampling_ratio, gamma);
