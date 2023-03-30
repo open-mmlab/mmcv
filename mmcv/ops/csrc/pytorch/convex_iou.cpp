@@ -21,7 +21,9 @@ void convex_iou(const Tensor pointsets, const Tensor polygons, Tensor ious) {
   auto pointsets_p = toDiopiTensorHandle(pointsets);
   diopiDevice_t device;
   diopiGetTensorDevice(pointsets_p, &device);
-  if (device == diopi_host) {
+  diopiDtype_t dtype;
+  diopiGetTensorDtype(pointsets_p, &dtype);
+  if (device == diopi_host || dtype == diopi_dtype_float16) {
     convex_iou_impl(pointsets, polygons, ious);
     return;
   }
@@ -49,7 +51,9 @@ void convex_giou(const Tensor pointsets, const Tensor polygons, Tensor output) {
   auto pointsets_p = toDiopiTensorHandle(pointsets);
   diopiDevice_t device;
   diopiGetTensorDevice(pointsets_p, &device);
-  if (device == diopi_host) {
+  diopiDtype_t dtype;
+  diopiGetTensorDtype(pointsets_p, &dtype);
+  if (device == diopi_host || dtype == diopi_dtype_float16) {
     convex_giou_impl(pointsets, polygons, output);
     return;
   }

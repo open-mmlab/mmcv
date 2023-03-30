@@ -21,7 +21,9 @@ Tensor diff_iou_rotated_sort_vertices_forward(Tensor vertices, Tensor mask,
   auto vertices_p = toDiopiTensorHandle(vertices);
   diopiDevice_t device;
   diopiGetTensorDevice(vertices_p, &device);
-  if (device == diopi_host) {
+  diopiDtype_t dtype;
+  diopiGetTensorDtype(vertices_p, &dtype);
+  if (device == diopi_host || dtype == diopi_dtype_float16) {
     return diff_iou_rotated_sort_vertices_forward_impl(vertices, mask,
                                                        num_valid);
   }

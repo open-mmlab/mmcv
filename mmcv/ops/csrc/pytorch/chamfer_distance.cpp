@@ -34,7 +34,9 @@ void chamfer_distance_forward(const Tensor xyz1, const Tensor xyz2,
   auto xyz1_p = toDiopiTensorHandle(xyz1);
   diopiDevice_t device;
   diopiGetTensorDevice(xyz1_p, &device);
-  if (device == diopi_host) {
+  diopiDtype_t dtype;
+  diopiGetTensorDtype(xyz1_p, &dtype);
+  if (device == diopi_host || dtype == diopi_dtype_float16) {
     chamfer_distance_forward_impl(xyz1, xyz2, dist1, dist2, idx1, idx2);
     return;
   }
@@ -63,7 +65,9 @@ void chamfer_distance_backward(const Tensor xyz1, const Tensor xyz2,
   auto xyz1_p = toDiopiTensorHandle(xyz1);
   diopiDevice_t device;
   diopiGetTensorDevice(xyz1_p, &device);
-  if (device == diopi_host) {
+  diopiDtype_t dtype;
+  diopiGetTensorDtype(xyz1_p, &dtype);
+  if (device == diopi_host || dtype == diopi_dtype_float16) {
     chamfer_distance_backward_impl(xyz1, xyz2, idx1, idx2, graddist1, graddist2,
                                    gradxyz1, gradxyz2);
     return;

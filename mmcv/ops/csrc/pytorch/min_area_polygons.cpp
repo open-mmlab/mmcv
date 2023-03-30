@@ -18,7 +18,9 @@ void min_area_polygons(const Tensor pointsets, Tensor polygons) {
   auto pointsets_p = toDiopiTensorHandle(pointsets);
   diopiDevice_t device;
   diopiGetTensorDevice(pointsets_p, &device);
-  if (device == diopi_host) {
+  diopiDtype_t dtype;
+  diopiGetTensorDtype(pointsets_p, &dtype);
+  if (device == diopi_host || dtype == diopi_dtype_float16) {
     min_area_polygons_impl(pointsets, polygons);
     return;
   }
