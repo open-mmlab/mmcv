@@ -167,7 +167,7 @@ def get_extensions():
                     '-D__CUDA_NO_HALF_CONVERSIONS__',
                     '-D__CUDA_NO_HALF2_OPERATORS__',
                 ]
-                
+
         if use_camb:
             define_macros = []
             include_dirs = [os.path.abspath('./mmcv/ops/csrc'),
@@ -181,7 +181,8 @@ def get_extensions():
             extra_compile_args = {
                 'cxx': [],
                 'cncc': [mlu_args] if mlu_args else
-                    ['-v', '-fPIC', '--shared', '--bang-mlu-arch=MLU290', '-O3'],
+                    ['-v', '-fPIC', '--shared',
+                     '--bang-mlu-arch=MLU290', '--bang-mlu-arch=mtp_372', '-O3'],
             }
         ext_ops = Extension(
             name=ext_name,
