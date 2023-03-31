@@ -81,6 +81,5 @@ PARROTS_EXTENSION_REGISTER(convex_giou)
 #else
     .apply(convex_giou_forward_cuda_parrots)
 #endif
-
     .done();
 #endif

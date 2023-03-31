@@ -28,7 +28,7 @@ void fused_bias_leakyrelu_parrots(CudaContext &ctx, const SSElement &attr,
   const auto &refer = buildATensor(ctx, ins[2]);
   auto out = fused_bias_leakyrelu(input, bias, refer, act, grad, alpha, scale);
 #ifndef MMCV_WITH_DIOPI
-  updateDArray(ctx, tensor, outs[0]);
+  updateDArray(ctx, out, outs[0]);
 #endif
 }
 

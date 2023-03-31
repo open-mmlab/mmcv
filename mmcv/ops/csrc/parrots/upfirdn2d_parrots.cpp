@@ -30,7 +30,7 @@ void upfirdn2d_parrots(CudaContext &ctx, const SSElement &attr,
   auto out = upfirdn2d(input, kernel, up_x, up_y, down_x, down_y, pad_x0,
                        pad_x1, pad_y0, pad_y1);
 #ifndef MMCV_WITH_DIOPI
-  updateDArray(ctx, tensor, outs[0]);
+  updateDArray(ctx, out, outs[0]);
 #endif
 }
 

@@ -54,7 +54,7 @@ void nms_parrots(T& ctx, const SSElement& attr,
   boxes = buildATensor(ctx, ins[0]);
   scores = buildATensor(ctx, ins[1]);
   auto out = nms(boxes, scores, iou_threshold, offset);
-  updateDArray(ctx, tensor, outs[0]);
+  updateDArray(ctx, out, outs[0]);
 }
 #endif
 
@@ -80,7 +80,7 @@ void softnms_parrots(T& ctx, const SSElement& attr,
   auto out = softnms(boxes, scores, dets, iou_threshold, sigma, min_score,
                      method, offset);
 #ifndef MMCV_WITH_DIOPI
-  updateDArray(ctx, tensor, outs[0]);
+  updateDArray(ctx, out, outs[0]);
 #endif
 }
 
@@ -128,7 +128,7 @@ void nms_rotated_parrots(T& ctx, const SSElement& attr,
   auto out =
       nms_rotated(dets, scores, order, dets_sorted, iou_threshold, multi_label);
 #ifndef MMCV_WITH_DIOPI
-  updateDArray(ctx, tensor, outs[0]);
+  updateDArray(ctx, out, outs[0]);
 #endif
 }
 
