@@ -4,6 +4,9 @@ using namespace NPU_NAME_SPACE;
 using namespace std;
 
 Tensor nms_npu(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
+  TORCH_CHECK((boxes.scalar_type == at::ScalarType::Float),
+              "The boxes tensor in NMS op need float dtype, does not support "
+              "half dtype.");
   int64_t offset_64 = offset;
   at::Tensor iou_threshold_y = at_npu::native::OpPreparation::ApplyTensor(
                                    {}, boxes.options().dtype(at::kFloat), boxes)
