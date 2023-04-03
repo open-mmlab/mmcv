@@ -11,6 +11,7 @@
  *************************************************************************/
 #include "pytorch_device_registry.hpp"
 #include "pytorch_mlu_helper.hpp"
+#include "mlu_common_helper.h"
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
@@ -20,6 +21,7 @@ typedef enum {
       1, /*!< MLUKernelMsDeformAttnForwardDefault */
   MS_DEFORM_ATTN_FORWARD_SMALL_CHANNEL =
       2, /*!< MLUKernelMsDeformAttnForwardSmallChannel */
+  MS_DEFORM_ATTN_FORWARD_FAST = 3, /*!< MLUKernelMsDeformAttnForwardFast */
 } MsDeformAttnForwardPolicy;
 
 void KernelMsDeformAttnForwardDefault(
@@ -40,6 +42,15 @@ void KernelMsDeformAttnForwardSmallChannel(
     const int32_t batch_size, const int32_t num_keys, const int32_t num_heads,
     const int32_t channels, const int32_t num_levels, const int32_t num_queries,
     const int32_t num_points, char* data_col_gdram);
+void KernelMsDeformAttnForwardFast(
+    cnrtDim3_t k_dim, cnrtFunctionType_t k_type, cnrtQueue_t queue,
+    const cnrtDataType_t d_type, const char* data_value_gdram,
+    const char* data_spatial_shapes_gdram,
+    const char* data_level_start_index_gdram,
+    const char* data_sampling_loc_gdram, const char* data_attn_weight_gdram,
+    const int32_t batch_size, const int32_t num_keys, const int32_t num_heads,
+    const int32_t channels, const int32_t num_levels, const int32_t num_queries,
+    const int32_t num_points, char* data_col_gdram);
 
 typedef enum {
   MS_DEFORM_ATTN_BACKWARD_DEFAULT = 0,
@@ -52,9 +63,9 @@ MsDeformAttnBackwardKernelPolicy msDeformAttnBackwardPolicyFunc(
   const int32_t nram_size = torch_mlu::getDeviceAttr(cnrtAttrNramSizePerMcore);
   const int num_hlp = num_heads * num_levels * num_points;
   int num_per_time_theory = (nram_size - num_levels * sizeof(float) -
-                             3 * num_levels * sizeof(int32_t)) /
+                             3 * PAD_UP(num_levels, 32) * sizeof(int32_t)) /
                             sizeof(float) / (8 * PAD_UP(channels, 32) + 28) /
-                            PAD_UP((num_hlp), 32);
+                            (num_hlp);
   if (num_per_time_theory >= 1) {
     return MS_DEFORM_ATTN_BACKWARD_SMALL_CHANNEL;
   }
@@ -99,7 +110,11 @@ MsDeformAttnForwardPolicy msDeformAttnForwardPolicyFunc(
 #endif
 
   int32_t nram_size = torch_mlu::getDeviceAttr(cnrtAttrNramSizePerMcore);
-  if (num_levels * num_points * 3 * sizeof(int32_t) > nram_size) {
+  if (k_dim->x == 4 && k_dim->y >= 6 && k_dim->y <= 12 &&
+      num_levels * num_points <= 128 &&
+      num_levels * num_points * channels <= 12288) {
+    return MS_DEFORM_ATTN_FORWARD_FAST;
+  } else if (num_levels * num_points * 3 * sizeof(int32_t) > nram_size) {
     return MS_DEFORM_ATTN_FORWARD_DEFAULT;
   } else if (channels > nram_size / 12 / sizeof(float) || channels > 96 ||
              channels < 16) {
@@ -304,6 +319,17 @@ Tensor ms_deform_attn_mlu_forward(const Tensor& value,
       CNLOG(INFO) << "Launch Kernel MLUKernelMsDeformAttnForwardSmallChannel<<<"
                   << k_dim.x << ", " << k_dim.y << ", " << k_dim.z << ">>>";
       KernelMsDeformAttnForwardSmallChannel(
+          k_dim, k_type, queue, data_type, (char*)value_ptr,
+          (char*)spatial_shapes_ptr, (char*)level_start_index_ptr,
+          (char*)sampling_loc_ptr, (char*)attn_weight_ptr, batch_size, num_keys,
+          num_heads, channels, num_levels, num_queries, num_points,
+          (char*)output_ptr);
+      break;
+    }
+    case MS_DEFORM_ATTN_FORWARD_FAST: {
+      CNLOG(INFO) << "Launch Kernel MLUKernelMsDeformAttnForwardFast<<<"
+                  << k_dim.x << ", " << k_dim.y << ", " << k_dim.z << ">>>";
+      KernelMsDeformAttnForwardFast(
           k_dim, k_type, queue, data_type, (char*)value_ptr,
           (char*)spatial_shapes_ptr, (char*)level_start_index_ptr,
           (char*)sampling_loc_ptr, (char*)attn_weight_ptr, batch_size, num_keys,
