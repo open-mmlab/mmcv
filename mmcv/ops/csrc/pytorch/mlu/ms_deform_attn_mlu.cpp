@@ -9,9 +9,9 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *************************************************************************/
+#include "mlu_common_helper.h"
 #include "pytorch_device_registry.hpp"
 #include "pytorch_mlu_helper.hpp"
-#include "mlu_common_helper.h"
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
