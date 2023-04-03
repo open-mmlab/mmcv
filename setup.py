@@ -213,7 +213,7 @@ def get_extensions():
             glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu')
         if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
             op_files += glob.glob(
-                './mmcv/ops/csrc/DIOPI-IMPL/cuda/functions/*.cu')
+                './mmcv/ops/csrc/DIOPI-IMPL/cuda/functions_mmcv/*.cu')
         op_files.remove('./mmcv/ops/csrc/pytorch/cuda/iou3d_cuda.cu')
         op_files.remove('./mmcv/ops/csrc/pytorch/cpu/bbox_overlaps_cpu.cpp')
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
@@ -304,7 +304,7 @@ def get_extensions():
                 glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cpp')
             if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
                 op_files += glob.glob(
-                    './mmcv/ops/csrc/DIOPI-IMPL/cuda/functions/*.cu')
+                    './mmcv/ops/csrc/DIOPI-IMPL/cuda/functions_mmcv/*.cu')
                 op_files += glob.glob('./mmcv/ops/csrc/diopi_rt/torch/*.cpp')
             extension = CUDAExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/pytorch'))
