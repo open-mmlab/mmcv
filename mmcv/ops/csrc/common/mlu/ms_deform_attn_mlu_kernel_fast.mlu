@@ -407,8 +407,8 @@ __mlu_func__ void reduceLevelByConv(
       __bang_cycle_mul(input_pooled, input_pooled, weight_attn_nram,
                        channels * valid_num, valid_num);
       __bang_transpose(input_trans, input_pooled, channels, valid_num);
-      __bang_sumpool(output_nram, input_trans, channels, valid_num, 1, valid_num,
-                     1, 1, 1);
+      __bang_sumpool(output_nram, input_trans, channels, valid_num, 1,
+                     valid_num, 1, 1, 1);
     } else {
       tileWeight2WramSync(input_wram, input_trans, co, ci, pad_co, pad_ci);
       __bang_conv(output_nram, weight_compute, input_wram, ci, 1, 1, 1, 1, 1, 1,
