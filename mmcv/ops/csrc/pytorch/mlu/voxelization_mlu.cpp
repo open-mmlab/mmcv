@@ -95,4 +95,3 @@ int hard_voxelize_forward_impl(const at::Tensor &points, at::Tensor &voxels,
                                const int NDim);
 
 REGISTER_DEVICE_IMPL(hard_voxelize_forward_impl, MLU, hard_voxelize_forward_mlu);
-
