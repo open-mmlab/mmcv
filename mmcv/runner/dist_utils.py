@@ -48,7 +48,6 @@ def init_dist(launcher: str, backend: str = 'nccl', **kwargs) -> None:
 
 
 def _init_dist_pytorch(backend: str, **kwargs) -> None:
-    # TODO: use local_rank instead of rank % num_gpus
     rank = int(os.environ['RANK'])
     if IS_MLU_AVAILABLE:
         import torch_mlu  # noqa: F401
@@ -69,7 +68,11 @@ def _init_dist_pytorch(backend: str, **kwargs) -> None:
             **kwargs)
     else:
         num_gpus = torch.cuda.device_count()
-        torch.cuda.set_device(rank % num_gpus)
+        local_rank = rank % num_gpus
+        local_rank_env = os.environ.get('LOCAL_RANK', None)
+        if local_rank_env is not None:
+            local_rank = int(local_rank_env)
+        torch.cuda.set_device(local_rank)
         dist.init_process_group(backend=backend, **kwargs)
 
 
@@ -101,7 +104,11 @@ def _init_dist_slurm(backend: str, port: Optional[int] = None) -> None:
     ntasks = int(os.environ['SLURM_NTASKS'])
     node_list = os.environ['SLURM_NODELIST']
     num_gpus = torch.cuda.device_count()
-    torch.cuda.set_device(proc_id % num_gpus)
+    local_rank = proc_id % num_gpus
+    local_rank_env = os.environ.get('SLURM_LOCALID', None)
+    if local_rank_env is not None:
+        local_rank = int(local_rank_env)
+    torch.cuda.set_device(local_rank)
     addr = subprocess.getoutput(
         f'scontrol show hostname {node_list} | head -n1')
     # specify master port
@@ -120,7 +127,7 @@ def _init_dist_slurm(backend: str, port: Optional[int] = None) -> None:
     if 'MASTER_ADDR' not in os.environ:
         os.environ['MASTER_ADDR'] = addr
     os.environ['WORLD_SIZE'] = str(ntasks)
-    os.environ['LOCAL_RANK'] = str(proc_id % num_gpus)
+    os.environ['LOCAL_RANK'] = str(local_rank)
     os.environ['RANK'] = str(proc_id)
     dist.init_process_group(backend=backend)
 
