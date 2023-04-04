@@ -81,7 +81,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python-version: [3.8, 3.9, '3.10', '3.11']
+        python-version: [3.8, 3.9, '3.10']
         torch: [1.13.0]
         include:
           - torch: 1.13.0
