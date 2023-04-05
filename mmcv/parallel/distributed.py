@@ -66,7 +66,8 @@ class MMDistributedDataParallel(DistributedDataParallel):
                     self._module_copies[:len(inputs)], inputs, kwargs)
                 output = self.gather(outputs, self.output_device)
         else:
-            output = self.module.train_step(*inputs, **kwargs)
+            inputs, kwargs = self.scatter(inputs, kwargs, [-1])
+            output = self.module.train_step(*inputs[0], **kwargs[0])
 
         if ('parrots' not in TORCH_VERSION
                 and digit_version(TORCH_VERSION) >= digit_version('1.11.0a0')):
@@ -121,7 +122,8 @@ class MMDistributedDataParallel(DistributedDataParallel):
                     self._module_copies[:len(inputs)], inputs, kwargs)
                 output = self.gather(outputs, self.output_device)
         else:
-            output = self.module.val_step(*inputs, **kwargs)
+            inputs, kwargs = self.scatter(inputs, kwargs, [-1])
+            output = self.module.val_step(*inputs[0], **kwargs[0])
 
         if ('parrots' not in TORCH_VERSION
                 and digit_version(TORCH_VERSION) >= digit_version('1.11.0a0')):
@@ -159,9 +161,7 @@ class MMDistributedDataParallel(DistributedDataParallel):
         module_to_run = self._replicated_tensor_module if \
             self._use_replicated_tensor_module else self.module
 
-        if self.device_ids:
-            inputs, kwargs = self.to_kwargs(  # type: ignore
-                inputs, kwargs, self.device_ids[0])
-            return module_to_run(*inputs[0], **kwargs[0])  # type: ignore
-        else:
-            return module_to_run(*inputs, **kwargs)
+        device_id = self.device_ids[0] if self.device_ids else -1
+        inputs, kwargs = self.to_kwargs(  # type: ignore
+            inputs, kwargs, device_id)
+        return module_to_run(*inputs[0], **kwargs[0])  # type: ignore
