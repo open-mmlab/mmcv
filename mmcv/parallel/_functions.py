@@ -3,6 +3,7 @@ from typing import List, Optional, Union
 
 import torch
 from torch import Tensor
+from torch._utils import _get_device_index
 from torch.nn.parallel._functions import _get_stream
 
 
@@ -67,7 +68,10 @@ def get_input_device(input: Union[List, Tensor]) -> int:
 class Scatter:
 
     @staticmethod
-    def forward(target_gpus: List[int], input: Union[List, Tensor]) -> tuple:
+    def forward(target_gpus, input: Union[List, Tensor]) -> tuple:
+        # target_gpus may be a list of int, str or torch.device,
+        # normalize them to List[int]
+        target_gpus = [_get_device_index(x, True) for x in target_gpus]
         input_device = get_input_device(input)
         streams = None
         if input_device == -1 and target_gpus != [-1]:
