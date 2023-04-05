@@ -1639,7 +1639,7 @@ def test_neptune_hook():
     runner.run([loader, loader], [('train', 1), ('val', 1)])
     shutil.rmtree(runner.work_dir)
 
-    hook.neptune.init.assert_called_with()
+    hook.neptune.init_run.assert_called_with()
     hook.run['momentum'].log.assert_called_with(0.95, step=6)
     hook.run.stop.assert_called_with()
 
