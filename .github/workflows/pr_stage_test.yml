@@ -21,6 +21,8 @@ concurrency:
 jobs:
   build_cu102:
     runs-on: ubuntu-22.04
+    env:
+      MMCV_WITH_OPS: 1
     container:
       image: pytorch/pytorch:1.8.1-cuda10.2-cudnn7-devel
     strategy:
@@ -61,6 +63,8 @@ jobs:
           fail_ci_if_error: false
   build_cu111:
     runs-on: ubuntu-22.04
+    env:
+      MMCV_WITH_OPS: 1
     container:
       image: pytorch/pytorch:1.8.1-cuda11.1-cudnn8-devel
     strategy:
@@ -93,8 +97,6 @@ jobs:
           coverage report -m
   build_windows_without_ops:
     runs-on: windows-2019
-    env:
-      MMCV_WITH_OPS: 0
     strategy:
       matrix:
         python-version: [3.7]
@@ -118,6 +120,8 @@ jobs:
         run: pytest tests --ignore=tests/test_ops --ignore tests/test_image/test_io.py
   build_windows:
     runs-on: windows-2019
+    env:
+      MMCV_WITH_OPS: 1
     strategy:
       matrix:
         torch: [1.5.1, 2.0.0]
@@ -148,6 +152,8 @@ jobs:
         run: pytest tests/ --ignore tests/test_image/test_io.py
   build_macos:
     runs-on: macos-latest
+    env:
+      MMCV_WITH_OPS: 1
     strategy:
       matrix:
         torch: [1.5.1, 2.0.0]
