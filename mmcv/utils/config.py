@@ -16,7 +16,6 @@ from importlib import import_module
 from pathlib import Path
 
 from addict import Dict
-from yapf.yapflib.yapf_api import FormatCode
 
 from .misc import import_modules_from_strings
 from .path import check_file_exist
@@ -417,6 +416,7 @@ class Config:
 
     @property
     def pretty_text(self):
+        from yapf.yapflib.yapf_api import FormatCode
 
         indent = 4
 
