@@ -13,6 +13,7 @@ except ImportError:
     _USING_PARROTS = False
 
 # torch.set_printoptions(precision=8, threshold=100)
+SKIP_BENCHMARK = True
 
 inputs = [
     ([[1., 0], [0, 1.]], [0, 1]),
@@ -35,6 +36,12 @@ sigmoid_outputs = [(0.13562961, [[-0.00657264, 0.11185755],
                    (0.42287254, [[0.07457182, -0.02485716, 0.07457201],
                                  [0.07457211, 0.07457669, -0.02483728],
                                  [-0.02462499, 0.08277918, 0.18050370]])]
+
+benchmark_data = [{
+    'name': f'{2 ** batch_exponent}_{2 ** num_classes_exponent}',
+    'batch': 2**batch_exponent,
+    'num_classes': 2**num_classes_exponent
+} for batch_exponent in range(1, 14) for num_classes_exponent in range(1, 13)]
 
 
 class Testfocalloss:
@@ -130,6 +137,7 @@ class Testfocalloss:
         self._test_softmax(dtype=torch.half)
 
     @pytest.mark.parametrize('device', [
+        'cpu',
         pytest.param(
             'npu',
             marks=pytest.mark.skipif(
@@ -147,6 +155,7 @@ class Testfocalloss:
         self._test_sigmoid(device=device, dtype=torch.float)
 
     @pytest.mark.parametrize('device', [
+        'cpu',
         pytest.param(
             'npu',
             marks=pytest.mark.skipif(
@@ -168,3 +177,57 @@ class Testfocalloss:
 
     def test_grad_sigmoid_float(self):
         self._test_grad_sigmoid(dtype=torch.float)
+
+    def _test_mmcv_cpu_sigmoid_focal_loss(self, args):
+        from mmcv.ops import sigmoid_focal_loss
+        loss = sigmoid_focal_loss(*args)
+        loss.backward()
+
+    def _test_torchvision_cpu_sigmoid_focal_loss(self, args):
+        from torchvision.ops import sigmoid_focal_loss
+        loss = sigmoid_focal_loss(*args)
+        loss.backward()
+
+    @pytest.mark.skipif(SKIP_BENCHMARK, reason='Skip benchmark.')
+    @pytest.mark.parametrize(
+        'param',
+        benchmark_data,
+        ids=[f"mmcv_{item['name']}" for item in benchmark_data])
+    def test_mmcv_cpu_sigmoid_focal_loss_benchmark(self, param, benchmark):
+        batch, num_classes = param['batch'], param['num_classes']
+        device = 'cpu'
+        dtype = torch.float
+        alpha = 0.25
+        gamma = 2.0
+        np_x = np.random.rand(batch, num_classes)
+        np_y = np.random.randint(0, num_classes, batch)
+
+        x = torch.from_numpy(np_x).to(device).type(dtype)
+        x.requires_grad_()
+        y = torch.from_numpy(np_y).to(device).long()
+        benchmark.pedantic(
+            self._test_mmcv_cpu_sigmoid_focal_loss,
+            ((x, y, gamma, alpha, None, 'mean'), ),
+            rounds=10)
+
+    @pytest.mark.skipif(SKIP_BENCHMARK, reason='Skip benchmark.')
+    @pytest.mark.parametrize(
+        'param',
+        benchmark_data,
+        ids=[f"torch_{item['name']}" for item in benchmark_data])
+    def test_torch_cpu_sigmoid_focal_loss_benchmask(self, param, benchmark):
+        batch, num_classes = param['batch'], param['num_classes']
+        device = 'cpu'
+        dtype = torch.float
+        alpha = 0.25
+        gamma = 2.0
+        np_x = np.random.rand(batch, num_classes)
+        np_y = np.random.randint(0, 2, (batch, num_classes))
+
+        x = torch.from_numpy(np_x).to(device).type(dtype)
+        x.requires_grad_()
+        y = torch.from_numpy(np_y).to(device).type(dtype)
+        benchmark.pedantic(
+            self._test_torchvision_cpu_sigmoid_focal_loss,
+            ((x, y, gamma, alpha, 'mean'), ),
+            rounds=10)
