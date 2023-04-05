@@ -130,6 +130,7 @@ class Testfocalloss:
         self._test_softmax(dtype=torch.half)
 
     @pytest.mark.parametrize('device', [
+        'cpu',
         pytest.param(
             'npu',
             marks=pytest.mark.skipif(
