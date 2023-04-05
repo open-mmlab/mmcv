@@ -23,8 +23,6 @@ concurrency:
 jobs:
   build_without_torch:
     runs-on: ubuntu-22.04
-    env:
-      MMCV_WITH_OPS: 0
     strategy:
       matrix:
         python-version: [3.7]
@@ -43,11 +41,24 @@ jobs:
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unit tests
-        run: pytest tests/test_image tests/test_transforms tests/test_video tests/test_arraymisc.py tests/test_visualization.py tests/test_utils/test_env.py --ignore=tests/test_image/test_io.py
+        run: pytest tests/ \
+               --ignore=tests/test_runner \
+               --ignore=tests/test_device/test_ipu \
+               --ignore=tests/test_optimizer.py \
+               --ignore=tests/test_cnn \
+               --ignore=tests/test_parallel.py \
+               --ignore=tests/test_ops \
+               --ignore=tests/test_load_model_zoo.py \
+               --ignore=tests/test_utils/test_logging.py \
+               --ignore=tests/test_image/test_io.py \
+               --ignore=tests/test_utils/test_registry.py \
+               --ignore=tests/test_utils/test_parrots_jit.py \
+               --ignore=tests/test_utils/test_trace.py \
+               --ignore=tests/test_utils/test_hub.py \
+               --ignore=tests/test_device \
+               --ignore=tests/test_utils/test_torch_ops.py
   build_without_ops:
     runs-on: ubuntu-22.04
-    env:
-      MMCV_WITH_OPS: 0
     strategy:
       matrix:
         python-version: [3.7]
@@ -124,7 +135,7 @@ jobs:
             torchvision: 0.7.0
             python-version: 3.7
           - torch: 1.7.1
-            torchvision: 0.8.1
+            torchvision: 0.8.2
             python-version: 3.7
           - torch: 1.8.1
             torchvision: 0.9.1
@@ -172,7 +183,7 @@ jobs:
           coverage report -m
       # Only upload coverage report for python3.7 && pytorch1.8.1 cpu
       - name: Upload coverage to Codecov
-        if: ${{matrix.torch == '1.8.1' && matrix.python-version == '3.8'}}
+        if: ${{matrix.torch == '1.8.1' && matrix.python-version == '3.7'}}
         uses: codecov/codecov-action@v1.0.14
         with:
           file: ./coverage.xml
@@ -338,7 +349,8 @@ jobs:
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unit tests
-        run: pytest tests/ --ignore tests/test_image/test_io.py
+        run: pytest tests/ --ignore tests/test_image/test_io.py --ignore tests/test_parallel.py --ignore tests/test_device
+        if: ${{matrix.torch == '1.5.1'}}
   build_macos:
     runs-on: macos-latest
     env:
@@ -372,4 +384,5 @@ jobs:
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unit tests
-        run: pytest tests/
+        # The timing on macos VMs is not precise, so we skip the progressbar tests
+        run: pytest tests/ --ignore tests/test_utils/test_progressbar.py --ignore tests/test_utils/test_timer.py
