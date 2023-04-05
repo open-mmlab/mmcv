@@ -36,7 +36,9 @@ class Model(nn.Module):
         images, labels = data
         predicts = self(images)  # -> self.__call__() -> self.forward()
         loss = self.loss_fn(predicts, labels)
-        return {'loss': loss}
+        accuracy = (predicts.argmax(dim=1) == labels).float().mean().cpu()
+        log_vars = dict(loss=loss.item(), accuracy=accuracy)
+        return dict(loss=loss, log_vars=log_vars, num_samples=len(images))
 
 
 if __name__ == '__main__':
@@ -53,10 +55,11 @@ if __name__ == '__main__':
     ])
     trainset = CIFAR10(
         root='data', train=True, download=True, transform=transform)
+
     trainloader = DataLoader(
         trainset, batch_size=128, shuffle=True, num_workers=2)
 
-    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    optimizer = optim.Adam(model.parameters(), lr=3e-3)
     logger = get_logger('mmcv')
     # runner is a scheduler to manage the training
     runner = EpochBasedRunner(
@@ -64,14 +67,14 @@ if __name__ == '__main__':
         optimizer=optimizer,
         work_dir='./work_dir',
         logger=logger,
-        max_epochs=4)
+        max_epochs=20)
 
     # learning rate scheduler config
     lr_config = dict(policy='step', step=[2, 3])
     # configuration of optimizer
     optimizer_config = dict(grad_clip=None)
     # configuration of saving checkpoints periodically
-    checkpoint_config = dict(interval=1)
+    checkpoint_config = dict(interval=10)
     # save log periodically and multiple hooks can be used simultaneously
     log_config = dict(interval=100, hooks=[dict(type='TextLoggerHook')])
     # register hooks to runner and those hooks will be invoked automatically
