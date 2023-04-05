@@ -54,7 +54,7 @@ class TestProgressBar:
         reset_string_io(out)
         prog_bar.update()
         assert out.getvalue() == f'\r[{">" * 2 + " " * 18}] 1/10, 1.0 ' \
-                                 'task/s, elapsed: 1s, ETA:     9s'
+                                 'task/s, elapsed: 0:00:01, ETA: 0:00:09'
 
     def test_adaptive_length(self):
         with patch.dict('os.environ', {'COLUMNS': '80'}):
@@ -64,12 +64,12 @@ class TestProgressBar:
             time.sleep(1)
             reset_string_io(out)
             prog_bar.update()
-            assert len(out.getvalue()) == 66
+            assert len(out.getvalue()) == 72
 
             os.environ['COLUMNS'] = '30'
             reset_string_io(out)
             prog_bar.update()
-            assert len(out.getvalue()) == 48
+            assert len(out.getvalue()) == 54
 
             os.environ['COLUMNS'] = '60'
             reset_string_io(out)
@@ -87,9 +87,9 @@ def test_track_progress_list():
     ret = mmcv.track_progress(sleep_1s, [1, 2, 3], bar_width=3, file=out)
     assert out.getvalue() == (
         '[   ] 0/3, elapsed: 0s, ETA:'
-        '\r[>  ] 1/3, 1.0 task/s, elapsed: 1s, ETA:     2s'
-        '\r[>> ] 2/3, 1.0 task/s, elapsed: 2s, ETA:     1s'
-        '\r[>>>] 3/3, 1.0 task/s, elapsed: 3s, ETA:     0s\n')
+        '\r[>  ] 1/3, 1.0 task/s, elapsed: 0:00:01, ETA: 0:00:02'
+        '\r[>> ] 2/3, 1.0 task/s, elapsed: 0:00:02, ETA: 0:00:01'
+        '\r[>>>] 3/3, 1.0 task/s, elapsed: 0:00:03, ETA: 0:00:00\n')
     assert ret == [1, 2, 3]
 
 
@@ -99,9 +99,9 @@ def test_track_progress_iterator():
         sleep_1s, ((i for i in [1, 2, 3]), 3), bar_width=3, file=out)
     assert out.getvalue() == (
         '[   ] 0/3, elapsed: 0s, ETA:'
-        '\r[>  ] 1/3, 1.0 task/s, elapsed: 1s, ETA:     2s'
-        '\r[>> ] 2/3, 1.0 task/s, elapsed: 2s, ETA:     1s'
-        '\r[>>>] 3/3, 1.0 task/s, elapsed: 3s, ETA:     0s\n')
+        '\r[>  ] 1/3, 1.0 task/s, elapsed: 0:00:01, ETA: 0:00:02'
+        '\r[>> ] 2/3, 1.0 task/s, elapsed: 0:00:02, ETA: 0:00:01'
+        '\r[>>>] 3/3, 1.0 task/s, elapsed: 0:00:03, ETA: 0:00:00\n')
     assert ret == [1, 2, 3]
 
 
@@ -112,9 +112,9 @@ def test_track_iter_progress():
         ret.append(sleep_1s(num))
     assert out.getvalue() == (
         '[   ] 0/3, elapsed: 0s, ETA:'
-        '\r[>  ] 1/3, 1.0 task/s, elapsed: 1s, ETA:     2s'
-        '\r[>> ] 2/3, 1.0 task/s, elapsed: 2s, ETA:     1s'
-        '\r[>>>] 3/3, 1.0 task/s, elapsed: 3s, ETA:     0s\n')
+        '\r[>  ] 1/3, 1.0 task/s, elapsed: 0:00:01, ETA: 0:00:02'
+        '\r[>> ] 2/3, 1.0 task/s, elapsed: 0:00:02, ETA: 0:00:01'
+        '\r[>>>] 3/3, 1.0 task/s, elapsed: 0:00:03, ETA: 0:00:00\n')
     assert ret == [1, 2, 3]
 
 
@@ -128,9 +128,9 @@ def test_track_enum_progress():
         count.append(i)
     assert out.getvalue() == (
         '[   ] 0/3, elapsed: 0s, ETA:'
-        '\r[>  ] 1/3, 1.0 task/s, elapsed: 1s, ETA:     2s'
-        '\r[>> ] 2/3, 1.0 task/s, elapsed: 2s, ETA:     1s'
-        '\r[>>>] 3/3, 1.0 task/s, elapsed: 3s, ETA:     0s\n')
+        '\r[>  ] 1/3, 1.0 task/s, elapsed: 0:00:01, ETA: 0:00:02'
+        '\r[>> ] 2/3, 1.0 task/s, elapsed: 0:00:02, ETA: 0:00:01'
+        '\r[>>>] 3/3, 1.0 task/s, elapsed: 0:00:03, ETA: 0:00:00\n')
     assert ret == [1, 2, 3]
     assert count == [0, 1, 2]
 
