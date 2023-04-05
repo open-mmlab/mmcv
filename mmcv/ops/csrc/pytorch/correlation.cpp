@@ -1,5 +1,4 @@
 // Copyright (c) OpenMMLab. All rights reserved.
-#include <iostream>
 
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"

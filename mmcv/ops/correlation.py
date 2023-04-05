@@ -66,7 +66,6 @@ class CorrelationFunction(Function):
         ctx, grad_output: Tensor
     ) -> Tuple[Tensor, Tensor, None, None, None, None, None, None]:
         input1, input2 = ctx.saved_tensors
-
         kH, kW = ctx.kernel_size
         patch_size = ctx.patch_size
         padH, padW = ctx.padding
@@ -75,7 +74,6 @@ class CorrelationFunction(Function):
         dH, dW = ctx.stride
         grad_input1 = torch.zeros_like(input1)
         grad_input2 = torch.zeros_like(input2)
-
         ext_module.correlation_backward(
             grad_output,
             input1,
@@ -94,6 +92,7 @@ class CorrelationFunction(Function):
             dilation_patchW=dilation_patchW,
             dH=dH,
             dW=dW)
+        print('end backward')
         return grad_input1, grad_input2, None, None, None, None, None, None
 
     @staticmethod
