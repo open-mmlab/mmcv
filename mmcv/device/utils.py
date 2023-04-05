@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from mmcv.utils import (IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MPS_AVAILABLE,
-                        IS_NPU_AVAILABLE)
+                        IS_NPU_AVAILABLE, IS_XPU_AVAILABLE)
 
 
 def get_device() -> str:
@@ -12,7 +12,7 @@ def get_device() -> str:
         the cuda branch when using npu.
 
     Returns:
-        str: cuda | mlu | mps | cpu.
+        str: cuda | mlu | mps | xpu | cpu.
     """
     if IS_NPU_AVAILABLE:
         return 'npu'
@@ -22,5 +22,7 @@ def get_device() -> str:
         return 'mlu'
     elif IS_MPS_AVAILABLE:
         return 'mps'
+    elif IS_XPU_AVAILABLE:
+        return 'xpu'
     else:
         return 'cpu'

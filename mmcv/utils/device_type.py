@@ -51,3 +51,18 @@ def is_npu_available() -> bool:
 
 
 IS_NPU_AVAILABLE = is_npu_available()
+
+
+def is_xpu_available() -> bool:
+    """Return True if xpu devices exist."""
+    try:
+        import torch
+
+        # this is needed to register xpu backend to pytorch
+        import intel_extension_for_pytorch as ipex  # noqa: F401, isort: skip
+        return hasattr(torch, 'xpu') and torch.xpu.is_avaiable()
+    except Exception:
+        return False
+
+
+IS_XPU_AVAILABLE = is_xpu_available()
