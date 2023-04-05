@@ -124,10 +124,10 @@ jobs:
       MMCV_WITH_OPS: 1
     strategy:
       matrix:
-        torch: [1.5.1, 2.0.0]
+        torch: [1.7.1, 2.0.0]
         include:
-          - torch: 1.5.1
-            torchvision: 0.6.1
+          - torch: 1.7.1
+            torchvision: 0.8.2
             python-version: 3.7
           - torch: 2.0.0
             torchvision: 0.15.1
