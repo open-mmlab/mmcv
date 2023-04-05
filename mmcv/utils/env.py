@@ -78,6 +78,16 @@ def collect_env():
                     nvcc = 'Not Available'
             env_info['NVCC'] = nvcc
 
+            try:
+                smi = subprocess.check_output('nvidia-smi -q -u', shell=True)
+                smi = smi.decode('utf-8').strip()
+                start = smi.rfind('Driver Version')
+                end = smi.rfind('CUDA Version')
+                driver = smi[start:end].split(':')[1].strip()
+            except subprocess.SubprocessError:
+                driver = 'Not Available'
+            env_info['Nvidia GPU Driver'] = driver
+
     try:
         # Check C++ Compiler.
         # For Unix-like, sysconfig has 'CC' variable like 'gcc -pthread ...',
