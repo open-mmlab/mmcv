@@ -6,8 +6,7 @@ from mmcv.utils import IS_IPU_AVAILABLE
 
 if IS_IPU_AVAILABLE:
     from .dataloader import IPUDataLoader
-    from .hook_wrapper import (IPUFp16OptimizerHook, wrap_lr_updater_hook,
-                               wrap_optimizer_hook)
+    from .hook_wrapper import wrap_lr_updater_hook
     from .model_wrapper import ipu_model_wrapper
     from .utils import build_from_cfg_with_wrapper, cfg2options
 
@@ -35,8 +34,11 @@ class IPUBaseRunner(BaseRunner):
         fp16_cfg (mmcv.Config): Config for fp16 training.
         batch_processor (callable): A callable method that process a data
             batch. Should be None for IPU runner
+        img_norm_cfg (Dict[str, list]): std and mean for normalizing image
+            on IPU side.
         kwargs (Dict[str, Any], optional): Keyword arguments will be passed to
         ``base_runner.BaseRunner``.
+        max_grad_norm (float): Extra attribute to be set to optimizer on IPU.
     """
 
     def __init__(self,
@@ -46,6 +48,8 @@ class IPUBaseRunner(BaseRunner):
                  ipu_model_cfg=None,
                  fp16_cfg=None,
                  batch_processor=None,
+                 img_norm_cfg=None,
+                 max_grad_norm=None,
                  **kwargs):
         assert hasattr(model, 'train_step') and batch_processor is None,\
             'only support model with train_step'
@@ -57,6 +61,8 @@ class IPUBaseRunner(BaseRunner):
 
         # process options of ipu
         if IS_IPU_AVAILABLE:
+            if max_grad_norm is not None:
+                options_cfg['train_cfg']['max_grad_norm'] = max_grad_norm
             self.options = cfg2options(options_cfg)
             self.model = ipu_model_wrapper(
                 self.model,
@@ -65,7 +71,9 @@ class IPUBaseRunner(BaseRunner):
                 self.logger,
                 modules_to_record=modules_to_record,
                 ipu_model_cfg=ipu_model_cfg,
-                fp16_cfg=fp16_cfg)
+                img_norm_cfg=img_norm_cfg,
+                fp16_cfg=fp16_cfg,
+                max_grad_norm=max_grad_norm)
         else:
             raise NotImplementedError('cpu mode on IPURunner is not supported')
 
@@ -91,24 +99,20 @@ class IPUBaseRunner(BaseRunner):
         self.register_hook(hook, priority='VERY_HIGH')
 
     def register_optimizer_hook(self, optimizer_config):
-        if optimizer_config is None:
-            return
-        assert isinstance(optimizer_config, (dict, IPUFp16OptimizerHook))
-        if isinstance(optimizer_config, dict):
-            optimizer_config.setdefault('type', 'OptimizerHook')
-            hook = build_from_cfg_with_wrapper(optimizer_config, HOOKS,
-                                               wrap_optimizer_hook)
-        else:
-            hook = optimizer_config
-        self.register_hook(hook, priority='ABOVE_NORMAL')
+        self.logger.warning(
+            'The registration of the optimizer will be ignored, '
+            'because the optimizer trained in the IPU version is '
+            'coupled to the model')
 
     def run(self, data_loaders, workflow, *args, **kwargs):
         for i, flow in enumerate(workflow):
             mode, _ = flow
-            # initialize IPU dataloader if not initialized
-            assert isinstance(data_loaders[i], IPUDataLoader),\
-                'IPU runner can only work with `IPUDataLoader`'
-            data_loaders[i].init(options=self.get_options(mode))
+            for t in data_loaders[i].dataset.pipeline.transforms:
+                if hasattr(t, 'set_model_in_ipu_mode'):
+                    t.set_model_in_ipu_mode(self.model)
+            # initialize if it is IPU dataloader and not initialized
+            if isinstance(data_loaders[i], IPUDataLoader):
+                data_loaders[i].init(options=self.get_options(mode))
 
         super().run(data_loaders, workflow, *args, **kwargs)
 

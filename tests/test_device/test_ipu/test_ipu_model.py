@@ -101,7 +101,7 @@ def test_build_model():
             logger = logging.getLogger()
             modules_to_record = None
             ipu_model_cfg = dict(
-                train_split_edges=[dict(layer_to_call='conv', ipu_id=0)],
+                split_edges=[dict(layer_to_call='conv', ipu_id=0)],
                 train_ckpt_nodes=['bn', 'conv'])
             fp16_cfg = {'loss_scale': 0.5}
             ipu_model = ipu_model_wrapper(
@@ -128,7 +128,7 @@ def run_model(ipu_options,
         if not only_eval else None
     logger = logging.getLogger()
     ipu_model_cfg = dict(
-        train_split_edges=[dict(layer_to_call='conv', ipu_id=0)],
+        split_edges=[dict(layer_to_call='conv', ipu_id=0)],
         train_ckpt_nodes=['bn', 'conv'])
     ipu_model = ipu_model_wrapper_func(
         model,

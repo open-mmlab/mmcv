@@ -46,7 +46,7 @@ class DataContainer:
         self._cpu_only = cpu_only
         self._stack = stack
         self._padding_value = padding_value
-        assert pad_dims in [None, 1, 2, 3]
+        assert pad_dims in [0, 1, 2, 3]
         self._pad_dims = pad_dims
 
     def __repr__(self) -> str:
