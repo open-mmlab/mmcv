@@ -279,10 +279,10 @@ workflows:
           # Use double quotation mark to explicitly specify its type
           # as string instead of number
           cuda: "10.1"
-          filters:
-            branches:
-              only:
-                - master
+          # filters:
+          #   branches:
+          #     only:
+          #       - master
       - build_cuda:
           name: maximum_version_gpu
           torch: 2.0.0
@@ -290,7 +290,7 @@ workflows:
           # as string instead of number
           cuda: "11.7"
           cudnn: 8
-          filters:
-            branches:
-              only:
-                - master
+          # filters:
+          #   branches:
+          #     only:
+          #       - master
