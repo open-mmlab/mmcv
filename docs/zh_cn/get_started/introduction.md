@@ -37,6 +37,16 @@ MMCV 支持以下的系统：
 - Windows
 - macOS
 
+MMCV 支持多种芯片，包括：
+
+- 英伟达 GPU
+- AMD GPU
+- 苹果 M1
+- 华为 Ascend
+- 寒武纪 MLU
+- 海光 DCU
+- Graphcore IPU
+
 欢迎查看[文档](http://mmcv.readthedocs.io/zh_CN/latest)了解更多特性和用法。
 
 ```{note}
