@@ -186,14 +186,16 @@ __global__ void border_align_backward_cuda_kernel(
                                   x_high, y_low, y_high, index);
 
     // update grad_output
-    atomicAdd(offset_grad_input + y_low * width + x_low,
-              *offset_grad_output * w1);
-    atomicAdd(offset_grad_input + y_low * width + x_high,
-              *offset_grad_output * w2);
-    atomicAdd(offset_grad_input + y_high * width + x_low,
-              *offset_grad_output * w3);
-    atomicAdd(offset_grad_input + y_high * width + x_high,
-              *offset_grad_output * w4);
+    if (x_low >= 0 && x_high >= 0 && y_low >= 0 && y_high >= 0) {
+      atomicAdd(offset_grad_input + y_low * width + x_low,
+                *offset_grad_output * w1);
+      atomicAdd(offset_grad_input + y_low * width + x_high,
+                *offset_grad_output * w2);
+      atomicAdd(offset_grad_input + y_high * width + x_low,
+                *offset_grad_output * w3);
+      atomicAdd(offset_grad_input + y_high * width + x_high,
+                *offset_grad_output * w4);
+    }
   }
 }
 
