@@ -1,5 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os
 import os.path as osp
+import sys
 import warnings
 from typing import Callable, List, Optional, Union
 
@@ -188,3 +190,98 @@ class ProfilerHook(Hook):
             self.profiler.__exit__(None, None, None)
             if self.json_trace_path is not None:
                 self.profiler.export_chrome_trace(self.json_trace_path)
+
+
+@HOOKS.register_module()
+class NPUProfilerHook(Hook):
+    """NPUProfiler to analyze performance during training.
+
+    NPU Profiling is used to count the device execution time of all operators.
+    The torch_npu.npu.profile interface is used to complete the profiling data
+    collection at each stage of the project, and the data is analyzed by the
+    msprof tool and the data can be dumped to further manually analyze the
+    key performance bottlenecks. For more details on the torch_npu.npu.profile
+    interface, please visit
+    https://gitee.com/ascend/pytorch/blob/master/torch_npu/npu/profiler.py#profile
+
+    Args:
+        begin (int): Number of start iterations for profiling. Defaults to 0.
+        end (int): Number of end iterations for profiling. Defaults to 1.
+        result_path (str): The path to save the profiling results file.
+            Defaults to 'cann_profiling'.
+        exit_after_profiling (bool): Whether to exit the program after
+            profiling. Defaults to True.
+        use_e2e_profiler (bool): Turn on E2E profiling, E2E profiling combines
+            performance data at the Pytorch level and the NPU level to analyze
+            the bottlenecks of model performance end-to-end, and cannot show
+            detailed content, and only as an auxiliary analysis.
+            Defaults to False.
+        ge_profiling_to_std_out (bool): Turn on GE profiling, GE uses to
+            collect the profiling data of the host side scheduling of the
+            Assend device. Defaults to False.
+
+    Examples:
+        >>> runner = ...
+        >>> profiler_config = dict(
+                type='NPUProfilerHook', result_path='./cann_profiling', end=2)
+        >>> runner.register_custom_hooks([profiler_config])
+        >>> runner.run(data_loaders=[trainloader], workflow=[('train', 1)])
+    """
+
+    def __init__(self,
+                 *,
+                 begin: int = 0,
+                 end: int = 1,
+                 result_path: str = 'cann_profiling',
+                 exit_after_profiling: bool = True,
+                 use_e2e_profiler: bool = False,
+                 ge_profiling_to_std_out: bool = False):
+
+        try:
+            import torch_npu
+        except ImportError:
+            raise ImportError('Failed to import torch_npu module')
+
+        if begin >= end:
+            raise ValueError('The iteration to start profiling should not be'
+                             ' greater than or equal to the end')
+
+        self.begin = begin
+        self.end = end
+        self.result_path = result_path
+        self.exit_after_profiling = exit_after_profiling
+
+        if ge_profiling_to_std_out:
+            os.environ['GE_PROFILING_TO_STD_OUT'] = '1'
+
+        if not osp.exists(self.result_path):
+            os.makedirs(self.result_path, exist_ok=True)
+
+        self.profiler = torch_npu.npu.profile(
+            self.result_path, use_e2e_profiler=use_e2e_profiler)
+
+    @master_only
+    def before_run(self, runner):
+
+        if self.end > runner.max_iters:
+            raise ValueError('The profiling end iteration should be greater'
+                             ' than the max iteration')
+
+    @master_only
+    def before_train_iter(self, runner):
+
+        if runner.iter == self.begin:
+            self.profiler.__enter__()
+            runner.logger.info('NPUProfiler starts profiling...')
+
+    @master_only
+    def after_train_iter(self, runner):
+
+        if runner.iter == self.end - 1:
+            runner.logger.info(
+                'profiler may take a few minutes to save the profiling result.'
+            )
+            self.profiler.__exit__(None, None, None)
+
+            if self.exit_after_profiling:
+                sys.exit()
