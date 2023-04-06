@@ -63,6 +63,11 @@ class BaseMergeCell(nn.Module):
         self.upsample_mode = upsample_mode
 
         if self.with_out_conv:
+            if fused_channels is None or out_channels is None:
+                raise ValueError(
+                    'fused_channels and out_channels should be specified when '
+                    'with_out_conv is True')
+
             self.out_conv = ConvModule(
                 fused_channels,  # type: ignore
                 out_channels,  # type: ignore
