@@ -173,6 +173,24 @@ class IterBasedRunner(BaseRunner):
         self._epoch = checkpoint['meta']['epoch']
         self._iter = checkpoint['meta']['iter']
         self._inner_iter = checkpoint['meta']['iter']
+
+        # Raising warning when resuming models with different number of GPUs
+        # since the optimizer status are relative with batch size
+        # (#GPUs x bs/GPU)
+        # TODO Can also check the difference of config between checkpoint and
+        # current.
+        if 'config' in checkpoint['meta']:
+            config = mmcv.Config.fromstring(
+                checkpoint['meta']['config'], file_format='.py')
+            previous_gpu_ids = config.get('gpu_ids', None)
+            if previous_gpu_ids and len(previous_gpu_ids) > 0 and len(
+                    previous_gpu_ids) != self.world_size:
+                warnings.warn(
+                    f'The number of GPU is {len(previous_gpu_ids)} before \
+                    resuming while the number of GPU is {len(self.world_size)}\
+                     after resuming. It is better to set the same number of \
+                    GPU for resuming.')
+
         if 'optimizer' in checkpoint and resume_optimizer:
             if isinstance(self.optimizer, Optimizer):
                 self.optimizer.load_state_dict(checkpoint['optimizer'])
