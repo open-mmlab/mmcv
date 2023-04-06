@@ -318,7 +318,7 @@ jobs:
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unit tests
-        run: pytest tests --ignore=tests/test_ops --ignore tests/test_image/test_io.py
+        run: pytest tests/ --ignore=tests/test_ops --ignore tests/test_utils/test_progressbar.py --ignore tests/test_utils/test_timer.py --ignore tests/test_image/test_io.py
   build_windows:
     runs-on: windows-2019
     env:
@@ -350,8 +350,7 @@ jobs:
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unit tests
-        run: pytest tests/ --ignore tests/test_image/test_io.py --ignore tests/test_parallel.py --ignore tests/test_device
-        if: ${{matrix.torch == '1.5.1'}}
+        run: pytest tests/ --ignore tests/test_utils/test_progressbar.py --ignore tests/test_utils/test_timer.py --ignore tests/test_image/test_io.py
   build_macos:
     runs-on: macos-latest
     env:
