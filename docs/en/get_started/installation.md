@@ -25,7 +25,7 @@ If version information is output, then PyTorch is installed.
 
 ```bash
 pip install -U openmim
-mim install "mmcv>=2.0.0rc1"
+mim install mmcv
 ```
 
 If you find that the above installation command does not use a pre-built package ending with `.whl` but a source package ending with `.tar.gz`, you may not have a pre-build package corresponding to the PyTorch or CUDA or mmcv version, in which case you can [build mmcv from source](build.md).
@@ -35,7 +35,7 @@ If you find that the above installation command does not use a pre-built package
 
 Looking in links: https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html<br />
 Collecting mmcv<br />
-<b>Downloading https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/mmcv-2.0.0rc3-cp38-cp38-manylinux1_x86_64.whl</b>
+<b>Downloading https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/mmcv-2.0.0-cp38-cp38-manylinux1_x86_64.whl</b>
 
 </details>
 
@@ -43,15 +43,15 @@ Collecting mmcv<br />
 <summary>Installation log using source packages</summary>
 
 Looking in links: https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html<br />
-Collecting mmcv==2.0.0rc3<br />
-<b>Downloading mmcv-2.0.0rc3.tar.gz</b>
+Collecting mmcv==2.0.0<br />
+<b>Downloading mmcv-2.0.0.tar.gz</b>
 
 </details>
 
-To install a specific version of mmcv, for example, mmcv version 2.0.0rc3, you can use the following command
+To install a specific version of mmcv, for example, mmcv version 2.0.0, you can use the following command
 
 ```bash
-mim install mmcv==2.0.0rc3
+mim install mmcv==2.0.0
 ```
 
 :::{note}
@@ -62,12 +62,12 @@ you can first install it before installing MMCV to skip the installation of `ope
 Alternatively, if it takes too long to install a dependency library, you can specify the pypi source
 
 ```bash
-mim install "mmcv>=2.0.0rc3" -i https://pypi.tuna.tsinghua.edu.cn/simple
+mim install mmcv -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 :::
 
-You can run [check_installation.py](https://github.com/open-mmlab/mmcv/blob/2.x/.dev_scripts/check_installation.py) to check the installation of mmcv-full after running the installation commands.
+You can run [check_installation.py](https://github.com/open-mmlab/mmcv/blob/main/.dev_scripts/check_installation.py) to check the installation of mmcv-full after running the installation commands.
 
 #### Install with pip
 
@@ -297,12 +297,12 @@ you can first install it before installing MMCV to skip the installation of `ope
 Alternatively, if it takes too long to install a dependency library, you can specify the pypi source
 
 ```bash
-mim install "mmcv>=2.0.0rc1" -i https://pypi.tuna.tsinghua.edu.cn/simple
+mim install mmcv -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 :::
 
-You can run [check_installation.py](https://github.com/open-mmlab/mmcv/blob/2.x/.dev_scripts/check_installation.py) to check the installation of mmcv after running the installation commands.
+You can run [check_installation.py](https://github.com/open-mmlab/mmcv/blob/main/.dev_scripts/check_installation.py) to check the installation of mmcv after running the installation commands.
 
 #### Using mmcv with Docker
 
@@ -316,13 +316,13 @@ docker build -t mmcv -f docker/release/Dockerfile .
 Or build with remote repository
 
 ```bash
-docker build -t mmcv https://github.com/open-mmlab/mmcv.git#2.x:docker/release
+docker build -t mmcv https://github.com/open-mmlab/mmcv.git#main:docker/release
 ```
 
 The [Dockerfile](release/Dockerfile) installs latest released version of mmcv-full by default, but you can specify mmcv versions to install expected versions.
 
 ```bash
-docker image build -t mmcv -f docker/release/Dockerfile --build-arg MMCV=2.0.0rc1 .
+docker image build -t mmcv -f docker/release/Dockerfile --build-arg MMCV=2.0.0 .
 ```
 
 If you also want to use other versions of PyTorch and CUDA, you can also pass them when building docker images.
@@ -334,7 +334,7 @@ docker build -t mmcv -f docker/release/Dockerfile \
     --build-arg PYTORCH=1.11.0 \
     --build-arg CUDA=11.3 \
     --build-arg CUDNN=8 \
-    --build-arg MMCV=2.0.0rc1 .
+    --build-arg MMCV=2.0.0 .
 ```
 
 More available versions of PyTorch and CUDA can be found at [dockerhub/pytorch](https://hub.docker.com/r/pytorch/pytorch/tags).
