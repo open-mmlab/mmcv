@@ -5,6 +5,7 @@ from .dvclive import DvcliveLoggerHook
 from .mlflow import MlflowLoggerHook
 from .neptune import NeptuneLoggerHook
 from .pavi import PaviLoggerHook
+from .sagemaker_experiments import SMExperimentsLoggerHook
 from .segmind import SegmindLoggerHook
 from .tensorboard import TensorboardLoggerHook
 from .text import TextLoggerHook
@@ -14,5 +15,5 @@ __all__ = [
     'LoggerHook', 'MlflowLoggerHook', 'PaviLoggerHook',
     'TensorboardLoggerHook', 'TextLoggerHook', 'WandbLoggerHook',
     'NeptuneLoggerHook', 'DvcliveLoggerHook', 'SegmindLoggerHook',
-    'ClearMLLoggerHook'
+    'ClearMLLoggerHook', 'SMExperimentsLoggerHook'
 ]
