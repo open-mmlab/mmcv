@@ -112,8 +112,20 @@ class WandbLoggerHook(LoggerHook):
         tags = self.get_loggable_tags(runner)
         if tags:
             if self.with_step:
+                temp_iter = self.get_iter(runner)
+                #for object detection, the validation is done in 2 steps:
+                #validation Ap metric 
+                #validation Loss
+                # the problem is that they are reported separately to wandb, with the same iter number, so
+                #wandb will ignore the second one (loss) 
+                for key in tags:
+                    if "val/loss" in key: # if currently reporting the loss metric
+                        temp_iter = temp_iter+1 # so the second does not have the same iter number
+                        break
                 self.wandb.log(
-                    tags, step=self.get_iter(runner), commit=self.commit)
+                    tags, step=temp_iter, commit=self.commit)
+
+
             else:
                 tags['global_step'] = self.get_iter(runner)
                 self.wandb.log(tags, commit=self.commit)
