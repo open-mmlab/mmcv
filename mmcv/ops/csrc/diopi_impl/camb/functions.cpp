@@ -25,8 +25,8 @@ diopiError_t diopiNmsMmcv(diopiContextHandle_t ctx, diopiTensorHandle_t *out,
                       diopiConstTensorHandle_t dets,
                       diopiConstTensorHandle_t scores, double iouThreshold,
                       int64_t offset) {
-  auto atDets = ::impl::aten::buildATen(dets);
-  auto atScores = ::impl::aten::buildATen(scores);
+  auto atDets = ::camb::aten::buildATen(dets);
+  auto atScores = ::camb::aten::buildATen(scores);
   auto atOut = NMSMLUKernelLauncher(atDets, atScores, iouThreshold, offset);
-  ::impl::aten::buildDiopiTensor(ctx, atOut, out);
+  ::camb::aten::buildDiopiTensor(ctx, atOut, out);
 }
