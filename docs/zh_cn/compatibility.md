@@ -10,8 +10,9 @@ OpenMMLab 团队于 2023 年 4 月 6 日发布 MMCV [v2.0.0](https://github.com/
 - `mmcv.runner`、`mmcv.parallel`、`mmcv.engine` 和 `mmcv.device`，删除于 PR [#2216](https://github.com/open-mmlab/mmcv/pull/2216)
 - `mmcv.utils` 的所有类（例如 `Config` 和 `Registry`）和大部分函数，删除于 PR [#2217](https://github.com/open-mmlab/mmcv/pull/2217)，只保留少数和 mmcv 相关的函数
 - `mmcv.onnex`、`mmcv.tensorrt` 模块以及相关的函数，删除于 PR [#2225](https://github.com/open-mmlab/mmcv/pull/2225)
+- 删除 MMCV 所有的根注册器并将类或者函数注册到 MMEngine 的[根注册器](https://github.com/open-mmlab/mmengine/blob/main/mmengine/registry/root.py)
 
-（2）新增了 [`mmcv.transforms`](https://github.com/open-mmlab/mmcv/tree/2.x/mmcv/transforms) 数据变换模块
+（2）新增了 [`mmcv.transforms`](https://github.com/open-mmlab/mmcv/tree/main/mmcv/transforms) 数据变换模块
 
 （3）在 PR [#2235](https://github.com/open-mmlab/mmcv/pull/2235) 中将包名 **mmcv** 重命名为 **mmcv-lite**、 **mmcv-full** 重命名为 **mmcv**。此外，将环境变量 `MMCV_WITH_OPS` 的默认值从 0 改为 1
 

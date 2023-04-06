@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/en/mmcv-logo.png" width="300"/>
+  <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/main/docs/en/mmcv-logo.png" width="300"/>
   <div>&nbsp;</div>
   <div align="center">
     <b><font size="5">OpenMMLab website</font></b>
@@ -17,9 +17,7 @@
     </sup>
   </div>
   <div>&nbsp;</div>
-</div>
 
-[![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmcv.readthedocs.io/en/latest/)
 [![platform](https://img.shields.io/badge/platform-Linux%7CWindows%7CmacOS-blue)](https://mmcv.readthedocs.io/en/latest/get_started/installation.html)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mmcv)](https://pypi.org/project/mmcv/)
 [![pytorch](https://img.shields.io/badge/pytorch-1.8~2.0-orange)](https://pytorch.org/get-started/previous-versions/)
@@ -29,7 +27,25 @@
 [![codecov](https://codecov.io/gh/open-mmlab/mmcv/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmcv)
 [![license](https://img.shields.io/github/license/open-mmlab/mmcv.svg)](https://github.com/open-mmlab/mmcv/blob/master/LICENSE)
 
+[📘Documentation](https://mmcv.readthedocs.io/en/latest/) |
+[🛠️Installation](https://mmcv.readthedocs.io/en/latest/get_started/installation.html) |
+[🤔Reporting Issues](https://github.com/open-mmlab/mmcv/issues/new/choose)
+
+</div>
+
+<div align="center">
+
 English | [简体中文](README_zh-CN.md)
+
+</div>
+
+## Highlights
+
+The OpenMMLab team released a new generation of training engine [MMEngine](https://github.com/open-mmlab/mmengine) at the World Artificial Intelligence Conference on September 1, 2022. It is a foundational library for training deep learning models. Compared with MMCV, it provides a universal and powerful runner, an open architecture with a more unified interface, and a more customizable training process. At the same time, MMCV released v2.0.0 release candidate version.
+
+MMCV v2.0.0 official version was released on April 6, 2023. In version 2.x, it removed components related to the training process and added a data transformation module. Also, starting from 2.x, it renamed the package names **mmcv** to **mmcv-lite** and **mmcv-full** to **mmcv**. For details, see [Compatibility Documentation](docs/en/compatibility.md).
+
+MMCV will maintain both [1.x](https://github.com/open-mmlab/mmcv/tree/1.x) (corresponding to the original [master](https://github.com/open-mmlab/mmcv/tree/master) branch) and **2.x** (corresponding to the **main** branch, now the default branch) versions simultaneously. For details, see [Branch Maintenance Plan](README.md#branch-maintenance-plan).
 
 ## Introduction
 
@@ -135,6 +151,16 @@ We appreciate all contributions to improve MMCV. Please refer to [CONTRIBUTING.m
 ## License
 
 MMCV is released under the Apache 2.0 license, while some specific operations in this library are with other licenses. Please refer to [LICENSES.md](LICENSES.md) for the careful check, if you are using our code for commercial matters.
+
+## Branch Maintenance Plan
+
+MMCV currently has four branches, namely main, 1.x, master, and 2.x, where 2.x is an alias for the main branch, and master is an alias for the 1.x branch. The 2.x and master branches will be deleted in the future. MMCV's branches go through the following three stages:
+
+| Phase                | Time                  | Branch                                                                                                                              | description                                                                                                                                            |
+| -------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| RC Period            | 2022.9.1 - 2023.4.5   | Release candidate code (2.x version) will be released on 2.x branch. Default master branch is still 1.x version                     | Master and 2.x branches iterate normally                                                                                                               |
+| Compatibility Period | 2023.4.6 - 2023.12.31 | **The 2.x branch has been renamed to the main branch and set as the default branch**, and 1.x branch will correspond to 1.x version | We still maintain the old version 1.x, respond to user needs, but try not to introduce changes that break compatibility; main branch iterates normally |
+| Maintenance Period   | From 2024/1/1         | Default main branch corresponds to 2.x version and 1.x branch is 1.x version                                                        | 1.x branch is in maintenance phase, no more new feature support; main branch is iterating normally                                                     |
 
 ## Projects in OpenMMLab
 

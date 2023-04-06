@@ -1,3 +1,55 @@
+### v2.0.0
+
+The OpenMMLab team released a new generation of training engine [MMEngine](https://github.com/open-mmlab/mmengine) at the World Artificial Intelligence Conference on September 1, 2022. It is a foundational library for training deep learning models. Compared with MMCV, it provides a universal and powerful runner, an open architecture with a more unified interface, and a more customizable training process.
+
+The OpenMMLab team released MMCV v2.0.0 on April 6, 2023. In the 2.x version, it has the following significant changes:
+
+(1) It removed the following components:
+
+- `mmcv.fileio` module, removed in PR [#2179](https://github.com/open-mmlab/mmcv/pull/2179). FileIO module from mmengine will be used wherever required.
+- `mmcv.runner`, `mmcv.parallel`, `mmcv. engine` and `mmcv.device`, removed in PR [#2216](https://github.com/open-mmlab/mmcv/pull/2216).
+- All classes in `mmcv.utils` (eg `Config` and `Registry`) and many functions, removed in PR [#2217](https://github.com/open-mmlab/mmcv/pull/2217). Only a few functions related to mmcv are reserved.
+- `mmcv.onnex`, `mmcv.tensorrt` modules and related functions, removed in PR [#2225](https://github.com/open-mmlab/mmcv/pull/2225).
+- Removed all root registrars in MMCV and registered classes or functions to the [root registrar](https://github.com/open-mmlab/mmengine/blob/main/mmengine/registry/root.py) in MMEngine.
+
+(2) It added the [`mmcv.transforms`](https://github.com/open-mmlab/mmcv/tree/main/mmcv/transforms) data transformation module.
+
+(3) It renamed the package name **mmcv** to **mmcv-lite** and **mmcv-full** to **mmcv** in PR [#2235](https://github.com/open-mmlab/mmcv/pull/2235). Also, change the default value of the environment variable `MMCV_WITH_OPS` from 0 to 1.
+
+<table class="docutils">
+<thead>
+  <tr>
+    <th align="center">MMCV < 2.0</th>
+    <th align="center">MMCV >= 2.0 </th>
+<tbody>
+  <tr>
+  <td valign="top">
+
+```bash
+# Contains ops, because the highest version of mmcv-full is less than 2.0.0, so there is no need to add version restrictions
+mim install mmcv-full
+
+# do not contain ops
+mmcv install "mmcv < 2.0.0"
+```
+
+</td>
+  <td valign="top">
+
+```bash
+# Contains ops
+mim install openmim
+mim install mmcv
+
+# Ops are not included, because the starting version of mmcv-lite is 2.0.0rc1, so there is no need to add version restrictions
+mim install mmcv-lite
+```
+
+</td>
+</tr>
+</thead>
+</table>
+
 ### v1.3.18
 
 Some ops have different implementations on different devices. Lots of macros and type checks are scattered in several files, which makes the code hard to maintain. For example:
