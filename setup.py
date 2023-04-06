@@ -212,6 +212,7 @@ def get_extensions():
             glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') +\
             glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
         op_files.remove('./mmcv/ops/csrc/pytorch/cuda/iou3d_cuda.cu')
+        op_files.remove('./mmcv/ops/csrc/pytorch/cpu/bbox_overlaps_cpu.cpp')
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
@@ -368,7 +369,7 @@ def get_extensions():
                         exit()
 
             define_macros += [('MMCV_WITH_MLU', None)]
-            mlu_args = os.getenv('MMCV_MLU_ARGS')
+            mlu_args = os.getenv('MMCV_MLU_ARGS', '-DNDEBUG ')
             mluops_includes = []
             mluops_includes.append('-I' +
                                    os.path.abspath('./mlu-ops/bangc-ops'))
@@ -388,7 +389,7 @@ def get_extensions():
                 glob.glob(
                     './mlu-ops/bangc-ops/kernels/**/*.mlu', recursive=True)
             extra_objects = glob.glob(
-                './mlu-ops/bangc-ops/kernels/*/x86_64/*.o')
+                './mlu-ops/bangc-ops/kernels/kernel_wrapper/*.o')
             extension = MLUExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/mlu'))
