@@ -473,7 +473,7 @@ Read [PSANet: Point-wise Spatial Attention Network for Scene Parsing](https://hs
 
 Filter out boxes has high IoU overlap with previously selected boxes or low score. Output the indices of valid boxes.
 
-Note this definition is slightly different with [onnx: NonMaxSuppression](https://github.com/onnx/onnx/blob/master/docs/Operators.md#nonmaxsuppression)
+Note this definition is slightly different with [onnx: NonMaxSuppression](https://github.com/onnx/onnx/blob/main/docs/Operators.md#nonmaxsuppression)
 
 ### Parameters
 
