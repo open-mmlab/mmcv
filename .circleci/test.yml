@@ -209,7 +209,7 @@ workflows:
           filters:
             branches:
               ignore:
-                - 2.x
+                - main
   pr_stage_test:
     when:
       not:
@@ -220,7 +220,7 @@ workflows:
           filters:
             branches:
               ignore:
-                - 2.x
+                - main
       - build_without_torch:
           name: build_without_torch
           requires:
@@ -278,7 +278,7 @@ workflows:
           filters:
             branches:
               only:
-                - 2.x
+                - main
       - build_cuda:
           name: maximum_version_gpu
           torch: 2.0.0
@@ -289,4 +289,4 @@ workflows:
           filters:
             branches:
               only:
-                - 2.x
+                - main
