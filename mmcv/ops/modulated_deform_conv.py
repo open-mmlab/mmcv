@@ -136,8 +136,10 @@ class ModulatedDeformConv2dFunction(Function):
                 ctx, input, offset, mask, weight, bias)
             return output
         ctx.save_for_backward(input, offset, mask, weight, bias)
-        output = input.new_empty(
-            ModulatedDeformConv2dFunction._output_size(ctx, input, weight))
+        output = input.new_empty([
+            int(i) for i in ModulatedDeformConv2dFunction._output_size(
+                ctx, input, weight)
+        ])
         ctx._bufs = [input.new_empty(0), input.new_empty(0)]
         ext_module.modulated_deform_conv_forward(
             input,

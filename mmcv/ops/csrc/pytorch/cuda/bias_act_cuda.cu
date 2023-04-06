@@ -11,17 +11,17 @@
 
 #include <c10/util/Half.h>
 #include <cuda_runtime.h>
-#include <torch/extension.h>
+#include <torch/types.h>
 
 #include "pytorch_cuda_helper.hpp"
 
 struct bias_act_kernel_params {
-  const void* x;     // [sizeX]
-  const void* b;     // [sizeB] or NULL
-  const void* xref;  // [sizeX] or NULL
-  const void* yref;  // [sizeX] or NULL
-  const void* dy;    // [sizeX] or NULL
-  void* y;           // [sizeX]
+  const void *x;     // [sizeX]
+  const void *b;     // [sizeB] or NULL
+  const void *xref;  // [sizeX] or NULL
+  const void *yref;  // [sizeX] or NULL
+  const void *dy;    // [sizeX] or NULL
+  void *y;           // [sizeX]
 
   int grad;
   int act;
@@ -38,7 +38,7 @@ struct bias_act_kernel_params {
 // CUDA kernel selection.
 
 template <class T>
-void* choose_bias_act_kernel(const bias_act_kernel_params& p);
+void *choose_bias_act_kernel(const bias_act_kernel_params &p);
 //------------------------------------------------------------------------
 // Helpers.
 
@@ -79,12 +79,12 @@ __global__ void bias_act_kernel(bias_act_kernel_params p) {
   for (int loopIdx = 0; loopIdx < p.loopX && xi < p.sizeX;
        loopIdx++, xi += blockDim.x) {
     // Load.
-    scalar_t x = (scalar_t)((const T*)p.x)[xi];
+    scalar_t x = (scalar_t)((const T *)p.x)[xi];
     scalar_t b =
-        (p.b) ? (scalar_t)((const T*)p.b)[(xi / p.stepB) % p.sizeB] : 0;
-    scalar_t xref = (p.xref) ? (scalar_t)((const T*)p.xref)[xi] : 0;
-    scalar_t yref = (p.yref) ? (scalar_t)((const T*)p.yref)[xi] : 0;
-    scalar_t dy = (p.dy) ? (scalar_t)((const T*)p.dy)[xi] : one;
+        (p.b) ? (scalar_t)((const T *)p.b)[(xi / p.stepB) % p.sizeB] : 0;
+    scalar_t xref = (p.xref) ? (scalar_t)((const T *)p.xref)[xi] : 0;
+    scalar_t yref = (p.yref) ? (scalar_t)((const T *)p.yref)[xi] : 0;
+    scalar_t dy = (p.dy) ? (scalar_t)((const T *)p.dy)[xi] : one;
     scalar_t yy = (gain != 0) ? yref / gain : 0;
     scalar_t y = 0;
 
@@ -182,7 +182,7 @@ __global__ void bias_act_kernel(bias_act_kernel_params p) {
     }
 
     // Store.
-    ((T*)p.y)[xi] = (T)y;
+    ((T *)p.y)[xi] = (T)y;
   }
 }
 
@@ -190,16 +190,16 @@ __global__ void bias_act_kernel(bias_act_kernel_params p) {
 // CUDA kernel selection.
 
 template <class T>
-void* choose_bias_act_kernel(const bias_act_kernel_params& p) {
-  if (p.act == 1) return (void*)bias_act_kernel<T, 1>;
-  if (p.act == 2) return (void*)bias_act_kernel<T, 2>;
-  if (p.act == 3) return (void*)bias_act_kernel<T, 3>;
-  if (p.act == 4) return (void*)bias_act_kernel<T, 4>;
-  if (p.act == 5) return (void*)bias_act_kernel<T, 5>;
-  if (p.act == 6) return (void*)bias_act_kernel<T, 6>;
-  if (p.act == 7) return (void*)bias_act_kernel<T, 7>;
-  if (p.act == 8) return (void*)bias_act_kernel<T, 8>;
-  if (p.act == 9) return (void*)bias_act_kernel<T, 9>;
+void *choose_bias_act_kernel(const bias_act_kernel_params &p) {
+  if (p.act == 1) return (void *)bias_act_kernel<T, 1>;
+  if (p.act == 2) return (void *)bias_act_kernel<T, 2>;
+  if (p.act == 3) return (void *)bias_act_kernel<T, 3>;
+  if (p.act == 4) return (void *)bias_act_kernel<T, 4>;
+  if (p.act == 5) return (void *)bias_act_kernel<T, 5>;
+  if (p.act == 6) return (void *)bias_act_kernel<T, 6>;
+  if (p.act == 7) return (void *)bias_act_kernel<T, 7>;
+  if (p.act == 8) return (void *)bias_act_kernel<T, 8>;
+  if (p.act == 9) return (void *)bias_act_kernel<T, 9>;
   return NULL;
 }
 
@@ -215,9 +215,9 @@ static bool has_same_layout(torch::Tensor x, torch::Tensor y) {
 }
 
 //------------------------------------------------------------------------
-torch::Tensor bias_act_op(const torch::Tensor& x, const torch::Tensor& b,
-                          const torch::Tensor& xref, const torch::Tensor& yref,
-                          const torch::Tensor& dy, int grad, int dim, int act,
+torch::Tensor bias_act_op(const torch::Tensor &x, const torch::Tensor &b,
+                          const torch::Tensor &xref, const torch::Tensor &yref,
+                          const torch::Tensor &dy, int grad, int dim, int act,
                           float alpha, float gain, float clamp) {
   // Validate arguments.
   TORCH_CHECK(x.is_cuda(), "x must reside on CUDA device");
@@ -278,7 +278,7 @@ torch::Tensor bias_act_op(const torch::Tensor& x, const torch::Tensor& b,
   p.stepB = (b.numel()) ? (int)x.stride(dim) : 1;
 
   // Choose CUDA kernel.
-  void* kernel;
+  void *kernel;
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(x.scalar_type(), "upfirdn2d_cuda", [&] {
     kernel = choose_bias_act_kernel<scalar_t>(p);
   });
@@ -288,7 +288,7 @@ torch::Tensor bias_act_op(const torch::Tensor& x, const torch::Tensor& b,
   p.loopX = 4;
   int blockSize = 4 * 32;
   int gridSize = (p.sizeX - 1) / (p.loopX * blockSize) + 1;
-  void* args[] = {&p};
+  void *args[] = {&p};
   AT_CUDA_CHECK(cudaLaunchKernel(kernel, gridSize, blockSize, args, 0,
                                  at::cuda::getCurrentCUDAStream()));
   return y;
