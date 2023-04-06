@@ -17,10 +17,10 @@ void assign_score_withk_forward_cpu_kernel(int B, int N0, int N1, int M, int K,
         int pointIndex = knn_idx[b * N1 * O + n * O + k];
         const T *p = points + b * N0 * M * O + pointIndex * M * O;
         for (m = 0; m < M; m++) {
+          const T score = scores[b * N1 * K * M + n * K * M + k * M + m];
           for (o = 0; o < O; o++) {
             output[b * O * N1 * K + o * N1 * K + n * K + k] +=
-                (p[m * O + o] - c[m * O + o]) *
-                scores[b * N1 * K * M + n * K * M + k * M + m];
+                (p[m * O + o] - c[m * O + o]) * score;
           }
         }
       }
@@ -34,7 +34,6 @@ void AssignScoreWithKForwardCPULauncher(int B, int N0, int N1, int M, int K,
                                         const Tensor &centers,
                                         const Tensor &scores,
                                         const Tensor &knn_idx, Tensor &output) {
-
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       points.scalar_type(), "assign_score_withk_forward_cpu_kernel", [&] {
         assign_score_withk_forward_cpu_kernel<scalar_t>(
