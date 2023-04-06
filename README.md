@@ -19,8 +19,8 @@
   <div>&nbsp;</div>
 </div>
 
-[![docs](https://img.shields.io/badge/docs-2.x-blue)](https://mmcv.readthedocs.io/en/2.x/)
-[![platform](https://img.shields.io/badge/platform-Linux%7CWindows%7CmacOS-blue)](https://mmcv.readthedocs.io/en/2.x/get_started/installation.html)
+[![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmcv.readthedocs.io/en/latest/)
+[![platform](https://img.shields.io/badge/platform-Linux%7CWindows%7CmacOS-blue)](https://mmcv.readthedocs.io/en/latest/get_started/installation.html)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mmcv)](https://pypi.org/project/mmcv/)
 [![pytorch](https://img.shields.io/badge/pytorch-1.8~2.0-orange)](https://pytorch.org/get-started/previous-versions/)
 [![cuda](https://img.shields.io/badge/cuda-10.1~11.8-green)](https://developer.nvidia.com/cuda-downloads)
@@ -35,11 +35,11 @@ English | [简体中文](README_zh-CN.md)
 
 MMCV is a foundational library for computer vision research and it provides the following functionalities:
 
-- [Image/Video processing](https://mmcv.readthedocs.io/en/2.x/understand_mmcv/data_process.html)
-- [Image and annotation visualization](https://mmcv.readthedocs.io/en/2.x/understand_mmcv/visualization.html)
-- [Image transformation](https://mmcv.readthedocs.io/en/2.x/understand_mmcv/data_transform.html)
-- [Various CNN architectures](https://mmcv.readthedocs.io/en/2.x/understand_mmcv/cnn.html)
-- [High-quality implementation of common CPU and CUDA ops](https://mmcv.readthedocs.io/en/2.x/understand_mmcv/ops.html)
+- [Image/Video processing](https://mmcv.readthedocs.io/en/latest/understand_mmcv/data_process.html)
+- [Image and annotation visualization](https://mmcv.readthedocs.io/en/latest/understand_mmcv/visualization.html)
+- [Image transformation](https://mmcv.readthedocs.io/en/latest/understand_mmcv/data_transform.html)
+- [Various CNN architectures](https://mmcv.readthedocs.io/en/latest/understand_mmcv/cnn.html)
+- [High-quality implementation of common CPU and CUDA ops](https://mmcv.readthedocs.io/en/latest/understand_mmcv/ops.html)
 
 It supports the following systems:
 
@@ -47,7 +47,7 @@ It supports the following systems:
 - Windows
 - macOS
 
-See the [documentation](http://mmcv.readthedocs.io/en/2.x) for more features and usage.
+See the [documentation](http://mmcv.readthedocs.io/en/latest) for more features and usage.
 
 Note: MMCV requires Python 3.7+.
 
@@ -77,7 +77,7 @@ If you need to specify the version of mmcv, you can use the following command:
 mim install mmcv==2.0.0
 ```
 
-If you find that the above installation command does not use a pre-built package ending with `.whl` but a source package ending with `.tar.gz`, you may not have a pre-build package corresponding to the PyTorch or CUDA or mmcv version, in which case you can [build mmcv from source](https://mmcv.readthedocs.io/en/2.x/get_started/build.html).
+If you find that the above installation command does not use a pre-built package ending with `.whl` but a source package ending with `.tar.gz`, you may not have a pre-build package corresponding to the PyTorch or CUDA or mmcv version, in which case you can [build mmcv from source](https://mmcv.readthedocs.io/en/latest/get_started/build.html).
 
 <details>
 <summary>Installation log using pre-built packages</summary>
@@ -97,7 +97,7 @@ Collecting mmcv==2.0.0<br />
 
 </details>
 
-For more installation methods, please refer to the [Installation documentation](https://mmcv.readthedocs.io/en/2.x/get_started/installation.html).
+For more installation methods, please refer to the [Installation documentation](https://mmcv.readthedocs.io/en/latest/get_started/installation.html).
 
 ### Install mmcv-lite
 
@@ -111,9 +111,9 @@ mim install mmcv-lite
 ## FAQ
 
 If you face some installation issues, CUDA related issues or RuntimeErrors,
-you may first refer to this [Frequently Asked Questions](https://mmcv.readthedocs.io/en/2.x/faq.html).
+you may first refer to this [Frequently Asked Questions](https://mmcv.readthedocs.io/en/latest/faq.html).
 
-If you face installation problems or runtime issues, you may first refer to this [Frequently Asked Questions](https://mmcv.readthedocs.io/en/2.x/faq.html) to see if there is a solution. If the problem is still not solved, feel free to open an [issue](https://github.com/open-mmlab/mmcv/issues).
+If you face installation problems or runtime issues, you may first refer to this [Frequently Asked Questions](https://mmcv.readthedocs.io/en/latest/faq.html) to see if there is a solution. If the problem is still not solved, feel free to open an [issue](https://github.com/open-mmlab/mmcv/issues).
 
 ## Citation
 

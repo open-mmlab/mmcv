@@ -65,7 +65,7 @@ mim install "mmcv>=2.0.0rc1" -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 :::
 
-安装完成后可以运行 [check_installation.py](https://github.com/open-mmlab/mmcv/blob/2.x/.dev_scripts/check_installation.py) 脚本检查 mmcv 是否安装成功。
+安装完成后可以运行 [check_installation.py](https://github.com/open-mmlab/mmcv/blob/main/.dev_scripts/check_installation.py) 脚本检查 mmcv 是否安装成功。
 
 #### 使用 pip 安装
 
@@ -323,7 +323,7 @@ pip install mmcv -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/in
 
 :::
 
-安装完成后可以运行 [check_installation.py](https://github.com/open-mmlab/mmcv/blob/2.x/.dev_scripts/check_installation.py) 脚本检查 mmcv 是否安装成功。
+安装完成后可以运行 [check_installation.py](https://github.com/open-mmlab/mmcv/blob/main/.dev_scripts/check_installation.py) 脚本检查 mmcv 是否安装成功。
 
 #### 使用 docker 镜像
 
@@ -337,7 +337,7 @@ docker build -t mmcv -f docker/release/Dockerfile .
 也可以直接使用下面的命令构建镜像
 
 ```bash
-docker build -t mmcv https://github.com/open-mmlab/mmcv.git#2.x:docker/release
+docker build -t mmcv https://github.com/open-mmlab/mmcv.git#main:docker/release
 ```
 
 [Dockerfile](release/Dockerfile) 默认安装最新的 mmcv，如果你想要指定版本，可以使用下面的命令

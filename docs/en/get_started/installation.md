@@ -67,7 +67,7 @@ mim install mmcv -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 :::
 
-You can run [check_installation.py](https://github.com/open-mmlab/mmcv/blob/2.x/.dev_scripts/check_installation.py) to check the installation of mmcv-full after running the installation commands.
+You can run [check_installation.py](https://github.com/open-mmlab/mmcv/blob/main/.dev_scripts/check_installation.py) to check the installation of mmcv-full after running the installation commands.
 
 #### Install with pip
 
@@ -302,7 +302,7 @@ mim install mmcv -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 :::
 
-You can run [check_installation.py](https://github.com/open-mmlab/mmcv/blob/2.x/.dev_scripts/check_installation.py) to check the installation of mmcv after running the installation commands.
+You can run [check_installation.py](https://github.com/open-mmlab/mmcv/blob/main/.dev_scripts/check_installation.py) to check the installation of mmcv after running the installation commands.
 
 #### Using mmcv with Docker
 
@@ -316,7 +316,7 @@ docker build -t mmcv -f docker/release/Dockerfile .
 Or build with remote repository
 
 ```bash
-docker build -t mmcv https://github.com/open-mmlab/mmcv.git#2.x:docker/release
+docker build -t mmcv https://github.com/open-mmlab/mmcv.git#main:docker/release
 ```
 
 The [Dockerfile](release/Dockerfile) installs latest released version of mmcv-full by default, but you can specify mmcv versions to install expected versions.
