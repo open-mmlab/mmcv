@@ -506,7 +506,6 @@ class DistEvalHook(EvalHook):
             tmpdir=tmpdir,
             gpu_collect=self.gpu_collect)
         if runner.rank == 0:
-            print('\n')
             runner.log_buffer.output['eval_iter_num'] = len(self.dataloader)
             key_score = self.evaluate(runner, results)
             # the key_score may be `None` so it needs to skip the action to

@@ -30,17 +30,17 @@ def single_gpu_test(model: nn.Module, data_loader: DataLoader) -> list:
     model.eval()
     results = []
     dataset = data_loader.dataset
-    prog_bar = mmcv.ProgressBar(len(dataset))
-    for data in data_loader:
-        with torch.no_grad():
-            result = model(return_loss=False, **data)
-        results.extend(result)
+    with mmcv.ProgressBar(len(dataset)) as pb:
+        for data in data_loader:
+            with torch.no_grad():
+                result = model(return_loss=False, **data)
+            results.extend(result)
 
-        # Assume result has the same length of batch_size
-        # refer to https://github.com/open-mmlab/mmcv/issues/985
-        batch_size = len(result)
-        for _ in range(batch_size):
-            prog_bar.update()
+            # Assume result has the same length of batch_size
+            # refer to https://github.com/open-mmlab/mmcv/issues/985
+            batch_size = len(result)
+            for _ in range(batch_size):
+                pb.update()
     return results
 
 
@@ -70,21 +70,23 @@ def multi_gpu_test(model: nn.Module,
     results = []
     dataset = data_loader.dataset
     rank, world_size = get_dist_info()
-    if rank == 0:
-        prog_bar = mmcv.ProgressBar(len(dataset))
     time.sleep(2)  # This line can prevent deadlock problem in some cases.
-    for i, data in enumerate(data_loader):
-        with torch.no_grad():
-            result = model(return_loss=False, **data)
-        results.extend(result)
+    # The test and progress bar are coupled, so we instantiate progress bar
+    # for all process. But we hope progress bar only displays on the master
+    # process, so we use `start=(rank == 0)`.
+    with mmcv.ProgressBar(len(dataset), start=(rank == 0)) as pb:
+        for i, data in enumerate(data_loader):
+            with torch.no_grad():
+                result = model(return_loss=False, **data)
+            results.extend(result)
 
-        if rank == 0:
-            batch_size = len(result)
-            batch_size_all = batch_size * world_size
-            if batch_size_all + prog_bar.completed > len(dataset):
-                batch_size_all = len(dataset) - prog_bar.completed
-            for _ in range(batch_size_all):
-                prog_bar.update()
+            if rank == 0:
+                batch_size = len(result)
+                batch_size_all = batch_size * world_size
+                if batch_size_all + pb.completed > len(dataset):
+                    batch_size_all = len(dataset) - pb.completed
+                for _ in range(batch_size_all):
+                    pb.update()
 
     # collect results from all ranks
     if gpu_collect:

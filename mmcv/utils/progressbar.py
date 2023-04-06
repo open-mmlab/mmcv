@@ -18,6 +18,12 @@ class ProgressBar:
         if start:
             self.start()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.file.write('\n')
+
     @property
     def terminal_width(self):
         width, _ = get_terminal_size()
@@ -86,12 +92,11 @@ def track_progress(func, tasks, bar_width=50, file=sys.stdout, **kwargs):
     else:
         raise TypeError(
             '"tasks" must be an iterable object or a (iterator, int) tuple')
-    prog_bar = ProgressBar(task_num, bar_width, file=file)
-    results = []
-    for task in tasks:
-        results.append(func(task, **kwargs))
-        prog_bar.update()
-    prog_bar.file.write('\n')
+    with ProgressBar(task_num, bar_width, file=file) as pb:
+        results = []
+        for task in tasks:
+            results.append(func(task, **kwargs))
+            pb.update()
     return results
 
 
@@ -155,22 +160,21 @@ def track_parallel_progress(func,
     pool = init_pool(nproc, initializer, initargs)
     start = not skip_first
     task_num -= nproc * chunksize * int(skip_first)
-    prog_bar = ProgressBar(task_num, bar_width, start, file=file)
-    results = []
-    if keep_order:
-        gen = pool.imap(func, tasks, chunksize)
-    else:
-        gen = pool.imap_unordered(func, tasks, chunksize)
-    for result in gen:
-        results.append(result)
-        if skip_first:
-            if len(results) < nproc * chunksize:
-                continue
-            elif len(results) == nproc * chunksize:
-                prog_bar.start()
-                continue
-        prog_bar.update()
-    prog_bar.file.write('\n')
+    with ProgressBar(task_num, bar_width, start, file=file) as pb:
+        results = []
+        if keep_order:
+            gen = pool.imap(func, tasks, chunksize)
+        else:
+            gen = pool.imap_unordered(func, tasks, chunksize)
+        for result in gen:
+            results.append(result)
+            if skip_first:
+                if len(results) < nproc * chunksize:
+                    continue
+                elif len(results) == nproc * chunksize:
+                    pb.start()
+                    continue
+            pb.update()
     pool.close()
     pool.join()
     return results
@@ -201,8 +205,7 @@ def track_iter_progress(tasks, bar_width=50, file=sys.stdout):
     else:
         raise TypeError(
             '"tasks" must be an iterable object or a (iterator, int) tuple')
-    prog_bar = ProgressBar(task_num, bar_width, file=file)
-    for task in tasks:
-        yield task
-        prog_bar.update()
-    prog_bar.file.write('\n')
+    with ProgressBar(task_num, bar_width, file=file) as pb:
+        for task in tasks:
+            yield task
+            pb.update()
