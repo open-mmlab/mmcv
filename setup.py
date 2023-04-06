@@ -3,7 +3,7 @@ import os
 import platform
 import re
 import warnings
-from pkg_resources import DistributionNotFound, get_distribution
+from pkg_resources import DistributionNotFound, get_distribution, parse_version
 from setuptools import find_packages, setup
 
 EXT_TYPE = ''
@@ -268,6 +268,12 @@ def get_extensions():
         # argument
         if platform.system() != 'Windows':
             extra_compile_args['cxx'] = ['-std=c++14']
+        else:
+            # TODO: In Windows, C++17 is chosen to compile extensions in
+            # PyTorch2.0 , but a compile error will be reported.
+            # As a temporary solution, force the use of C++14.
+            if parse_version(torch.__version__) >= parse_version('2.0.0'):
+                extra_compile_args['cxx'] = ['/std:c++14']
 
         include_dirs = []
 

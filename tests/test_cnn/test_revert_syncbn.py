@@ -9,6 +9,7 @@ import torch.distributed as dist
 
 from mmcv.cnn.bricks import ConvModule
 from mmcv.cnn.utils import revert_sync_batchnorm
+from mmcv.utils import TORCH_VERSION, digit_version
 
 if platform.system() == 'Windows':
     import regex as re
@@ -22,8 +23,10 @@ def test_revert_syncbn():
     conv = ConvModule(3, 8, 2, norm_cfg=dict(type='SyncBN'))
     x = torch.randn(1, 3, 10, 10)
     # Expect a ValueError prompting that SyncBN is not supported on CPU
-    with pytest.raises(ValueError):
-        y = conv(x)
+    if TORCH_VERSION == 'parrots' or digit_version(
+            TORCH_VERSION) < digit_version('2.0.0'):
+        with pytest.raises(ValueError):
+            y = conv(x)
     conv = revert_sync_batchnorm(conv)
     y = conv(x)
     assert y.shape == (1, 8, 9, 9)
