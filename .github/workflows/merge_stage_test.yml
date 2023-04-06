@@ -14,7 +14,7 @@ on:
       - ".pre-commit-config.yaml"
       - ".pre-commit-config-zh-cn.yaml"
     branches:
-      - 2.x
+      - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -22,7 +22,7 @@ concurrency:
 
 jobs:
   build_without_torch:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     env:
       MMCV_WITH_OPS: 0
     strategy:
@@ -45,7 +45,7 @@ jobs:
       - name: Run unit tests
         run: pytest tests/test_image tests/test_transforms tests/test_video tests/test_arraymisc.py tests/test_visualization.py tests/test_utils/test_env.py --ignore=tests/test_image/test_io.py
   build_without_ops:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     env:
       MMCV_WITH_OPS: 0
     strategy:
@@ -75,63 +75,15 @@ jobs:
         run: pip install -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
-      - name: Run unittests
+      - name: Run unit tests
         run: pytest tests --ignore=tests/test_ops
   build_cpu_py:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python-version: [3.8, 3.9]
-        torch: [1.8.1]
+        python-version: [3.8, 3.9, '3.10']
+        torch: [1.13.0]
         include:
-          - torch: 1.8.1
-            torchvision: 0.9.1
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
-      - name: Upgrade pip
-        run: pip install pip --upgrade
-      - name: Install PyTorch
-        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
-      - name: Install MMEngine from main branch
-        run: pip install git+https://github.com/open-mmlab/mmengine.git@main
-      - name: Install ninja to speed the compilation
-        run: pip install ninja
-      - name: Build MMCV from source
-        run: pip install -e . -v
-      - name: Install unit tests dependencies
-        run: pip install -r requirements/test.txt
-      - name: Run unittests and generate coverage report
-        run: |
-          coverage run --branch --source mmcv -m pytest tests/
-          coverage xml
-          coverage report -m
-  build_cpu_pt:
-    runs-on: ubuntu-18.04
-    strategy:
-      matrix:
-        python-version: [3.7]
-        torch: [1.6.0, 1.7.1, 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.12.0, 1.13.0]
-        include:
-          - torch: 1.6.0
-            torchvision: 0.7.0
-          - torch: 1.7.1
-            torchvision: 0.8.2
-          - torch: 1.8.1
-            torchvision: 0.9.1
-          - torch: 1.9.1
-            torchvision: 0.10.1
-          - torch: 1.10.1
-            torchvision: 0.11.2
-          - torch: 1.11.0
-            torchvision: 0.12.0
-          - torch: 1.12.0
-            torchvision: 0.13.0
           - torch: 1.13.0
             torchvision: 0.14.0
     steps:
@@ -149,19 +101,69 @@ jobs:
       - name: Install MMEngine from main branch
         run: pip install git+https://github.com/open-mmlab/mmengine.git@main
       - name: Install ninja to speed the compilation
-        run: pip install ninja
+        run: pip install ninja psutil
       - name: Build MMCV from source
         run: pip install -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
-      - name: Run unittests and generate coverage report
+      - name: Run unit tests and generate coverage report
+        run: |
+          coverage run --branch --source mmcv -m pytest tests/
+          coverage xml
+          coverage report -m
+  build_cpu_pt:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        python-version: [3.7]
+        torch: [1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.12.0, 1.13.0, 2.0.0]
+        include:
+          - torch: 1.8.1
+            torchvision: 0.9.1
+          - torch: 1.9.1
+            torchvision: 0.10.1
+          - torch: 1.10.1
+            torchvision: 0.11.2
+          - torch: 1.11.0
+            torchvision: 0.12.0
+          - torch: 1.12.0
+            torchvision: 0.13.0
+          - torch: 1.13.0
+            torchvision: 0.14.0
+          - torch: 2.0.0
+            torchvision: 0.15.1
+            python-version: 3.8
+        exclude:
+          - torch: 2.0.0
+            python-version: 3.7
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
+      - name: Upgrade pip
+        run: pip install pip --upgrade
+      - name: Install PyTorch
+        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - name: Install MMEngine from main branch
+        run: pip install git+https://github.com/open-mmlab/mmengine.git@main
+      - name: Install ninja to speed the compilation
+        run: pip install ninja psutil
+      - name: Build MMCV from source
+        run: pip install -e . -v
+      - name: Install unit tests dependencies
+        run: pip install -r requirements/test.txt
+      - name: Run unit tests and generate coverage report
         run: |
           coverage run --branch --source mmcv -m pytest tests/
           coverage xml
           coverage report -m
       # Only upload coverage report for python3.7 && pytorch1.8.1 cpu
       - name: Upload coverage to Codecov
-        if: ${{matrix.torch == '1.8.1' && matrix.python-version == '3.7'}}
+        if: ${{matrix.torch == '1.8.1' && matrix.python-version == '3.8'}}
         uses: codecov/codecov-action@v1.0.14
         with:
           file: ./coverage.xml
@@ -170,12 +172,12 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: false
   build_cu102:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     container:
       image: pytorch/pytorch:1.8.1-cuda10.2-cudnn7-devel
     strategy:
       matrix:
-        python-version: [3.8]
+        python-version: [3.7]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -193,18 +195,52 @@ jobs:
       - name: Install MMEngine from main branch
         run: pip install git+https://github.com/open-mmlab/mmengine.git@main
       - name: Install ninja to speed the compilation
-        run: pip install ninja
+        run: pip install ninja psutil
       - name: Build MMCV from source
         run: pip install -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
-      - name: Run unittests and generate coverage report
+      - name: Run unit tests and generate coverage report
+        run: |
+          coverage run --branch --source mmcv -m pytest tests/
+          coverage xml
+          coverage report -m
+  build_cu111:
+    runs-on: ubuntu-22.04
+    container:
+      image: pytorch/pytorch:1.8.1-cuda11.1-cudnn8-devel
+    strategy:
+      matrix:
+        python-version: [3.7]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Upgrade pip
+        run: pip install pip --upgrade
+      - name: Fetch GPG keys
+        run: |
+          apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
+          apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
+      - name: Install system dependencies
+        run: apt-get update && apt-get install -y git ffmpeg libturbojpeg
+      - name: Install MMEngine from main branch
+        run: pip install git+https://github.com/open-mmlab/mmengine.git@main
+      - name: Install ninja to speed the compilation
+        run: pip install ninja psutil
+      - name: Build MMCV from source
+        run: pip install -e . -v
+      - name: Install unit tests dependencies
+        run: pip install -r requirements/test.txt
+      - name: Run unit tests and generate coverage report
         run: |
           coverage run --branch --source mmcv -m pytest tests/
           coverage xml
           coverage report -m
   build_cu116:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     container:
       image: pytorch/pytorch:1.13.0-cuda11.6-cudnn8-devel
     strategy:
@@ -227,57 +263,23 @@ jobs:
       - name: Install MMEngine from main branch
         run: pip install git+https://github.com/open-mmlab/mmengine.git@main
       - name: Install ninja to speed the compilation
-        run: pip install ninja
+        run: pip install ninja psutil
       - name: Build MMCV from source
         run: pip install -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
-      - name: Run unittests and generate coverage report
+      - name: Run unit tests and generate coverage report
         run: |
           coverage run --branch --source mmcv -m pytest tests
           coverage xml
           coverage report -m
   build_windows_without_ops:
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-2019
     env:
       MMCV_WITH_OPS: 0
     strategy:
       matrix:
-        os: [windows-2019]
         python-version: [3.7]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-      - name: Upgrade pip
-        run: python -m pip install pip --upgrade
-      - name: Install PyTorch
-        run: pip install torch==1.8.1+cpu torchvision==0.9.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
-      - name: Install MMEngine from main branch
-        run: pip install git+https://github.com/open-mmlab/mmengine.git@main
-      - name: Install ninja to speed the compilation
-        run: pip install ninja
-      - name: Build MMCV from source
-        run: pip install -e .
-      - name: Install unit tests dependencies
-        run: pip install -r requirements/test.txt
-      - name: Run unittests
-        run: pytest tests --ignore=tests/test_ops --ignore tests/test_image/test_io.py
-  build_windows:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-2019]
-        python: [3.7]
-        torch: [1.8.1, 1.10.1]
-        include:
-          - torch: 1.8.1
-            torchvision: 0.9.1
-          - torch: 1.10.1
-            torchvision: 0.11.2
-        platform: [cpu, cu111]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -287,33 +289,64 @@ jobs:
       - name: Upgrade pip
         run: python -m pip install pip --upgrade
       - name: Install PyTorch
-        run: pip install torch==1.8.1+${{matrix.platform}} torchvision==0.9.1+${{matrix.platform}} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html
+        run: pip install torch==1.8.1+cpu torchvision==0.9.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install MMEngine from main branch
         run: pip install git+https://github.com/open-mmlab/mmengine.git@main
       - name: Install ninja to speed the compilation
-        run: pip install ninja
+        run: pip install ninja psutil
       - name: Build MMCV from source
-        run: pip install -e .
+        run: pip install -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
-      - name: Run unittests
+      - name: Run unit tests
+        run: pytest tests --ignore=tests/test_ops --ignore tests/test_image/test_io.py
+  build_windows:
+    runs-on: windows-2019
+    strategy:
+      matrix:
+        torch: [1.8.1, 2.0.0]
+        include:
+          - torch: 1.8.1
+            torchvision: 0.9.1
+            python-version: 3.7
+          - torch: 2.0.0
+            torchvision: 0.15.1
+            python-version: 3.8
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Upgrade pip
+        run: python -m pip install pip --upgrade
+      - name: Install PyTorch
+        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - name: Install MMEngine from main branch
+        run: pip install git+https://github.com/open-mmlab/mmengine.git@main
+      - name: Install ninja to speed the compilation
+        run: pip install ninja psutil
+      - name: Build MMCV from source
+        run: pip install -e . -v
+      - name: Install unit tests dependencies
+        run: pip install -r requirements/test.txt
+      - name: Run unit tests
         run: pytest tests/ --ignore tests/test_image/test_io.py
   build_macos:
     runs-on: macos-latest
     strategy:
       matrix:
-        python-version: [3.7]
-        torch: [1.6.0, 1.8.1, 1.13.0]
+        torch: [1.8.1, 2.0.0]
         include:
-          - torch: 1.6.0
-            torchvision: 0.7.0
           - torch: 1.8.1
             torchvision: 0.9.1
-          - torch: 1.13.0
-            torchvision: 0.14.0
+            python-version: 3.7
+          - torch: 2.0.0
+            torchvision: 0.15.1
+            python-version: 3.8
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.7
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
@@ -326,10 +359,10 @@ jobs:
       - name: Install MMEngine from main branch
         run: pip install git+https://github.com/open-mmlab/mmengine.git@main
       - name: Install ninja to speed the compilation
-        run: pip install ninja
+        run: pip install ninja psutil
       - name: Build MMCV from source
         run: pip install -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
-      - name: Run unittests
+      - name: Run unit tests
         run: pytest tests/
