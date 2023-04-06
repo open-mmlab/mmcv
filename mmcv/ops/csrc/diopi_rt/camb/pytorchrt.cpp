@@ -9,8 +9,9 @@
 #include <set>
 #include <vector>
 
-#include <ATen/ATen.h>
-#include <torch_mlu/torch_mlu.h>
+// #include <ATen/ATen.h>
+// #include <torch_mlu/torch_mlu.h>
+#include "aten.h"
 #include <cnnl.h>
 
 #include "diopi.hpp"
@@ -196,7 +197,7 @@ DIOPI_API diopiError_t diopiGetTensorDtype(diopiConstTensorHandle_t th,
 
 DIOPI_API diopiError_t diopiGetTensorDevice(diopiConstTensorHandle_t th,
                                             diopiDevice_t *device) {
-  *device = CAST_CONST_TENSOR_HANDLE(th)->is_cpu() ? diopi_host : diopi_device;
+  *device = CAST_CONST_TENSOR_HANDLE(th)->device().is_cpu() ? diopi_host : diopi_device;
   return diopiSuccess;
 }
 
@@ -218,7 +219,7 @@ DIOPI_API diopiError_t diopiGetTensorElemSize(diopiConstTensorHandle_t th,
 
 diopiError_t diopiGetStream(diopiContextHandle_t ctx,
                             diopiStreamHandle_t *stream) {
-  *stream = (diopiStreamHandle_t)getCurrentQueue().queue();
+  *stream = (diopiStreamHandle_t)(torch_mlu::getCurrentQueue().queue());
   return diopiSuccess;
 }
 

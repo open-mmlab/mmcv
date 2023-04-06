@@ -1,7 +1,9 @@
 #ifndef _DIOPI_REFERENCE_IMPL_CAMB_ATEN_HPP_
 #define _DIOPI_REFERENCE_IMPL_CAMB_ATEN_HPP_
 
-#include <torch_mlu/torch_mlu.h>
+// #include <ATen/ATen.h>
+// #include <torch_mlu/torch_mlu.h>
+#include "aten.h"
 #include <cnnl.h>
 #include <diopi/diopirt.h>
 
@@ -12,7 +14,6 @@
 
 #include <cnrt.h>
 #include <mutex>
-
 
 namespace camb {
 
