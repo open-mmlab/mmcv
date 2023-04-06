@@ -392,9 +392,6 @@ class BaseRunner(metaclass=ABCMeta):
                 self.logger.info('the iteration number is changed due to '
                                  'change of GPU number')
 
-        # resume meta information meta
-        self.meta = checkpoint['meta']
-
         if 'optimizer' in checkpoint and resume_optimizer:
             if isinstance(self.optimizer, Optimizer):
                 self.optimizer.load_state_dict(checkpoint['optimizer'])
@@ -406,6 +403,9 @@ class BaseRunner(metaclass=ABCMeta):
                 raise TypeError(
                     'Optimizer should be dict or torch.optim.Optimizer '
                     f'but got {type(self.optimizer)}')
+
+        if 'fp16' in checkpoint['meta']:
+            self.meta['fp16'] = checkpoint['meta']['fp16']
 
         self.logger.info('resumed epoch %d, iter %d', self.epoch, self.iter)
 
