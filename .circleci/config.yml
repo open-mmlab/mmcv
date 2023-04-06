@@ -1,4 +1,8 @@
 version: 2.1
+
+orbs:
+  win: circleci/windows@2.2.0 # The Windows orb give you everything you need to start using the Windows executor.
+
 jobs:
   lint:
     docker:
@@ -55,8 +59,9 @@ jobs:
           name: Install PyTorch
           command: python -m pip install torch==<< parameters.torch >>+cpu torchvision==<< parameters.torchvision >>+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - run:
-          name: Install psutil
-          command: python -m pip install psutil
+          # use ninja to accelerate compilation
+          name: Install psutil and ninja
+          command: python -m pip install psutil ninja
       - run:
           name: Build and install
           command: |
@@ -123,8 +128,9 @@ jobs:
           name: Install PyTorch
           command: python -m pip install torch==1.8.1+cu102 torchvision==0.9.1+cu102 -f https://download.pytorch.org/whl/torch_stable.html
       - run:
-          name: Install psutil
-          command: python -m pip install psutil
+          # use ninja to accelerate compilation
+          name: Install psutil and ninja
+          command: python -m pip install psutil ninja
       - run:
           name: Download onnxruntime library and install onnxruntime
           command: |
@@ -153,6 +159,38 @@ jobs:
             python -m coverage run --branch --source mmcv -m pytest tests/
             python -m coverage xml
             python -m coverage report -m
+
+  build_windows:
+    executor:
+      name: win/default # executor type
+      size: "medium"
+    steps:
+      # Commands are run in a Windows virtual machine environment
+      - checkout
+      - run:
+          name: Install PyTorch
+          command: python -m pip install torch==1.8.0+cpu torchvision==0.9.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - run:
+          # use ninja to accelerate compilation
+          name: Install psutil and ninja
+          command: python -m pip install psutil ninja
+      - run:
+          name: Build and install
+          command: |
+            python setup.py check -m -s
+            python -m pip install -e .
+          no_output_timeout: 20m
+          environment:
+            MMCV_WITH_OPS: 1
+      - run:
+          name: Install dependencies of unit test
+          command: |
+            python -m pip install -r requirements/test.txt
+      - run:
+          name: Run unittests
+          command: |
+            pytest tests/ --ignore tests/test_utils/test_progressbar.py --ignore tests/test_utils/test_timer.py --ignore tests/test_image/test_io.py
+
 workflows:
   unit_tests:
     jobs:
@@ -168,6 +206,9 @@ workflows:
           type: approval # <<< This key-value pair will set your workflow to a status of "On Hold"
           requires:
             - build_py3.8_pt1.9_cpu
+      - build_windows:
+          requires:
+            - hold
       - build_cu102:
           requires:
             - hold
