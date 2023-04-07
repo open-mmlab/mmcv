@@ -421,9 +421,11 @@ def get_extensions():
         elif (os.getenv('FORCE_NPU', '0') == '1'):
             print(f'Compiling {ext_name} only with CPU and NPU')
             try:
-                from torch_npu.utils.cpp_extension import NpuExtension
+                from torch_npu.utils.cpp_extension import NpuExtension, BiShengExtension
+                torch.npu.set_device('npu:0')
                 define_macros += [('MMCV_WITH_NPU', None)]
-                extension = NpuExtension
+                extra_compile_args = []
+                extension = BiShengExtension
             except Exception:
                 raise ImportError('can not find any torch_npu')
             # src
