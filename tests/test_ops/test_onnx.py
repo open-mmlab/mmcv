@@ -9,6 +9,7 @@ import torch.nn as nn
 
 onnx_file = 'tmp.onnx'
 
+
 @pytest.fixture(autouse=True)
 def run_before_and_after_test():
     # clear onnx_file before test

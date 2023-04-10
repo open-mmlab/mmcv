@@ -84,10 +84,7 @@ class TestDeformRoIPool:
                 spatial_scale=spatial_scale,
                 sampling_ratio=sampling_ratio).cuda()
 
-            if _USING_PARROTS:
-                gradcheck(droipool, (x, rois), no_grads=[rois])
-            else:
-                gradcheck(droipool, (x, rois), eps=1e-2, atol=1e-2)
+            gradcheck(droipool, (x, rois), eps=1e-2, atol=1e-2)
 
     def _test_deform_roi_pool_allclose(self, device, dtype=torch.float):
         from mmcv.ops import DeformRoIPoolPack

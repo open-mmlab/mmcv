@@ -28,30 +28,21 @@ class TestUpFirDn2d:
     @pytest.mark.skipif(not torch.cuda.is_available(), reason='requires cuda')
     def test_upfirdn2d(self):
         from mmcv.ops import upfirdn2d
-        if _USING_PARROTS:
-            gradcheck(
-                upfirdn2d,
-                (self.input_tensor.cuda(),
-                 self.kernel.type_as(
-                     self.input_tensor).cuda(), self.factor, 1, self.pad),
-                delta=1e-4,
-                pt_atol=1e-3)
-        else:
-            gradcheck(
-                upfirdn2d,
-                (self.input_tensor.cuda(),
-                 self.kernel.type_as(
-                     self.input_tensor).cuda(), self.factor, 1, self.pad),
-                eps=1e-4,
-                atol=1e-3)
+        gradcheck(
+            upfirdn2d,
+            (self.input_tensor.cuda(),
+                self.kernel.type_as(
+                    self.input_tensor).cuda(), self.factor, 1, self.pad),
+            eps=1e-4,
+            atol=1e-3)
 
-            gradgradcheck(
-                upfirdn2d,
-                (self.input_tensor.cuda(),
-                 self.kernel.type_as(
-                     self.input_tensor).cuda(), self.factor, 1, self.pad),
-                eps=1e-4,
-                atol=1e-3)
+        gradgradcheck(
+            upfirdn2d,
+            (self.input_tensor.cuda(),
+                self.kernel.type_as(
+                    self.input_tensor).cuda(), self.factor, 1, self.pad),
+            eps=1e-4,
+            atol=1e-3)
 
         # test with different up
         kernel = torch.randn(3, 3)
