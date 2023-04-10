@@ -2,10 +2,9 @@
 import numpy as np
 import pytest
 import torch
+from torch.autograd import gradcheck
 
 from mmcv.utils import IS_CUDA_AVAILABLE
-
-from torch.autograd import gradcheck
 
 inputs = [([[[[1., 2.], [3., 4.]]]], [[0., 0., 0., 1., 1.]]),
           ([[[[1., 2.], [3., 4.]], [[4., 3.], [2.,

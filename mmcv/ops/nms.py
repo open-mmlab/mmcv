@@ -187,9 +187,9 @@ def soft_nms(boxes: array_like_type,
     assert method in method_dict.keys()
 
     dets, inds = SoftNMSop.apply(boxes.cpu(), scores.cpu(),
-                                    float(iou_threshold), float(sigma),
-                                    float(min_score), method_dict[method],
-                                    int(offset))
+                                 float(iou_threshold), float(sigma),
+                                 float(min_score), method_dict[method],
+                                 int(offset))
 
     dets = dets[:inds.size(0)]
 
@@ -416,8 +416,8 @@ def nms_rotated(dets: Tensor,
     dets_sorted = dets_wl.index_select(0, order)
 
     keep_inds = ext_module.nms_rotated(dets_wl, scores, order, dets_sorted,
-                                           input_labels, iou_threshold,
-                                           multi_label)
+                                       input_labels, iou_threshold,
+                                       multi_label)
     dets = torch.cat((dets[keep_inds], scores[keep_inds].reshape(-1, 1)),
                      dim=1)
     return dets, keep_inds

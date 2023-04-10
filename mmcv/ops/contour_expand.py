@@ -37,5 +37,5 @@ def contour_expand(kernel_mask: Union[np.array, torch.Tensor],
         internal_kernel_label = torch.from_numpy(internal_kernel_label)
 
     label = ext_module.contour_expand(kernel_mask, internal_kernel_label,
-                                          min_kernel_area, kernel_num)
+                                      min_kernel_area, kernel_num)
     return label

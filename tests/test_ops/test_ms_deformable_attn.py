@@ -1,13 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
+from torch.autograd import gradcheck
 
 from mmcv.ops.multi_scale_deform_attn import (
     MultiScaleDeformableAttention, MultiScaleDeformableAttnFunction,
     multi_scale_deformable_attn_pytorch)
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
-
-from torch.autograd import gradcheck
 
 try:
     # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast
@@ -285,8 +284,8 @@ def test_gradient_numerical(channels,
         eps = 1e-4
 
     assert gradcheck(
-            func, (value.to(dtype), shapes, level_start_index,
-                   sampling_locations.to(dtype), attention_weights.to(dtype),
-                   im2col_step),
-            eps=eps,
-            atol=1e-2)
+        func, (value.to(dtype), shapes, level_start_index,
+               sampling_locations.to(dtype), attention_weights.to(dtype),
+               im2col_step),
+        eps=eps,
+        atol=1e-2)

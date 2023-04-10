@@ -1,10 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
+from torch.autograd import gradcheck, gradgradcheck
 
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
-
-from torch.autograd import gradcheck, gradgradcheck
 
 
 class TestFusedBiasLeakyReLU:

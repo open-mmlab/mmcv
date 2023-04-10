@@ -2,10 +2,9 @@
 import numpy as np
 import pytest
 import torch
+from torch.autograd import gradcheck
 
 from mmcv.ops import RiRoIAlignRotated
-
-from torch.autograd import gradcheck
 
 np_feature = np.array([[[[1, 2], [3, 4]], [[1, 2], [4, 3]], [[4, 3], [2, 1]],
                         [[1, 2], [5, 6]], [[3, 4], [7, 8]], [[9, 10], [13,

@@ -174,7 +174,7 @@ def get_extensions():
     try:
         from torch.utils.cpp_extension import ROCM_HOME
         is_rocm_pytorch = True if ((torch.version.hip is not None) and
-                                    (ROCM_HOME is not None)) else False
+                                   (ROCM_HOME is not None)) else False
     except ImportError:
         pass
 
@@ -208,8 +208,8 @@ def get_extensions():
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/mlu'))
     elif (hasattr(torch.backends, 'mps')
-            and torch.backends.mps.is_available()) or os.getenv(
-                'FORCE_MPS', '0') == '1':
+          and torch.backends.mps.is_available()) or os.getenv(
+              'FORCE_MPS', '0') == '1':
         # objc compiler support
         from distutils.unixccompiler import UnixCCompiler
         if '.mm' not in UnixCCompiler.src_extensions:

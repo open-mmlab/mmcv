@@ -1,8 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
-
-
 from torch.autograd import gradcheck, gradgradcheck
 
 
@@ -30,17 +28,15 @@ class TestUpFirDn2d:
         from mmcv.ops import upfirdn2d
         gradcheck(
             upfirdn2d,
-            (self.input_tensor.cuda(),
-                self.kernel.type_as(
-                    self.input_tensor).cuda(), self.factor, 1, self.pad),
+            (self.input_tensor.cuda(), self.kernel.type_as(
+                self.input_tensor).cuda(), self.factor, 1, self.pad),
             eps=1e-4,
             atol=1e-3)
 
         gradgradcheck(
             upfirdn2d,
-            (self.input_tensor.cuda(),
-                self.kernel.type_as(
-                    self.input_tensor).cuda(), self.factor, 1, self.pad),
+            (self.input_tensor.cuda(), self.kernel.type_as(
+                self.input_tensor).cuda(), self.factor, 1, self.pad),
             eps=1e-4,
             atol=1e-3)
 

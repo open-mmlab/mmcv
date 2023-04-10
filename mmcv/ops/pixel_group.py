@@ -60,7 +60,7 @@ def pixel_group(
         kernel_contour = torch.from_numpy(kernel_contour)
 
     pixel_assignment = ext_module.pixel_group(score, mask, embedding,
-                                                  kernel_label, kernel_contour,
-                                                  kernel_region_num,
-                                                  distance_threshold)
+                                              kernel_label, kernel_contour,
+                                              kernel_region_num,
+                                              distance_threshold)
     return pixel_assignment
