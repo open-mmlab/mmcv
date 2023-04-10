@@ -5,14 +5,14 @@ from typing import Dict, Tuple, Union
 import torch.nn as nn
 from mmengine.registry import MODELS
 from mmengine.utils import is_tuple_of
-from mmengine.utils.dl_utils.parrots_wrapper import (SyncBatchNorm, _BatchNorm,
-                                                     _InstanceNorm)
+from torch.nn.modules.batchnorm import _BatchNorm
+from torch.nn.modules.instancenorm import _InstanceNorm
 
 MODELS.register_module('BN', module=nn.BatchNorm2d)
 MODELS.register_module('BN1d', module=nn.BatchNorm1d)
 MODELS.register_module('BN2d', module=nn.BatchNorm2d)
 MODELS.register_module('BN3d', module=nn.BatchNorm3d)
-MODELS.register_module('SyncBN', module=SyncBatchNorm)
+MODELS.register_module('SyncBN', module=nn.SyncBatchNorm)
 MODELS.register_module('GN', module=nn.GroupNorm)
 MODELS.register_module('LN', module=nn.LayerNorm)
 MODELS.register_module('IN', module=nn.InstanceNorm2d)
