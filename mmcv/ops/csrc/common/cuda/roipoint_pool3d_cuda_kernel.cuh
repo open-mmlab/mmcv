@@ -2,11 +2,7 @@
 #ifndef ROIPOINT_POOL3D_CUDA_KERNEL_CUH
 #define ROIPOINT_POOL3D_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 template <typename T>
 __device__ inline void lidar_to_local_coords(T shift_x, T shift_y, T rz,

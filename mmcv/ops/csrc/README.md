@@ -13,7 +13,6 @@ This folder contains all non-python code for MMCV custom ops. Please follow the 
 │   ├── pytorch_device_registry.hpp
 │   ├── cuda
 │   │   ├── common_cuda_helper.hpp
-│   │   ├── parrots_cudawarpfunction.cuh
 │   │   ├── ...
 │   │   └── ops_cuda_kernel.cuh
 |   ├── mps

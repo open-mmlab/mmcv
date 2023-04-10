@@ -3,11 +3,7 @@
 // https://github.com/sshaoshuai/Pointnet2.PyTorch/tree/master/pointnet2/src/group_points_gpu.cu
 #ifndef STACK_GROUP_POINTS_CUDA_KERNEL_CUH
 #define STACK_GROUP_POINTS_CUDA_KERNEL_CUH
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 #include <stdio.h>
 template <typename T>
 __global__ void stack_group_points_forward_cuda_kernel(

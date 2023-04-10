@@ -4,11 +4,7 @@
 #ifndef CHAMFER_DISTANCE_CUDA_KERNEL_CUH
 #define CHAMFER_DISTANCE_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 #define MAX_SHARED_SCALAR_T 6144  // 49152 / 8 = 6144
 

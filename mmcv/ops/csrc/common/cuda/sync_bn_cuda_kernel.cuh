@@ -2,11 +2,7 @@
 #ifndef SYNCBN_CUDA_KERNEL_CUH
 #define SYNCBN_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 template <typename T>
 __global__ void sync_bn_forward_mean_cuda_kernel(const T *input, float *mean,

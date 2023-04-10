@@ -2,11 +2,7 @@
 #ifndef CONVEX_IOU_CUDA_KERNEL_CUH
 #define CONVEX_IOU_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 #define MAXN 100
 #define NMAX 512

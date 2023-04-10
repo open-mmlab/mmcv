@@ -2,11 +2,7 @@
 #ifndef VOXELIZATION_CUDA_KERNEL_CUH
 #define VOXELIZATION_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 typedef enum { SUM = 0, MEAN = 1, MAX = 2 } reduce_t;
 

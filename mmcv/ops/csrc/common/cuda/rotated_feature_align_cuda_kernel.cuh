@@ -4,11 +4,7 @@
 #ifndef ROTATED_FEATURE_ALIGN_CUDA_KERNEL_CUH
 #define ROTATED_FEATURE_ALIGN_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 template <typename scalar_t>
 __global__ void rotated_feature_align_forward_kernel(

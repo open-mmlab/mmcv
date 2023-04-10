@@ -2,11 +2,7 @@
 #ifndef BOX_IOU_QUADRI_CUDA_CUH
 #define BOX_IOU_QUADRI_CUDA_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 #include "box_iou_rotated_utils.hpp"
 
 // 2D block with 32 * 16 = 512 threads per block

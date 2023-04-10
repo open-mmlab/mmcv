@@ -4,11 +4,7 @@
 #ifndef NMS_ROTATED_CUDA_CUH
 #define NMS_ROTATED_CUDA_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 #include "box_iou_rotated_utils.hpp"
 
 __host__ __device__ inline int divideUP(const int x, const int y) {

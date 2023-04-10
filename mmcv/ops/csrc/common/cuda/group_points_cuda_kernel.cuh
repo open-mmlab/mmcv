@@ -4,11 +4,7 @@
 #ifndef GROUP_POINTS_CUDA_KERNEL_CUH
 #define GROUP_POINTS_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 template <typename T>
 __global__ void group_points_forward_cuda_kernel(int b, int c, int n,

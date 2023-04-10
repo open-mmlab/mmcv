@@ -2,11 +2,7 @@
 #ifndef FURTHEST_POINT_SAMPLE_CUDA_KERNEL_CUH
 #define FURTHEST_POINT_SAMPLE_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 __device__ void __update(float *__restrict__ dists, int *__restrict__ dists_i,
                          int idx1, int idx2) {

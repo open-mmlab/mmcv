@@ -4,11 +4,7 @@
 #ifndef BALL_QUERY_CUDA_KERNEL_CUH
 #define BALL_QUERY_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 template <typename T>
 __global__ void ball_query_forward_cuda_kernel(int b, int n, int m,

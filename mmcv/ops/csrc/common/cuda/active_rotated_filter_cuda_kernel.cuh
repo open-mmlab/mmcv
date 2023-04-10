@@ -4,11 +4,7 @@
 #ifndef ACTIVE_ROTATED_FILTER_CUDA_KERNEL_CUH
 #define ACTIVE_ROTATED_FILTER_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 template <typename scalar_t>
 __global__ void active_rotated_filter_forward_cuda_kernel(

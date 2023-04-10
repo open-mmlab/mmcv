@@ -2,11 +2,7 @@
 #ifndef SIGMOID_FOCAL_LOSS_CUDA_KERNEL_CUH
 #define SIGMOID_FOCAL_LOSS_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 template <typename T>
 __global__ void sigmoid_focal_loss_forward_cuda_kernel(

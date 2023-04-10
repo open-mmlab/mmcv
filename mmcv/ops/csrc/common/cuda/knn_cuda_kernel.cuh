@@ -4,11 +4,7 @@
 #ifndef KNN_CUDA_KERNEL_CUH
 #define KNN_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 inline __device__ void swap_float(float *x, float *y) {
   float tmp = *x;

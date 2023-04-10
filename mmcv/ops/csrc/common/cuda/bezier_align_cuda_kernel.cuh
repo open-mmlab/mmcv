@@ -8,11 +8,7 @@
 #ifdef MMCV_WITH_TRT
 #include "common_cuda_helper.hpp"
 #else  // MMCV_WITH_TRT
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else  // MMCV_USE_PARROTS
 #include "pytorch_cuda_helper.hpp"
-#endif  // MMCV_USE_PARROTS
 #endif  // MMCV_WITH_TRT
 
 template <typename T>

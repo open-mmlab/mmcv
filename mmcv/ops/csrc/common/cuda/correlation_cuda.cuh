@@ -6,11 +6,7 @@
 #ifndef CORRELATION_CUDA
 #define CORRELATION_CUDA
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 #include <cuda.h>
 #include <cuda_runtime.h>
