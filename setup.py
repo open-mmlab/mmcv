@@ -272,6 +272,7 @@ def get_extensions():
         include_dirs = []
 
         extra_objects = []
+        extra_link_args = []
         is_rocm_pytorch = False
         try:
             from torch.utils.cpp_extension import ROCM_HOME
@@ -388,8 +389,9 @@ def get_extensions():
                     './mlu-ops/bangc-ops/kernels/**/*.cpp', recursive=True) + \
                 glob.glob(
                     './mlu-ops/bangc-ops/kernels/**/*.mlu', recursive=True)
-            extra_objects = glob.glob(
-                './mlu-ops/bangc-ops/kernels/kernel_wrapper/*.o')
+            extra_link_args=['-Wl,--whole-archive',
+                './mlu-ops/bangc-ops/kernels/kernel_wrapper/lib/libextops.a',
+                '-Wl,--no-whole-archive']
             extension = MLUExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/mlu'))
@@ -456,7 +458,8 @@ def get_extensions():
             include_dirs=include_dirs,
             define_macros=define_macros,
             extra_objects=extra_objects,
-            extra_compile_args=extra_compile_args)
+            extra_compile_args=extra_compile_args,
+            extra_link_args=extra_link_args)
         extensions.append(ext_ops)
 
     if EXT_TYPE == 'pytorch' and os.getenv('MMCV_WITH_ORT', '0') != '0':
