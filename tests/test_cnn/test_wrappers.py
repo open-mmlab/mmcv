@@ -8,10 +8,7 @@ import torch.nn as nn
 from mmcv.cnn.bricks import (Conv2d, Conv3d, ConvTranspose2d, ConvTranspose3d,
                              Linear, MaxPool2d, MaxPool3d)
 
-if torch.__version__ != 'parrots':
-    torch_version = '1.1'
-else:
-    torch_version = 'parrots'
+torch_version = '1.1'
 
 
 @patch('torch.__version__', torch_version)
@@ -139,8 +136,6 @@ def test_conv_transposed_2d(in_w, in_h, in_channel, out_channel, kernel_size,
     x_empty = torch.randn(0, in_channel, in_h, in_w, requires_grad=True)
     # out padding must be smaller than either stride or dilation
     op = min(stride, dilation) - 1
-    if torch.__version__ == 'parrots':
-        op = 0
     torch.manual_seed(0)
     wrapper = ConvTranspose2d(
         in_channel,
@@ -273,24 +268,17 @@ def test_max_pool_2d(in_w, in_h, in_channel, out_channel, kernel_size, stride,
 @pytest.mark.parametrize(
     'in_w,in_h,in_t,in_channel,out_channel,kernel_size,stride,padding,dilation',  # noqa: E501
     [(10, 10, 10, 1, 1, 3, 1, 0, 1), (20, 20, 20, 3, 3, 5, 2, 1, 2)])
-@pytest.mark.skipif(
-    torch.__version__ == 'parrots' and not torch.cuda.is_available(),
-    reason='parrots requires CUDA support')
 def test_max_pool_3d(in_w, in_h, in_t, in_channel, out_channel, kernel_size,
                      stride, padding, dilation):
     # wrapper op with 0-dim input
     x_empty = torch.randn(0, in_channel, in_t, in_h, in_w, requires_grad=True)
     wrapper = MaxPool3d(
         kernel_size, stride=stride, padding=padding, dilation=dilation)
-    if torch.__version__ == 'parrots':
-        x_empty = x_empty.cuda()
     wrapper_out = wrapper(x_empty)
     # torch op with 3-dim input as shape reference
     x_normal = torch.randn(3, in_channel, in_t, in_h, in_w)
     ref = nn.MaxPool3d(
         kernel_size, stride=stride, padding=padding, dilation=dilation)
-    if torch.__version__ == 'parrots':
-        x_normal = x_normal.cuda()
     ref_out = ref(x_normal)
 
     assert wrapper_out.shape[0] == 0

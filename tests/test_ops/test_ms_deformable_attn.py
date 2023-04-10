@@ -7,13 +7,7 @@ from mmcv.ops.multi_scale_deform_attn import (
     multi_scale_deformable_attn_pytorch)
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
-_USING_PARROTS = True
-_IS_AUTOCAST_AVAILABLE = True
-try:
-    from parrots.autograd import gradcheck
-except ImportError:
-    from torch.autograd import gradcheck
-    _USING_PARROTS = False
+from torch.autograd import gradcheck
 
 try:
     # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast
@@ -289,17 +283,9 @@ def test_gradient_numerical(channels,
     elif device == 'mlu':
         dtype = torch.float
         eps = 1e-4
-    if _USING_PARROTS:
-        assert gradcheck(
-            func, (value.to(dtype), shapes, level_start_index,
-                   sampling_locations.to(dtype), attention_weights.to(dtype),
-                   im2col_step),
-            no_grads=[shapes, level_start_index],
-            eps=eps)
-    else:
-        assert gradcheck(
-            func, (value.to(dtype), shapes, level_start_index,
-                   sampling_locations.to(dtype), attention_weights.to(dtype),
-                   im2col_step),
-            eps=eps,
-            atol=1e-2)
+    assert gradcheck(
+        func, (value.to(dtype), shapes, level_start_index,
+                sampling_locations.to(dtype), attention_weights.to(dtype),
+                im2col_step),
+        eps=eps,
+        atol=1e-2)

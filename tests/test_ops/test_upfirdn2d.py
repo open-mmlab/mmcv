@@ -2,12 +2,8 @@
 import pytest
 import torch
 
-_USING_PARROTS = True
-try:
-    from parrots.autograd import gradcheck
-except ImportError:
-    from torch.autograd import gradcheck, gradgradcheck
-    _USING_PARROTS = False
+
+from torch.autograd import gradcheck, gradgradcheck
 
 
 class TestUpFirDn2d:

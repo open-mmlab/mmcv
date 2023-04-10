@@ -59,27 +59,7 @@ def pixel_group(
     if isinstance(kernel_contour, np.ndarray):
         kernel_contour = torch.from_numpy(kernel_contour)
 
-    if torch.__version__ == 'parrots':
-        label = ext_module.pixel_group(
-            score,
-            mask,
-            embedding,
-            kernel_label,
-            kernel_contour,
-            kernel_region_num=kernel_region_num,
-            distance_threshold=distance_threshold)
-        label = label.tolist()
-        label = label[0]
-        list_index = kernel_region_num
-        pixel_assignment = []
-        for x in range(kernel_region_num):
-            pixel_assignment.append(
-                np.array(
-                    label[list_index:list_index + int(label[x])],
-                    dtype=np.float))
-            list_index = list_index + int(label[x])
-    else:
-        pixel_assignment = ext_module.pixel_group(score, mask, embedding,
+    pixel_assignment = ext_module.pixel_group(score, mask, embedding,
                                                   kernel_label, kernel_contour,
                                                   kernel_region_num,
                                                   distance_threshold)

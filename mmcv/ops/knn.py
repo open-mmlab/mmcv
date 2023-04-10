@@ -68,8 +68,7 @@ class KNN(Function):
             xyz, center_xyz, idx, dist2, b=B, n=N, m=npoint, nsample=k)
         # idx shape to [B, k, npoint]
         idx = idx.transpose(2, 1).contiguous()
-        if torch.__version__ != 'parrots':
-            ctx.mark_non_differentiable(idx)
+        ctx.mark_non_differentiable(idx)
         return idx
 
     @staticmethod

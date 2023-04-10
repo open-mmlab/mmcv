@@ -36,17 +36,6 @@ def contour_expand(kernel_mask: Union[np.array, torch.Tensor],
     if isinstance(internal_kernel_label, np.ndarray):
         internal_kernel_label = torch.from_numpy(internal_kernel_label)
 
-    if torch.__version__ == 'parrots':
-        if kernel_mask.shape[0] == 0 or internal_kernel_label.shape[0] == 0:
-            label = []
-        else:
-            label = ext_module.contour_expand(
-                kernel_mask,
-                internal_kernel_label,
-                min_kernel_area=min_kernel_area,
-                kernel_num=kernel_num)
-            label = label.tolist()  # type: ignore
-    else:
-        label = ext_module.contour_expand(kernel_mask, internal_kernel_label,
+    label = ext_module.contour_expand(kernel_mask, internal_kernel_label,
                                           min_kernel_area, kernel_num)
     return label

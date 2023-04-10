@@ -4,12 +4,7 @@ import torch
 
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
 
-_USING_PARROTS = True
-try:
-    from parrots.autograd import gradcheck
-except ImportError:
-    from torch.autograd import gradcheck, gradgradcheck
-    _USING_PARROTS = False
+from torch.autograd import gradcheck, gradgradcheck
 
 
 class TestFusedBiasLeakyReLU:
@@ -40,19 +35,11 @@ class TestFusedBiasLeakyReLU:
     def test_gradient(self, device):
 
         from mmcv.ops import FusedBiasLeakyReLU
-        if _USING_PARROTS:
-            if IS_CUDA_AVAILABLE:
-                gradcheck(
-                    FusedBiasLeakyReLU(2).cuda(),
-                    self.input_tensor,
-                    delta=1e-4,
-                    pt_atol=1e-3)
-        else:
-            gradcheck(
-                FusedBiasLeakyReLU(2).to(device),
-                self.input_tensor,
-                eps=1e-4,
-                atol=1e-3)
+        gradcheck(
+            FusedBiasLeakyReLU(2).to(device),
+            self.input_tensor,
+            eps=1e-4,
+            atol=1e-3)
 
     @pytest.mark.parametrize('device', [
         pytest.param(

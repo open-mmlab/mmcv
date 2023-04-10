@@ -12,16 +12,13 @@ import torch.nn as nn
 from mmengine.registry import MODELS
 from torch.nn.modules.utils import _pair, _triple
 
-if torch.__version__ == 'parrots':
-    TORCH_VERSION = torch.__version__
-else:
-    # torch.__version__ could be 1.3.1+cu92, we only need the first two
-    # for comparison
-    TORCH_VERSION = tuple(int(x) for x in torch.__version__.split('.')[:2])
+# torch.__version__ could be 1.3.1+cu92, we only need the first two
+# for comparison
+TORCH_VERSION = tuple(int(x) for x in torch.__version__.split('.')[:2])
 
 
 def obsolete_torch_version(torch_version, version_threshold) -> bool:
-    return torch_version == 'parrots' or torch_version <= version_threshold
+    return torch_version <= version_threshold
 
 
 class NewEmptyTensorOp(torch.autograd.Function):

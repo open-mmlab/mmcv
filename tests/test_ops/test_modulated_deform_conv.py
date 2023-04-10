@@ -120,8 +120,7 @@ class TestMdconv:
 
         # test amp when torch version >= '1.6.0', the type of
         # input data for mdconv might be torch.float or torch.half
-        if (TORCH_VERSION != 'parrots'
-                and digit_version(TORCH_VERSION) >= digit_version('1.6.0')):
+        if digit_version(TORCH_VERSION) >= digit_version('1.6.0'):
             with autocast(enabled=True):
                 self._test_amp_mdconv(torch.float)
                 self._test_amp_mdconv(torch.half)

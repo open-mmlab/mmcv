@@ -13,10 +13,7 @@ from mmcv.utils import IS_CUDA_AVAILABLE
         'cuda',
         marks=pytest.mark.skipif(
             not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
-    pytest.param(
-        'cpu',
-        marks=pytest.mark.skipif(
-            torch.__version__ == 'parrots', reason='requires PyTorch support'))
+    pytest.param('cpu')
 ])
 def test_rotated_feature_align(device):
     feature = torch.tensor([[[[1.2924, -0.2172, -0.5222, 0.1172],

@@ -75,8 +75,7 @@ class BallQuery(Function):
                 min_radius=min_radius,
                 max_radius=max_radius,
                 nsample=sample_num)
-        if torch.__version__ != 'parrots':
-            ctx.mark_non_differentiable(idx)
+        ctx.mark_non_differentiable(idx)
         return idx
 
     @staticmethod

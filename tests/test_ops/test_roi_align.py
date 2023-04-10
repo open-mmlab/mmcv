@@ -5,12 +5,7 @@ import torch
 
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
-_USING_PARROTS = True
-try:
-    from parrots.autograd import gradcheck
-except ImportError:
-    from torch.autograd import gradcheck
-    _USING_PARROTS = False
+from torch.autograd import gradcheck
 
 # yapf:disable
 
@@ -58,11 +53,7 @@ def _test_roialign_gradcheck(device, dtype):
 
         froipool = RoIAlign((pool_h, pool_w), spatial_scale, sampling_ratio)
 
-        if torch.__version__ == 'parrots':
-            gradcheck(
-                froipool, (x, rois), no_grads=[rois], delta=1e-5, pt_atol=1e-5)
-        else:
-            gradcheck(froipool, (x, rois), eps=1e-5, atol=1e-5)
+        gradcheck(froipool, (x, rois), eps=1e-5, atol=1e-5)
 
 
 def _test_roialign_allclose(device, dtype):

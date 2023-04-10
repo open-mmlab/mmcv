@@ -186,22 +186,10 @@ def soft_nms(boxes: array_like_type,
     method_dict = {'naive': 0, 'linear': 1, 'gaussian': 2}
     assert method in method_dict.keys()
 
-    if torch.__version__ == 'parrots':
-        dets = boxes.new_empty((boxes.size(0), 5), device='cpu')
-        indata_list = [boxes.cpu(), scores.cpu(), dets.cpu()]
-        indata_dict = {
-            'iou_threshold': float(iou_threshold),
-            'sigma': float(sigma),
-            'min_score': min_score,
-            'method': method_dict[method],
-            'offset': int(offset)
-        }
-        inds = ext_module.softnms(*indata_list, **indata_dict)
-    else:
-        dets, inds = SoftNMSop.apply(boxes.cpu(), scores.cpu(),
-                                     float(iou_threshold), float(sigma),
-                                     float(min_score), method_dict[method],
-                                     int(offset))
+    dets, inds = SoftNMSop.apply(boxes.cpu(), scores.cpu(),
+                                    float(iou_threshold), float(sigma),
+                                    float(min_score), method_dict[method],
+                                    int(offset))
 
     dets = dets[:inds.size(0)]
 
@@ -362,8 +350,6 @@ def nms_match(dets: array_like_type,
         indata_list = [dets_t]
         indata_dict = {'iou_threshold': float(iou_threshold)}
         matched = ext_module.nms_match(*indata_list, **indata_dict)
-        if torch.__version__ == 'parrots':
-            matched = matched.tolist()  # type: ignore
 
     if isinstance(dets, Tensor):
         return [dets.new_tensor(m, dtype=torch.long) for m in matched]
@@ -429,17 +415,7 @@ def nms_rotated(dets: Tensor,
     _, order = scores.sort(0, descending=True)
     dets_sorted = dets_wl.index_select(0, order)
 
-    if torch.__version__ == 'parrots':
-        keep_inds = ext_module.nms_rotated(
-            dets_wl,
-            scores,
-            order,
-            dets_sorted,
-            input_labels,
-            iou_threshold=iou_threshold,
-            multi_label=multi_label)
-    else:
-        keep_inds = ext_module.nms_rotated(dets_wl, scores, order, dets_sorted,
+    keep_inds = ext_module.nms_rotated(dets_wl, scores, order, dets_sorted,
                                            input_labels, iou_threshold,
                                            multi_label)
     dets = torch.cat((dets[keep_inds], scores[keep_inds].reshape(-1, 1)),

@@ -16,9 +16,6 @@ from numpy.testing import assert_allclose, assert_array_equal
 
 import mmcv
 
-if torch.__version__ == 'parrots':
-    pytest.skip('not necessary in parrots test', allow_module_level=True)
-
 
 class TestIO:
 

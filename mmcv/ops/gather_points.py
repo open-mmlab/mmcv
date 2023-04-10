@@ -34,8 +34,7 @@ class GatherPoints(Function):
             features, indices, output, b=B, c=C, n=N, npoints=npoint)
 
         ctx.for_backwards = (indices, C, N)
-        if torch.__version__ != 'parrots':
-            ctx.mark_non_differentiable(indices)
+        ctx.mark_non_differentiable(indices)
         return output
 
     @staticmethod

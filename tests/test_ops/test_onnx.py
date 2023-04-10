@@ -8,9 +8,6 @@ import torch
 import torch.nn as nn
 
 onnx_file = 'tmp.onnx'
-if torch.__version__ == 'parrots':
-    pytest.skip('not supported in parrots now', allow_module_level=True)
-
 
 @pytest.fixture(autouse=True)
 def run_before_and_after_test():
