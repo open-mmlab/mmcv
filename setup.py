@@ -9,7 +9,7 @@ EXT_TYPE = ''
 try:
     import torch
     if (hasattr(torch, 'is_mlu_available') and torch.is_mlu_available()) or \
-           os.getenv('FORCE_MLU', '0') == '1':
+            os.getenv('FORCE_MLU', '0') == '1':
         from torch_mlu.utils.cpp_extension import BuildExtension
         EXT_TYPE = 'pytorch'
     else:

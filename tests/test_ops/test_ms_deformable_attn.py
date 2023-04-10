@@ -8,6 +8,7 @@ from mmcv.ops.multi_scale_deform_attn import (
     multi_scale_deformable_attn_pytorch)
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
+_IS_AUTOCAST_AVAILABLE = True
 try:
     # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast
     # would be imported and used; we should test if our modules support it.
