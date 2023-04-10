@@ -2,8 +2,8 @@
 #ifndef BOX_IOU_QUADRI_CUDA_CUH
 #define BOX_IOU_QUADRI_CUDA_CUH
 
-#include "pytorch_cuda_helper.hpp"
 #include "box_iou_rotated_utils.hpp"
+#include "pytorch_cuda_helper.hpp"
 
 // 2D block with 32 * 16 = 512 threads per block
 const int BLOCK_DIM_X = 32;

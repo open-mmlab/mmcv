@@ -2,8 +2,8 @@
 #ifndef NMS_QUADRI_CUDA_CUH
 #define NMS_QUADRI_CUDA_CUH
 
-#include "pytorch_cuda_helper.hpp"
 #include "box_iou_rotated_utils.hpp"
+#include "pytorch_cuda_helper.hpp"
 
 __host__ __device__ inline int divideUP(const int x, const int y) {
   return (((x) + (y)-1) / (y));

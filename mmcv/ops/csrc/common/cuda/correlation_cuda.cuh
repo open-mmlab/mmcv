@@ -6,10 +6,10 @@
 #ifndef CORRELATION_CUDA
 #define CORRELATION_CUDA
 
-#include "pytorch_cuda_helper.hpp"
-
 #include <cuda.h>
 #include <cuda_runtime.h>
+
+#include "pytorch_cuda_helper.hpp"
 // Using <torch/extension.h> is recommended in the official documentation in
 // https://pytorch.org/tutorials/advanced/cpp_extension.html#writing-the-c-op.
 // However, we use <torch/types.h> for compatibility with CUDA 9.0
