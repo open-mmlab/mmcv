@@ -39,9 +39,6 @@ class NeighborhoodAttention(nn.Module):
         self.num_heads = num_heads
         self.head_dim = dim // self.num_heads
         self.scale = qk_scale or self.head_dim**-0.5
-        assert kernel_size > 1 and kernel_size % 2 == 1, \
-            f'Kernel size must be an odd number greater than 1,' \
-            f' got {kernel_size}.'
         assert kernel_size in [3, 5, 7, 9, 11, 13], \
             f'CUDA kernel only supports kernel sizes' \
             f' 3, 5, 7, 9, 11, and 13; got {kernel_size}.'
@@ -70,8 +67,8 @@ class NeighborhoodAttention(nn.Module):
         pad_l = pad_t = pad_r = pad_b = 0
         if H < self.kernel_size or W < self.kernel_size:
             pad_l = pad_t = 0
-            pad_r = max(0, self.window_size - W)
-            pad_b = max(0, self.window_size - H)
+            pad_r = max(0, self.kernel_size - W)
+            pad_b = max(0, self.kernel_size - H)
             x = pad(x, (0, 0, pad_l, pad_r, pad_t, pad_b))
             _, H, W, _ = x.shape
         qkv = self.qkv(x).reshape(B, H, W, 3, self.num_heads,

@@ -8,18 +8,16 @@
 *https://github.com/SHI-Labs/Neighborhood-Attention-Transformer
 **************************************************************************************************
 */
-#include <ATen/ATen.h>
 #include <ATen/AccumulateType.h>
-#include <ATen/cuda/CUDAContext.h>
-#include <cuda.h>
 #include <cuda_fp16.h>
-#include <cuda_runtime.h>
 #include <torch/extension.h>
 
 #include <ATen/native/cuda/KernelUtils.cuh>
 #include <vector>
 
 #include "nattenav_cuda_kernel.cuh"
+#include "pytorch_cpp_helper.hpp"
+#include "pytorch_cuda_helper.hpp"
 
 /*
 Beware: here be dragons! Edit with caution.
@@ -102,10 +100,27 @@ their current form. There's also a specific FP16 kernel for everything now.
 #define QSTRIDE_5 16
 
 // This is just for the other kernels that are not using SMEM
+#define CUDA_NUM_THREADS 1024
 #define CUDA_NUM_THREADS_F 512
 #define CUDA_NUM_THREADS_FP16 512
 #define CUDA_NUM_THREADS_V 512
 #define CUDA_NUM_THREADS_V16 256
+
+#define AT_DISPATCH_HALF_TYPES(SCALARTYPE1, TYPE, NAME, ...)                \
+  [&] {                                                                     \
+    const auto &the_type = TYPE;                                            \
+    /* don't use TYPE again in case it is an expensive or side-effect op */ \
+    at::ScalarType _st = ::detail::scalar_type(the_type);                   \
+    RECORD_KERNEL_FUNCTION_DTYPE(NAME, _st);                                \
+    switch (_st) {                                                          \
+      AT_PRIVATE_CASE_TYPE(                                                 \
+          NAME, SCALARTYPE1,                                                \
+          decltype(c10::impl::ScalarTypeToCPPType<SCALARTYPE1>::t),         \
+          __VA_ARGS__)                                                      \
+      default:                                                              \
+        break;                                                              \
+    }                                                                       \
+  }()
 
 template <int KERNEL_SIZE, int NEIGHBORHOOD_SIZE, typename scalar_t>
 __global__ void nattenav_cuda_forward_kernel_fp16(
@@ -132,8 +147,8 @@ __global__ void nattenav_cuda_forward_kernel_fp16(
     const int h = indtmp1 - indtmp2 * heads;
     const int b = indtmp2;
 
-    const int ni = get_window_start(i, height, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
-    const int nj = get_window_start(j, width, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
+    const int ni = get_window_start(i, height, NEIGHBORHOOD_SIZE);
+    const int nj = get_window_start(j, width, NEIGHBORHOOD_SIZE);
     __half2 updt = __float2half2_rn(0.f);
     int attnOffset = b * attn.stride(0) + h * attn.stride(1) +
                      i * attn.stride(2) + j * attn.stride(3);
@@ -176,8 +191,8 @@ __global__ void nattenav_cuda_forward_kernel_fp32(
     const int h = indtmp1 - indtmp2 * heads;
     const int b = indtmp2;
 
-    const int ni = get_window_start(i, height, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
-    const int nj = get_window_start(j, width, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
+    const int ni = get_window_start(i, height, NEIGHBORHOOD_SIZE);
+    const int nj = get_window_start(j, width, NEIGHBORHOOD_SIZE);
     scalar_t updt = scalar_t(0);
     int attnOffset = b * attn.stride(0) + h * attn.stride(1) +
                      i * attn.stride(2) + j * attn.stride(3);
@@ -218,10 +233,8 @@ __global__ void nattena_cuda_backward_kernel_fp16(
         const int kj = y - ki * KERNEL_SIZE;
         const int i = x / width;
         const int j = x - i * width;
-        const int ni =
-            get_window_start(i, height, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
-        const int nj =
-            get_window_start(j, width, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
+        const int ni = get_window_start(i, height, NEIGHBORHOOD_SIZE);
+        const int nj = get_window_start(j, width, NEIGHBORHOOD_SIZE);
         __half2 updt = __float2half2_rn(0.f);
         const int stride2 = dimhalf * width;
         const int batchHeadOffset =
@@ -263,10 +276,8 @@ __global__ void nattena_cuda_backward_kernel_fp32(
         const int kj = y - ki * KERNEL_SIZE;
         const int i = x / width;
         const int j = x - i * width;
-        const int ni =
-            get_window_start(i, height, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
-        const int nj =
-            get_window_start(j, width, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
+        const int ni = get_window_start(i, height, NEIGHBORHOOD_SIZE);
+        const int nj = get_window_start(j, width, NEIGHBORHOOD_SIZE);
         scalar_t updt = scalar_t(0);
         const int batchHeadOffset = b * d_out.stride(0) + h * d_out.stride(1);
         const int d_outOffset =
@@ -314,10 +325,8 @@ __global__ void nattena_cuda_backward_kernel_fp16_5x5_32(
       b * (stride2 * height * heads) + h * (stride2 * height);
   const int si = sy / KERNEL_SIZE_5;
   const int sj = sx / KERNEL_SIZE_5;
-  const int sni =
-      get_window_start(si, height, KERNEL_SIZE_5, NEIGHBORHOOD_SIZE_5);
-  const int snj =
-      get_window_start(sj, width, KERNEL_SIZE_5, NEIGHBORHOOD_SIZE_5);
+  const int sni = get_window_start(si, height, NEIGHBORHOOD_SIZE_5);
+  const int snj = get_window_start(sj, width, NEIGHBORHOOD_SIZE_5);
   __shared__ __half2 tile[TILE_5 * TILE_5][DIM_32 + 3];
   __shared__ __half2 kTile[KTILE_5 * KTILE_5][DIM_32 + 3];
   __half2 *d_out2 = reinterpret_cast<__half2 *>(d_out.data());
@@ -356,10 +365,8 @@ __global__ void nattena_cuda_backward_kernel_fp16_5x5_32(
     const int ki = y - i * KERNEL_SIZE_5;
     const int j = x / KERNEL_SIZE_5;
     const int kj = x - j * KERNEL_SIZE_5;
-    const int ni =
-        get_window_start(i, height, KERNEL_SIZE_5, NEIGHBORHOOD_SIZE_5);
-    const int nj =
-        get_window_start(j, width, KERNEL_SIZE_5, NEIGHBORHOOD_SIZE_5);
+    const int ni = get_window_start(i, height, NEIGHBORHOOD_SIZE_5);
+    const int nj = get_window_start(j, width, NEIGHBORHOOD_SIZE_5);
     __half2 updt = __float2half2_rn(0.f);
     const int d_outIdx = (i - si) * TILE_5 + (j - sj);
     const int valueIdx = (ni + ki - sni) * KTILE_5 + (nj + kj - snj);
@@ -402,10 +409,8 @@ __global__ void nattena_cuda_backward_kernel_fp32_5x5_32(
   const int batchHeadOffset = b * d_out.stride(0) + h * d_out.stride(1);
   const int si = sy / KERNEL_SIZE_5;
   const int sj = sx / KERNEL_SIZE_5;
-  const int sni =
-      get_window_start(si, height, KERNEL_SIZE_5, NEIGHBORHOOD_SIZE_5);
-  const int snj =
-      get_window_start(sj, width, KERNEL_SIZE_5, NEIGHBORHOOD_SIZE_5);
+  const int sni = get_window_start(si, height, NEIGHBORHOOD_SIZE_5);
+  const int snj = get_window_start(sj, width, NEIGHBORHOOD_SIZE_5);
   __shared__ scalar_t tile[TILE_5 * TILE_5][DIM_32 + 3];
   __shared__ scalar_t kTile[KTILE_5 * KTILE_5][DIM_32 + 3];
 
@@ -445,10 +450,8 @@ __global__ void nattena_cuda_backward_kernel_fp32_5x5_32(
     const int ki = y - i * KERNEL_SIZE_5;
     const int j = x / KERNEL_SIZE_5;
     const int kj = x - j * KERNEL_SIZE_5;
-    const int ni =
-        get_window_start(i, height, KERNEL_SIZE_5, NEIGHBORHOOD_SIZE_5);
-    const int nj =
-        get_window_start(j, width, KERNEL_SIZE_5, NEIGHBORHOOD_SIZE_5);
+    const int ni = get_window_start(i, height, NEIGHBORHOOD_SIZE_5);
+    const int nj = get_window_start(j, width, NEIGHBORHOOD_SIZE_5);
     scalar_t updt = scalar_t(0);
     const int d_outIdx = (i - si) * TILE_5 + (j - sj);
     const int valueIdx = (ni + ki - sni) * KTILE_5 + (nj + kj - snj);
@@ -493,8 +496,8 @@ __global__ void nattena_cuda_backward_kernel_fp16_7x7_9x9_32(
       b * (stride2 * height * heads) + h * (stride2 * height);
   const int si = sy / KERNEL_SIZE;
   const int sj = sx / KERNEL_SIZE;
-  const int sni = get_window_start(si, height, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
-  const int snj = get_window_start(sj, width, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
+  const int sni = get_window_start(si, height, NEIGHBORHOOD_SIZE);
+  const int snj = get_window_start(sj, width, NEIGHBORHOOD_SIZE);
   __shared__ __half2 tile[TILE * TILE][DIM_32 + 3];
   __shared__ __half2 kTile[KTILE * KTILE][DIM_32 + 3];
   __half2 *d_out2 = reinterpret_cast<__half2 *>(d_out.data());
@@ -535,8 +538,8 @@ __global__ void nattena_cuda_backward_kernel_fp16_7x7_9x9_32(
     const int ki = y - i * KERNEL_SIZE;
     const int j = x / KERNEL_SIZE;
     const int kj = x - j * KERNEL_SIZE;
-    const int ni = get_window_start(i, height, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
-    const int nj = get_window_start(j, width, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
+    const int ni = get_window_start(i, height, NEIGHBORHOOD_SIZE);
+    const int nj = get_window_start(j, width, NEIGHBORHOOD_SIZE);
     __half2 updt = __float2half2_rn(0.f);
     const int d_outIdx = (i - si) * TILE + (j - sj);
     const int valueIdx = (ni + ki - sni) * KTILE + (nj + kj - snj);
@@ -581,8 +584,8 @@ __global__ void nattena_cuda_backward_kernel_fp32_7x7_9x9_32(
   const int batchHeadOffset = b * d_out.stride(0) + h * d_out.stride(1);
   const int si = sy / KERNEL_SIZE;
   const int sj = sx / KERNEL_SIZE;
-  const int sni = get_window_start(si, height, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
-  const int snj = get_window_start(sj, width, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
+  const int sni = get_window_start(si, height, NEIGHBORHOOD_SIZE);
+  const int snj = get_window_start(sj, width, NEIGHBORHOOD_SIZE);
   __shared__ scalar_t tile[TILE * TILE][DIM_32 + 3];
   __shared__ scalar_t kTile[KTILE * KTILE][DIM_32 + 3];
 
@@ -618,8 +621,8 @@ __global__ void nattena_cuda_backward_kernel_fp32_7x7_9x9_32(
     const int ki = y - i * KERNEL_SIZE;
     const int j = x / KERNEL_SIZE;
     const int kj = x - j * KERNEL_SIZE;
-    const int ni = get_window_start(i, height, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
-    const int nj = get_window_start(j, width, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
+    const int ni = get_window_start(i, height, NEIGHBORHOOD_SIZE);
+    const int nj = get_window_start(j, width, NEIGHBORHOOD_SIZE);
     scalar_t updt = scalar_t(0);
     const int d_outIdx = (i - si) * TILE + (j - sj);
     const int valueIdx = (ni + ki - sni) * KTILE + (nj + kj - snj);
@@ -664,8 +667,8 @@ __global__ void nattena_cuda_backward_kernel_fp16_11x11_13x13_32(
       b * (stride2 * height * heads) + h * (stride2 * height);
   const int si = sy / KERNEL_SIZE;
   const int sj = sx / KERNEL_SIZE;
-  const int sni = get_window_start(si, height, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
-  const int snj = get_window_start(sj, width, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
+  const int sni = get_window_start(si, height, NEIGHBORHOOD_SIZE);
+  const int snj = get_window_start(sj, width, NEIGHBORHOOD_SIZE);
   __shared__ __half2 tile[TILEX * TILEY][DIM_32 + 3];
   __shared__ __half2 kTile[KTILEX * KTILEY][DIM_32 + 3];
   __half2 *d_out2 = reinterpret_cast<__half2 *>(d_out.data());
@@ -706,8 +709,8 @@ __global__ void nattena_cuda_backward_kernel_fp16_11x11_13x13_32(
     const int ki = y - i * KERNEL_SIZE;
     const int j = x / KERNEL_SIZE;
     const int kj = x - j * KERNEL_SIZE;
-    const int ni = get_window_start(i, height, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
-    const int nj = get_window_start(j, width, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
+    const int ni = get_window_start(i, height, NEIGHBORHOOD_SIZE);
+    const int nj = get_window_start(j, width, NEIGHBORHOOD_SIZE);
     __half2 updt = __float2half2_rn(0.f);
     const int d_outIdx = (i - si) * TILEY + (j - sj);
     const int valueIdx = (ni + ki - sni) * KTILEY + (nj + kj - snj);
@@ -753,8 +756,8 @@ __global__ void nattena_cuda_backward_kernel_fp32_11x11_13x13_32(
   const int batchHeadOffset = b * d_out.stride(0) + h * d_out.stride(1);
   const int si = sy / KERNEL_SIZE;
   const int sj = sx / KERNEL_SIZE;
-  const int sni = get_window_start(si, height, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
-  const int snj = get_window_start(sj, width, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
+  const int sni = get_window_start(si, height, NEIGHBORHOOD_SIZE);
+  const int snj = get_window_start(sj, width, NEIGHBORHOOD_SIZE);
   __shared__ memscalar_t tile[TILEX * TILEY][DIM_32 + 3];
   __shared__ memscalar_t kTile[KTILEX * KTILEY][DIM_32 + 3];
 
@@ -790,8 +793,8 @@ __global__ void nattena_cuda_backward_kernel_fp32_11x11_13x13_32(
     const int ki = y - i * KERNEL_SIZE;
     const int j = x / KERNEL_SIZE;
     const int kj = x - j * KERNEL_SIZE;
-    const int ni = get_window_start(i, height, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
-    const int nj = get_window_start(j, width, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
+    const int ni = get_window_start(i, height, NEIGHBORHOOD_SIZE);
+    const int nj = get_window_start(j, width, NEIGHBORHOOD_SIZE);
     scalar_t updt = scalar_t(0);
     const int d_outIdx = (i - si) * TILEY + (j - sj);
     const int valueIdx = (ni + ki - sni) * KTILEY + (nj + kj - snj);
@@ -841,12 +844,10 @@ __global__ void nattenv_cuda_backward_kernel_fp32(
     scalar_t d_value_update = scalar_t(0);
 #pragma unroll
     for (int xi = ni; xi < ei; ++xi) {
-      const int oni =
-          get_window_start(xi, height, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
+      const int oni = get_window_start(xi, height, NEIGHBORHOOD_SIZE);
 #pragma unroll
       for (int xj = nj; xj < ej; ++xj) {
-        const int onj =
-            get_window_start(xj, width, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
+        const int onj = get_window_start(xj, width, NEIGHBORHOOD_SIZE);
         const int outIndex =
             outOffset + xi * d_out.stride(2) + xj * d_out.stride(3);
         const int attnIndex = attnOffset + xi * attn.stride(2) +
@@ -896,12 +897,10 @@ __global__ void nattenv_cuda_backward_kernel_fp16(
     __half2 d_value_update = __float2half2_rn(0.f);
 #pragma unroll
     for (int xi = ni; xi < ei; ++xi) {
-      const int oni =
-          get_window_start(xi, height, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
+      const int oni = get_window_start(xi, height, NEIGHBORHOOD_SIZE);
 #pragma unroll
       for (int xj = nj; xj < ej; ++xj) {
-        const int onj =
-            get_window_start(xj, width, KERNEL_SIZE, NEIGHBORHOOD_SIZE);
+        const int onj = get_window_start(xj, width, NEIGHBORHOOD_SIZE);
         const int outIndex = outOffset + xi * stride2 + xj * dimhalf;
         const int attnIndex = attnOffset + xi * attn.stride(2) +
                               xj * attn.stride(3) + (i - oni) * KERNEL_SIZE +
@@ -917,6 +916,7 @@ __global__ void nattenv_cuda_backward_kernel_fp16(
 
 torch::Tensor nattenav_cuda_forward_fp16(const torch::Tensor &attn,
                                          const torch::Tensor &value) {
+  at::cuda::CUDAGuard device_guard(value.device());
   int batch_size = value.size(0);
   int heads = value.size(1);
   int height = value.size(2);
@@ -953,6 +953,7 @@ torch::Tensor nattenav_cuda_forward_fp16(const torch::Tensor &attn,
 
 torch::Tensor nattenav_cuda_forward(const torch::Tensor &attn,
                                     const torch::Tensor &value) {
+  at::cuda::CUDAGuard device_guard(value.device());
   int batch_size = value.size(0);
   int heads = value.size(1);
   int height = value.size(2);
@@ -988,6 +989,7 @@ torch::Tensor nattenav_cuda_forward(const torch::Tensor &attn,
 std::vector<torch::Tensor> nattenav_cuda_backward_tiled_32(
     const torch::Tensor &d_out, const torch::Tensor &attn,
     const torch::Tensor &value) {
+  at::cuda::CUDAGuard device_guard(value.device());
   int64_t batch_size = value.size(0);
   int64_t heads = value.size(1);
   int64_t height = value.size(2);
@@ -1115,6 +1117,7 @@ std::vector<torch::Tensor> nattenav_cuda_backward_tiled_32(
 std::vector<torch::Tensor> nattenav_cuda_backward_fp16_tiled_32(
     const torch::Tensor &d_out, const torch::Tensor &attn,
     const torch::Tensor &value) {
+  at::cuda::CUDAGuard device_guard(value.device());
   int64_t batch_size = value.size(0);
   int64_t heads = value.size(1);
   int64_t height = value.size(2);
@@ -1245,6 +1248,7 @@ std::vector<torch::Tensor> nattenav_cuda_backward_fp16_tiled_32(
 std::vector<torch::Tensor> nattenav_cuda_backward(const torch::Tensor &d_out,
                                                   const torch::Tensor &attn,
                                                   const torch::Tensor &value) {
+  at::cuda::CUDAGuard device_guard(value.device());
   int64_t batch_size = value.size(0);
   int64_t heads = value.size(1);
   int64_t height = value.size(2);
@@ -1297,6 +1301,7 @@ std::vector<torch::Tensor> nattenav_cuda_backward(const torch::Tensor &d_out,
 std::vector<torch::Tensor> nattenav_cuda_backward_fp16(
     const torch::Tensor &d_out, const torch::Tensor &attn,
     const torch::Tensor &value) {
+  at::cuda::CUDAGuard device_guard(value.device());
   int64_t batch_size = value.size(0);
   int64_t heads = value.size(1);
   int64_t height = value.size(2);
@@ -1349,18 +1354,10 @@ std::vector<torch::Tensor> nattenav_cuda_backward_fp16(
 }
 
 // C++ interface
-#define CHECK_CUDA(x) \
-  TORCH_CHECK(x.device().is_cuda(), #x " must be a CUDA tensor")
-#define CHECK_CONTIGUOUS(x) \
-  TORCH_CHECK(x.is_contiguous(), #x " must be contiguous")
-#define CHECK_INPUT(x) \
-  CHECK_CUDA(x);       \
-  CHECK_CONTIGUOUS(x)
-
 torch::Tensor NATTENAVForwardCUDAKernelLauncher(const torch::Tensor attn,
                                                 const torch::Tensor value) {
-  CHECK_INPUT(attn);
-  CHECK_INPUT(value);
+  CHECK_CUDA_INPUT(attn);
+  CHECK_CUDA_INPUT(value);
   bool half =
       ::detail::scalar_type(value.scalar_type()) == at::ScalarType::Half;
   if (half) return nattenav_cuda_forward_fp16(attn, value);
@@ -1370,9 +1367,9 @@ torch::Tensor NATTENAVForwardCUDAKernelLauncher(const torch::Tensor attn,
 std::vector<torch::Tensor> NATTENAVBackwardCUDAKernelLauncher(
     const torch::Tensor d_out, const torch::Tensor attn,
     const torch::Tensor value) {
-  CHECK_INPUT(d_out);
-  CHECK_INPUT(attn);
-  CHECK_INPUT(value);
+  CHECK_CUDA_INPUT(d_out);
+  CHECK_CUDA_INPUT(attn);
+  CHECK_CUDA_INPUT(value);
   int dim = value.size(4);
   int kernel_size = sqrt(attn.size(4));
   bool half =
