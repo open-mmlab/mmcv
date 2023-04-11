@@ -201,6 +201,15 @@ def _test_tinshift_assert(device, dtype):
             tin_shift(x, shift)
 
 
+@pytest.mark.parametrize('dtype', [
+    torch.float,
+    pytest.param(
+        torch.double,
+        marks=pytest.mark.skipif(
+            IS_MLU_AVAILABLE,
+            reason='MLU does not support for 64-bit floating point')),
+    torch.half
+])
 @pytest.mark.parametrize('device', [
     pytest.param(
         'cuda',
@@ -210,15 +219,6 @@ def _test_tinshift_assert(device, dtype):
         'mlu',
         marks=pytest.mark.skipif(
             not IS_MLU_AVAILABLE, reason='requires MLU support'))
-])
-@pytest.mark.parametrize('dtype', [
-    torch.float,
-    pytest.param(
-        torch.double,
-        marks=pytest.mark.skipif(
-            IS_MLU_AVAILABLE,
-            reason='MLU does not support for 64-bit floating point')),
-    torch.half
 ])
 def test_tinshift(device, dtype):
     _test_tinshift_allclose(device=device, dtype=dtype)

@@ -8,6 +8,13 @@ from mmcv.ops import (RoIAwarePool3d, points_in_boxes_all, points_in_boxes_cpu,
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
 
+@pytest.mark.parametrize('dtype', [
+    torch.float, torch.half,
+    pytest.param(
+        torch.double,
+        marks=pytest.mark.skipif(
+            IS_MLU_AVAILABLE, reason='MLU does not support for double'))
+])
 @pytest.mark.parametrize('device', [
     pytest.param(
         'cuda',
@@ -17,13 +24,6 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
         'mlu',
         marks=pytest.mark.skipif(
             not IS_MLU_AVAILABLE, reason='requires MLU support'))
-])
-@pytest.mark.parametrize('dtype', [
-    torch.float, torch.half,
-    pytest.param(
-        torch.double,
-        marks=pytest.mark.skipif(
-            IS_MLU_AVAILABLE, reason='MLU does not support for double'))
 ])
 def test_RoIAwarePool3d(device, dtype):
     roiaware_pool3d_max = RoIAwarePool3d(

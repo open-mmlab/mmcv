@@ -124,6 +124,15 @@ def _test_roialign_rotated_allclose(device, dtype):
         output_2.data.type(torch.float).cpu().numpy())
 
 
+@pytest.mark.parametrize('dtype', [
+    torch.float,
+    pytest.param(
+        torch.double,
+        marks=pytest.mark.skipif(
+            IS_MLU_AVAILABLE,
+            reason='MLU does not support for 64-bit floating point')),
+    torch.half
+])
 @pytest.mark.parametrize('device', [
     'cpu',
     pytest.param(
@@ -134,15 +143,6 @@ def _test_roialign_rotated_allclose(device, dtype):
         'mlu',
         marks=pytest.mark.skipif(
             not IS_MLU_AVAILABLE, reason='requires MLU support'))
-])
-@pytest.mark.parametrize('dtype', [
-    torch.float,
-    pytest.param(
-        torch.double,
-        marks=pytest.mark.skipif(
-            IS_MLU_AVAILABLE,
-            reason='MLU does not support for 64-bit floating point')),
-    torch.half
 ])
 def test_roialign_rotated(device, dtype):
     # check double only
