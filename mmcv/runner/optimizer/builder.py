@@ -14,7 +14,7 @@ OPTIMIZER_BUILDERS = Registry('optimizer builder')
 def register_torch_optimizers() -> List:
     torch_optimizers = []
     for module_name in dir(torch.optim):
-        if module_name.startswith('__') and module_name.startswith('Npu'):
+        if module_name.startswith('__'):
             continue
         _optim = getattr(torch.optim, module_name)
         if inspect.isclass(_optim) and issubclass(_optim,
@@ -31,7 +31,7 @@ def register_torch_npu_optimizers(torch_optimizers) -> List:
     import torch_npu
     torch_npu_optimizers = []
     for module_name in dir(torch_npu.optim):
-        if module_name.startswith('__') and module_name in torch_optimizers:
+        if module_name.startswith('__') or module_name in torch_optimizers:
             continue
         _optim = getattr(torch_npu.optim, module_name)
         if inspect.isclass(_optim) and issubclass(_optim,
