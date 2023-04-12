@@ -13,8 +13,6 @@
 #define BYTES_OF(x) sizeof(decltype(x))
 #define CUDA_MALLOC(x, num) cudaMalloc((void**)&x, num* BYTES_OF(*x))
 #define CUDA_MEMSET(x, num, value) cudaMemset(x, value, num* BYTES_OF(*x))
-#define CUDA_TO_CPU(x_cuda, x_cpu, num) \
-  cudaMemcpy(x_cpu, x_cuda, num* BYTES_OF(*x_cuda), cudaMemcpyDeviceToHost)
 #define CPU_TO_CUDA(x_cpu, x_cuda, num) \
   cudaMemcpy(x_cuda, x_cpu, num* BYTES_OF(*x_cuda), cudaMemcpyHostToDevice)
 #define CREATE_TENSOR(shape, type, target_device) \

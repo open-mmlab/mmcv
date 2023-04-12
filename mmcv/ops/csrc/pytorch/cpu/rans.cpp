@@ -144,7 +144,7 @@ Tensor PMFtoQuantizedCDFCPUKernelLauncher(const Tensor pmfs,
   return quantized_cdfs;
 }
 
-// ------------------- BLIND RANS ENCODE -------------------
+// ------------------- BIND RANS ENCODE -------------------
 std::string rans_encode_with_indexes_cpu(
     const Tensor symbols, const Tensor indexes, const Tensor cdfs,
     const Tensor cdfs_sizes, const Tensor offsets, int num_threads) {
@@ -158,7 +158,7 @@ std::string rans_encode_with_indexes_impl(
 REGISTER_DEVICE_IMPL(rans_encode_with_indexes_impl, CPU,
                      rans_encode_with_indexes_cpu);
 
-// ------------------- BLIND RANS DECODE -------------------
+// ------------------- BIND RANS DECODE -------------------
 Tensor rans_decode_with_indexes_cpu(const std::string &encoded,
                                     const Tensor indexes, const Tensor cdfs,
                                     const Tensor cdfs_sizes,
@@ -174,7 +174,7 @@ Tensor rans_decode_with_indexes_impl(const std::string &encoded,
 REGISTER_DEVICE_IMPL(rans_decode_with_indexes_impl, CPU,
                      rans_decode_with_indexes_cpu);
 
-// ------------------- BLIND PMF TO QUANTIZED CDF -------------------
+// ------------------- BIND PMF TO QUANTIZED CDF -------------------
 Tensor pmf_to_quantized_cdf_cpu(const Tensor pmfs, const Tensor pmf_lengths,
                                 const Tensor tail_masses) {
   return PMFtoQuantizedCDFCPUKernelLauncher(pmfs, pmf_lengths, tail_masses);

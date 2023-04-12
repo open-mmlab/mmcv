@@ -104,10 +104,16 @@ std::string RansEncodeWithIndexesCUDAKernelLauncher(
   cudaStreamSynchronize(stream);
 
   // move results to cpu vector
-  std::vector<RansSymbol> rans_symbols_cpu(num_symbols);
-  std::vector<RansCUDAKernelResult> results_cpu(num_symbols);
-  CUDA_TO_CPU(rans_symbols, rans_symbols_cpu.data(), num_symbols);
-  CUDA_TO_CPU(results, results_cpu.data(), num_symbols);
+  auto rans_symbols_tensor_cpu = rans_symbols_tensor.to(torch::kCPU);
+  auto results_tensor_cpu = results_tensor.to(torch::kCPU);
+  auto rstc_ptr =
+      reinterpret_cast<RansSymbol *>(rans_symbols_tensor_cpu.data_ptr());
+  auto rt_ptr =
+      reinterpret_cast<RansCUDAKernelResult *>(results_tensor_cpu.data_ptr());
+  auto rans_symbols_vector =
+      std::vector<RansSymbol>(rstc_ptr, rstc_ptr + num_symbols);
+  auto results_vector =
+      std::vector<RansCUDAKernelResult>(rt_ptr, rt_ptr + num_symbols);
 
   // prepare outputs and nbytes
   std::vector<std::vector<uint32_t>> outputs(
@@ -121,8 +127,8 @@ std::string RansEncodeWithIndexesCUDAKernelLauncher(
     int begin_idx = GET_BEGIN_IDX(i, symbols.size(0), num_threads);
     int end_idx = GET_END_IDX(i, symbols.size(0), num_threads);
     cpu_threads.push_back(
-        std::thread(rans_encode_cpu_kernel, std::cref(rans_symbols_cpu),
-                    std::cref(results_cpu), begin_idx, end_idx,
+        std::thread(rans_encode_cpu_kernel, std::cref(rans_symbols_vector),
+                    std::cref(results_vector), begin_idx, end_idx,
                     std::ref(outputs[i]), std::ref(nbytes[i])));
   }
 
@@ -230,7 +236,8 @@ Tensor PMFtoQuantizedCDFCUDAKernelLauncher(const Tensor pmfs,
   check_pmf_to_quantized_cdf_input(pmfs, pmf_lengths, tail_masses);
 
   // set device
-  at::cuda::CUDAGuard device_guard(symbols.device());
+  at::cuda::CUDAGuard device_guard(pmfs.device());
+  cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
   // gpu not supported
   if (pmfs.size(1) > THREADS_PER_BLOCK) {
@@ -256,7 +263,7 @@ Tensor PMFtoQuantizedCDFCUDAKernelLauncher(const Tensor pmfs,
   // launch kernel
   dim3 blocks = dim3(pmfs.size(0));
   dim3 threads = dim3(cdf_max_length);
-  pmf_to_quantized_cdf_cuda_kernel<<<blocks, threads>>>(
+  pmf_to_quantized_cdf_cuda_kernel<<<blocks, threads, 0, stream>>>(
       pmfs.data_ptr<float>(), pmf_lengths.data_ptr<int>(),
       tail_masses.data_ptr<float>(), quantized_cdfs.data_ptr<int>(),
       pmfs.size(0), pmfs.size(1), cdf_max_length);
