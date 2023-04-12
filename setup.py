@@ -331,7 +331,9 @@ def get_extensions():
                 glob.glob('./mmcv/ops/csrc/pytorch/mlu/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/common/mlu/*.mlu')
             if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
-                op_files += glob.glob('./mmcv/ops/csrc/diopi_impl/camb/*.cpp')
+                # op_files += glob.glob('./mmcv/ops/csrc/diopi_impl/camb/*.cpp')
+                op_files += glob.glob('./mmcv/ops/csrc/DIOPI-IMPL/camb/functions_mmcv/*.cpp')
+                op_files += glob.glob('./mmcv/ops/csrc/DIOPI-IMPL/camb/functions_mmcv/*.mlu')
                 op_files += glob.glob('./mmcv/ops/csrc/diopi_rt/camb/*.cpp')
             extension = MLUExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
