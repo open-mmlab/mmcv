@@ -62,61 +62,6 @@ __global__ void rans_encode_with_indexes_cuda_kernel(
     results[i].bypass_mode = (value == max_value);
   }
 }
-
-// vector would be optimized by compiler more than 10x faster than Tensor
-void rans_encode_cpu_kernel(const std::vector<RansSymbol>& symbols,
-                            const std::vector<RansCUDAKernelResult>& results,
-                            const int begin_idx, const int end_idx,
-                            std::vector<uint32_t>& output, uint32_t& nbyte) {
-  Rans64State rans;
-  Rans64EncInit(&rans);
-
-  uint32_t* ptr = output.data() + output.size();
-  assert(ptr != nullptr);
-
-  for (int i = end_idx - 1; i >= begin_idx; i--) {
-    if (results[i].bypass_mode) {
-      // unlikely...
-      /* Determine the number of bypasses (in bypass_precision size) needed to
-       * encode the raw value. */
-      std::vector<RansSymbol> _syms;
-      int32_t n_bypass = 0;
-      uint32_t raw_val = results[i].raw_value;
-      while ((raw_val >> (n_bypass * bypass_precision)) != 0) {
-        ++n_bypass;
-      }
-
-      /* Encode number of bypasses */
-      int32_t val = n_bypass;
-      while (val >= max_bypass_val) {
-        _syms.push_back({max_bypass_val, max_bypass_val + 1, true});
-        val -= max_bypass_val;
-      }
-      _syms.push_back(
-          {static_cast<uint16_t>(val), static_cast<uint16_t>(val + 1), true});
-
-      /* Encode raw value */
-      for (int32_t j = 0; j < n_bypass; ++j) {
-        const int32_t val =
-            (raw_val >> (j * bypass_precision)) & max_bypass_val;
-        _syms.push_back(
-            {static_cast<uint16_t>(val), static_cast<uint16_t>(val + 1), true});
-      }
-
-      while (!_syms.empty()) {
-        const RansSymbol sym = _syms.back();
-        Rans64EncPutBits(&rans, &ptr, sym.start, bypass_precision);
-        _syms.pop_back();
-      }
-    }
-    Rans64EncPut(&rans, &ptr, symbols[i].start, symbols[i].range, precision);
-  }
-
-  Rans64EncFlush(&rans, &ptr);
-
-  nbyte = std::distance(ptr, output.data() + output.size()) * sizeof(uint32_t);
-}
-
 // ------------------- PMF TO QUANTIZED CDF -------------------
 
 __global__ void pmf_to_quantized_cdf_cuda_kernel(

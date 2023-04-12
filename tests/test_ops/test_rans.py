@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pickle
 import time
+from multiprocessing import cpu_count
 
 import pytest
 import torch
@@ -10,6 +11,7 @@ from mmcv.ops import (pmf_to_quantized_cdf, rans_decode_with_indexes,
 
 EXTEND_TIMES = 100
 DEVICES = ['cpu', 'cuda'] if torch.cuda.is_available() else ['cpu']
+NUM_THREDS = [i for i in [1, 2, 4] if i <= cpu_count()]
 
 
 @pytest.fixture(scope='module')
@@ -54,21 +56,27 @@ def _move_data_to_target_device(data, device):
 
 def _calculate_mibs(fn, device, num_threads, num_symbols, args):
     if torch.cuda.is_available():
-        torch.cuda.synchronize()
-    start_time = time.time()
+        start_event = torch.cuda.Event(enable_timing=True)
+        end_event = torch.cuda.Event(enable_timing=True)
+        start_event.record()
+    else:
+        start_time = time.time()
     for _ in range(100):
         fn(*args)
     if torch.cuda.is_available():
-        torch.cuda.synchronize()
-    end_time = time.time()
-    latency = (end_time - start_time) / 100
-    mibs = num_symbols / latency / 1024 / 1024
+        end_event.record()
+        end_event.synchronize()
+        latency = start_event.elapsed_time(end_event) / 1000
+    else:
+        end_time = time.time()
+        latency = (end_time - start_time)
+    mibs = num_symbols / latency * 100 / 1024 / 1024
     print(f'\ndevice {device}, num_threads {num_threads}: \
             {fn.__name__}: {latency:.4f}s, {mibs:.2f}MiB/s')
 
 
 @pytest.mark.parametrize('device', DEVICES)
-@pytest.mark.parametrize('num_threads', [1, 2, 4])
+@pytest.mark.parametrize('num_threads', NUM_THREDS)
 def test_rans_encode_with_indexes(rans_input_data, rans_output_data, device,
                                   num_threads):
     data = _move_data_to_target_device(rans_input_data, device)
@@ -76,7 +84,6 @@ def test_rans_encode_with_indexes(rans_input_data, rans_output_data, device,
     gt_encoded = rans_output_data
     encoded = rans_encode_with_indexes(symbols, indexes, cdfs, cdfs_sizes,
                                        offsets, num_threads)
-    print(100 * (len(encoded) - 49886) / 49886)
     assert len(gt_encoded) * 0.9 < len(encoded) / EXTEND_TIMES < len(
         gt_encoded) * 1.1
     _calculate_mibs(rans_encode_with_indexes, device, num_threads,
@@ -84,7 +91,7 @@ def test_rans_encode_with_indexes(rans_input_data, rans_output_data, device,
 
 
 @pytest.mark.parametrize('device', DEVICES)
-@pytest.mark.parametrize('num_threads', [1, 2, 4])
+@pytest.mark.parametrize('num_threads', NUM_THREDS)
 def test_rans_decode_with_indexes(rans_input_data, device, num_threads):
     data = _move_data_to_target_device(rans_input_data, device)
     symbols, indexes, cdfs, cdfs_sizes, offsets = data
@@ -99,13 +106,12 @@ def test_rans_decode_with_indexes(rans_input_data, device, num_threads):
 
 @pytest.mark.parametrize('encode_device', DEVICES)
 @pytest.mark.parametrize('decode_device', DEVICES)
-@pytest.mark.parametrize('num_threads', [1])
 def test_rans_cross_decode_with_indexes(rans_input_data, encode_device,
-                                        decode_device, num_threads):
+                                        decode_device):
     data = _move_data_to_target_device(rans_input_data, encode_device)
     symbols, indexes, cdfs, cdfs_sizes, offsets = data
     encoded = rans_encode_with_indexes(symbols, indexes, cdfs, cdfs_sizes,
-                                       offsets, num_threads)
+                                       offsets)
     data = _move_data_to_target_device(rans_input_data, decode_device)
     symbols, indexes, cdfs, cdfs_sizes, offsets = data
     decoded = rans_decode_with_indexes(encoded, indexes, cdfs, cdfs_sizes,
