@@ -16,6 +16,8 @@ void ROIAlignForwardMLUKernelLauncher(Tensor input, Tensor rois, Tensor output,
                                       int aligned_height, int aligned_width,
                                       float spatial_scale, int sampling_ratio,
                                       int pool_mode, bool aligned) {
+  // params check
+  TORCH_CHECK(pool_mode == 1, "pool_mode only supports 'avg' currently");
   auto memory_format =
       torch_mlu::cnnl::ops::get_channels_last_memory_format(input.dim());
   auto input_tensor =
@@ -85,6 +87,7 @@ void ROIAlignBackwardMLUKernelLauncher(Tensor grad, Tensor rois,
                                        int sampling_ratio, int pool_mode,
                                        bool aligned) {
   // params check
+  TORCH_CHECK(pool_mode == 1, "pool_mode only supports 'avg' currently");
   int batch_size = grad_input.size(0);
   int channels = grad_input.size(1);
   int height = grad_input.size(2);
