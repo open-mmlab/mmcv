@@ -67,8 +67,8 @@ void PSAMaskBackwardMLUKernelLauncher(const int psa_type, const Tensor dy,
   auto dy_impl = torch_mlu::getMluTensorImpl(dy_tensor);
   auto dy_ptr = dy_impl->cnnlMalloc();
 
-  mluOpPsamaskForward(handle, psa_type, dy_desc.desc(), dy_ptr, h_mask, w_mask,
-                      dx_tmp_desc.desc(), dx_ptr);
+  mluOpPsamaskBackward(handle, psa_type, dy_desc.desc(), dy_ptr, h_mask, w_mask,
+                       dx_tmp_desc.desc(), dx_ptr);
 
   dx.copy_(dx_tmp);
 }
