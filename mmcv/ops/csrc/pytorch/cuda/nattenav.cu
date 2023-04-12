@@ -932,7 +932,7 @@ torch::Tensor nattenav_cuda_forward_fp16(const torch::Tensor &attn,
   auto out = torch::zeros_like(value);
 
   int32_t nhalf = out.numel() / 2;
-  int blocks = GET_BLOCKS(nhalf, CUDA_NUM_THREADS_FP16);
+  int blocks = GET_BLOCKS(nhalf, CUDA_NUM_THREADS_FP16, -1);
   dim3 grid(blocks);
   dim3 block(CUDA_NUM_THREADS_FP16);
   const auto stream = c10::cuda::getCurrentCUDAStream();
@@ -967,7 +967,7 @@ torch::Tensor nattenav_cuda_forward(const torch::Tensor &attn,
   auto out = torch::zeros_like(value);
 
   int32_t n = out.numel();
-  int blocks = GET_BLOCKS(n, CUDA_NUM_THREADS_F);
+  int blocks = GET_BLOCKS(n, CUDA_NUM_THREADS_F, -1);
   dim3 grid(blocks);
   dim3 block(CUDA_NUM_THREADS_F);
   const auto stream = c10::cuda::getCurrentCUDAStream();
@@ -1042,7 +1042,7 @@ std::vector<torch::Tensor> nattenav_cuda_backward_tiled_32(
   const dim3 attn_threads(XTHREADS, YTHREADS, BATCHTHREADS);
 
   int32_t n_value = d_value.numel();
-  int blocks_value = GET_BLOCKS(n_value, CUDA_NUM_THREADS_V);
+  int blocks_value = GET_BLOCKS(n_value, CUDA_NUM_THREADS_V, -1);
   dim3 grid_value(blocks_value);
   dim3 block(CUDA_NUM_THREADS_V);
   const auto stream = c10::cuda::getCurrentCUDAStream();
@@ -1172,7 +1172,7 @@ std::vector<torch::Tensor> nattenav_cuda_backward_fp16_tiled_32(
   const dim3 attn_threads(XTHREADS, YTHREADS, BATCHTHREADS);
 
   int32_t nhalf_value = d_value.numel() / 2;
-  int blocks_value = GET_BLOCKS(nhalf_value, CUDA_NUM_THREADS_V16);
+  int blocks_value = GET_BLOCKS(nhalf_value, CUDA_NUM_THREADS_V16, -1);
   dim3 grid_value(blocks_value);
   dim3 block(CUDA_NUM_THREADS_V16);
   const auto stream = c10::cuda::getCurrentCUDAStream();
@@ -1272,7 +1272,7 @@ std::vector<torch::Tensor> nattenav_cuda_backward(const torch::Tensor &d_out,
                          (zsize + BATCHTHREADS - 1) / BATCHTHREADS);
   const dim3 attn_threads(PIXELTHREADS, KERNELTHREADS, BATCHTHREADS);
   int32_t n_value = d_value.numel();
-  int blocks_value = GET_BLOCKS(n_value);
+  int blocks_value = GET_BLOCKS(n_value, CUDA_NUM_THREADS_F, -1);
   dim3 grid_value(blocks_value);
   dim3 block(CUDA_NUM_THREADS);
   const auto stream = c10::cuda::getCurrentCUDAStream();
@@ -1327,7 +1327,7 @@ std::vector<torch::Tensor> nattenav_cuda_backward_fp16(
                          (zsize + BATCHTHREADS - 1) / BATCHTHREADS);
   const dim3 attn_threads(PIXELTHREADS, KERNELTHREADS, BATCHTHREADS);
   int32_t nhalf_value = d_value.numel() / 2;
-  int blocks_value = GET_BLOCKS(nhalf_value);
+  int blocks_value = GET_BLOCKS(nhalf_value, CUDA_NUM_THREADS_FP16, -1);
   dim3 grid_value(blocks_value);
   dim3 block(CUDA_NUM_THREADS);
   const auto stream = c10::cuda::getCurrentCUDAStream();

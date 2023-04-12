@@ -1358,15 +1358,15 @@ std::vector<torch::Tensor> nattenqkrpb_cuda_backward(
   auto d_rpb = torch::zeros({heads, RPB_MAX, RPB_MAX}, d_attn.options());
 
   int32_t n_rpb = heads * height * width * kernel_size_sq;
-  int blocks_rpb = GET_BLOCKS(n_rpb, CUDA_NUM_THREADS_RPB);
+  int blocks_rpb = GET_BLOCKS(n_rpb, CUDA_NUM_THREADS_RPB, -1);
   dim3 grid_rpb(blocks_rpb);
   dim3 blockr(CUDA_NUM_THREADS_RPB);
   int32_t n_query = d_query.numel();
-  int blocks_query = GET_BLOCKS(n_query, CUDA_NUM_THREADS_Q);
+  int blocks_query = GET_BLOCKS(n_query, CUDA_NUM_THREADS_Q, -1);
   dim3 grid_query(blocks_query);
   dim3 blockq(CUDA_NUM_THREADS_Q);
   int32_t n_key = d_key.numel();
-  int blocks_key = GET_BLOCKS(n_key, CUDA_NUM_THREADS_K);
+  int blocks_key = GET_BLOCKS(n_key, CUDA_NUM_THREADS_K, -1);
   dim3 grid_key(blocks_key);
   dim3 blockk(CUDA_NUM_THREADS_K);
   const auto stream = c10::cuda::getCurrentCUDAStream();
@@ -1419,15 +1419,15 @@ std::vector<torch::Tensor> nattenqkrpb_cuda_backward_fp16(
   auto d_rpb = torch::zeros({heads, RPB_MAX, RPB_MAX}, d_attn.options());
 
   int32_t n_rpb = heads * height * width * kernel_size_sq;
-  int blocks_rpb = GET_BLOCKS(n_rpb, CUDA_NUM_THREADS_RPB16);
+  int blocks_rpb = GET_BLOCKS(n_rpb, CUDA_NUM_THREADS_RPB16, -1);
   dim3 grid_rpb(blocks_rpb);
   dim3 blockr(CUDA_NUM_THREADS_RPB16);
   int32_t nhalf_query = d_query.numel() / 2;
-  int blocks_query = GET_BLOCKS(nhalf_query, CUDA_NUM_THREADS_Q16);
+  int blocks_query = GET_BLOCKS(nhalf_query, CUDA_NUM_THREADS_Q16, -1);
   dim3 grid_query(blocks_query);
   dim3 blockq(CUDA_NUM_THREADS_Q16);
   int32_t nhalf_key = d_key.numel() / 2;
-  int blocks_key = GET_BLOCKS(nhalf_key, CUDA_NUM_THREADS_K16);
+  int blocks_key = GET_BLOCKS(nhalf_key, CUDA_NUM_THREADS_K16, -1);
   dim3 grid_key(blocks_key);
   dim3 blockk(CUDA_NUM_THREADS_K16);
   const auto stream = c10::cuda::getCurrentCUDAStream();
