@@ -97,6 +97,7 @@ __global__ void pmf_to_quantized_cdf_cuda_kernel(
       total;
   __syncthreads();
 
+  // TODO: this could be accelerated by using a block scan
   if (j == 0) {
     for (int k = 1; k < pmf_length + 1; k++) {
       shared_cdf[k] += shared_cdf[k - 1];
