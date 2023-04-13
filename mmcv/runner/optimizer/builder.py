@@ -5,7 +5,7 @@ from typing import Dict, List
 
 import torch
 
-from ...utils import IS_NPU_AVAILABLE, Registry, build_from_cfg
+from mmcv.utils import IS_NPU_AVAILABLE, Registry, build_from_cfg
 
 OPTIMIZERS = Registry('optimizer')
 OPTIMIZER_BUILDERS = Registry('optimizer builder')
