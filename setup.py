@@ -389,9 +389,11 @@ def get_extensions():
                     './mlu-ops/bangc-ops/kernels/**/*.cpp', recursive=True) + \
                 glob.glob(
                     './mlu-ops/bangc-ops/kernels/**/*.mlu', recursive=True)
-            extra_link_args=['-Wl,--whole-archive',
+            extra_link_args = [
+                '-Wl,--whole-archive',
                 './mlu-ops/bangc-ops/kernels/kernel_wrapper/lib/libextops.a',
-                '-Wl,--no-whole-archive']
+                '-Wl,--no-whole-archive'
+            ]
             extension = MLUExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/mlu'))
