@@ -28,6 +28,7 @@ def register_torch_optimizers() -> List:
 
 
 def register_torch_npu_optimizers(torch_optimizers) -> List:
+
     import torch_npu
     if not hasattr(torch_npu, 'optim'):
         return []
