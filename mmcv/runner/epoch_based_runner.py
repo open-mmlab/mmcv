@@ -47,6 +47,8 @@ class EpochBasedRunner(BaseRunner):
         self.call_hook('before_train_epoch')
         time.sleep(2)  # Prevent possible deadlock during epoch transition
         for i, data_batch in enumerate(self.data_loader):
+            if self.max_epochs_iter is not None and i >= self.max_epochs_iter:
+                break
             self.data_batch = data_batch
             self._inner_iter = i
             self.call_hook('before_train_iter')
