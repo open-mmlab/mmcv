@@ -6,7 +6,7 @@ MMCV 提供了检测、分割等任务中常用的算子
 | ---------------------------- | --- | ---- | --- | --- | ------ |
 | ActiveRotatedFilter          | √   | √    |     |     |        |
 | AssignScoreWithK             |     | √    |     |     |        |
-| BallQuery                    |     | √    |     |     |        |
+| BallQuery                    |     | √    | √   |     |        |
 | BBoxOverlaps                 |     | √    | √   | √   | √      |
 | BorderAlign                  |     | √    |     |     |        |
 | BoxIouRotated                | √   | √    |     |     |        |
@@ -35,7 +35,7 @@ MMCV 提供了检测、分割等任务中常用的算子
 | ModulatedDeformConv2d        | √   | √    |     |     | √      |
 | MultiScaleDeformableAttn     |     | √    | √   |     |        |
 | NMS                          | √   | √    | √   |     | √      |
-| NMSRotated                   | √   | √    |     |     | √      |
+| NMSRotated                   | √   | √    | √   |     | √      |
 | NMSQuadri                    | √   | √    |     |     |        |
 | PixelGroup                   | √   |      |     |     |        |
 | PointsInBoxes                | √   | √    |     |     |        |
@@ -52,13 +52,13 @@ MMCV 提供了检测、分割等任务中常用的算子
 | SigmoidFocalLoss             |     | √    | √   |     | √      |
 | SoftmaxFocalLoss             |     | √    |     |     | √      |
 | SoftNMS                      |     | √    |     |     |        |
-| Sparse Convolution           |     | √    |     |     |        |
+| Sparse Convolution           |     | √    | √   |     |        |
 | Synchronized BatchNorm       |     | √    |     |     |        |
 | ThreeInterpolate             |     | √    |     |     |        |
 | ThreeNN                      |     | √    | √   |     |        |
 | TINShift                     |     | √    | √   |     |        |
 | UpFirDn2d                    |     | √    |     |     |        |
-| Voxelization                 | √   | √    |     |     | √      |
+| Voxelization                 | √   | √    | √   |     | √      |
 | PrRoIPool                    |     | √    |     |     |        |
 | BezierAlign                  | √   | √    |     |     |        |
 | BiasAct                      |     | √    |     |     |        |
