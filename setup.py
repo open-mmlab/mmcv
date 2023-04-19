@@ -215,8 +215,8 @@ def get_extensions():
             './mmcv/ops/csrc/pytorch/mlu/mlu_common_helper.h')
         mlu_ops_path = os.getenv('MMCV_MLU_OPS_PATH')
         if mlu_ops_path:
-            exists_mluops_version = get_mluops_version(
-                mlu_ops_path + '/bangc-ops/mlu_op.h')
+            exists_mluops_version = get_mluops_version(mlu_ops_path +
+                                                       '/bangc-ops/mlu_op.h')
             if exists_mluops_version != mmcv_mluops_version:
                 print('the version of mlu-ops provided is %s,'
                       ' while %s is needed.' %
@@ -267,10 +267,9 @@ def get_extensions():
         define_macros += [('MMCV_WITH_MLU', None)]
         mlu_args = os.getenv('MMCV_MLU_ARGS', '-DNDEBUG ')
         mluops_includes = []
+        mluops_includes.append('-I' + os.path.abspath('./mlu-ops/bangc-ops'))
         mluops_includes.append('-I' +
-                               os.path.abspath('./mlu-ops/bangc-ops'))
-        mluops_includes.append(
-            '-I' + os.path.abspath('./mlu-ops/bangc-ops/kernels'))
+                               os.path.abspath('./mlu-ops/bangc-ops/kernels'))
         extra_compile_args['cncc'] = [mlu_args] + \
             mluops_includes if mlu_args else mluops_includes
         extra_compile_args['cxx'] += ['-fno-gnu-unique']
