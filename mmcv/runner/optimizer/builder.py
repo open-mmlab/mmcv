@@ -28,7 +28,11 @@ def register_torch_optimizers() -> List:
 
 
 def register_torch_npu_optimizers(torch_optimizers) -> List:
+
     import torch_npu
+    if not hasattr(torch_npu, 'optim'):
+        return []
+
     torch_npu_optimizers = []
     for module_name in dir(torch_npu.optim):
         if module_name.startswith('__') or module_name in torch_optimizers:
