@@ -6,7 +6,6 @@ from torch import nn
 from mmcv.cnn import build_conv_layer, build_norm_layer
 from mmcv.ops import (SparseConvTensor, SparseInverseConv3d, SparseSequential,
                       SubMConv3d)
-
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
 
