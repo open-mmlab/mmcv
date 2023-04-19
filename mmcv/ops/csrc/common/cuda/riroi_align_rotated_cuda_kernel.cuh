@@ -4,7 +4,6 @@
 #define RIROI_ALIGN_ROTATED_CUDA_KERNEL_CUH
 
 #include <float.h>
-
 #include "pytorch_cuda_helper.hpp"
 
 /*** Forward ***/
