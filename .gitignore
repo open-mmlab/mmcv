@@ -27,6 +27,8 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
+mlu-ops/
+mlu-ops.*
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
