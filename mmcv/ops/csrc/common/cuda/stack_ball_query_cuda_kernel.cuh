@@ -4,11 +4,7 @@
 #ifndef STACK_BALL_QUERY_CUDA_KERNEL_CUH
 #define STACK_BALL_QUERY_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 template <typename T>
 __global__ void stack_ball_query_forward_cuda_kernel(

@@ -5,9 +5,6 @@ from torch.autograd import gradcheck
 
 from mmcv.ops import DynamicScatter
 
-if torch.__version__ == 'parrots':
-    pytest.skip('not supported in parrots now', allow_module_level=True)
-
 
 @pytest.mark.skipif(
     not torch.cuda.is_available(), reason='requires CUDA support')

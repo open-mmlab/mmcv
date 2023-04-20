@@ -2,11 +2,7 @@
 #ifndef CARAFE_CUDA_KERNEL_CUH
 #define CARAFE_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 #ifdef MMCV_WITH_HIP
 #define WARP_SIZE 64

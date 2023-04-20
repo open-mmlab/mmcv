@@ -2,16 +2,9 @@
 import numpy as np
 import pytest
 import torch
+from torch.autograd import gradcheck
 
 from mmcv.utils import IS_CUDA_AVAILABLE
-
-_USING_PARROTS = True
-try:
-    from parrots.autograd import gradcheck
-except ImportError:
-    from torch.autograd import gradcheck
-
-    _USING_PARROTS = False
 
 inputs = [([[[[1., 2.], [3., 4.]]]], [[0., 0., 0., 1., 1.]]),
           ([[[[1., 2.], [3., 4.]], [[4., 3.], [2.,
@@ -58,10 +51,7 @@ class TestPrRoiPool:
 
             froipool = PrRoIPool((pool_h, pool_w), spatial_scale)
 
-            if _USING_PARROTS:
-                gradcheck(froipool, (x, rois), no_grads=[rois])
-            else:
-                gradcheck(froipool, (x, rois), eps=1e-2, atol=1e-2)
+            gradcheck(froipool, (x, rois), eps=1e-2, atol=1e-2)
 
     def _test_roipool_allclose(self, device, dtype=torch.float):
         from mmcv.ops import prroi_pool

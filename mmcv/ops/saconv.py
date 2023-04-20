@@ -111,8 +111,7 @@ class SAConv2d(ConvAWS2d):
             out_s = deform_conv2d(x, offset, weight, self.stride, self.padding,
                                   self.dilation, self.groups, 1)
         else:
-            if (TORCH_VERSION == 'parrots'
-                    or digit_version(TORCH_VERSION) < digit_version('1.5.0')):
+            if digit_version(TORCH_VERSION) < digit_version('1.5.0'):
                 out_s = super().conv2d_forward(x, weight)
             elif digit_version(TORCH_VERSION) >= digit_version('1.8.0'):
                 # bias is a required argument of _conv_forward in torch 1.8.0
@@ -129,8 +128,7 @@ class SAConv2d(ConvAWS2d):
             out_l = deform_conv2d(x, offset, weight, self.stride, self.padding,
                                   self.dilation, self.groups, 1)
         else:
-            if (TORCH_VERSION == 'parrots'
-                    or digit_version(TORCH_VERSION) < digit_version('1.5.0')):
+            if digit_version(TORCH_VERSION) < digit_version('1.5.0'):
                 out_l = super().conv2d_forward(x, weight)
             elif digit_version(TORCH_VERSION) >= digit_version('1.8.0'):
                 # bias is a required argument of _conv_forward in torch 1.8.0

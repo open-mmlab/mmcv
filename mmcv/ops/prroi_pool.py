@@ -3,7 +3,6 @@ from typing import Tuple, Union
 
 import torch
 import torch.nn as nn
-from mmengine.utils.dl_utils import TORCH_VERSION
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
@@ -71,7 +70,7 @@ class PrRoIPoolFunction(Function):
         grad_input = grad_output.new_zeros(*features.shape)
         grad_coor = grad_output.new_zeros(*rois.shape)
 
-        if features.requires_grad or TORCH_VERSION == 'parrots':
+        if features.requires_grad:
             grad_output = grad_output.contiguous()
             ext_module.prroi_pool_backward(
                 grad_output,
@@ -80,7 +79,7 @@ class PrRoIPoolFunction(Function):
                 pooled_height=ctx.params[0],
                 pooled_width=ctx.params[1],
                 spatial_scale=ctx.params[2])
-        if rois.requires_grad or TORCH_VERSION == 'parrots':
+        if rois.requires_grad:
             grad_output = grad_output.contiguous()
             ext_module.prroi_pool_coor_backward(
                 output,

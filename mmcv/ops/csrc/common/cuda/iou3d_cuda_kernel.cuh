@@ -2,11 +2,7 @@
 #ifndef IOU3D_CUDA_KERNEL_CUH
 #define IOU3D_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 const int THREADS_PER_BLOCK_IOU3D = 16;
 const int THREADS_PER_BLOCK_NMS = sizeof(unsigned long long) * 8;

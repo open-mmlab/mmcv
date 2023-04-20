@@ -2,11 +2,7 @@
 #ifndef POINTS_IN_POLYGONS_CUDA_KERNEL_CUH
 #define POINTS_IN_POLYGONS_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 struct point {
   float x, y;

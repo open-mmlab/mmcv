@@ -4,16 +4,9 @@ import os
 import numpy as np
 import pytest
 import torch
+from torch.autograd import gradcheck
 
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
-
-_USING_PARROTS = True
-try:
-    from parrots.autograd import gradcheck
-except ImportError:
-    from torch.autograd import gradcheck
-
-    _USING_PARROTS = False
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -51,11 +44,7 @@ class TestRoiPool:
 
             froipool = RoIPool((pool_h, pool_w), spatial_scale)
 
-            if _USING_PARROTS:
-                pass
-                # gradcheck(froipool, (x, rois), no_grads=[rois])
-            else:
-                gradcheck(froipool, (x, rois), eps=1e-2, atol=1e-2)
+            gradcheck(froipool, (x, rois), eps=1e-2, atol=1e-2)
 
     def _test_roipool_allclose(self, device, dtype=torch.float):
         from mmcv.ops import roi_pool

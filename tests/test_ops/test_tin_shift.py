@@ -4,16 +4,9 @@ import os
 import numpy as np
 import pytest
 import torch
+from torch.autograd import gradcheck
 
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
-
-_USING_PARROTS = True
-try:
-    from parrots.autograd import gradcheck
-except ImportError:
-    from torch.autograd import gradcheck
-
-    _USING_PARROTS = False
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -149,10 +142,8 @@ def _test_tinshift_gradcheck(device, dtype):
         x = torch.tensor(
             np_input, dtype=dtype, device=device, requires_grad=True)
         shift = torch.tensor(np_shift, device=device).int()
-        if torch.__version__ == 'parrots':
-            gradcheck(tin_shift, (x, shift))
-        else:
-            gradcheck(tin_shift, (x, shift), atol=1, rtol=0.1)
+
+        gradcheck(tin_shift, (x, shift), atol=1, rtol=0.1)
 
 
 def _test_tinshift_allclose(device, dtype):

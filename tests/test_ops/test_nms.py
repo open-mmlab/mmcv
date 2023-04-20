@@ -94,19 +94,18 @@ class Testnms:
             assert np.allclose(dets.cpu().numpy(), np_output[m]['dets'])
             assert np.allclose(inds.cpu().numpy(), np_output[m]['inds'])
 
-        if torch.__version__ != 'parrots':
-            boxes = boxes.cuda()
-            scores = scores.cuda()
-            for iou, sig, mscore, m in configs:
-                dets, inds = soft_nms(
-                    boxes,
-                    scores,
-                    iou_threshold=iou,
-                    sigma=sig,
-                    min_score=mscore,
-                    method=m)
-                assert np.allclose(dets.cpu().numpy(), np_output[m]['dets'])
-                assert np.allclose(inds.cpu().numpy(), np_output[m]['inds'])
+        boxes = boxes.cuda()
+        scores = scores.cuda()
+        for iou, sig, mscore, m in configs:
+            dets, inds = soft_nms(
+                boxes,
+                scores,
+                iou_threshold=iou,
+                sigma=sig,
+                min_score=mscore,
+                method=m)
+            assert np.allclose(dets.cpu().numpy(), np_output[m]['dets'])
+            assert np.allclose(inds.cpu().numpy(), np_output[m]['inds'])
 
     def test_nms_match(self):
         if not torch.cuda.is_available():

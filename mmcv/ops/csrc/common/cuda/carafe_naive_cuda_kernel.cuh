@@ -2,11 +2,7 @@
 #ifndef CARAFE_NAIVE_CUDA_KERNEL_CUH
 #define CARAFE_NAIVE_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 __device__ inline int Loc2Index(const int n, const int c, const int h,
                                 const int w, const int channel_num,

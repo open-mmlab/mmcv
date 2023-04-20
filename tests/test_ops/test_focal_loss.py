@@ -2,15 +2,9 @@
 import numpy as np
 import pytest
 import torch
+from torch.autograd import gradcheck
 
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
-
-_USING_PARROTS = True
-try:
-    from parrots.autograd import gradcheck
-except ImportError:
-    from torch.autograd import gradcheck
-    _USING_PARROTS = False
 
 # torch.set_printoptions(precision=8, threshold=100)
 
@@ -94,12 +88,7 @@ class Testfocalloss:
             y = torch.from_numpy(np_y).cuda().long()
 
             floss = SoftmaxFocalLoss(gamma, alpha)
-            if _USING_PARROTS:
-                # gradcheck(floss, (x, y),
-                #           no_grads=[y])
-                pass
-            else:
-                gradcheck(floss, (x, y), eps=1e-2, atol=1e-2)
+            gradcheck(floss, (x, y), eps=1e-2, atol=1e-2)
 
     def _test_grad_sigmoid(self, dtype=torch.float):
         if not torch.cuda.is_available():
@@ -116,12 +105,7 @@ class Testfocalloss:
             y = torch.from_numpy(np_y).cuda().long()
 
             floss = SigmoidFocalLoss(gamma, alpha)
-            if _USING_PARROTS:
-                # gradcheck(floss, (x, y),
-                #           no_grads=[y])
-                pass
-            else:
-                gradcheck(floss, (x, y), eps=1e-2, atol=1e-2)
+            gradcheck(floss, (x, y), eps=1e-2, atol=1e-2)
 
     def test_softmax_float(self):
         self._test_softmax(dtype=torch.float)

@@ -1,11 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved
 // Adapted from
 // https://github.com/lilanxiao/Rotated_IoU/cuda_op/sort_vert_kernel.cu  # noqa
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 #define MAX_NUM_VERT_IDX 9
 #define INTERSECTION_OFFSET 8

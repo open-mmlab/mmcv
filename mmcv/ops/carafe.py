@@ -56,8 +56,7 @@ class CARAFENaiveFunction(Function):
             group_size=group_size,
             scale_factor=scale_factor)
 
-        if features.requires_grad or masks.requires_grad or \
-                torch.__version__ == 'parrots':
+        if features.requires_grad or masks.requires_grad:
             ctx.save_for_backward(features, masks)
         return output
 
@@ -150,8 +149,7 @@ class CARAFEFunction(Function):
             group_size=group_size,
             scale_factor=scale_factor)
 
-        if features.requires_grad or masks.requires_grad or \
-                torch.__version__ == 'parrots':
+        if features.requires_grad or masks.requires_grad:
             ctx.save_for_backward(features, masks, rfeatures)
         return output
 

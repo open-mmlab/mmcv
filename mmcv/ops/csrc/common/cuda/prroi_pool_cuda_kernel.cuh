@@ -5,11 +5,7 @@
 #ifndef PRROI_POOL_CUDA_KERNEL_CUH
 #define PRROI_POOL_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 template <typename T>
 __device__ static __forceinline__ T PrRoIPoolingGetData(const T *data,

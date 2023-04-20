@@ -4,15 +4,9 @@ import os
 import numpy as np
 import pytest
 import torch
+from torch.autograd import gradcheck
 
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
-
-_USING_PARROTS = True
-try:
-    from parrots.autograd import gradcheck
-except ImportError:
-    from torch.autograd import gradcheck
-    _USING_PARROTS = False
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -63,10 +57,7 @@ class TestDeformRoIPool:
                                          spatial_scale=spatial_scale,
                                          sampling_ratio=sampling_ratio).cuda()
 
-            if _USING_PARROTS:
-                gradcheck(droipool, (x, rois), no_grads=[rois])
-            else:
-                gradcheck(droipool, (x, rois), eps=1e-2, atol=1e-2)
+            gradcheck(droipool, (x, rois), eps=1e-2, atol=1e-2)
 
     def test_modulated_deform_roi_pool_gradcheck(self):
         if not torch.cuda.is_available():
@@ -92,10 +83,7 @@ class TestDeformRoIPool:
                 spatial_scale=spatial_scale,
                 sampling_ratio=sampling_ratio).cuda()
 
-            if _USING_PARROTS:
-                gradcheck(droipool, (x, rois), no_grads=[rois])
-            else:
-                gradcheck(droipool, (x, rois), eps=1e-2, atol=1e-2)
+            gradcheck(droipool, (x, rois), eps=1e-2, atol=1e-2)
 
     def _test_deform_roi_pool_allclose(self, device, dtype=torch.float):
         from mmcv.ops import DeformRoIPoolPack

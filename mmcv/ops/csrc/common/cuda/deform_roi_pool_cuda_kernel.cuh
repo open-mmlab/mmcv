@@ -2,11 +2,7 @@
 #ifndef DEFORM_ROI_POOL_CUDA_KERNEL_CUH
 #define DEFORM_ROI_POOL_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 template <typename T>
 __global__ void deform_roi_pool_forward_cuda_kernel(

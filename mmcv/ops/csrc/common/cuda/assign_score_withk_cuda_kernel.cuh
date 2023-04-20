@@ -2,11 +2,7 @@
 #ifndef ASSIGN_SCORE_WITHK_CUDA_KERNEL_CUH
 #define ASSIGN_SCORE_WITHK_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 // input: points(B,N0,M,O), centers(B,N0,M,O), scores(B,N1,K,M), knn_idx(B,N1,K)
 // output: fout(B,O,N)

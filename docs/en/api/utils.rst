@@ -19,5 +19,3 @@ mmcv.utils
    IS_MLU_AVAILABLE
    IS_MPS_AVAILABLE
    collect_env
-   jit
-   skip_no_elena

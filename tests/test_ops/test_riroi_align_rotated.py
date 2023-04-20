@@ -2,15 +2,9 @@
 import numpy as np
 import pytest
 import torch
+from torch.autograd import gradcheck
 
 from mmcv.ops import RiRoIAlignRotated
-
-if torch.__version__ == 'parrots':
-    from parrots.autograd import gradcheck
-    _USING_PARROTS = True
-else:
-    from torch.autograd import gradcheck
-    _USING_PARROTS = False
 
 np_feature = np.array([[[[1, 2], [3, 4]], [[1, 2], [4, 3]], [[4, 3], [2, 1]],
                         [[1, 2], [5, 6]], [[3, 4], [7, 8]], [[9, 10], [13,
@@ -61,11 +55,7 @@ def test_roialign_rotated_gradcheck():
     rois = torch.tensor(np_rois, dtype=torch.float, device='cuda')
     froipool = RiRoIAlignRotated((pool_h, pool_w), spatial_scale, num_samples,
                                  num_orientations, clockwise)
-    if _USING_PARROTS:
-        gradcheck(
-            froipool, (x, rois), no_grads=[rois], delta=1e-3, pt_atol=1e-3)
-    else:
-        gradcheck(froipool, (x, rois), eps=1e-3, atol=1e-3)
+    gradcheck(froipool, (x, rois), eps=1e-3, atol=1e-3)
 
 
 @pytest.mark.skipif(

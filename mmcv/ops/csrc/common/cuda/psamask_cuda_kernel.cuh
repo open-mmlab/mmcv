@@ -2,11 +2,7 @@
 #ifndef PSAMASK_CUDA_KERNEL_CUH
 #define PSAMASK_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 // CUDA: grid stride looping
 #ifndef CUDA_KERNEL_LOOP

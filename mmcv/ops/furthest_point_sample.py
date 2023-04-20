@@ -38,8 +38,7 @@ class FurthestPointSampling(Function):
             n=N,
             m=num_points,
         )
-        if torch.__version__ != 'parrots':
-            ctx.mark_non_differentiable(output)
+        ctx.mark_non_differentiable(output)
         return output
 
     @staticmethod
@@ -71,8 +70,7 @@ class FurthestPointSamplingWithDist(Function):
 
         ext_module.furthest_point_sampling_with_dist_forward(
             points_dist, temp, output, b=B, n=N, m=num_points)
-        if torch.__version__ != 'parrots':
-            ctx.mark_non_differentiable(output)
+        ctx.mark_non_differentiable(output)
         return output
 
     @staticmethod

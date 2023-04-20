@@ -92,8 +92,7 @@ class GELU(nn.Module):
         return F.gelu(input)
 
 
-if (TORCH_VERSION == 'parrots'
-        or digit_version(TORCH_VERSION) < digit_version('1.4')):
+if digit_version(TORCH_VERSION) < digit_version('1.4'):
     MODELS.register_module(module=GELU)
 else:
     MODELS.register_module(module=nn.GELU)

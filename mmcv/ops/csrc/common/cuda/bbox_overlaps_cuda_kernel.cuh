@@ -2,11 +2,7 @@
 #ifndef BBOX_OVERLAPS_CUDA_KERNEL_CUH
 #define BBOX_OVERLAPS_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 template <typename T>
 __device__ __forceinline__ void load_bbox(const T* bbox, const int base, T& x1,

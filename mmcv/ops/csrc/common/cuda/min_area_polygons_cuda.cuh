@@ -2,11 +2,7 @@
 #ifndef MIN_AREA_POLYGONS_CUDA_KERNEL_CUH
 #define MIN_AREA_POLYGONS_CUDA_KERNEL_CUH
 
-#ifdef MMCV_USE_PARROTS
-#include "parrots_cuda_helper.hpp"
-#else
 #include "pytorch_cuda_helper.hpp"
-#endif
 
 #define MAXN 20
 __device__ const float PI = 3.1415926;

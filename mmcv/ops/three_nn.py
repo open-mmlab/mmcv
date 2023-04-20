@@ -38,8 +38,7 @@ class ThreeNN(Function):
         idx = target.new_empty(B, N, 3, dtype=torch.int32)
 
         ext_module.three_nn_forward(target, source, dist2, idx, b=B, n=N, m=m)
-        if torch.__version__ != 'parrots':
-            ctx.mark_non_differentiable(idx)
+        ctx.mark_non_differentiable(idx)
 
         return torch.sqrt(dist2), idx
 
