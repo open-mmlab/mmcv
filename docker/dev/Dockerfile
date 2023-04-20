@@ -1,7 +1,7 @@
 ARG PYTORCH="1.8.1"
 ARG CUDA="10.2"
 ARG CUDNN="7"
- 
+
 FROM pytorch/pytorch:${PYTORCH}-cuda${CUDA}-cudnn${CUDNN}-devel
 
 # To fix GPG key error when running apt-get update
