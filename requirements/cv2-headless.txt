@@ -1,0 +1,6 @@
+opencv-python-headless>=4.5.5.64  ; python_version < '4.0'  and python_version >= '3.11'    # Python 3.11+
+opencv-python-headless>=4.5.4.58  ; python_version < '3.11' and python_version >= '3.10'    # Python 3.10
+opencv-python-headless>=3.4.15.55  ; python_version < '3.10' and python_version >= '3.9'    # Python 3.9
+opencv-python-headless>=3.4.15.55  ; python_version < '3.9' and python_version >= '3.8'    # Python 3.8
+opencv-python-headless>=3.4.15.55  ; python_version < '3.8' and python_version >= '3.7'    # Python 3.7
+opencv-python-headless>=3.4.13.47  ; python_version < '3.7' and python_version >= '3.6'    # Python 3.6

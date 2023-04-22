@@ -43,13 +43,15 @@ def get_version():
     return locals()['__version__']
 
 
-def parse_requirements(fname='requirements/runtime.txt', with_version=True):
+def parse_requirements(fname='requirements.txt', versions=False):
     """Parse the package dependencies listed in a requirements file but strips
     specific versioning information.
 
     Args:
         fname (str): path to requirements file
-        with_version (bool, default=False): if True include version specs
+        versions (bool | str, default=False):
+            If true include version specs.
+            If strict, then pin to the minimum version.
 
     Returns:
         List[str]: list of requirements items
@@ -58,58 +60,84 @@ def parse_requirements(fname='requirements/runtime.txt', with_version=True):
         python -c "import setup; print(setup.parse_requirements())"
     """
     import sys
-    from os.path import exists
+    from os.path import dirname, exists, join
     require_fpath = fname
 
-    def parse_line(line):
-        """Parse information from a line in a requirements text file."""
+    def parse_line(line, dpath=''):
+        """Parse information from a line in a requirements text file.
+
+        line = 'git+https://a.com/somedep@sometag#egg=SomeDep'
+        line = '-e git+https://a.com/somedep@sometag#egg=SomeDep'
+        """
+        # Remove inline comments
+        comment_pos = line.find(' #')
+        if comment_pos > -1:
+            line = line[:comment_pos]
+
         if line.startswith('-r '):
             # Allow specifying requirements in other files
-            target = line.split(' ')[1]
+            target = join(dpath, line.split(' ')[1])
             for info in parse_require_file(target):
                 yield info
         else:
+            # See: https://www.python.org/dev/peps/pep-0508/
             info = {'line': line}
             if line.startswith('-e '):
                 info['package'] = line.split('#egg=')[1]
             else:
+                if '--find-links' in line:
+                    # setuptools does not seem to handle find links
+                    line = line.split('--find-links')[0]
+                if ';' in line:
+                    pkgpart, platpart = line.split(';')
+                    # Handle platform specific dependencies
+                    # setuptools.readthedocs.io/en/latest/setuptools.html
+                    # #declaring-platform-specific-dependencies
+                    plat_deps = platpart.strip()
+                    info['platform_deps'] = plat_deps
+                else:
+                    pkgpart = line
+                    platpart = None
+
                 # Remove versioning from the package
                 pat = '(' + '|'.join(['>=', '==', '>']) + ')'
-                parts = re.split(pat, line, maxsplit=1)
+                parts = re.split(pat, pkgpart, maxsplit=1)
                 parts = [p.strip() for p in parts]
 
                 info['package'] = parts[0]
                 if len(parts) > 1:
                     op, rest = parts[1:]
-                    if ';' in rest:
-                        # Handle platform specific dependencies
-                        # http://setuptools.readthedocs.io/en/latest/setuptools.html#declaring-platform-specific-dependencies
-                        version, platform_deps = map(str.strip,
-                                                     rest.split(';'))
-                        info['platform_deps'] = platform_deps
-                    else:
-                        version = rest  # NOQA
+                    version = rest  # NOQA
                     info['version'] = (op, version)
             yield info
 
     def parse_require_file(fpath):
+        dpath = dirname(fpath)
         with open(fpath) as f:
             for line in f.readlines():
                 line = line.strip()
                 if line and not line.startswith('#'):
-                    yield from parse_line(line)
+                    yield from parse_line(line, dpath=dpath)
 
     def gen_packages_items():
         if exists(require_fpath):
             for info in parse_require_file(require_fpath):
                 parts = [info['package']]
-                if with_version and 'version' in info:
-                    parts.extend(info['version'])
+                if versions and 'version' in info:
+                    if versions == 'strict':
+                        # In strict mode, we pin to the minimum version
+                        if info['version']:
+                            # Only replace the first >= instance
+                            verstr = ''.join(info['version']).replace(
+                                '>=', '==', 1)
+                            parts.append(verstr)
+                    else:
+                        parts.extend(info['version'])
                 if not sys.version.startswith('3.4'):
                     # apparently package_deps are broken in 3.4
-                    platform_deps = info.get('platform_deps')
-                    if platform_deps is not None:
-                        parts.append(';' + platform_deps)
+                    plat_deps = info.get('platform_deps')
+                    if plat_deps is not None:
+                        parts.append(';' + plat_deps)
                 item = ''.join(parts)
                 yield item
 
@@ -117,7 +145,7 @@ def parse_requirements(fname='requirements/runtime.txt', with_version=True):
     return packages
 
 
-install_requires = parse_requirements()
+install_requires = parse_requirements('requirements/runtime.txt')
 
 try:
     # OpenCV installed via conda.
@@ -430,6 +458,8 @@ setup(
         'tests': parse_requirements('requirements/test.txt'),
         'build': parse_requirements('requirements/build.txt'),
         'optional': parse_requirements('requirements/optional.txt'),
+        'cv2-headless': parse_requirements('requirements/cv2-headless'),
+        'cv2-graphics': parse_requirements('requirements/cv2-graphics'),
     },
     python_requires='>=3.7',
     ext_modules=get_extensions(),
