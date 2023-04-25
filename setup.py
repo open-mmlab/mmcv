@@ -334,6 +334,9 @@ def get_extensions():
                 # op_files += glob.glob('./mmcv/ops/csrc/diopi_impl/camb/*.cpp')
                 op_files += glob.glob('./mmcv/ops/csrc/DIOPI-IMPL/camb/functions_mmcv/*.cpp')
                 op_files += glob.glob('./mmcv/ops/csrc/DIOPI-IMPL/camb/functions_mmcv/*.mlu')
+                op_files += glob.glob('./mmcv/ops/csrc/DIOPI-IMPL/camb/functions/*.cpp')
+                op_files += glob.glob('./mmcv/ops/csrc/DIOPI-IMPL/camb/common/*.cpp')
+                op_files += glob.glob('./mmcv/ops/csrc/DIOPI-IMPL/camb/cnnl_helper.cpp')
                 op_files += glob.glob('./mmcv/ops/csrc/diopi_rt/camb/*.cpp')
             extension = MLUExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
@@ -342,6 +345,8 @@ def get_extensions():
                 include_dirs.append(os.path.abspath('./DIOPI/include'))
                 include_dirs.append(
                     os.path.abspath('./mmcv/ops/csrc/diopi_rt/camb'))
+                include_dirs.append(
+                    os.path.abspath('./mmcv/ops/csrc/DIOPI-IMPL/third_party/half/include'))
         elif (hasattr(torch.backends, 'mps')
               and torch.backends.mps.is_available()) or os.getenv(
                   'FORCE_MPS', '0') == '1':
