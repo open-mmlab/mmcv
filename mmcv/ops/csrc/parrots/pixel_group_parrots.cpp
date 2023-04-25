@@ -39,7 +39,9 @@ void pixel_group_parrots(T& ctx, const SSElement& attr,
   auto tensor = torch::zeros({1, out_tensor.size()}, options);
   tensor.slice(0, 0, 1) =
       torch::from_blob(out_tensor.data(), {out_tensor.size()}, options);
+#ifndef MMCV_WITH_DIOPI
   updateDArray(ctx, tensor, outs[0]);
+#endif
 }
 
 PARROTS_EXTENSION_REGISTER(pixel_group)

@@ -4,9 +4,41 @@
 #include <parrots/foundation/ssattrs.hpp>
 
 #include "nms_pytorch.h"
+#ifdef MMCV_WITH_DIOPI
+#include <diopi/diopirt.h>
+#include <diopi/functions.h>
+#include <diopi/functions_mmcv.h>
+
+#include <parrots/diopi.hpp>
+#endif
 
 using namespace parrots;
 
+#ifdef MMCV_WITH_DIOPI
+// Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset);
+template <typename T>
+void nms_parrots_diopi(T& ctx, const SSElement& attr,
+                       const OperatorBase::in_list_t& ins,
+                       OperatorBase::out_list_t& outs) {
+  float iou_threshold;
+  int offset;
+  SSAttrs(attr)
+      .get("iou_threshold", iou_threshold)
+      .get("offset", offset)
+      .done();
+  diopiContext dctx(ctx);
+  diopiContextHandle_t ch = &dctx;
+  auto dets =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
+  auto scores =
+      reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
+  auto out = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
+  auto outhandle = &out;
+  // check result
+  PARROTS_CALLDIOPI(
+      diopiNms(ch, outhandle, dets, scores, iou_threshold, offset));
+}
+#else
 // Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset);
 template <typename T>
 void nms_parrots(T& ctx, const SSElement& attr,
@@ -24,6 +56,7 @@ void nms_parrots(T& ctx, const SSElement& attr,
   auto out = nms(boxes, scores, iou_threshold, offset);
   updateDArray(ctx, out, outs[0]);
 }
+#endif
 
 /*Tensor softnms(Tensor boxes, Tensor scores, Tensor dets, float iou_threshold,
  *                float sigma, float min_score, int method, int offset);*/
@@ -46,7 +79,9 @@ void softnms_parrots(T& ctx, const SSElement& attr,
   dets = buildATensor(ctx, ins[2]);
   auto out = softnms(boxes, scores, dets, iou_threshold, sigma, min_score,
                      method, offset);
+#ifndef MMCV_WITH_DIOPI
   updateDArray(ctx, out, outs[0]);
+#endif
 }
 
 // std::vector<std::vector<int> > nms_match(Tensor dets, float iou_threshold);
@@ -67,7 +102,9 @@ void nms_match_parrots(T& ctx, const SSElement& attr,
   for (int i = 0; i < n; i++)
     tensor.slice(0, i, i + 1) =
         torch::from_blob(out[i].data(), {out[i].size()}, options);
+#ifndef MMCV_WITH_DIOPI
   updateDArray(ctx, tensor, outs[0]);
+#endif
 }
 
 /*Tensor nms_rotated(const Tensor dets, const Tensor scores, const Tensor order,
@@ -90,7 +127,9 @@ void nms_rotated_parrots(T& ctx, const SSElement& attr,
   dets_sorted = buildATensor(ctx, ins[3]);
   auto out =
       nms_rotated(dets, scores, order, dets_sorted, iou_threshold, multi_label);
+#ifndef MMCV_WITH_DIOPI
   updateDArray(ctx, out, outs[0]);
+#endif
 }
 
 PARROTS_EXTENSION_REGISTER(nms)
@@ -100,7 +139,11 @@ PARROTS_EXTENSION_REGISTER(nms)
     .output(1)
     .apply(nms_parrots<HostContext>)
 #ifdef MMCV_WITH_CUDA
+#ifdef MMCV_WITH_DIOPI
+    .apply(nms_parrots_diopi<CudaContext>)
+#else
     .apply(nms_parrots<CudaContext>)
+#endif
 #endif
     .done();
 

@@ -3,6 +3,13 @@
 
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"
+#ifdef MMCV_WITH_DIOPI
+#include <diopi/diopirt.h>
+#include <diopi/functions.h>
+#include <diopi/functions_mmcv.h>
+
+#include "diopi.hpp"
+#endif
 
 void knn_forward_impl(int b, int n, int m, int nsample, const Tensor xyz,
                       const Tensor new_xyz, Tensor idx, Tensor dist2) {
@@ -12,6 +19,31 @@ void knn_forward_impl(int b, int n, int m, int nsample, const Tensor xyz,
 
 void knn_forward(Tensor xyz_tensor, Tensor new_xyz_tensor, Tensor idx_tensor,
                  Tensor dist2_tensor, int b, int n, int m, int nsample) {
+#ifdef MMCV_WITH_DIOPI
+  auto xyz_tensor_p = toDiopiTensorHandle(xyz_tensor);
+  diopiDevice_t device;
+  diopiGetTensorDevice(xyz_tensor_p, &device);
+  diopiDtype_t dtype;
+  diopiGetTensorDtype(xyz_tensor_p, &dtype);
+  if (device == diopi_host || dtype == diopi_dtype_float16) {
+    knn_forward_impl(b, n, m, nsample, xyz_tensor, new_xyz_tensor, idx_tensor,
+                     dist2_tensor);
+    return;
+  }
+  diopiContext ctx;
+  diopiContextHandle_t ch = &ctx;
+  auto new_xyz_tensor_p = toDiopiTensorHandle(new_xyz_tensor);
+  auto idx_tensor_p = toDiopiTensorHandle(idx_tensor);
+  auto dist2_tensor_p = toDiopiTensorHandle(dist2_tensor);
+  if (&diopiKnn) {
+    diopiKnn(ch, xyz_tensor_p, new_xyz_tensor_p, idx_tensor_p, dist2_tensor_p,
+             b, n, m, nsample);
+  } else {
+    knn_forward_impl(b, n, m, nsample, xyz_tensor, new_xyz_tensor, idx_tensor,
+                     dist2_tensor);
+  }
+#else
   knn_forward_impl(b, n, m, nsample, xyz_tensor, new_xyz_tensor, idx_tensor,
                    dist2_tensor);
+#endif
 }
