@@ -37,8 +37,8 @@ void knn_forward_cuda_parrots_diopi(CudaContext& ctx, const SSElement& attr,
   auto idx_tensor = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
   auto dist2_tensor = reinterpret_cast<diopiTensorHandle_t>(&outs[1]);
 
-  PARROTS_CALLDIOPI(diopiKnn(ch, xyz_tensor, new_xyz_tensor, idx_tensor,
-                             dist2_tensor, b, n, m, nsample));
+  PARROTS_CALLDIOPI(diopiKnn(ch, idx_tensor, dist2_tensor, xyz_tensor,
+                             new_xyz_tensor, b, n, m, nsample));
 }
 #else
 void knn_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,

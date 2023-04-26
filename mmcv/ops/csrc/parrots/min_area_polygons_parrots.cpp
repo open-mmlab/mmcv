@@ -26,7 +26,7 @@ void min_area_polygons_cuda_parrots_diopi(CudaContext& ctx,
       reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[0]));
 
   auto polygons = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
-  PARROTS_CALLDIOPI(diopiMinAreaPolygons(ch, pointsets, polygons));
+  PARROTS_CALLDIOPI(diopiMinAreaPolygons(ch, polygons, pointsets));
 }
 #else
 void min_area_polygons_cuda_parrots(CudaContext& ctx, const SSElement& attr,

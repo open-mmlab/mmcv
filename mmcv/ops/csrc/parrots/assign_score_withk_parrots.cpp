@@ -43,9 +43,8 @@ void assign_score_withk_forward_cuda_parrots_diopi(
       reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[3]));
 
   auto output = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
-  PARROTS_CALLDIOPI(diopiAssignScoreWithk(ch, points, centers, scores, knn_idx,
-                                          output, B, N0, N1, M, K, O,
-                                          aggregate));
+  PARROTS_CALLDIOPI(diopiAssignScoreWithk(ch, output, points, centers, scores, knn_idx,
+                                          B, N0, N1, M, K, O, aggregate));
 }
 
 void assign_score_withk_backward_cuda_parrots_diopi(

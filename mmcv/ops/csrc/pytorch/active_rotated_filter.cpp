@@ -30,9 +30,7 @@ void active_rotated_filter_forward(const Tensor input, const Tensor indices,
   auto input_p = toDiopiTensorHandle(input);
   diopiDevice_t device;
   diopiGetTensorDevice(input_p, &device);
-  diopiDtype_t dtype;
-  diopiGetTensorDtype(input_p, &dtype);
-  if (device == diopi_host || dtype == diopi_dtype_float16) {
+  if (device == diopi_host) {
     active_rotated_filter_forward_impl(input, indices, output);
     return;
   }
@@ -41,7 +39,7 @@ void active_rotated_filter_forward(const Tensor input, const Tensor indices,
   auto indices_p = toDiopiTensorHandle(indices);
   auto out_p = toDiopiTensorHandle(output);
   if (&diopiActiveRotatedFilter) {
-    diopiActiveRotatedFilter(ch, input_p, indices_p, out_p);
+    diopiActiveRotatedFilter(ch, out_p, input_p, indices_p);
   } else {
     active_rotated_filter_forward_impl(input, indices, output);
   }
@@ -56,9 +54,7 @@ void active_rotated_filter_backward(const Tensor grad_out, const Tensor indices,
   auto grad_out_p = toDiopiTensorHandle(grad_out);
   diopiDevice_t device;
   diopiGetTensorDevice(grad_out_p, &device);
-  diopiDtype_t dtype;
-  diopiGetTensorDtype(grad_out_p, &dtype);
-  if (device == diopi_host || dtype == diopi_dtype_float16) {
+  if (device == diopi_host) {
     active_rotated_filter_backward_impl(grad_out, indices, grad_in);
     return;
   }
@@ -67,7 +63,7 @@ void active_rotated_filter_backward(const Tensor grad_out, const Tensor indices,
   auto indices_p = toDiopiTensorHandle(indices);
   auto grad_in_p = toDiopiTensorHandle(grad_in);
   if (&diopiActiveRotatedFilterBackward) {
-    diopiActiveRotatedFilterBackward(ch, grad_out_p, indices_p, grad_in_p);
+    diopiActiveRotatedFilterBackward(ch, grad_in_p, grad_out_p, indices_p);
   } else {
     active_rotated_filter_backward_impl(grad_out, indices, grad_in);
   }

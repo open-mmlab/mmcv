@@ -37,9 +37,7 @@ void assign_score_withk_forward(const Tensor& points, const Tensor& centers,
   auto points_p = toDiopiTensorHandle(points);
   diopiDevice_t device;
   diopiGetTensorDevice(points_p, &device);
-  diopiDtype_t dtype;
-  diopiGetTensorDtype(points_p, &dtype);
-  if (device == diopi_host || dtype == diopi_dtype_float16) {
+  if (device == diopi_host) {
     assign_score_withk_forward_impl(B, N0, N1, M, K, O, aggregate, points,
                                     centers, scores, knn_idx, output);
     return;
@@ -51,8 +49,8 @@ void assign_score_withk_forward(const Tensor& points, const Tensor& centers,
   auto knn_idx_p = toDiopiTensorHandle(knn_idx);
   auto output_p = toDiopiTensorHandle(output);
   if (&diopiAssignScoreWithk) {
-    diopiAssignScoreWithk(ch, points_p, centers_p, scores_p, knn_idx_p,
-                          output_p, B, N0, N1, M, K, O, aggregate);
+    diopiAssignScoreWithk(ch, output_p, points_p, centers_p, scores_p, knn_idx_p,
+                          B, N0, N1, M, K, O, aggregate);
   } else {
     assign_score_withk_forward_impl(B, N0, N1, M, K, O, aggregate, points,
                                     centers, scores, knn_idx, output);
@@ -73,9 +71,7 @@ void assign_score_withk_backward(const Tensor& grad_out, const Tensor& points,
   auto grad_out_p = toDiopiTensorHandle(grad_out);
   diopiDevice_t device;
   diopiGetTensorDevice(grad_out_p, &device);
-  diopiDtype_t dtype;
-  diopiGetTensorDtype(grad_out_p, &dtype);
-  if (device == diopi_host || dtype == diopi_dtype_float16) {
+  if (device == diopi_host) {
     assign_score_withk_backward_impl(B, N0, N1, M, K, O, aggregate, grad_out,
                                      points, centers, scores, knn_idx,
                                      grad_points, grad_centers, grad_scores);
@@ -91,9 +87,9 @@ void assign_score_withk_backward(const Tensor& grad_out, const Tensor& points,
   auto grad_centers_p = toDiopiTensorHandle(grad_centers);
   auto grad_scores_p = toDiopiTensorHandle(grad_scores);
   if (&diopiAssignScoreWithkBackward) {
-    diopiAssignScoreWithkBackward(ch, grad_out_p, points_p, centers_p, scores_p,
-                                  knn_idx_p, grad_points_p, grad_centers_p,
-                                  grad_scores_p, B, N0, N1, M, K, O, aggregate);
+    diopiAssignScoreWithkBackward(ch, grad_points_p, grad_centers_p,
+                                  grad_scores_p, grad_out_p, points_p, centers_p, scores_p,
+                                  knn_idx_p,  B, N0, N1, M, K, O, aggregate);
   } else {
     assign_score_withk_backward_impl(B, N0, N1, M, K, O, aggregate, grad_out,
                                      points, centers, scores, knn_idx,

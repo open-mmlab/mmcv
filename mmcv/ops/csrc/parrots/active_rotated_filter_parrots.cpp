@@ -27,7 +27,7 @@ void active_rotated_filter_forward_cuda_parrots_diopi(
   auto indices =
       reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
   auto output = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
-  PARROTS_CALLDIOPI(diopiActiveRotatedFilter(ch, input, indices, output));
+  PARROTS_CALLDIOPI(diopiActiveRotatedFilter(ch, output, input, indices));
 }
 
 void active_rotated_filter_backward_cuda_parrots_diopi(
@@ -41,7 +41,7 @@ void active_rotated_filter_backward_cuda_parrots_diopi(
       reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
   auto grad_in = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
   PARROTS_CALLDIOPI(
-      diopiActiveRotatedFilterBackward(ch, grad_out, indices, grad_in));
+      diopiActiveRotatedFilterBackward(ch, grad_in, grad_out, indices));
 }
 #else
 void active_rotated_filter_forward_cuda_parrots(
