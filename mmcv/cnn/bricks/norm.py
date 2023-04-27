@@ -116,7 +116,7 @@ def build_norm_layer(cfg: Dict,
 
     requires_grad = cfg_.pop('requires_grad', True)
     cfg_.setdefault('eps', 1e-5)
-    if layer_type != 'GN':
+    if norm_layer is not nn.GroupNorm:
         layer = norm_layer(num_features, **cfg_)
         if layer_type == 'SyncBN' and hasattr(layer, '_specify_ddp_gpu_num'):
             layer._specify_ddp_gpu_num(1)

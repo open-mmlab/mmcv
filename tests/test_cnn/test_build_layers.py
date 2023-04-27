@@ -7,10 +7,14 @@ import torch
 import torch.nn as nn
 from mmengine.registry import MODELS
 from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
+from torch.nn import ReflectionPad2d, Upsample
 
-from mmcv.cnn.bricks import (build_activation_layer, build_conv_layer,
+from mmcv.cnn.bricks import (ContextBlock, ConvModule, ConvTranspose2d,
+                             GeneralizedAttention, NonLocal2d,
+                             build_activation_layer, build_conv_layer,
                              build_norm_layer, build_padding_layer,
                              build_plugin_layer, build_upsample_layer, is_norm)
+from mmcv.cnn.bricks.activation import Clamp
 from mmcv.cnn.bricks.norm import infer_abbr as infer_norm_abbr
 from mmcv.cnn.bricks.plugin import infer_abbr as infer_plugin_abbr
 from mmcv.cnn.bricks.upsample import PixelShufflePack
@@ -65,18 +69,19 @@ def test_build_conv_layer():
     kwargs.pop('groups')
 
     for type_name, module in MODELS.module_dict.items():
-        cfg = dict(type=type_name)
-        # SparseInverseConv2d and SparseInverseConv3d do not have the argument
-        # 'dilation'
-        if type_name == 'SparseInverseConv2d' or type_name == \
-                'SparseInverseConv3d':
-            kwargs.pop('dilation')
-        if 'conv' in type_name.lower():
-            layer = build_conv_layer(cfg, **kwargs)
-            assert isinstance(layer, module)
-            assert layer.in_channels == kwargs['in_channels']
-            assert layer.out_channels == kwargs['out_channels']
-            kwargs['dilation'] = 2  # recover the key
+        for type_name_ in (type_name, module):
+            cfg = dict(type=type_name_)
+            # SparseInverseConv2d and SparseInverseConv3d do not have the
+            # argument 'dilation'
+            if type_name == 'SparseInverseConv2d' or type_name == \
+                    'SparseInverseConv3d':
+                kwargs.pop('dilation')
+            if 'conv' in type_name.lower():
+                layer = build_conv_layer(cfg, **kwargs)
+                assert isinstance(layer, module)
+                assert layer.in_channels == kwargs['in_channels']
+                assert layer.out_channels == kwargs['out_channels']
+                kwargs['dilation'] = 2  # recover the key
 
 
 def test_infer_norm_abbr():
@@ -162,17 +167,18 @@ def test_build_norm_layer():
         if type_name == 'MMSyncBN':  # skip MMSyncBN
             continue
         for postfix in ['_test', 1]:
-            cfg = dict(type=type_name)
-            if type_name == 'GN':
-                cfg['num_groups'] = 3
-            name, layer = build_norm_layer(cfg, 3, postfix=postfix)
-            assert name == abbr_mapping[type_name] + str(postfix)
-            assert isinstance(layer, module)
-            if type_name == 'GN':
-                assert layer.num_channels == 3
-                assert layer.num_groups == cfg['num_groups']
-            elif type_name != 'LN':
-                assert layer.num_features == 3
+            for type_name_ in (type_name, module):
+                cfg = dict(type=type_name_)
+                if type_name == 'GN':
+                    cfg['num_groups'] = 3
+                name, layer = build_norm_layer(cfg, 3, postfix=postfix)
+                assert name == abbr_mapping[type_name] + str(postfix)
+                assert isinstance(layer, module)
+                if type_name == 'GN':
+                    assert layer.num_channels == 3
+                    assert layer.num_groups == cfg['num_groups']
+                elif type_name != 'LN':
+                    assert layer.num_features == 3
 
 
 def test_build_activation_layer():
@@ -210,10 +216,12 @@ def test_build_activation_layer():
             assert isinstance(layer, module)
 
     # sanity check for Clamp
-    act = build_activation_layer(dict(type='Clamp'))
-    x = torch.randn(10) * 1000
-    y = act(x)
-    assert np.logical_and((y >= -1).numpy(), (y <= 1).numpy()).all()
+    for type_name in ('Clamp', Clamp):
+        act = build_activation_layer(dict(type='Clamp'))
+        x = torch.randn(10) * 1000
+        y = act(x)
+        assert np.logical_and((y >= -1).numpy(), (y <= 1).numpy()).all()
+
     act = build_activation_layer(dict(type='Clip', min=0))
     y = act(x)
     assert np.logical_and((y >= 0).numpy(), (y <= 1).numpy()).all()
@@ -250,12 +258,12 @@ def test_build_padding_layer():
             cfg['type'] = type_name
             layer = build_padding_layer(cfg, 2)
             assert isinstance(layer, module)
-
-    input_x = torch.randn(1, 2, 5, 5)
-    cfg = dict(type='reflect')
-    padding_layer = build_padding_layer(cfg, 2)
-    res = padding_layer(input_x)
-    assert res.shape == (1, 2, 9, 9)
+    for type_name in (ReflectionPad2d, 'reflect'):
+        input_x = torch.randn(1, 2, 5, 5)
+        cfg = dict(type=type_name)
+        padding_layer = build_padding_layer(cfg, 2)
+        res = padding_layer(input_x)
+        assert res.shape == (1, 2, 9, 9)
 
 
 def test_upsample_layer():
@@ -280,38 +288,48 @@ def test_upsample_layer():
         assert isinstance(layer, nn.Upsample)
         assert layer.mode == type_name
 
+    cfg = dict()
+    cfg['type'] = Upsample
+    layer_from_cls = build_upsample_layer(cfg)
+    assert isinstance(layer_from_cls, nn.Upsample)
+    assert layer_from_cls.mode == 'nearest'
+
     cfg = dict(
         type='deconv', in_channels=3, out_channels=3, kernel_size=3, stride=2)
     layer = build_upsample_layer(cfg)
     assert isinstance(layer, nn.ConvTranspose2d)
 
-    cfg = dict(type='deconv')
-    kwargs = dict(in_channels=3, out_channels=3, kernel_size=3, stride=2)
-    layer = build_upsample_layer(cfg, **kwargs)
-    assert isinstance(layer, nn.ConvTranspose2d)
-    assert layer.in_channels == kwargs['in_channels']
-    assert layer.out_channels == kwargs['out_channels']
-    assert layer.kernel_size == (kwargs['kernel_size'], kwargs['kernel_size'])
-    assert layer.stride == (kwargs['stride'], kwargs['stride'])
+    for type_name in ('deconv', ConvTranspose2d):
+        cfg = dict(type=ConvTranspose2d)
+        kwargs = dict(in_channels=3, out_channels=3, kernel_size=3, stride=2)
+        layer = build_upsample_layer(cfg, **kwargs)
+        assert isinstance(layer, nn.ConvTranspose2d)
+        assert layer.in_channels == kwargs['in_channels']
+        assert layer.out_channels == kwargs['out_channels']
+        assert layer.kernel_size == (kwargs['kernel_size'],
+                                     kwargs['kernel_size'])
+        assert layer.stride == (kwargs['stride'], kwargs['stride'])
 
-    layer = build_upsample_layer(cfg, 3, 3, 3, 2)
-    assert isinstance(layer, nn.ConvTranspose2d)
-    assert layer.in_channels == kwargs['in_channels']
-    assert layer.out_channels == kwargs['out_channels']
-    assert layer.kernel_size == (kwargs['kernel_size'], kwargs['kernel_size'])
-    assert layer.stride == (kwargs['stride'], kwargs['stride'])
+        layer = build_upsample_layer(cfg, 3, 3, 3, 2)
+        assert isinstance(layer, nn.ConvTranspose2d)
+        assert layer.in_channels == kwargs['in_channels']
+        assert layer.out_channels == kwargs['out_channels']
+        assert layer.kernel_size == (kwargs['kernel_size'],
+                                     kwargs['kernel_size'])
+        assert layer.stride == (kwargs['stride'], kwargs['stride'])
 
-    cfg = dict(
-        type='pixel_shuffle',
-        in_channels=3,
-        out_channels=3,
-        scale_factor=2,
-        upsample_kernel=3)
-    layer = build_upsample_layer(cfg)
+    for type_name in ('pixel_shuffle', PixelShufflePack):
+        cfg = dict(
+            type=type_name,
+            in_channels=3,
+            out_channels=3,
+            scale_factor=2,
+            upsample_kernel=3)
+        layer = build_upsample_layer(cfg)
 
-    assert isinstance(layer, PixelShufflePack)
-    assert layer.scale_factor == 2
-    assert layer.upsample_kernel == 3
+        assert isinstance(layer, PixelShufflePack)
+        assert layer.scale_factor == 2
+        assert layer.upsample_kernel == 3
 
 
 def test_pixel_shuffle_pack():
@@ -396,35 +414,42 @@ def test_build_plugin_layer():
         build_plugin_layer(cfg, postfix=[1, 2])
 
     # test ContextBlock
-    for postfix in ['', '_test', 1]:
-        cfg = dict(type='ContextBlock')
-        name, layer = build_plugin_layer(
-            cfg, postfix=postfix, in_channels=16, ratio=1. / 4)
-        assert name == 'context_block' + str(postfix)
-        assert isinstance(layer, MODELS.module_dict['ContextBlock'])
+    for type_name in ('ContextBlock', ContextBlock):
+        for postfix in ['', '_test', 1]:
+            cfg = dict(type=type_name)
+            name, layer = build_plugin_layer(
+                cfg, postfix=postfix, in_channels=16, ratio=1. / 4)
+            assert name == 'context_block' + str(postfix)
+            assert isinstance(layer, MODELS.module_dict['ContextBlock'])
 
     # test GeneralizedAttention
-    for postfix in ['', '_test', 1]:
-        cfg = dict(type='GeneralizedAttention')
-        name, layer = build_plugin_layer(cfg, postfix=postfix, in_channels=16)
-        assert name == 'gen_attention_block' + str(postfix)
-        assert isinstance(layer, MODELS.module_dict['GeneralizedAttention'])
+    for type_name in ('GeneralizedAttention', GeneralizedAttention):
+        for postfix in ['', '_test', 1]:
+            cfg = dict(type=type_name)
+            name, layer = build_plugin_layer(
+                cfg, postfix=postfix, in_channels=16)
+            assert name == 'gen_attention_block' + str(postfix)
+            assert isinstance(layer,
+                              MODELS.module_dict['GeneralizedAttention'])
 
     # test NonLocal2d
-    for postfix in ['', '_test', 1]:
-        cfg = dict(type='NonLocal2d')
-        name, layer = build_plugin_layer(cfg, postfix=postfix, in_channels=16)
-        assert name == 'nonlocal_block' + str(postfix)
-        assert isinstance(layer, MODELS.module_dict['NonLocal2d'])
+    for type_name in ('NonLocal2d', NonLocal2d):
+        for postfix in ['', '_test', 1]:
+            cfg = dict(type='NonLocal2d')
+            name, layer = build_plugin_layer(
+                cfg, postfix=postfix, in_channels=16)
+            assert name == 'nonlocal_block' + str(postfix)
+            assert isinstance(layer, MODELS.module_dict['NonLocal2d'])
 
     # test ConvModule
     for postfix in ['', '_test', 1]:
-        cfg = dict(type='ConvModule')
-        name, layer = build_plugin_layer(
-            cfg,
-            postfix=postfix,
-            in_channels=16,
-            out_channels=4,
-            kernel_size=3)
-        assert name == 'conv_block' + str(postfix)
-        assert isinstance(layer, MODELS.module_dict['ConvModule'])
+        for type_name in ('ConvModule', ConvModule):
+            cfg = dict(type=type_name)
+            name, layer = build_plugin_layer(
+                cfg,
+                postfix=postfix,
+                in_channels=16,
+                out_channels=4,
+                kernel_size=3)
+            assert name == 'conv_block' + str(postfix)
+            assert isinstance(layer, MODELS.module_dict['ConvModule'])
