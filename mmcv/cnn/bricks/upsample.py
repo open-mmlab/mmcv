@@ -76,6 +76,8 @@ def build_upsample_layer(cfg: Dict, *args, **kwargs) -> nn.Module:
 
     layer_type = cfg_.pop('type')
 
+    if isinstance(layer_type, type):
+        upsample = layer_type
     # Switch registry to the target scope. If `upsample` cannot be found
     # in the registry, fallback to search `upsample` in the
     # mmengine.MODELS.

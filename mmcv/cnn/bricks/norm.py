@@ -98,11 +98,14 @@ def build_norm_layer(cfg: Dict,
 
     layer_type = cfg_.pop('type')
 
-    # Switch registry to the target scope. If `norm_layer` cannot be found
-    # in the registry, fallback to search `norm_layer` in the
-    # mmengine.MODELS.
-    with MODELS.switch_scope_and_registry(None) as registry:
-        norm_layer = registry.get(layer_type)
+    if isinstance(layer_type, type):
+        norm_layer = layer_type
+    else:
+        # Switch registry to the target scope. If `norm_layer` cannot be found
+        # in the registry, fallback to search `norm_layer` in the
+        # mmengine.MODELS.
+        with MODELS.switch_scope_and_registry(None) as registry:
+            norm_layer = registry.get(layer_type)
     if norm_layer is None:
         raise KeyError(f'Cannot find {norm_layer} in registry under scope '
                        f'name {registry.scope}')

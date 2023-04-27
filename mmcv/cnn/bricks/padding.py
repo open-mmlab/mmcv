@@ -27,7 +27,8 @@ def build_padding_layer(cfg: Dict, *args, **kwargs) -> nn.Module:
 
     cfg_ = cfg.copy()
     padding_type = cfg_.pop('type')
-
+    if isinstance(padding_type, type):
+        return padding_type(*args, **kwargs, **cfg_)
     # Switch registry to the target scope. If `padding_layer` cannot be found
     # in the registry, fallback to search `padding_layer` in the
     # mmengine.MODELS.
