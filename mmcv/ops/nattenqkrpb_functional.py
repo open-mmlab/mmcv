@@ -39,7 +39,7 @@ class NATTENQKRPBFunction(Function):
     @staticmethod
     def backward(
         ctx, grad_out: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, None]:
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Backward function.
 
         Args:
@@ -50,13 +50,12 @@ class NATTENQKRPBFunction(Function):
                 - torch.Tensor: Gradient of the query.
                 - torch.Tensor: Gradient of the key.
                 - torch.Tensor: Gradient of the rpb.
-                - None: Dummy variable.
         """
         outputs = ext_module.nattenqkrpb_backward(grad_out.contiguous(),
                                                   ctx.saved_tensors[0],
                                                   ctx.saved_tensors[1])
         d_query, d_key, d_rpb = outputs
-        return d_query, d_key, d_rpb, None
+        return d_query, d_key, d_rpb
 
 
 nattenqkrpb = NATTENQKRPBFunction.apply

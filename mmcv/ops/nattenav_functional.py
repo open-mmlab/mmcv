@@ -37,7 +37,7 @@ class NATTENAVFunction(Function):
     @staticmethod
     def backward(
             ctx,
-            grad_out: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, None]:
+            grad_out: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """Backward function.
 
         Args:
@@ -47,13 +47,12 @@ class NATTENAVFunction(Function):
             Tuple:
                 - torch.Tensor: Gradient of the attention weights.
                 - torch.Tensor: Gradient of the values.
-                - None: Dummy variable.
         """
         outputs = ext_module.nattenav_backward(grad_out.contiguous(),
                                                ctx.saved_tensors[0],
                                                ctx.saved_tensors[1])
         d_attn, d_value = outputs
-        return d_attn, d_value, None
+        return d_attn, d_value
 
 
 nattenav = NATTENAVFunction.apply
