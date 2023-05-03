@@ -28,6 +28,7 @@ __device__ inline void swap1(Point *a, Point *b) {
   b->x = temp.x;
   b->y = temp.y;
 }
+
 __device__ inline float cross(Point o, Point a, Point b) {
   return (a.x - o.x) * (b.y - o.y) - (b.x - o.x) * (a.y - o.y);
 }
@@ -35,6 +36,7 @@ __device__ inline float cross(Point o, Point a, Point b) {
 __device__ inline float dis(Point a, Point b) {
   return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
 }
+
 __device__ inline void minBoundingRect(Point *ps, int n_points, float *minbox) {
   float convex_points[2][MAXN];
   for (int j = 0; j < n_points; j++) {
@@ -159,12 +161,6 @@ __device__ inline void minBoundingRect(Point *ps, int n_points, float *minbox) {
 
 // convex_find
 __device__ inline void Jarvis(Point *in_poly, int &n_poly) {
-  int n_input = n_poly;
-  Point input_poly[20];
-  for (int i = 0; i < n_input; i++) {
-    input_poly[i].x = in_poly[i].x;
-    input_poly[i].y = in_poly[i].y;
-  }
   Point p_max, p_k;
   int max_index, k_index;
   int Stack[20], top1, top2;
@@ -200,8 +196,13 @@ __device__ inline void Jarvis(Point *in_poly, int &n_poly) {
     k_index = max_index;
     for (int i = 1; i < n_poly; i++) {
       sign = cross(in_poly[Stack[top1]], in_poly[i], p_k);
-      if ((sign > 0) || ((sign == 0) && (dis(in_poly[Stack[top1]], in_poly[i]) >
-                                         dis(in_poly[Stack[top1]], p_k)))) {
+      if(fabs(sign) < 1e-3) {
+        if (dis(in_poly[Stack[top1]], in_poly[i]) > dis(in_poly[Stack[top1]], p_k)) {
+          p_k = in_poly[i];
+          k_index = i;
+        }
+      }
+      else if (sign > 0) {
         p_k = in_poly[i];
         k_index = i;
       }
@@ -221,8 +222,13 @@ __device__ inline void Jarvis(Point *in_poly, int &n_poly) {
     k_index = max_index;
     for (int i = 1; i < n_poly; i++) {
       sign = cross(in_poly[Stack[top2]], in_poly[i], p_k);
-      if ((sign < 0) || (sign == 0) && (dis(in_poly[Stack[top2]], in_poly[i]) >
-                                        dis(in_poly[Stack[top2]], p_k))) {
+      if(fabs(sign) < 1e-3) {
+        if (dis(in_poly[Stack[top2]], in_poly[i]) > dis(in_poly[Stack[top2]], p_k)) {
+          p_k = in_poly[i];
+          k_index = i;
+        }
+      }
+      else if (sign < 0) {
         p_k = in_poly[i];
         k_index = i;
       }

@@ -431,8 +431,13 @@ __device__ inline void Jarvis(Point* in_poly, int& n_poly) {
     k_index = max_index;
     for (int i = 1; i < n_poly; i++) {
       sign = cross(in_poly[Stack[top1]], in_poly[i], p_k);
-      if ((sign > 0) || ((sign == 0) && (dis(in_poly[Stack[top1]], in_poly[i]) >
-                                         dis(in_poly[Stack[top1]], p_k)))) {
+      if(fabs(sign) < 1e-3) {
+        if (dis(in_poly[Stack[top1]], in_poly[i]) > dis(in_poly[Stack[top1]], p_k)) {
+          p_k = in_poly[i];
+          k_index = i;
+        }
+      }
+      else if (sign > 0) {
         p_k = in_poly[i];
         k_index = i;
       }
@@ -449,8 +454,13 @@ __device__ inline void Jarvis(Point* in_poly, int& n_poly) {
     k_index = max_index;
     for (int i = 1; i < n_poly; i++) {
       sign = cross(in_poly[Stack[top2]], in_poly[i], p_k);
-      if ((sign < 0) || (sign == 0) && (dis(in_poly[Stack[top2]], in_poly[i]) >
-                                        dis(in_poly[Stack[top2]], p_k))) {
+      if(fabs(sign) < 1e-3) {
+        if (dis(in_poly[Stack[top2]], in_poly[i]) > dis(in_poly[Stack[top2]], p_k)) {
+          p_k = in_poly[i];
+          k_index = i;
+        }
+      }
+      else if (sign < 0) {
         p_k = in_poly[i];
         k_index = i;
       }
@@ -570,8 +580,13 @@ __device__ inline void Jarvis_and_index(Point* in_poly, int& n_poly,
     k_index = max_index;
     for (int i = 1; i < n_poly; i++) {
       sign = cross(in_poly[Stack[top1]], in_poly[i], p_k);
-      if ((sign > 0) || ((sign == 0) && (dis(in_poly[Stack[top1]], in_poly[i]) >
-                                         dis(in_poly[Stack[top1]], p_k)))) {
+      if(fabs(sign) < 1e-3) {
+        if (dis(in_poly[Stack[top1]], in_poly[i]) > dis(in_poly[Stack[top1]], p_k)) {
+          p_k = in_poly[i];
+          k_index = i;
+        }
+      }
+      else if (sign > 0) {
         p_k = in_poly[i];
         k_index = i;
       }
@@ -590,8 +605,13 @@ __device__ inline void Jarvis_and_index(Point* in_poly, int& n_poly,
     k_index = max_index;
     for (int i = 1; i < n_poly; i++) {
       sign = cross(in_poly[Stack[top2]], in_poly[i], p_k);
-      if ((sign < 0) || (sign == 0) && (dis(in_poly[Stack[top2]], in_poly[i]) >
-                                        dis(in_poly[Stack[top2]], p_k))) {
+      if(fabs(sign) < 1e-3) {
+        if (dis(in_poly[Stack[top2]], in_poly[i]) > dis(in_poly[Stack[top2]], p_k)) {
+          p_k = in_poly[i];
+          k_index = i;
+        }
+      }
+      else if (sign < 0) {
         p_k = in_poly[i];
         k_index = i;
       }
