@@ -9,12 +9,17 @@
 #endif
 
 #define MAXN 20
-__device__ const float PI = 3.1415926;
+__device__ const double PI = 3.1415926;
 
 struct Point {
-  float x, y;
+  double x, y;
   __device__ Point() {}
-  __device__ Point(float x, float y) : x(x), y(y) {}
+  __device__ Point(double x, double y) : x(x), y(y) {}
+  __device__ friend bool operator<(const Point& lhs, const Point& rhs) {
+    if(lhs.y != rhs.y) return lhs.y < rhs.y;
+    if(lhs.x != rhs.x) return lhs.x < rhs.x;
+    return true;
+  }
 };
 
 __device__ inline void swap1(Point *a, Point *b) {
@@ -28,13 +33,38 @@ __device__ inline void swap1(Point *a, Point *b) {
   b->x = temp.x;
   b->y = temp.y;
 }
-__device__ inline float cross(Point o, Point a, Point b) {
+
+__device__ inline double cross(const Point& o, const Point& a, const Point& b) {
   return (a.x - o.x) * (b.y - o.y) - (b.x - o.x) * (a.y - o.y);
 }
 
-__device__ inline float dis(Point a, Point b) {
+__device__ inline double dis(const Point& a, const Point& b) {
   return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
 }
+
+__device__ inline void quickSort(Point *ps, int elements) {
+
+  Point piv;
+  int beg[MAXN], end[MAXN], i=0, L, R, swap;
+
+  beg[0]=0; end[0]=elements;
+  while (i>=0) {
+    L=beg[i]; R=end[i]-1;
+    if (L<R) {
+      piv=ps[L];
+      while (L<R) {
+        while (piv < ps[R] && L<R) R--; if (L<R) ps[L++]=ps[R];
+        while (ps[L] < piv && L<R) L++; if (L<R) ps[R--]=ps[L]; }
+      ps[L]=piv; beg[i+1]=L+1; end[i+1]=end[i]; end[i++]=L;
+      if (end[i]-beg[i]>end[i-1]-beg[i-1]) {
+        swap=beg[i]; beg[i]=beg[i-1]; beg[i-1]=swap;
+        swap=end[i]; end[i]=end[i-1]; end[i-1]=swap; }}
+    else {
+      i--;
+    }
+  }
+}
+
 __device__ inline void minBoundingRect(Point *ps, int n_points, float *minbox) {
   float convex_points[2][MAXN];
   for (int j = 0; j < n_points; j++) {
@@ -172,27 +202,9 @@ __device__ inline void Jarvis(Point *in_poly, int &n_poly) {
   double sign;
   Point right_point[10], left_point[10];
 
-  for (int i = 0; i < n_poly; i++) {
-    if (in_poly[i].y < in_poly[0].y ||
-        in_poly[i].y == in_poly[0].y && in_poly[i].x < in_poly[0].x) {
-      Point *j = &(in_poly[0]);
-      Point *k = &(in_poly[i]);
-      swap1(j, k);
-    }
-    if (i == 0) {
-      p_max = in_poly[0];
-      max_index = 0;
-    }
-    if (in_poly[i].y > p_max.y ||
-        in_poly[i].y == p_max.y && in_poly[i].x > p_max.x) {
-      p_max = in_poly[i];
-      max_index = i;
-    }
-  }
-  if (max_index == 0) {
-    max_index = 1;
-    p_max = in_poly[max_index];
-  }
+  quickSort(in_poly, n_poly);
+  max_index = n_poly - 1;
+  p_max = in_poly[max_index];
 
   k_index = 0, Stack[0] = 0, top1 = 0;
   while (k_index != max_index) {
