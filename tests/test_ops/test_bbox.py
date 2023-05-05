@@ -60,9 +60,10 @@ class TestBBox:
         pytest.param(
             'npu',
             marks=pytest.mark.skipif(
-                not IS_NPU_AVAILABLE, reason='requires NPU support'))
+                not IS_NPU_AVAILABLE, reason='requires NPU support')),
     ])
     def test_bbox_overlaps_float(self, device):
+        print("\ndevice " +device+"\n")
         self._test_bbox_overlaps(device, dtype=torch.float)
 
     @pytest.mark.parametrize('device', [
@@ -77,7 +78,8 @@ class TestBBox:
         pytest.param(
             'npu',
             marks=pytest.mark.skipif(
-                not IS_NPU_AVAILABLE, reason='requires NPU support'))
+                not IS_NPU_AVAILABLE, reason='requires NPU support')),
     ])
     def test_bbox_overlaps_half(self, device):
+        print("\ndevice " +device+"\n")
         self._test_bbox_overlaps(device, dtype=torch.half)

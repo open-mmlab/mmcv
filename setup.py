@@ -210,6 +210,8 @@ def get_extensions():
                 extra_compile_args['cxx'] = ['/std:c++14']
 
         include_dirs = []
+        library_dirs = []
+        libraries = []
 
         extra_objects = []
         is_rocm_pytorch = False
@@ -220,7 +222,29 @@ def get_extensions():
         except ImportError:
             pass
 
-        if is_rocm_pytorch or torch.cuda.is_available() or os.getenv(
+        if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
+            print(f'Compiling {ext_name} with CPU and DIPU')
+            define_macros += [('MMCV_WITH_DIOPI', None)]
+            define_macros += [('DIOPI_ATTR_WEAK', None)]
+            op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp')
+            extension = CppExtension
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
+            dipu_root = os.getenv('DIPU_ROOT')
+            diopi_path = os.getenv('DIOPI_PATH')
+            dipu_path = os.getenv('DIPU_PATH')
+            vendor_include_dirs = os.getenv('VENDOR_INCLUDE_DIRS')
+            include_dirs.append(dipu_root)
+            include_dirs.append(diopi_path+'/include')
+            include_dirs.append(dipu_path+'/dist/include')
+            include_dirs.append(vendor_include_dirs)
+            # diopi_root = os.getenv('DIOPI_ROOT')
+            # vendor_lib_dirs = os.getenv('VENDOR_LIB_DIRS')
+            library_dirs += [dipu_root]
+            # library_dirs += [diopi_root]
+            libraries += ['torch_dipu']
+            # libraries += ['diopi_impl']
+        elif is_rocm_pytorch or torch.cuda.is_available() or os.getenv(
                 'FORCE_CUDA', '0') == '1':
             if is_rocm_pytorch:
                 define_macros += [('MMCV_WITH_HIP', None)]
@@ -393,7 +417,9 @@ def get_extensions():
             include_dirs=include_dirs,
             define_macros=define_macros,
             extra_objects=extra_objects,
-            extra_compile_args=extra_compile_args)
+            extra_compile_args=extra_compile_args,
+            library_dirs=library_dirs,
+            libraries=libraries)
         extensions.append(ext_ops)
     return extensions
 

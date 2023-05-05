@@ -3,7 +3,9 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, \
+                       IS_NPU_AVAILABLE, IS_DIPU_AVAILABLE
+                       
 
 _USING_PARROTS = True
 try:
@@ -113,7 +115,7 @@ def _test_roialign_allclose(device, dtype):
     pytest.param(
         torch.double,
         marks=pytest.mark.skipif(
-            IS_MLU_AVAILABLE or IS_NPU_AVAILABLE,
+            IS_MLU_AVAILABLE or IS_NPU_AVAILABLE or IS_DIPU_AVAILABLE,
             reason='MLU and NPU do not support for 64-bit floating point')),
     torch.half
 ])
