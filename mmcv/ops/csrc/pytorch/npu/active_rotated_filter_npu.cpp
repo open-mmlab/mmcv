@@ -20,7 +20,7 @@ void active_rotated_filter_forward_npu(const Tensor input,
 }
 
 void active_rotated_filter_backward_npu(const Tensor grad_out,
-                                         const Tensor indices, Tensor grad_in) {
+                                        const Tensor indices, Tensor grad_in) {
   OpCommand cmd;
   cmd.Name("ActiveRotatedFilterGrad")
       .Input(grad_out)
