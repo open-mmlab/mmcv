@@ -36,7 +36,7 @@ void prroi_pool_forward_cuda_parrots_diopi(CudaContext& ctx,
   auto rois =
       reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
   auto output = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
-  PARROTS_CALLDIOPI(diopiPrroiPool(ch, input, output, rois, pooled_height,
+  PARROTS_CALLDIOPI(diopiPrroiPoolMmcv(ch, input, output, rois, pooled_height,
                                    pooled_width, spatial_scale));
 }
 
@@ -60,7 +60,7 @@ void prroi_pool_backward_cuda_parrots_diopi(CudaContext& ctx,
   auto rois =
       reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
   auto grad_input = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
-  PARROTS_CALLDIOPI(diopiPrroiPoolbackward(ch, grad_input, grad_output, rois,
+  PARROTS_CALLDIOPI(diopiPrroiPoolbackwardMmcv(ch, grad_input, grad_output, rois,
                                            pooled_height, pooled_width,
                                            spatial_scale));
 }
@@ -88,7 +88,7 @@ void prroi_pool_coor_backward_cuda_parrots_diopi(
   auto rois =
       reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[3]));
   auto grad_rois = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
-  PARROTS_CALLDIOPI(diopiPrroiPoolCoorBackward(ch, grad_rois, output, grad_output, input,
+  PARROTS_CALLDIOPI(diopiPrroiPoolCoorBackwardMmcv(ch, grad_rois, output, grad_output, input,
                                                rois, pooled_height,
                                                pooled_width, spatial_scale));
 }

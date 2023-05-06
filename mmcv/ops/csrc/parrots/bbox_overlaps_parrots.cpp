@@ -39,7 +39,7 @@ void bbox_overlaps_parrots_diopi(CudaContext& ctx, const SSElement& attr,
       reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
   auto ious = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
   PARROTS_CALLDIOPI(
-      diopiBboxOverlaps(ch, bboxes1, bboxes2, ious, mode, aligned, offset));
+      diopiBboxOverlapsMmcv(ch, bboxes1, bboxes2, ious, mode, aligned, offset));
 }
 #else
 /*

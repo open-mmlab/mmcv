@@ -37,8 +37,8 @@ void ball_query_forward(Tensor new_xyz_tensor, Tensor xyz_tensor,
   diopiContextHandle_t ch = &ctx;
   auto xyz_tensor_ = toDiopiTensorHandle(xyz_tensor);
   auto idx_tensor_ = toDiopiTensorHandle(idx_tensor);
-  if(&diopiBallQuery) {
-    diopiBallQuery(ch, new_xyz_tensor_, xyz_tensor_, idx_tensor_, b, n, m, min_radius, max_radius, nsample);
+  if(&diopiBallQueryMmcv) {
+    diopiBallQueryMmcv(ch, new_xyz_tensor_, xyz_tensor_, idx_tensor_, b, n, m, min_radius, max_radius, nsample);
   } else {
     ball_query_forward_impl(b, n, m, min_radius, max_radius, nsample,
                           new_xyz_tensor, xyz_tensor, idx_tensor);

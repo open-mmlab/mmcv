@@ -35,8 +35,8 @@ void knn_forward(Tensor xyz_tensor, Tensor new_xyz_tensor, Tensor idx_tensor,
   auto new_xyz_tensor_p = toDiopiTensorHandle(new_xyz_tensor);
   auto idx_tensor_p = toDiopiTensorHandle(idx_tensor);
   auto dist2_tensor_p = toDiopiTensorHandle(dist2_tensor);
-  if (&diopiKnn) {
-    diopiKnn(ch, idx_tensor_p, dist2_tensor_p, xyz_tensor_p, new_xyz_tensor_p,
+  if (&diopiKnnMmcv) {
+    diopiKnnMmcv(ch, idx_tensor_p, dist2_tensor_p, xyz_tensor_p, new_xyz_tensor_p,
              b, n, m, nsample);
   } else {
     knn_forward_impl(b, n, m, nsample, xyz_tensor, new_xyz_tensor, idx_tensor,

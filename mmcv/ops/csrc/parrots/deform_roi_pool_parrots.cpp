@@ -47,7 +47,7 @@ void deform_roi_pool_forward_cuda_parrots_diopi(
       reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[2]));
 
   auto output = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
-  PARROTS_CALLDIOPI(diopiDeformRoiPool(ch, output, input, rois, offset,
+  PARROTS_CALLDIOPI(diopiDeformRoiPoolMmcv(ch, output, input, rois, offset,
                                        pooled_height, pooled_width,
                                        sampling_ratio, spatial_scale, gamma));
 }
@@ -90,7 +90,7 @@ void deform_roi_pool_backward_cuda_parrots_diopi(
   auto grad_input = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
   auto grad_offset = reinterpret_cast<diopiTensorHandle_t>(&outs[1]);
 
-  PARROTS_CALLDIOPI(diopiDeformRoiPoolBackward(
+  PARROTS_CALLDIOPI(diopiDeformRoiPoolBackwardMmcv(
       ch, grad_input, grad_offset, grad_output, input, rois, offset,
       pooled_height, pooled_width, sampling_ratio, spatial_scale, gamma));
 }

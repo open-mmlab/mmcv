@@ -50,8 +50,8 @@ void prroi_pool_forward(Tensor input, Tensor rois, Tensor output,
   diopiContextHandle_t ch = &ctx;
   auto rois_p = toDiopiTensorHandle(rois);
   auto output_p = toDiopiTensorHandle(output);
-  if (&diopiPrroiPool) {
-    diopiPrroiPool(ch, output_p, input_p, rois_p, pooled_height, pooled_width,
+  if (&diopiPrroiPoolMmcv) {
+    diopiPrroiPoolMmcv(ch, output_p, input_p, rois_p, pooled_height, pooled_width,
                    spatial_scale);
   } else {
     prroi_pool_forward_impl(input, rois, output, pooled_height, pooled_width,
@@ -81,8 +81,8 @@ void prroi_pool_backward(Tensor grad_output, Tensor rois, Tensor grad_input,
   diopiContextHandle_t ch = &ctx;
   auto rois_p = toDiopiTensorHandle(rois);
   auto grad_input_p = toDiopiTensorHandle(grad_input);
-  if (&diopiPrroiPoolbackward) {
-    diopiPrroiPoolbackward(ch, grad_input_p, grad_output_p, rois_p,
+  if (&diopiPrroiPoolbackwardMmcv) {
+    diopiPrroiPoolbackwardMmcv(ch, grad_input_p, grad_output_p, rois_p,
                            pooled_height, pooled_width, spatial_scale);
   } else {
     prroi_pool_backward_impl(grad_output, rois, grad_input, pooled_height,
@@ -114,8 +114,8 @@ void prroi_pool_coor_backward(Tensor output, Tensor grad_output, Tensor input,
   auto input_p = toDiopiTensorHandle(input);
   auto rois_p = toDiopiTensorHandle(rois);
   auto grad_rois_p = toDiopiTensorHandle(grad_rois);
-  if (&diopiPrroiPoolCoorBackward) {
-    diopiPrroiPoolCoorBackward(ch, output_p, grad_output_p, input_p, rois_p,
+  if (&diopiPrroiPoolCoorBackwardMmcv) {
+    diopiPrroiPoolCoorBackwardMmcv(ch, output_p, grad_output_p, input_p, rois_p,
                                grad_rois_p, pooled_height, pooled_width,
                                spatial_scale);
   } else {

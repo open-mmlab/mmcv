@@ -30,7 +30,7 @@ void chamfer_distance_forward_cuda_parrots_diopi(
   auto idx1 = reinterpret_cast<diopiTensorHandle_t>(&outs[2]);
   auto idx2 = reinterpret_cast<diopiTensorHandle_t>(&outs[3]);
   PARROTS_CALLDIOPI(
-      diopiChamferDistance(ch, dist1, dist2, idx1, idx2, xyz1, xyz2));
+      diopiChamferDistanceMmcv(ch, dist1, dist2, idx1, idx2, xyz1, xyz2));
 }
 
 void chamfer_distance_backward_cuda_parrots_diopi(
@@ -52,7 +52,7 @@ void chamfer_distance_backward_cuda_parrots_diopi(
       reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[5]));
   auto gradxyz1 = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
   auto gradxyz2 = reinterpret_cast<diopiTensorHandle_t>(&outs[1]);
-  PARROTS_CALLDIOPI(diopiChamferDistanceBackward(
+  PARROTS_CALLDIOPI(diopiChamferDistanceBackwardMmcv(
       ch, gradxyz1, gradxyz2, xyz1, xyz2, idx1, idx2, graddist1, graddist2));
 }
 

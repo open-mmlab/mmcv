@@ -27,7 +27,7 @@ void convex_iou_forward_cuda_parrots_diopi(CudaContext& ctx,
   auto polygons =
       reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
   auto ious = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
-  PARROTS_CALLDIOPI(diopiConvexIou(ch, ious, pointsets, polygons));
+  PARROTS_CALLDIOPI(diopiConvexIouMmcv(ch, ious, pointsets, polygons));
 }
 
 void convex_giou_forward_cuda_parrots_diopi(CudaContext& ctx,
@@ -41,7 +41,7 @@ void convex_giou_forward_cuda_parrots_diopi(CudaContext& ctx,
   auto polygons =
       reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[1]));
   auto output = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
-  PARROTS_CALLDIOPI(diopiConvexGiou(ch, output, pointsets, polygons));
+  PARROTS_CALLDIOPI(diopiConvexGiouMmcv(ch, output, pointsets, polygons));
 }
 #else
 void convex_iou_forward_cuda_parrots(CudaContext& ctx, const SSElement& attr,

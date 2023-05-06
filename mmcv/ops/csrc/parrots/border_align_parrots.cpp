@@ -33,7 +33,7 @@ void border_align_forward_cuda_parrots_diopi(CudaContext& ctx,
   auto output = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
   auto argmax_idx = reinterpret_cast<diopiTensorHandle_t>(&outs[1]);
   PARROTS_CALLDIOPI(
-      diopiBorderAlign(ch, output, argmax_idx, input, boxes, pool_size));
+      diopiBorderAlignMmcv(ch, output, argmax_idx, input, boxes, pool_size));
 }
 
 void border_align_backward_cuda_parrots_diopi(
@@ -52,7 +52,7 @@ void border_align_backward_cuda_parrots_diopi(
       reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[2]));
 
   auto bottom_grad = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
-  PARROTS_CALLDIOPI(diopiBorderAlignBackward(ch, top_grad, boxes, argmax_idx,
+  PARROTS_CALLDIOPI(diopiBorderAlignBackwardMmcv(ch, top_grad, boxes, argmax_idx,
                                              bottom_grad, pool_size));
 }
 #else

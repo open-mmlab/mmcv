@@ -50,8 +50,8 @@ void deform_roi_pool_forward(Tensor input, Tensor rois, Tensor offset,
   auto rois_p = toDiopiTensorHandle(rois);
   auto offset_p = toDiopiTensorHandle(offset);
   auto output_p = toDiopiTensorHandle(output);
-  if (&diopiDeformRoiPool) {
-    diopiDeformRoiPool(ch, output_p, input_p, rois_p, offset_p, pooled_height,
+  if (&diopiDeformRoiPoolMmcv) {
+    diopiDeformRoiPoolMmcv(ch, output_p, input_p, rois_p, offset_p, pooled_height,
                        pooled_width, sampling_ratio, spatial_scale, gamma);
   } else {
     deform_roi_pool_forward_impl(input, rois, offset, output, pooled_height,
@@ -89,8 +89,8 @@ void deform_roi_pool_backward(Tensor grad_output, Tensor input, Tensor rois,
   auto offset_p = toDiopiTensorHandle(offset);
   auto grad_input_p = toDiopiTensorHandle(grad_input);
   auto grad_offset_p = toDiopiTensorHandle(grad_offset);
-  if (&diopiDeformRoiPoolBackward) {
-    diopiDeformRoiPoolBackward(ch, grad_input_p, grad_offset_p, grad_output_p, input_p,
+  if (&diopiDeformRoiPoolBackwardMmcv) {
+    diopiDeformRoiPoolBackwardMmcv(ch, grad_input_p, grad_offset_p, grad_output_p, input_p,
                                rois_p, offset_p, pooled_height, pooled_width, 
                                sampling_ratio, spatial_scale, gamma);
   } else {

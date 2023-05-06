@@ -31,8 +31,8 @@ void bbox_overlaps(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
   diopiContextHandle_t ch = &ctx;
   auto bboxes2_p = toDiopiTensorHandle(bboxes2);
   auto ious_p = toDiopiTensorHandle(ious);
-  if (&diopiBboxOverlaps) {
-    diopiBboxOverlaps(ch, ious_p, bboxes1_p, bboxes2_p, mode, offset, aligned);
+  if (&diopiBboxOverlapsMmcv) {
+    diopiBboxOverlapsMmcv(ch, ious_p, bboxes1_p, bboxes2_p, mode, offset, aligned);
   } else {
     bbox_overlaps_impl(bboxes1, bboxes2, ious, mode, aligned, offset);
   }

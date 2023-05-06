@@ -27,8 +27,8 @@ void min_area_polygons(const Tensor pointsets, Tensor polygons) {
   diopiContext ctx;
   diopiContextHandle_t ch = &ctx;
   auto polygons_p = toDiopiTensorHandle(polygons);
-  if (&diopiMinAreaPolygons) {
-    diopiMinAreaPolygons(ch, polygons_p, pointsets_p);
+  if (&diopiMinAreaPolygonsMmcv) {
+    diopiMinAreaPolygonsMmcv(ch, polygons_p, pointsets_p);
   } else {
     min_area_polygons_impl(pointsets, polygons);
   }

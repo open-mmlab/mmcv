@@ -48,8 +48,8 @@ void assign_score_withk_forward(const Tensor& points, const Tensor& centers,
   auto scores_p = toDiopiTensorHandle(scores);
   auto knn_idx_p = toDiopiTensorHandle(knn_idx);
   auto output_p = toDiopiTensorHandle(output);
-  if (&diopiAssignScoreWithk) {
-    diopiAssignScoreWithk(ch, output_p, points_p, centers_p, scores_p, knn_idx_p,
+  if (&diopiAssignScoreWithkMmcv) {
+    diopiAssignScoreWithkMmcv(ch, output_p, points_p, centers_p, scores_p, knn_idx_p,
                           B, N0, N1, M, K, O, aggregate);
   } else {
     assign_score_withk_forward_impl(B, N0, N1, M, K, O, aggregate, points,
@@ -86,8 +86,8 @@ void assign_score_withk_backward(const Tensor& grad_out, const Tensor& points,
   auto grad_points_p = toDiopiTensorHandle(grad_points);
   auto grad_centers_p = toDiopiTensorHandle(grad_centers);
   auto grad_scores_p = toDiopiTensorHandle(grad_scores);
-  if (&diopiAssignScoreWithkBackward) {
-    diopiAssignScoreWithkBackward(ch, grad_points_p, grad_centers_p,
+  if (&diopiAssignScoreWithkBackwardMmcv) {
+    diopiAssignScoreWithkBackwardMmcv(ch, grad_points_p, grad_centers_p,
                                   grad_scores_p, grad_out_p, points_p, centers_p, scores_p,
                                   knn_idx_p,  B, N0, N1, M, K, O, aggregate);
   } else {

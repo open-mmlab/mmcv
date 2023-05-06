@@ -38,8 +38,8 @@ void active_rotated_filter_forward(const Tensor input, const Tensor indices,
   diopiContextHandle_t ch = &ctx;
   auto indices_p = toDiopiTensorHandle(indices);
   auto out_p = toDiopiTensorHandle(output);
-  if (&diopiActiveRotatedFilter) {
-    diopiActiveRotatedFilter(ch, out_p, input_p, indices_p);
+  if (&diopiActiveRotatedFilterMmcv) {
+    diopiActiveRotatedFilterMmcv(ch, out_p, input_p, indices_p);
   } else {
     active_rotated_filter_forward_impl(input, indices, output);
   }
@@ -62,8 +62,8 @@ void active_rotated_filter_backward(const Tensor grad_out, const Tensor indices,
   diopiContextHandle_t ch = &ctx;
   auto indices_p = toDiopiTensorHandle(indices);
   auto grad_in_p = toDiopiTensorHandle(grad_in);
-  if (&diopiActiveRotatedFilterBackward) {
-    diopiActiveRotatedFilterBackward(ch, grad_in_p, grad_out_p, indices_p);
+  if (&diopiActiveRotatedFilterBackwardMmcv) {
+    diopiActiveRotatedFilterBackwardMmcv(ch, grad_in_p, grad_out_p, indices_p);
   } else {
     active_rotated_filter_backward_impl(grad_out, indices, grad_in);
   }
