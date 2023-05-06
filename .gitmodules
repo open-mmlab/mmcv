@@ -1,0 +1,6 @@
+[submodule "DIOPI"]
+	path = DIOPI
+	url = git@github.com:DeepLink-org/DIOPI-PROTO.git
+[submodule "mmcv/ops/csrc/DIOPI-IMPL"]
+	path = mmcv/ops/csrc/DIOPI-IMPL
+	url = git@github.com:DeepLink-org/DIOPI-IMPL.git

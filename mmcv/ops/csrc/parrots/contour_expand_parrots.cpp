@@ -31,7 +31,9 @@ void contour_expand_parrots(T& ctx, const SSElement& attr,
   for (int i = 0; i < n; i++)
     tensor.slice(0, i, i + 1) =
         torch::from_blob(out[i].data(), {out[i].size()}, options);
+#ifdef MMCV_WITH_DIOPI
   updateDArray(ctx, tensor, outs[0]);
+#endif
 }
 
 PARROTS_EXTENSION_REGISTER(contour_expand)
