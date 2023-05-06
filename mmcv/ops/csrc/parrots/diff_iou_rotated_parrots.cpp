@@ -29,7 +29,7 @@ void diff_iou_rotated_sort_vertices_forward_cuda_parrots_diopi(
       reinterpret_cast<diopiTensorHandle_t>(const_cast<DArray*>(&ins[2]));
   auto out = reinterpret_cast<diopiTensorHandle_t>(&outs[0]);
   auto outhandle = &out;
-  PARROTS_CALLDIOPI(diopiDiffIouRotatedSortVertices(ch, outhandle, vertices,
+  PARROTS_CALLDIOPI(diopiDiffIouRotatedSortVerticesMmcv(ch, outhandle, vertices,
                                                     mask, num_valid));
 }
 #else
