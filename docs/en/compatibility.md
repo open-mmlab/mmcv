@@ -31,7 +31,8 @@ pip install openmim
 mim install mmcv-full
 
 # do not contain ops
-pip install "mmcv < 2.0.0"
+pip install openmim
+mim install "mmcv < 2.0.0"
 ```
 
 </td>
@@ -43,7 +44,8 @@ pip install openmim
 mim install mmcv
 
 # Ops are not included, because the starting version of mmcv-lite is 2.0.0rc1, so there is no need to add version restrictions
-pip install mmcv-lite
+pip install openmim
+mim install mmcv-lite
 ```
 
 </td>

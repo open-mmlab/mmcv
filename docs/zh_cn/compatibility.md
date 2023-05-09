@@ -31,7 +31,8 @@ pip install openmim
 mim install mmcv-full
 
 # 不包含算子
-pip install "mmcv < 2.0.0"
+pip install openmim
+mim install "mmcv < 2.0.0"
 ```
 
 </td>
@@ -43,7 +44,8 @@ pip install openmim
 mim install mmcv
 
 # 不包含算子，因为 mmcv-lite 的起始版本为 2.0.0，所以无需加版本限制
-pip install mmcv-lite
+pip install openmim
+mim install mmcv-lite
 ```
 
 </td>
