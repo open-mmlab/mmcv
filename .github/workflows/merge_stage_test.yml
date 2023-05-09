@@ -152,9 +152,6 @@ jobs:
         run: pip install git+https://github.com/open-mmlab/mmengine.git@main
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
-      - uses: actions/checkout@v3
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
       - name: Build MMCV from source
         run: pip install -e . -v
       - name: Install unit tests dependencies
