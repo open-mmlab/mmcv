@@ -131,9 +131,8 @@ jobs:
   #       run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
   #     - name: Install PyTorch
   #       run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
-  #     # pstuil is an optional package to detect the number of CPU for compiling mmcv
-  #     - name: Install psutil
-  #       run: pip install psutil
+  #     - name: Install ninja to speed the compilation
+  #       run: pip install ninja psutil
   #     - name: Create sdist and untar
   #       run: |
   #         MMCV_WITH_OPS=1 python setup.py sdist
@@ -201,9 +200,8 @@ jobs:
       - name: Install dependencies for compiling onnx when python=3.9
         run: pip install protobuf && apt-get -y install libprotobuf-dev protobuf-compiler cmake
         if: ${{matrix.python-version == '3.9'}}
-      # pstuil is an optional package to detect the number of CPU for compiling mmcv
-      - name: Install psutil
-        run: pip install psutil
+      - name: Install ninja to speed the compilation
+        run: pip install ninja psutil
       - name: Build and install
         run: rm -rf .eggs && pip install -e . -v
       - name: Validate the installation
@@ -269,9 +267,8 @@ jobs:
         run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install system dependencies
         run: apt-get update && apt-get install -y ffmpeg libturbojpeg ninja-build
-      # pstuil is an optional package to detect the number of CPU for compiling mmcv
-      - name: Install psutil
-        run: pip install psutil
+      - name: Install ninja to speed the compilation
+        run: pip install ninja psutil
       # the directory for header files for the Python C-API could be wrong since setuptools>=65.2.0
       - name: Install specified version for setuptools when python==3.10
         run: pip install 'setuptools<=65.1.0'
@@ -324,9 +321,8 @@ jobs:
         run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install system dependencies
         run: apt-get update && apt-get install -y ffmpeg libturbojpeg ninja-build
-      # pstuil is an optional package to detect the number of CPU for compiling mmcv
-      - name: Install psutil
-        run: pip install psutil
+      - name: Install ninja to speed the compilation
+        run: pip install ninja psutil
       # the directory for header files for the Python C-API could be wrong since setuptools>=65.2.0
       - name: Install specified version for setuptools when python==3.10
         run: pip install 'setuptools<=65.1.0'
