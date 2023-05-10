@@ -123,7 +123,7 @@ jobs:
   #     - name: Run unit tests
   #       run: pytest tests --ignore=tests/test_ops --ignore tests/test_image/test_io.py
   build_windows:
-    runs-on: windows-2019
+    runs-on: windows-latest
     strategy:
       matrix:
         torch: [1.8.1, 2.0.0]
@@ -148,8 +148,6 @@ jobs:
         run: pip install git+https://github.com/open-mmlab/mmengine.git@main
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
-      - name: print cl
-        run: cl
       - name: Build MMCV from source
         run: pip install -e . -v
       - name: Install unit tests dependencies
