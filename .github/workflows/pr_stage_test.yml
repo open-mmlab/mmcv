@@ -68,6 +68,9 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: pytorch/pytorch:1.8.1-cuda11.1-cudnn8-devel
+    env:
+      FORCE_CUDA: 1
+      MMCV_CUDA_ARGS: -gencode=arch=compute_61,code=sm_61
     strategy:
       matrix:
         python-version: [3.7]
