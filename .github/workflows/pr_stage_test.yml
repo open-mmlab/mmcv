@@ -123,7 +123,7 @@ jobs:
       - name: Run unit tests
         run: pytest tests --ignore=tests/test_ops --ignore tests/test_image/test_io.py
   build_windows:
-    runs-on: windows-latest
+    runs-on: windows-2019
     strategy:
       matrix:
         torch: [1.8.1, 2.0.0]
