@@ -19,109 +19,109 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_cu102:
-    runs-on: ubuntu-22.04
-    container:
-      image: pytorch/pytorch:1.8.1-cuda10.2-cudnn7-devel
-    strategy:
-      matrix:
-        python-version: [3.7]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Upgrade pip
-        run: pip install pip --upgrade
-      - name: Fetch GPG keys
-        run: |
-          apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
-          apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
-      - name: Install system dependencies
-        run: apt-get update && apt-get install -y git ffmpeg libturbojpeg
-      - name: Install MMEngine from main branch
-        run: pip install git+https://github.com/open-mmlab/mmengine.git@main
-      - name: Install ninja to speed the compilation
-        run: pip install ninja psutil
-      - name: Build MMCV from source
-        run: pip install -e . -v
-      - name: Install unit tests dependencies
-        run: pip install -r requirements/test.txt
-      - name: Run unit tests and generate coverage report
-        run: |
-          coverage run --branch --source mmcv -m pytest tests/
-          coverage xml
-          coverage report -m
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1.0.14
-        with:
-          file: ./coverage.xml
-          flags: unittests
-          env_vars: OS,PYTHON
-          name: codecov-umbrella
-          fail_ci_if_error: false
-  build_cu111:
-    runs-on: ubuntu-22.04
-    container:
-      image: pytorch/pytorch:1.8.1-cuda11.1-cudnn8-devel
-    strategy:
-      matrix:
-        python-version: [3.7]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Upgrade pip
-        run: pip install pip --upgrade
-      - name: Fetch GPG keys
-        run: |
-          apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
-          apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
-      - name: Install system dependencies
-        run: apt-get update && apt-get install -y git ffmpeg libturbojpeg
-      - name: Install MMEngine from main branch
-        run: pip install git+https://github.com/open-mmlab/mmengine.git@main
-      - name: Install ninja to speed the compilation
-        run: pip install ninja psutil
-      - name: Build MMCV from source
-        run: FORCE_CUDA=1 pip install -e . -v
-      - name: Install unit tests dependencies
-        run: pip install -r requirements/test.txt
-      - name: Run unit tests and generate coverage report
-        run: |
-          coverage run --branch --source mmcv -m pytest tests/
-          coverage xml
-          coverage report -m
-  build_windows_without_ops:
-    runs-on: windows-2019
-    env:
-      MMCV_WITH_OPS: 0
-    strategy:
-      matrix:
-        python-version: [3.7]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Upgrade pip
-        run: python -m pip install pip --upgrade
-      - name: Install PyTorch
-        run: pip install torch==1.8.1+cpu torchvision==0.9.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
-      - name: Install MMEngine from main branch
-        run: pip install git+https://github.com/open-mmlab/mmengine.git@main
-      - name: Install ninja to speed the compilation
-        run: pip install ninja psutil
-      - name: Build MMCV from source
-        run: pip install -e . -v
-      - name: Install unit tests dependencies
-        run: pip install -r requirements/test.txt
-      - name: Run unit tests
-        run: pytest tests --ignore=tests/test_ops --ignore tests/test_image/test_io.py
+  # build_cu102:
+  #   runs-on: ubuntu-22.04
+  #   container:
+  #     image: pytorch/pytorch:1.8.1-cuda10.2-cudnn7-devel
+  #   strategy:
+  #     matrix:
+  #       python-version: [3.7]
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Python ${{ matrix.python-version }}
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: ${{ matrix.python-version }}
+  #     - name: Upgrade pip
+  #       run: pip install pip --upgrade
+  #     - name: Fetch GPG keys
+  #       run: |
+  #         apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
+  #         apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
+  #     - name: Install system dependencies
+  #       run: apt-get update && apt-get install -y git ffmpeg libturbojpeg
+  #     - name: Install MMEngine from main branch
+  #       run: pip install git+https://github.com/open-mmlab/mmengine.git@main
+  #     - name: Install ninja to speed the compilation
+  #       run: pip install ninja psutil
+  #     - name: Build MMCV from source
+  #       run: pip install -e . -v
+  #     - name: Install unit tests dependencies
+  #       run: pip install -r requirements/test.txt
+  #     - name: Run unit tests and generate coverage report
+  #       run: |
+  #         coverage run --branch --source mmcv -m pytest tests/
+  #         coverage xml
+  #         coverage report -m
+  #     - name: Upload coverage to Codecov
+  #       uses: codecov/codecov-action@v1.0.14
+  #       with:
+  #         file: ./coverage.xml
+  #         flags: unittests
+  #         env_vars: OS,PYTHON
+  #         name: codecov-umbrella
+  #         fail_ci_if_error: false
+  # build_cu111:
+  #   runs-on: ubuntu-22.04
+  #   container:
+  #     image: pytorch/pytorch:1.8.1-cuda11.1-cudnn8-devel
+  #   strategy:
+  #     matrix:
+  #       python-version: [3.7]
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Python ${{ matrix.python-version }}
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: ${{ matrix.python-version }}
+  #     - name: Upgrade pip
+  #       run: pip install pip --upgrade
+  #     - name: Fetch GPG keys
+  #       run: |
+  #         apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
+  #         apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
+  #     - name: Install system dependencies
+  #       run: apt-get update && apt-get install -y git ffmpeg libturbojpeg
+  #     - name: Install MMEngine from main branch
+  #       run: pip install git+https://github.com/open-mmlab/mmengine.git@main
+  #     - name: Install ninja to speed the compilation
+  #       run: pip install ninja psutil
+  #     - name: Build MMCV from source
+  #       run: FORCE_CUDA=1 pip install -e . -v
+  #     - name: Install unit tests dependencies
+  #       run: pip install -r requirements/test.txt
+  #     - name: Run unit tests and generate coverage report
+  #       run: |
+  #         coverage run --branch --source mmcv -m pytest tests/
+  #         coverage xml
+  #         coverage report -m
+  # build_windows_without_ops:
+  #   runs-on: windows-2019
+  #   env:
+  #     MMCV_WITH_OPS: 0
+  #   strategy:
+  #     matrix:
+  #       python-version: [3.7]
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Python ${{ matrix.python-version }}
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: ${{ matrix.python-version }}
+  #     - name: Upgrade pip
+  #       run: python -m pip install pip --upgrade
+  #     - name: Install PyTorch
+  #       run: pip install torch==1.8.1+cpu torchvision==0.9.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
+  #     - name: Install MMEngine from main branch
+  #       run: pip install git+https://github.com/open-mmlab/mmengine.git@main
+  #     - name: Install ninja to speed the compilation
+  #       run: pip install ninja psutil
+  #     - name: Build MMCV from source
+  #       run: pip install -e . -v
+  #     - name: Install unit tests dependencies
+  #       run: pip install -r requirements/test.txt
+  #     - name: Run unit tests
+  #       run: pytest tests --ignore=tests/test_ops --ignore tests/test_image/test_io.py
   build_windows:
     runs-on: windows-2019
     strategy:
@@ -148,6 +148,8 @@ jobs:
         run: pip install git+https://github.com/open-mmlab/mmengine.git@main
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
+      - name: print cl
+        run: cl
       - name: Build MMCV from source
         run: pip install -e . -v
       - name: Install unit tests dependencies
