@@ -5,11 +5,11 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+
 #include "csrc_dipu/diopirt/diopirt_impl.h"
 
-using dipu::diopi_helper::toDiopiTensorHandle;
 using dipu::diopi_helper::toDiopiScalar;
-#include <iostream>
+using dipu::diopi_helper::toDiopiTensorHandle;
 #endif
 
 void roi_align_forward_impl(Tensor input, Tensor rois, Tensor output,
@@ -63,9 +63,9 @@ void roi_align_forward(Tensor input, Tensor rois, Tensor output,
     auto out_cpu = output.cpu();
     auto argmax_y_cpu = argmax_y.cpu();
     auto argmax_x_cpu = argmax_x.cpu();
-    roi_align_forward_impl(input_cpu, rois_cpu, out_cpu, argmax_y_cpu, argmax_x_cpu,
-                           aligned_height, aligned_width, spatial_scale,
-                           sampling_ratio, pool_mode, aligned);
+    roi_align_forward_impl(input_cpu, rois_cpu, out_cpu, argmax_y_cpu,
+                           argmax_x_cpu, aligned_height, aligned_width,
+                           spatial_scale, sampling_ratio, pool_mode, aligned);
     output.copy_(out_cpu);
   }
 #else
@@ -95,8 +95,9 @@ void roi_align_backward(Tensor grad_output, Tensor rois, Tensor argmax_y,
   auto grad_input_ = toDiopiTensorHandle(grad_input);
   diopiContext ctx(dipu::getCurrentDIPUStream().rawstream());
   diopiContextHandle_t ch = &ctx;
-  if(reinterpret_cast<void*>(diopiRoiAlignBackwardMmcv) != nullptr){
-    // diopiRoiAlignBackwardMmcv(ch, grad_input_, grad_output_, rois_, argmax_y_,
+  if (reinterpret_cast<void*>(diopiRoiAlignBackwardMmcv) != nullptr) {
+    // diopiRoiAlignBackwardMmcv(ch, grad_input_, grad_output_, rois_,
+    // argmax_y_,
     //                           argmax_x_, aligned_height, aligned_width,
     //                           spatial_scale, pool_mode, sampling_ratio,
     //                           aligned);
@@ -106,9 +107,10 @@ void roi_align_backward(Tensor grad_output, Tensor rois, Tensor argmax_y,
     auto argmax_y_cpu = argmax_y.cpu();
     auto argmax_x_cpu = argmax_x.cpu();
     auto grad_input_cpu = grad_input.cpu();
-    roi_align_backward_impl(grad_output_cpu, rois_cpu, argmax_y_cpu, argmax_x_cpu, grad_input_cpu,
-                            aligned_height, aligned_width, spatial_scale,
-                            sampling_ratio, pool_mode, aligned);
+    roi_align_backward_impl(grad_output_cpu, rois_cpu, argmax_y_cpu,
+                            argmax_x_cpu, grad_input_cpu, aligned_height,
+                            aligned_width, spatial_scale, sampling_ratio,
+                            pool_mode, aligned);
     grad_input.copy_(grad_input_cpu);
   } else {
     LOG(WARNING) << "Fallback to cpu: mmcv ext op roi_align_backward";
@@ -117,9 +119,10 @@ void roi_align_backward(Tensor grad_output, Tensor rois, Tensor argmax_y,
     auto argmax_y_cpu = argmax_y.cpu();
     auto argmax_x_cpu = argmax_x.cpu();
     auto grad_input_cpu = grad_input.cpu();
-    roi_align_backward_impl(grad_output_cpu, rois_cpu, argmax_y_cpu, argmax_x_cpu, grad_input_cpu,
-                            aligned_height, aligned_width, spatial_scale,
-                            sampling_ratio, pool_mode, aligned);
+    roi_align_backward_impl(grad_output_cpu, rois_cpu, argmax_y_cpu,
+                            argmax_x_cpu, grad_input_cpu, aligned_height,
+                            aligned_width, spatial_scale, sampling_ratio,
+                            pool_mode, aligned);
     grad_input.copy_(grad_input_cpu);
   }
 #else
