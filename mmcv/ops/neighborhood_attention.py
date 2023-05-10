@@ -19,8 +19,8 @@ class NeighborhoodAttention(nn.Module):
         num_heads (int): Number of attention heads.
         qkv_bias (bool, optional): Whether to add bias to the query,
             key, and value. Defaults to True.
-        qk_scale (Optional[float], optional): Scale factor for the
-            query and key. Defaults to None.
+        qk_scale (float, optional): Scale factor for the query and key.
+            Defaults to None.
         attn_drop (float, optional): Dropout rate for the attention weights.
             Defaults to 0.
         proj_drop (float, optional): Dropout rate for the output.
