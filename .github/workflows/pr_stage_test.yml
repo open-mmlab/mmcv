@@ -87,7 +87,7 @@ jobs:
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
       - name: Build MMCV from source
-        run: FORCE_CUDA=1 pip install -e . -v
+        run: pip install -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unit tests and generate coverage report
