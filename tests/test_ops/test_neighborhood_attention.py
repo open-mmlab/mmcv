@@ -8,7 +8,7 @@ import torch
 from mmcv.ops import NeighborhoodAttention
 
 
-def _priv_test_allclose_cuda(
+def _test_allclose_cuda(
     batch_size,
     height,
     width,
@@ -50,7 +50,7 @@ def _priv_test_allclose_cuda(
 def test_neighborhood_attention(kernel_size, dim, num_heads, qkv_bias, device,
                                 dtype):
     b, li, lj = 4, 14, 16
-    _priv_test_allclose_cuda(
+    _test_allclose_cuda(
         b,
         li,
         lj,
