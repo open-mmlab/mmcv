@@ -1,7 +1,7 @@
 name: merge_stage_test
 
 on:
-  push:
+  pull_request:
     paths-ignore:
       - ".github/**.md"
       - "docker/**"
@@ -94,8 +94,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
-      - name: Upgrade pip
-        run: pip install pip --upgrade
+      - name: Upgrade pip and wheel
+        run: pip install pip wheel --upgrade
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install MMEngine from main branch
@@ -144,8 +144,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
-      - name: Upgrade pip
-        run: pip install pip --upgrade
+      - name: Upgrade pip and wheel
+        run: pip install pip wheel --upgrade
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install MMEngine from main branch
@@ -184,8 +184,8 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Upgrade pip
-        run: pip install pip --upgrade
+      - name: Upgrade pip and wheel
+        run: pip install pip wheel --upgrade
       - name: Fetch GPG keys
         run: |
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
@@ -218,8 +218,8 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Upgrade pip
-        run: pip install pip --upgrade
+      - name: Upgrade pip and wheel
+        run: pip install pip wheel --upgrade
       - name: Fetch GPG keys
         run: |
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
@@ -252,8 +252,8 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Upgrade pip
-        run: pip install pip --upgrade
+      - name: Upgrade pip and wheel
+        run: pip install pip wheel --upgrade
       - name: Fetch GPG keys
         run: |
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
@@ -286,8 +286,8 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Upgrade pip
-        run: python -m pip install pip --upgrade
+      - name: Upgrade pip and wheel
+        run: python -m pip install pip wheel --upgrade
       - name: Install PyTorch
         run: pip install torch==1.8.1+cpu torchvision==0.9.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install MMEngine from main branch
@@ -318,8 +318,8 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Upgrade pip
-        run: python -m pip install pip --upgrade
+      - name: Upgrade pip and wheel
+        run: python -m pip install pip wheel --upgrade
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install MMEngine from main branch
@@ -352,8 +352,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install system dependencies
         run: brew install ffmpeg jpeg-turbo
-      - name: Upgrade pip
-        run: pip install pip --upgrade
+      - name: Upgrade pip and wheel
+        run: pip install pip wheel --upgrade
       - name: Install PyTorch
         run: pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }}
       - name: Install MMEngine from main branch
