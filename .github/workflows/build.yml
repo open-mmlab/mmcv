@@ -38,6 +38,8 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Upgrade pip and wheel
+        run: pip install pip wheel --upgrade
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
       - name: Build and install
@@ -85,6 +87,8 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Upgrade pip and wheel
+        run: pip install pip wheel --upgrade
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
       - name: Install PyTorch
@@ -121,6 +125,8 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Upgrade pip and wheel
+        run: pip install pip wheel --upgrade
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
       - name: Install PyTorch
@@ -182,6 +188,8 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Upgrade pip and wheel
+        run: pip install pip wheel --upgrade
       - name: Fetch GPG keys
         run: |
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
@@ -260,6 +268,8 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Upgrade pip and wheel
+        run: pip install pip wheel --upgrade
       - name: Fetch GPG keys
         run: |
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
@@ -319,6 +329,8 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Upgrade pip and wheel
+        run: pip install pip wheel --upgrade
       - name: Fetch GPG keys
         run: |
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
@@ -370,6 +382,8 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
+      - name: Upgrade pip and wheel
+        run: python -m pip install pip wheel --upgrade
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu --no-cache-dir -f https://download.pytorch.org/whl/torch_stable.html
       - name: Build and install
@@ -399,6 +413,8 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
+      - name: Upgrade pip and wheel
+        run: python -m pip install pip wheel --upgrade
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu --no-cache-dir -f https://download.pytorch.org/whl/torch_stable.html
       - name: Build and install
@@ -434,6 +450,8 @@ jobs:
           python-version: 3.7
       - name: Install system dependencies
         run: brew install ffmpeg jpeg-turbo
+      - name: Upgrade pip and wheel
+        run: pip install pip wheel --upgrade
       - name: Install utils
         run: pip install psutil
       - name: Install Pillow
