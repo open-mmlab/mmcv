@@ -105,7 +105,7 @@ class LoadImageFromFile(BaseTransform):
                 return None
             else:
                 raise e
-        assert img is not None, f"Loading image '{filename}' fails."
+        assert img is not None, f'failed to load image: {filename}'
         if self.to_float32:
             img = img.astype(np.float32)
 
