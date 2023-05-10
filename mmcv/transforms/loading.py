@@ -105,6 +105,8 @@ class LoadImageFromFile(BaseTransform):
                 return None
             else:
                 raise e
+        # in some cases, images are not read successfully, the img would be
+        # `None`, refer to https://github.com/open-mmlab/mmpretrain/issues/1427
         assert img is not None, f'failed to load image: {filename}'
         if self.to_float32:
             img = img.astype(np.float32)
