@@ -35,9 +35,8 @@ class NATTENAVFunction(Function):
         return out
 
     @staticmethod
-    def backward(
-            ctx,
-            grad_out: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def backward(ctx,
+                 grad_out: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """Backward function.
 
         Args:
