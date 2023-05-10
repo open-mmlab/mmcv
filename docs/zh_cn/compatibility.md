@@ -9,7 +9,7 @@ OpenMMLab 团队于 2023 年 4 月 6 日发布 MMCV [v2.0.0](https://github.com/
 - `mmcv.fileio` 模块，删除于 PR [#2179](https://github.com/open-mmlab/mmcv/pull/2179)。在需要使用 FileIO 的地方使用 mmengine 中的 FileIO 模块
 - `mmcv.runner`、`mmcv.parallel`、`mmcv.engine` 和 `mmcv.device`，删除于 PR [#2216](https://github.com/open-mmlab/mmcv/pull/2216)
 - `mmcv.utils` 的所有类（例如 `Config` 和 `Registry`）和大部分函数，删除于 PR [#2217](https://github.com/open-mmlab/mmcv/pull/2217)，只保留少数和 mmcv 相关的函数
-- `mmcv.onnex`、`mmcv.tensorrt` 模块以及相关的函数，删除于 PR [#2225](https://github.com/open-mmlab/mmcv/pull/2225)
+- `mmcv.onnx`、`mmcv.tensorrt` 模块以及相关的函数，删除于 PR [#2225](https://github.com/open-mmlab/mmcv/pull/2225)
 - 删除 MMCV 所有的根注册器并将类或者函数注册到 MMEngine 的[根注册器](https://github.com/open-mmlab/mmengine/blob/main/mmengine/registry/root.py)
 
 （2）新增了 [`mmcv.transforms`](https://github.com/open-mmlab/mmcv/tree/main/mmcv/transforms) 数据变换模块
@@ -27,10 +27,12 @@ OpenMMLab 团队于 2023 年 4 月 6 日发布 MMCV [v2.0.0](https://github.com/
 
 ```bash
 # 包含算子，因为 mmcv-full 的最高版本小于 2.0.0，所以无需加版本限制
+pip install openmim
 mim install mmcv-full
 
 # 不包含算子
-mmcv install "mmcv < 2.0.0"
+pip install openmim
+mim install "mmcv < 2.0.0"
 ```
 
 </td>
@@ -38,11 +40,12 @@ mmcv install "mmcv < 2.0.0"
 
 ```bash
 # 包含算子
-mim install openmim
+pip install openmim
 mim install mmcv
 
 # 不包含算子，因为 mmcv-lite 的起始版本为 2.0.0，所以无需加版本限制
-pip install mmcv-lite
+pip install openmim
+mim install mmcv-lite
 ```
 
 </td>
