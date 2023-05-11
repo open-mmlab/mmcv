@@ -106,9 +106,9 @@ def build_norm_layer(cfg: Dict,
         # mmengine.MODELS.
         with MODELS.switch_scope_and_registry(None) as registry:
             norm_layer = registry.get(layer_type)
-    if norm_layer is None:
-        raise KeyError(f'Cannot find {norm_layer} in registry under scope '
-                       f'name {registry.scope}')
+        if norm_layer is None:
+            raise KeyError(f'Cannot find {norm_layer} in registry under '
+                           f'scope name {registry.scope}')
     abbr = infer_abbr(norm_layer)
 
     assert isinstance(postfix, (int, str))
