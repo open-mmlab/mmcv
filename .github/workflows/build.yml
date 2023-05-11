@@ -187,6 +187,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install python-dev
+        run: apt-get update && apt-get install -y python${{matrix.python-version}}-dev
+        if: ${{matrix.python-version == '3.6'}}
       - name: Upgrade pip and wheel
         run: pip install pip wheel --upgrade
       - name: Fetch GPG keys
@@ -258,6 +261,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install python-dev
+        run: apt-get update && apt-get install -y python${{matrix.python-version}}-dev
+        if: ${{matrix.python-version == '3.6'}}
       - name: Upgrade pip and wheel
         run: pip install pip wheel --upgrade
       - name: Fetch GPG keys
