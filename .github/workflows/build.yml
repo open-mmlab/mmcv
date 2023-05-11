@@ -27,130 +27,130 @@ env:
   MMCV_WITH_OPS: 1
 
 jobs:
-  # build_without_torch:
-  #   runs-on: ubuntu-22.04
-  #   strategy:
-  #     matrix:
-  #       python-version: [3.7]
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Set up Python ${{ matrix.python-version }}
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: ${{ matrix.python-version }}
-  #     - name: Upgrade pip and wheel
-  #       run: pip install pip wheel --upgrade
-  #     - name: Install system dependencies
-  #       run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
-  #     - name: Build and install
-  #       run: rm -rf .eggs && pip install -e .
-  #     - name: Validate the installation
-  #       run: python -c "import mmcv"
-  #     - name: Run unittests and generate coverage report
-  #       run: |
-  #         pip install -r requirements/test.txt
-  #         pytest tests/ \
-  #             --ignore=tests/test_runner \
-  #             --ignore=tests/test_device/test_ipu \
-  #             --ignore=tests/test_optimizer.py \
-  #             --ignore=tests/test_cnn \
-  #             --ignore=tests/test_parallel.py \
-  #             --ignore=tests/test_ops \
-  #             --ignore=tests/test_load_model_zoo.py \
-  #             --ignore=tests/test_utils/test_logging.py \
-  #             --ignore=tests/test_image/test_io.py \
-  #             --ignore=tests/test_utils/test_registry.py \
-  #             --ignore=tests/test_utils/test_parrots_jit.py \
-  #             --ignore=tests/test_utils/test_trace.py \
-  #             --ignore=tests/test_utils/test_hub.py \
-  #             --ignore=tests/test_device \
-  #             --ignore=tests/test_utils/test_torch_ops.py
+  build_without_torch:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        python-version: [3.7]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Upgrade pip and wheel
+        run: pip install pip wheel --upgrade
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
+      - name: Build and install
+        run: rm -rf .eggs && pip install -e .
+      - name: Validate the installation
+        run: python -c "import mmcv"
+      - name: Run unittests and generate coverage report
+        run: |
+          pip install -r requirements/test.txt
+          pytest tests/ \
+              --ignore=tests/test_runner \
+              --ignore=tests/test_device/test_ipu \
+              --ignore=tests/test_optimizer.py \
+              --ignore=tests/test_cnn \
+              --ignore=tests/test_parallel.py \
+              --ignore=tests/test_ops \
+              --ignore=tests/test_load_model_zoo.py \
+              --ignore=tests/test_utils/test_logging.py \
+              --ignore=tests/test_image/test_io.py \
+              --ignore=tests/test_utils/test_registry.py \
+              --ignore=tests/test_utils/test_parrots_jit.py \
+              --ignore=tests/test_utils/test_trace.py \
+              --ignore=tests/test_utils/test_hub.py \
+              --ignore=tests/test_device \
+              --ignore=tests/test_utils/test_torch_ops.py
 
-  # build_without_ops:
-  #   runs-on: ubuntu-22.04
-  #   env:
-  #     MMCV_WITH_OPS: 0
-  #   strategy:
-  #     matrix:
-  #       python-version: [3.7]
-  #       torch: [1.7.0, 1.8.0, 1.9.0]
-  #       include:
-  #         - torch: 1.7.0
-  #           torchvision: 0.8.1
-  #         - torch: 1.8.0
-  #           torchvision: 0.9.0
-  #         - torch: 1.9.0
-  #           torchvision: 0.10.0
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Set up Python ${{ matrix.python-version }}
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: ${{ matrix.python-version }}
-  #     - name: Upgrade pip and wheel
-  #       run: pip install pip wheel --upgrade
-  #     - name: Install system dependencies
-  #       run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
-  #     - name: Install PyTorch
-  #       run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
-  #     - name: Build and install
-  #       run: rm -rf .eggs && pip install -e . -v
-  #     - name: Validate the installation
-  #       run: python -c "import mmcv"
-  #     - name: Run unittests
-  #       run: |
-  #         pip install -r requirements/test.txt
-  #         pytest tests/ --ignore=tests/test_ops
+  build_without_ops:
+    runs-on: ubuntu-22.04
+    env:
+      MMCV_WITH_OPS: 0
+    strategy:
+      matrix:
+        python-version: [3.7]
+        torch: [1.7.0, 1.8.0, 1.9.0]
+        include:
+          - torch: 1.7.0
+            torchvision: 0.8.1
+          - torch: 1.8.0
+            torchvision: 0.9.0
+          - torch: 1.9.0
+            torchvision: 0.10.0
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Upgrade pip and wheel
+        run: pip install pip wheel --upgrade
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
+      - name: Install PyTorch
+        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - name: Build and install
+        run: rm -rf .eggs && pip install -e . -v
+      - name: Validate the installation
+        run: python -c "import mmcv"
+      - name: Run unittests
+        run: |
+          pip install -r requirements/test.txt
+          pytest tests/ --ignore=tests/test_ops
 
-  # build_cpu:
-  #   runs-on: ubuntu-22.04
-  #   strategy:
-  #     matrix:
-  #       python-version: [3.7]
-  #       torch: [1.5.1, 1.6.0, 1.7.0, 1.8.0, 1.9.0]
-  #       include:
-  #         - torch: 1.5.1
-  #           torchvision: 0.6.1
-  #         - torch: 1.6.0
-  #           torchvision: 0.7.0
-  #         - torch: 1.7.0
-  #           torchvision: 0.8.1
-  #         - torch: 1.8.0
-  #           torchvision: 0.9.0
-  #         - torch: 1.9.0
-  #           torchvision: 0.10.0
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Set up Python ${{ matrix.python-version }}
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: ${{ matrix.python-version }}
-  #     - name: Upgrade pip and wheel
-  #       run: pip install pip wheel --upgrade
-  #     - name: Install system dependencies
-  #       run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
-  #     - name: Install PyTorch
-  #       run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
-  #     - name: Install ninja to speed the compilation
-  #       run: pip install ninja psutil
-  #     - name: Create sdist and untar
-  #       run: |
-  #         MMCV_WITH_OPS=1 python setup.py sdist
-  #         tar zxvf dist/mmcv-full* -C /tmp
-  #         rm -r mmcv
-  #     - name: Build and install from sdist
-  #       run: |
-  #         pushd /tmp/mmcv-full*
-  #         pip install -e . -v
-  #         popd
-  #     - name: Validate the installation
-  #       run: python -c "import mmcv"
-  #     - name: Run unittests and generate coverage report
-  #       run: |
-  #         pip install -r requirements/test.txt
-  #         coverage run --branch --source=mmcv -m pytest tests/
-  #         coverage xml
-  #         coverage report -m
+  build_cpu:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        python-version: [3.7]
+        torch: [1.5.1, 1.6.0, 1.7.0, 1.8.0, 1.9.0]
+        include:
+          - torch: 1.5.1
+            torchvision: 0.6.1
+          - torch: 1.6.0
+            torchvision: 0.7.0
+          - torch: 1.7.0
+            torchvision: 0.8.1
+          - torch: 1.8.0
+            torchvision: 0.9.0
+          - torch: 1.9.0
+            torchvision: 0.10.0
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Upgrade pip and wheel
+        run: pip install pip wheel --upgrade
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg
+      - name: Install PyTorch
+        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - name: Install ninja to speed the compilation
+        run: pip install ninja psutil
+      - name: Create sdist and untar
+        run: |
+          MMCV_WITH_OPS=1 python setup.py sdist
+          tar zxvf dist/mmcv-full* -C /tmp
+          rm -r mmcv
+      - name: Build and install from sdist
+        run: |
+          pushd /tmp/mmcv-full*
+          pip install -e . -v
+          popd
+      - name: Validate the installation
+        run: python -c "import mmcv"
+      - name: Run unittests and generate coverage report
+        run: |
+          pip install -r requirements/test.txt
+          coverage run --branch --source=mmcv -m pytest tests/
+          coverage xml
+          coverage report -m
 
   build_cu101:
     runs-on: ubuntu-22.04
