@@ -98,7 +98,7 @@ def build_norm_layer(cfg: Dict,
 
     layer_type = cfg_.pop('type')
 
-    if isinstance(layer_type, type):
+    if inspect.isclass(layer_type):
         norm_layer = layer_type
     else:
         # Switch registry to the target scope. If `norm_layer` cannot be found

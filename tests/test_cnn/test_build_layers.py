@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import inspect
 from importlib import import_module
 
 import numpy as np
@@ -190,7 +191,7 @@ def test_build_activation_layer():
     for module_name in ['activation', 'hsigmoid', 'hswish', 'swish']:
         act_module = import_module(f'mmcv.cnn.bricks.{module_name}')
         for key, value in act_module.__dict__.items():
-            if isinstance(value, type) and issubclass(value, nn.Module):
+            if inspect.isclass(value) and issubclass(value, nn.Module):
                 act_names.append(key)
 
     with pytest.raises(TypeError):
@@ -235,7 +236,7 @@ def test_build_padding_layer():
     for module_name in ['padding']:
         pad_module = import_module(f'mmcv.cnn.bricks.{module_name}')
         for key, value in pad_module.__dict__.items():
-            if isinstance(value, type) and issubclass(value, nn.Module):
+            if inspect.isclass(value) and issubclass(value, nn.Module):
                 pad_names.append(key)
 
     with pytest.raises(TypeError):

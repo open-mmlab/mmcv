@@ -79,7 +79,7 @@ def build_plugin_layer(cfg: Dict,
     cfg_ = cfg.copy()
 
     layer_type = cfg_.pop('type')
-    if isinstance(layer_type, type):
+    if inspect.isclass(layer_type):
         plugin_layer = layer_type
     else:
         # Switch registry to the target scope. If `plugin_layer` cannot be

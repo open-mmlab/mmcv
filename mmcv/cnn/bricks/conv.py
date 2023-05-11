@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import inspect
 from typing import Dict, Optional
 
 from mmengine.registry import MODELS
@@ -35,8 +36,8 @@ def build_conv_layer(cfg: Optional[Dict], *args, **kwargs) -> nn.Module:
         cfg_ = cfg.copy()
 
     layer_type = cfg_.pop('type')
-    if isinstance(layer_type, type):
-        return layer_type(*args, **kwargs, **cfg_)
+    if inspect.isclass(layer_type):
+        return layer_type(*args, **kwargs, **cfg_)  # type: ignore
     # Switch registry to the target scope. If `conv_layer` cannot be found
     # in the registry, fallback to search `conv_layer` in the
     # mmengine.MODELS.
