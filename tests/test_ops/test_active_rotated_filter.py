@@ -253,6 +253,7 @@ def test_active_rotated_filter(device):
     indices = torch.tensor(np_indices, dtype=torch.int, device=device)
     output = active_rotated_filter(feature, indices)
     output.backward(torch.ones_like(output))
+
     assert np.allclose(output.data.cpu().numpy(), expected_output, atol=1e-3)
     assert np.allclose(
         feature.grad.data.cpu().numpy(), expected_grad, atol=1e-3)
