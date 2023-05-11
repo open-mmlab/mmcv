@@ -293,8 +293,9 @@ def batched_nms(boxes: Tensor,
                 max_coordinate + torch.tensor(1).to(boxes))
             boxes_for_nms = boxes + offsets[:, None]
 
-    nms_type = nms_cfg_.pop('type', 'nms')
-    nms_op = eval(nms_type)
+    nms_op = nms_cfg_.pop('type', 'nms')
+    if isinstance(nms_op, str):
+        nms_op = eval(nms_op)
 
     split_thr = nms_cfg_.pop('split_thr', 10000)
     # Won't split to multiple nms nodes when exporting to onnx
