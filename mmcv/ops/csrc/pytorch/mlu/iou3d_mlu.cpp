@@ -57,17 +57,14 @@ void IoU3DNMS3DMLUKernelLauncher(Tensor boxes, Tensor &keep, Tensor &keep_num,
   const float offset = 0.0;
 
   mluOpCreateNmsDescriptor(&nms_desc);
-  mluOpSetNmsDescriptor(nms_desc, box_mode,
-    output_mode, algo,
-    method_mode, iou_threshold,
-    soft_nms_sigma, max_output_size,
-    confidence_threshold, offset,
-    input_layout, pad_to_max_output_size);
+  mluOpSetNmsDescriptor(nms_desc, box_mode, output_mode, algo, method_mode,
+                        iou_threshold, soft_nms_sigma, max_output_size,
+                        confidence_threshold, offset, input_layout,
+                        pad_to_max_output_size);
 
-  mluOpNms(handle, nms_desc,
-           boxes_desc.desc(), boxes_ptr,
-           NULL, NULL, workspace_ptr, workspace_size,
-           output_desc.desc(), output_ptr, output_size_ptr);
+  mluOpNms(handle, nms_desc, boxes_desc.desc(), boxes_ptr, NULL, NULL,
+           workspace_ptr, workspace_size, output_desc.desc(), output_ptr,
+           output_size_ptr);
   mluOpDestroyNmsDescriptor(nms_desc);
 }
 
