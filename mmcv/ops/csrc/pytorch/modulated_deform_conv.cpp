@@ -145,9 +145,9 @@ void modulated_deform_conv_forward(
   diopiGetTensorDevice(input_p, &device);
   if (device == diopi_host) {
     modulated_deform_conv_forward_fallthrough(
-      input, weight, bias, ones, offset, mask, output, columns, kernel_h,
-      kernel_w, stride_h, stride_w, pad_h, pad_w, dilation_h, dilation_w, group,
-      deformable_group, with_bias);
+        input, weight, bias, ones, offset, mask, output, columns, kernel_h,
+        kernel_w, stride_h, stride_w, pad_h, pad_w, dilation_h, dilation_w,
+        group, deformable_group, with_bias);
     return;
   }
   diopiContext ctx(dipu::getCurrentDIPUStream().rawstream());
@@ -165,7 +165,8 @@ void modulated_deform_conv_forward(
     //     mask_p, kernel_h, kernel_w, stride_h, stride_w, pad_h, pad_w,
     //     dilation_h, dilation_w, group, deformable_group, with_bias);
     // return;
-    LOG(WARNING) << "Fallback to cpu: mmcv ext op modulated_deform_conv_forward";
+    LOG(WARNING)
+        << "Fallback to cpu: mmcv ext op modulated_deform_conv_forward";
     auto input_cpu = input.cpu();
     auto weight_cpu = weight.cpu();
     auto bias_cpu = bias.cpu();
@@ -176,14 +177,15 @@ void modulated_deform_conv_forward(
     auto columns_cpu = columns.cpu();
 
     modulated_deform_conv_forward_fallthrough(
-      input_cpu, weight_cpu, bias_cpu, ones_cpu, offset_cpu, mask_cpu, output_cpu, columns_cpu, kernel_h,
-      kernel_w, stride_h, stride_w, pad_h, pad_w, dilation_h, dilation_w, group,
-      deformable_group, with_bias);
+        input_cpu, weight_cpu, bias_cpu, ones_cpu, offset_cpu, mask_cpu,
+        output_cpu, columns_cpu, kernel_h, kernel_w, stride_h, stride_w, pad_h,
+        pad_w, dilation_h, dilation_w, group, deformable_group, with_bias);
 
     output.copy_(output_cpu);
     return;
   } else {
-    LOG(WARNING) << "Fallback to cpu: mmcv ext op modulated_deform_conv_forward";
+    LOG(WARNING)
+        << "Fallback to cpu: mmcv ext op modulated_deform_conv_forward";
     auto input_cpu = input.cpu();
     auto weight_cpu = weight.cpu();
     auto bias_cpu = bias.cpu();
@@ -193,9 +195,9 @@ void modulated_deform_conv_forward(
     auto output_cpu = output.cpu();
     auto columns_cpu = columns.cpu();
     modulated_deform_conv_forward_fallthrough(
-      input_cpu, weight_cpu, bias_cpu, ones_cpu, offset_cpu, mask_cpu, output_cpu, columns_cpu, kernel_h,
-      kernel_w, stride_h, stride_w, pad_h, pad_w, dilation_h, dilation_w, group,
-      deformable_group, with_bias);
+        input_cpu, weight_cpu, bias_cpu, ones_cpu, offset_cpu, mask_cpu,
+        output_cpu, columns_cpu, kernel_h, kernel_w, stride_h, stride_w, pad_h,
+        pad_w, dilation_h, dilation_w, group, deformable_group, with_bias);
     output.copy_(output_cpu);
     return;
   }
@@ -354,14 +356,17 @@ void modulated_deform_conv_backward(
   auto grad_mask_p = toDiopiTensorHandle(grad_mask);
   auto grad_output_p = toDiopiTensorHandle(grad_output);
 
-  if (reinterpret_cast<void*>(diopiModulatedDeformConvBackwardMmcv) != nullptr) {
+  if (reinterpret_cast<void*>(diopiModulatedDeformConvBackwardMmcv) !=
+      nullptr) {
     // diopiModulatedDeformConvBackwardMmcv(
-    //     ch, grad_input_p, grad_weight_p, grad_bias_p, grad_offset_p, grad_mask_p, input_p,
-    //     weight_p, bias_p, ones_p, offset_p, mask_p, columns_p, grad_output_p, kernel_h,
-    //     kernel_w, stride_h, stride_w, pad_h, pad_w, dilation_h, dilation_w,
-    //     group, deformable_group, with_bias);
+    //     ch, grad_input_p, grad_weight_p, grad_bias_p, grad_offset_p,
+    //     grad_mask_p, input_p, weight_p, bias_p, ones_p, offset_p, mask_p,
+    //     columns_p, grad_output_p, kernel_h, kernel_w, stride_h, stride_w,
+    //     pad_h, pad_w, dilation_h, dilation_w, group, deformable_group,
+    //     with_bias);
     // return;
-    LOG(WARNING) << "Fallback to cpu: mmcv ext op modulated_deform_conv_forward";
+    LOG(WARNING)
+        << "Fallback to cpu: mmcv ext op modulated_deform_conv_forward";
     auto input_cpu = input.cpu();
     auto weight_cpu = weight.cpu();
     auto bias_cpu = bias.cpu();
@@ -376,17 +381,19 @@ void modulated_deform_conv_backward(
     auto grad_mask_cpu = grad_mask.cpu();
     auto grad_output_cpu = grad_output.cpu();
     modulated_deform_conv_backward_fallthrough(
-        input_cpu, weight_cpu, bias_cpu, ones_cpu, offset_cpu, mask_cpu, columns_cpu, grad_input_cpu,
-        grad_weight_cpu, grad_bias_cpu, grad_offset_cpu, grad_mask_cpu, grad_output_cpu, kernel_h,
-        kernel_w, stride_h, stride_w, pad_h, pad_w, dilation_h, dilation_w,
-        group, deformable_group, with_bias);
+        input_cpu, weight_cpu, bias_cpu, ones_cpu, offset_cpu, mask_cpu,
+        columns_cpu, grad_input_cpu, grad_weight_cpu, grad_bias_cpu,
+        grad_offset_cpu, grad_mask_cpu, grad_output_cpu, kernel_h, kernel_w,
+        stride_h, stride_w, pad_h, pad_w, dilation_h, dilation_w, group,
+        deformable_group, with_bias);
     grad_input.copy_(grad_input_cpu);
     grad_weight.copy_(grad_weight_cpu);
     grad_bias.copy_(grad_bias_cpu);
     grad_offset.copy_(grad_offset_cpu);
     grad_mask.copy_(grad_mask_cpu);
   } else {
-    LOG(WARNING) << "Fallback to cpu: mmcv ext op modulated_deform_conv_forward";
+    LOG(WARNING)
+        << "Fallback to cpu: mmcv ext op modulated_deform_conv_forward";
     auto input_cpu = input.cpu();
     auto weight_cpu = weight.cpu();
     auto bias_cpu = bias.cpu();
@@ -401,10 +408,11 @@ void modulated_deform_conv_backward(
     auto grad_mask_cpu = grad_mask.cpu();
     auto grad_output_cpu = grad_output.cpu();
     modulated_deform_conv_backward_fallthrough(
-        input_cpu, weight_cpu, bias_cpu, ones_cpu, offset_cpu, mask_cpu, columns_cpu, grad_input_cpu,
-        grad_weight_cpu, grad_bias_cpu, grad_offset_cpu, grad_mask_cpu, grad_output_cpu, kernel_h,
-        kernel_w, stride_h, stride_w, pad_h, pad_w, dilation_h, dilation_w,
-        group, deformable_group, with_bias);
+        input_cpu, weight_cpu, bias_cpu, ones_cpu, offset_cpu, mask_cpu,
+        columns_cpu, grad_input_cpu, grad_weight_cpu, grad_bias_cpu,
+        grad_offset_cpu, grad_mask_cpu, grad_output_cpu, kernel_h, kernel_w,
+        stride_h, stride_w, pad_h, pad_w, dilation_h, dilation_w, group,
+        deformable_group, with_bias);
     grad_input.copy_(grad_input_cpu);
     grad_weight.copy_(grad_weight_cpu);
     grad_bias.copy_(grad_bias_cpu);
@@ -414,9 +422,9 @@ void modulated_deform_conv_backward(
   }
 #else
   modulated_deform_conv_backward_fallthrough(
-        input, weight, bias, ones, offset, mask, columns, grad_input,
-        grad_weight, grad_bias, grad_offset, grad_mask, grad_output, kernel_h,
-        kernel_w, stride_h, stride_w, pad_h, pad_w, dilation_h, dilation_w,
-        group, deformable_group, with_bias);
+      input, weight, bias, ones, offset, mask, columns, grad_input, grad_weight,
+      grad_bias, grad_offset, grad_mask, grad_output, kernel_h, kernel_w,
+      stride_h, stride_w, pad_h, pad_w, dilation_h, dilation_w, group,
+      deformable_group, with_bias);
 #endif
 }
