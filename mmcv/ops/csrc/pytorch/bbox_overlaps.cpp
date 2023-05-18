@@ -33,17 +33,16 @@ void bbox_overlaps(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
   auto bboxes2_p = toDiopiTensorHandle(bboxes2);
   auto ious_p = toDiopiTensorHandle(ious);
   if (reinterpret_cast<void *>(diopiBboxOverlapsMmcv) != nullptr) {
-    diopiBboxOverlapsMmcv(ch, ious_p, bboxes1_p, bboxes2_p, mode, offset,
-                          aligned);
-  } else {
-    LOG(WARNING) << "Fallback to cpu: mmcv ext op bbox_overlaps";
-    auto bboxes1_cpu = bboxes1.cpu();
-    auto bboxes2_cpu = bboxes2.cpu();
-    auto ious_cpu = ious.cpu();
-    bbox_overlaps_impl(bboxes1_cpu, bboxes2_cpu, ious_cpu, mode, aligned,
-                       offset);
-    ious.copy_(ious_cpu);
+    auto ret = diopiBboxOverlapsMmcv(ch, ious_p, bboxes1_p, bboxes2_p, mode,
+                                     offset, aligned);
+    if (ret == diopiSuccess) return;
   }
+  LOG(WARNING) << "Fallback to cpu: mmcv ext op bbox_overlaps";
+  auto bboxes1_cpu = bboxes1.cpu();
+  auto bboxes2_cpu = bboxes2.cpu();
+  auto ious_cpu = ious.cpu();
+  bbox_overlaps_impl(bboxes1_cpu, bboxes2_cpu, ious_cpu, mode, aligned, offset);
+  ious.copy_(ious_cpu);
 #else
   bbox_overlaps_impl(bboxes1, bboxes2, ious, mode, aligned, offset);
 #endif

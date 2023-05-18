@@ -83,40 +83,42 @@ void hard_voxelize_forward(const at::Tensor &points,
   auto num_points_per_voxel_p = toDiopiTensorHandle(num_points_per_voxel);
   auto voxel_num_p = toDiopiTensorHandle(voxel_num);
   if (reinterpret_cast<void *>(diopiHardVoxelizeMmcv) != nullptr) {
-    diopiHardVoxelizeMmcv(ch, voxels_p, coors_p, num_points_per_voxel_p,
-                          voxel_num_p, points_p, voxel_size_p, coors_range_p,
-                          max_points, max_voxels, NDim, deterministic);
-  } else {
-    LOG(WARNING) << "Fallback to cpu: mmcv ext op hard_voxelize_forward";
-    auto points_cpu = points.cpu();
-    auto voxel_size_cpu = voxel_size.cpu();
-    auto coors_range_cpu = coors_range.cpu();
-    auto voxels_cpu = voxels.cpu();
-    auto coors_cpu = coors.cpu();
-    auto num_points_per_voxel_cpu = num_points_per_voxel.cpu();
-    auto voxel_num_cpu = voxel_num.cpu();
-
-    int64_t *voxel_num_data_cpu = voxel_num_cpu.data_ptr<int64_t>();
-    std::vector<float> voxel_size_v_cpu(
-        voxel_size_cpu.data_ptr<float>(),
-        voxel_size_cpu.data_ptr<float>() + voxel_size_cpu.numel());
-    std::vector<float> coors_range_v_cpu(
-        coors_range_cpu.data_ptr<float>(),
-        coors_range_cpu.data_ptr<float>() + coors_range_cpu.numel());
-
-    if (deterministic) {
-      *voxel_num_data_cpu = hard_voxelize_forward_impl(
-          points_cpu, voxels_cpu, coors_cpu, num_points_per_voxel_cpu,
-          voxel_size_v_cpu, coors_range_v_cpu, max_points, max_voxels, NDim);
-    } else {
-      puts("nondeterministic hard_voxelize_forward is not supported on host!");
-      abort();
-    }
-    voxels.copy_(voxels_cpu);
-    coors.copy_(coors_cpu);
-    num_points_per_voxel.copy_(num_points_per_voxel_cpu);
-    voxel_num.copy_(voxel_num_cpu);
+    auto ret = diopiHardVoxelizeMmcv(
+        ch, voxels_p, coors_p, num_points_per_voxel_p, voxel_num_p, points_p,
+        voxel_size_p, coors_range_p, max_points, max_voxels, NDim,
+        deterministic);
+    if (ret == diopiSuccess) return;
   }
+  LOG(WARNING) << "Fallback to cpu: mmcv ext op hard_voxelize_forward";
+  auto points_cpu = points.cpu();
+  auto voxel_size_cpu = voxel_size.cpu();
+  auto coors_range_cpu = coors_range.cpu();
+  auto voxels_cpu = voxels.cpu();
+  auto coors_cpu = coors.cpu();
+  auto num_points_per_voxel_cpu = num_points_per_voxel.cpu();
+  auto voxel_num_cpu = voxel_num.cpu();
+
+  int64_t *voxel_num_data_cpu = voxel_num_cpu.data_ptr<int64_t>();
+  std::vector<float> voxel_size_v_cpu(
+      voxel_size_cpu.data_ptr<float>(),
+      voxel_size_cpu.data_ptr<float>() + voxel_size_cpu.numel());
+  std::vector<float> coors_range_v_cpu(
+      coors_range_cpu.data_ptr<float>(),
+      coors_range_cpu.data_ptr<float>() + coors_range_cpu.numel());
+
+  if (deterministic) {
+    *voxel_num_data_cpu = hard_voxelize_forward_impl(
+        points_cpu, voxels_cpu, coors_cpu, num_points_per_voxel_cpu,
+        voxel_size_v_cpu, coors_range_v_cpu, max_points, max_voxels, NDim);
+  } else {
+    puts("nondeterministic hard_voxelize_forward is not supported on host!");
+    abort();
+  }
+  voxels.copy_(voxels_cpu);
+  coors.copy_(coors_cpu);
+  num_points_per_voxel.copy_(num_points_per_voxel_cpu);
+  voxel_num.copy_(voxel_num_cpu);
+  return;
 #else
   int64_t *voxel_num_data = voxel_num.data_ptr<int64_t>();
   std::vector<float> voxel_size_v(
@@ -163,25 +165,26 @@ void dynamic_voxelize_forward(const at::Tensor &points,
   auto coors_range_p = toDiopiTensorHandle(coors_range);
   auto coors_p = toDiopiTensorHandle(coors);
   if (reinterpret_cast<void *>(diopiDynamicVoxelizeMmcv) != nullptr) {
-    diopiDynamicVoxelizeMmcv(ch, coors_p, points_p, voxel_size_p, coors_range_p,
-                             NDim);
-  } else {
-    LOG(WARNING) << "Fallback to cpu: mmcv ext op dynamic_voxelize_forward";
-    auto points_cpu = points.cpu();
-    auto voxel_size_cpu = voxel_size.cpu();
-    auto coors_range_cpu = coors_range.cpu();
-    auto coors_cpu = coors.cpu();
-
-    std::vector<float> voxel_size_v_cpu(
-        voxel_size_cpu.data_ptr<float>(),
-        voxel_size_cpu.data_ptr<float>() + voxel_size_cpu.numel());
-    std::vector<float> coors_range_v_cpu(
-        coors_range_cpu.data_ptr<float>(),
-        coors_range_cpu.data_ptr<float>() + coors_range_cpu.numel());
-    dynamic_voxelize_forward_impl(points_cpu, coors_cpu, voxel_size_v_cpu,
-                                  coors_range_v_cpu, NDim);
-    coors.copy_(coors_cpu);
+    auto ret = diopiDynamicVoxelizeMmcv(ch, coors_p, points_p, voxel_size_p,
+                                        coors_range_p, NDim);
+    if (ret == diopiSuccess) return;
   }
+  LOG(WARNING) << "Fallback to cpu: mmcv ext op dynamic_voxelize_forward";
+  auto points_cpu = points.cpu();
+  auto voxel_size_cpu = voxel_size.cpu();
+  auto coors_range_cpu = coors_range.cpu();
+  auto coors_cpu = coors.cpu();
+
+  std::vector<float> voxel_size_v_cpu(
+      voxel_size_cpu.data_ptr<float>(),
+      voxel_size_cpu.data_ptr<float>() + voxel_size_cpu.numel());
+  std::vector<float> coors_range_v_cpu(
+      coors_range_cpu.data_ptr<float>(),
+      coors_range_cpu.data_ptr<float>() + coors_range_cpu.numel());
+  dynamic_voxelize_forward_impl(points_cpu, coors_cpu, voxel_size_v_cpu,
+                                coors_range_v_cpu, NDim);
+  coors.copy_(coors_cpu);
+  return;
 #else
   std::vector<float> voxel_size_v(
       voxel_size.data_ptr<float>(),

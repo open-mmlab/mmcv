@@ -56,12 +56,20 @@ void sigmoid_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
   auto weight_p = toDiopiTensorHandle(weight);
   auto output_p = toDiopiTensorHandle(output);
   if (reinterpret_cast<void *>(diopiSigmoidFocalLossMmcv) != nullptr) {
-    diopiSigmoidFocalLossMmcv(ch, output_p, input_p, target_p, weight_p, gamma,
-                              alpha);
-  } else {
-    sigmoid_focal_loss_forward_impl(input, target, weight, output, gamma,
-                                    alpha);
+    auto ret = diopiSigmoidFocalLossMmcv(ch, output_p, input_p, target_p,
+                                         weight_p, gamma, alpha);
+    if (ret == diopiSuccess) return;
   }
+  LOG(WARNING)
+      << "Fallback to cpu: mmcv ext op sigmoid_focal_loss_forward_impl";
+  auto input_cpu = input.cpu();
+  auto target_cpu = target.cpu();
+  auto weight_cpu = weight.cpu();
+  auto output_cpu = output.cpu();
+  sigmoid_focal_loss_forward_impl(input_cpu, target_cpu, weight_cpu, output_cpu,
+                                  gamma, alpha);
+  output.copy_(output_cpu);
+  return;
 #else
   sigmoid_focal_loss_forward_impl(input, target, weight, output, gamma, alpha);
 #endif
@@ -84,12 +92,20 @@ void sigmoid_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
   auto weight_p = toDiopiTensorHandle(weight);
   auto grad_input_p = toDiopiTensorHandle(grad_input);
   if (reinterpret_cast<void *>(diopiSigmoidFocalLossBackwardMmcv) != nullptr) {
-    diopiSigmoidFocalLossBackwardMmcv(ch, grad_input_p, input_p, target_p,
-                                      weight_p, gamma, alpha);
-  } else {
-    sigmoid_focal_loss_backward_impl(input, target, weight, grad_input, gamma,
-                                     alpha);
+    auto ret = diopiSigmoidFocalLossBackwardMmcv(
+        ch, grad_input_p, input_p, target_p, weight_p, gamma, alpha);
+    if (ret == diopiSuccess) return;
   }
+  LOG(WARNING)
+      << "Fallback to cpu: mmcv ext op sigmoid_focal_loss_forward_impl";
+  auto input_cpu = input.cpu();
+  auto target_cpu = target.cpu();
+  auto weight_cpu = weight.cpu();
+  auto grad_input_cpu = grad_input.cpu();
+  sigmoid_focal_loss_backward_impl(input_cpu, target_cpu, weight_cpu,
+                                   grad_input_cpu, gamma, alpha);
+  grad_input.copy_(grad_input_cpu);
+  return;
 #else
   sigmoid_focal_loss_backward_impl(input, target, weight, grad_input, gamma,
                                    alpha);

@@ -53,21 +53,22 @@ void roi_align_forward(Tensor input, Tensor rois, Tensor output,
   auto argmax_y_p = toDiopiTensorHandle(argmax_y);
   auto argmax_x_p = toDiopiTensorHandle(argmax_x);
   if (reinterpret_cast<void*>(diopiRoiAlignMmcv) != nullptr) {
-    diopiRoiAlignMmcv(ch, out_p, argmax_y_p, argmax_x_p, input_p, rois_p,
-                      aligned_height, aligned_width, sampling_ratio, pool_mode,
-                      spatial_scale, aligned);
-  } else {
-    LOG(WARNING) << "Fallback to cpu: mmcv ext op roi_align_forward";
-    auto input_cpu = input.cpu();
-    auto rois_cpu = rois.cpu();
-    auto out_cpu = output.cpu();
-    auto argmax_y_cpu = argmax_y.cpu();
-    auto argmax_x_cpu = argmax_x.cpu();
-    roi_align_forward_impl(input_cpu, rois_cpu, out_cpu, argmax_y_cpu,
-                           argmax_x_cpu, aligned_height, aligned_width,
-                           spatial_scale, sampling_ratio, pool_mode, aligned);
-    output.copy_(out_cpu);
+    auto ret = diopiRoiAlignMmcv(
+        ch, out_p, argmax_y_p, argmax_x_p, input_p, rois_p, aligned_height,
+        aligned_width, sampling_ratio, pool_mode, spatial_scale, aligned);
+    if (ret == diopiSuccess) return;
   }
+  LOG(WARNING) << "Fallback to cpu: mmcv ext op roi_align_forward";
+  auto input_cpu = input.cpu();
+  auto rois_cpu = rois.cpu();
+  auto out_cpu = output.cpu();
+  auto argmax_y_cpu = argmax_y.cpu();
+  auto argmax_x_cpu = argmax_x.cpu();
+  roi_align_forward_impl(input_cpu, rois_cpu, out_cpu, argmax_y_cpu,
+                         argmax_x_cpu, aligned_height, aligned_width,
+                         spatial_scale, sampling_ratio, pool_mode, aligned);
+  output.copy_(out_cpu);
+
 #else
   roi_align_forward_impl(input, rois, output, argmax_y, argmax_x,
                          aligned_height, aligned_width, spatial_scale,
@@ -96,35 +97,23 @@ void roi_align_backward(Tensor grad_output, Tensor rois, Tensor argmax_y,
   diopiContext ctx(dipu::getCurrentDIPUStream().rawstream());
   diopiContextHandle_t ch = &ctx;
   if (reinterpret_cast<void*>(diopiRoiAlignBackwardMmcv) != nullptr) {
-    // diopiRoiAlignBackwardMmcv(ch, grad_input_, grad_output_, rois_,
-    // argmax_y_,
-    //                           argmax_x_, aligned_height, aligned_width,
-    //                           spatial_scale, pool_mode, sampling_ratio,
-    //                           aligned);
-    LOG(WARNING) << "Fallback to cpu: mmcv ext op roi_align_backward";
-    auto grad_output_cpu = grad_output.cpu();
-    auto rois_cpu = rois.cpu();
-    auto argmax_y_cpu = argmax_y.cpu();
-    auto argmax_x_cpu = argmax_x.cpu();
-    auto grad_input_cpu = grad_input.cpu();
-    roi_align_backward_impl(grad_output_cpu, rois_cpu, argmax_y_cpu,
-                            argmax_x_cpu, grad_input_cpu, aligned_height,
-                            aligned_width, spatial_scale, sampling_ratio,
-                            pool_mode, aligned);
-    grad_input.copy_(grad_input_cpu);
-  } else {
-    LOG(WARNING) << "Fallback to cpu: mmcv ext op roi_align_backward";
-    auto grad_output_cpu = grad_output.cpu();
-    auto rois_cpu = rois.cpu();
-    auto argmax_y_cpu = argmax_y.cpu();
-    auto argmax_x_cpu = argmax_x.cpu();
-    auto grad_input_cpu = grad_input.cpu();
-    roi_align_backward_impl(grad_output_cpu, rois_cpu, argmax_y_cpu,
-                            argmax_x_cpu, grad_input_cpu, aligned_height,
-                            aligned_width, spatial_scale, sampling_ratio,
-                            pool_mode, aligned);
-    grad_input.copy_(grad_input_cpu);
+    auto ret = diopiRoiAlignBackwardMmcv(ch, grad_input_, grad_output_, rois_,
+                                         argmax_y_, argmax_x_, aligned_height,
+                                         aligned_width, spatial_scale,
+                                         pool_mode, sampling_ratio, aligned);
+    if (ret == diopiSuccess) return;
   }
+  LOG(WARNING) << "Fallback to cpu: mmcv ext op roi_align_backward";
+  auto grad_output_cpu = grad_output.cpu();
+  auto rois_cpu = rois.cpu();
+  auto argmax_y_cpu = argmax_y.cpu();
+  auto argmax_x_cpu = argmax_x.cpu();
+  auto grad_input_cpu = grad_input.cpu();
+  roi_align_backward_impl(grad_output_cpu, rois_cpu, argmax_y_cpu, argmax_x_cpu,
+                          grad_input_cpu, aligned_height, aligned_width,
+                          spatial_scale, sampling_ratio, pool_mode, aligned);
+  grad_input.copy_(grad_input_cpu);
+
 #else
   roi_align_backward_impl(grad_output, rois, argmax_y, argmax_x, grad_input,
                           aligned_height, aligned_width, spatial_scale,

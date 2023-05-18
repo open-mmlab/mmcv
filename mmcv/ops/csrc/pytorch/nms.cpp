@@ -43,17 +43,19 @@ Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
   diopiTensorHandle_t* outhandle = &outp;
   auto scores_p = toDiopiTensorHandle(scores);
   if (reinterpret_cast<void*>(diopiNmsMmcv) != nullptr) {
-    diopiNmsMmcv(ch, outhandle, boxes_p, scores_p, iou_threshold, offset);
-    auto tensorhandle = reinterpret_cast<Tensor*>(*outhandle);
-    return *tensorhandle;
-  } else {
-    LOG(WARNING) << "Fallback to cpu: mmcv ext op nms";
-    auto boxes_cpu = boxes.cpu();
-    auto scores_cpu = scores.cpu();
-    auto out_cpu = nms_impl(boxes_cpu, scores_cpu, iou_threshold, offset);
-    out.copy_(out_cpu);
-    return out;
+    auto ret =
+        diopiNmsMmcv(ch, outhandle, boxes_p, scores_p, iou_threshold, offset);
+    if (ret == diopiSuccess) {
+      auto tensorhandle = reinterpret_cast<Tensor*>(*outhandle);
+      return *tensorhandle;
+    }
   }
+  LOG(WARNING) << "Fallback to cpu: mmcv ext op nms";
+  auto boxes_cpu = boxes.cpu();
+  auto scores_cpu = scores.cpu();
+  auto out_cpu = nms_impl(boxes_cpu, scores_cpu, iou_threshold, offset);
+  out.copy_(out_cpu);
+  return out;
 #else
   return nms_impl(boxes, scores, iou_threshold, offset);
 #endif
