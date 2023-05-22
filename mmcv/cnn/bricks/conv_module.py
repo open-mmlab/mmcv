@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
+from functools import partial
 from typing import Dict, Optional, Tuple, Union
 
 import torch
@@ -12,6 +13,57 @@ from .activation import build_activation_layer
 from .conv import build_conv_layer
 from .norm import build_norm_layer
 from .padding import build_padding_layer
+
+
+def fast_conv_bn_eval_forward(bn: _BatchNorm, conv: nn.modules.conv._ConvNd,
+                              x: torch.Tensor):
+    """
+    Implementation based on https://arxiv.org/abs/2305.11624
+    "Tune-Mode ConvBN Blocks For Efficient Transfer Learning"
+    It leverages the associative law between convolution and affine transform,
+    i.e., normalize (weight conv feature) = (normalize weight) conv feature.
+    It works for Eval mode of ConvBN blocks during validation, and can be used
+    for training as well. It reduces memory and computation cost.
+
+    Args:
+        bn (_BatchNorm): a BatchNorm module.
+        conv (nn._ConvNd): a conv module
+        x (torch.Tensor): Input feature map.
+    """
+    # These lines of code are designed to deal with various cases
+    # like bn without affine transform, and conv without bias
+    weight_on_the_fly = conv.weight
+    if conv.bias is not None:
+        bias_on_the_fly = conv.bias
+    else:
+        bias_on_the_fly = torch.zeros_like(bn.running_var)
+
+    if bn.weight is not None:
+        bn_weight = bn.weight
+    else:
+        bn_weight = torch.ones_like(bn.running_var)
+
+    if bn.bias is not None:
+        bn_bias = bn.bias
+    else:
+        bn_bias = torch.zeros_like(bn.running_var)
+
+    weight_coeff = torch.rsqrt(bn.running_var +
+                               bn.eps)  # shape of [C_out] in Conv2d
+    weight_coeff = torch.tensor(
+        weight_coeff.reshape([-1] + [1] * (len(conv.weight.shape) - 1))
+    )  # shape of [C_out, 1, 1, 1] in Conv2d
+    coefff_on_the_fly = bn_weight.view_as(
+        weight_coeff) * weight_coeff  # shape of [C_out, 1, 1, 1]
+
+    # shape of [C_out, C_in, k, k] in Conv2d
+    weight_on_the_fly = weight_on_the_fly * coefff_on_the_fly
+    bias_on_the_fly = (
+        bias_on_the_fly - bn.running_mean
+    ) * coefff_on_the_fly.flatten() + bn_bias  # shape of [C_out]
+
+    return conv.__class__._conv_forward(conv, x, weight_on_the_fly,
+                                        bias_on_the_fly)
 
 
 @MODELS.register_module()
@@ -56,6 +108,9 @@ class ConvModule(nn.Module):
             Default: True.
         with_spectral_norm (bool): Whether use spectral norm in conv module.
             Default: False.
+        fast_conv_bn_eval (bool): Whether use fast conv when the consecutive
+            bn is in eval mode (either training or testing), as proposed in
+            https://arxiv.org/abs/2305.11624 . Default: False.
         padding_mode (str): If the `padding_mode` has not been supported by
             current `Conv2d` in PyTorch, we will use our own padding layer
             instead. Currently, we support ['zeros', 'circular'] with official
@@ -83,6 +138,7 @@ class ConvModule(nn.Module):
                  act_cfg: Optional[Dict] = dict(type='ReLU'),
                  inplace: bool = True,
                  with_spectral_norm: bool = False,
+                 fast_conv_bn_eval: bool = False,
                  padding_mode: str = 'zeros',
                  order: tuple = ('conv', 'norm', 'act')):
         super().__init__()
@@ -155,6 +211,17 @@ class ConvModule(nn.Module):
         else:
             self.norm_name = None  # type: ignore
 
+        # fast_conv_bn_eval works for conv + bn
+        # with `track_running_stats` option
+        if fast_conv_bn_eval and self.norm and isinstance(
+                self.norm, _BatchNorm) and self.norm.track_running_stats:
+            self.fast_conv_bn_eval_forward = partial(fast_conv_bn_eval_forward,
+                                                     self.norm, self.conv)
+        else:
+            self.fast_conv_bn_eval_forward = None  # type: ignore
+        self.original_conv_forward = partial(self.conv.__class__.forward,
+                                             self.conv)
+
         # build activation layer
         if self.with_activation:
             act_cfg_ = act_cfg.copy()  # type: ignore
@@ -200,13 +267,28 @@ class ConvModule(nn.Module):
                 x: torch.Tensor,
                 activate: bool = True,
                 norm: bool = True) -> torch.Tensor:
-        for layer in self.order:
+        layer_index = 0
+        while layer_index < len(self.order):
+            layer = self.order[layer_index]
             if layer == 'conv':
                 if self.with_explicit_padding:
                     x = self.padding_layer(x)
-                x = self.conv(x)
+                # if the next operation is norm and we have a norm layer in
+                # eval mode and we have enabled fast_conv_bn_eval for the conv
+                # operator, then activate the optimized forward and skip the
+                # next norm operator since it has been fused
+                if self.order[layer_index + 1] == 'norm' and norm and \
+                        self.with_norm and not self.norm.training and \
+                        self.fast_conv_bn_eval_forward is not None:
+                    self.conv.forward = self.fast_conv_bn_eval_forward
+                    x = self.conv(x)
+                    layer_index += 1
+                else:
+                    self.conv.forward = self.original_conv_forward
+                    x = self.conv(x)
             elif layer == 'norm' and norm and self.with_norm:
                 x = self.norm(x)
             elif layer == 'act' and activate and self.with_activation:
                 x = self.activate(x)
+            layer_index += 1
         return x
