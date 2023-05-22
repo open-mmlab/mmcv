@@ -74,7 +74,7 @@ class CephBackend(BaseStorageBackend):
         filepath = str(filepath)
         if self.path_mapping is not None:
             for k, v in self.path_mapping.items():
-                filepath = filepath.replace(k, v)
+                filepath = filepath.replace(k, v, 1)
         value = self._client.Get(filepath)
         value_buf = memoryview(value)
         return value_buf
@@ -97,6 +97,8 @@ class PetrelBackend(BaseStorageBackend):
             ``filepath`` will be replaced by ``dst``. Default: None.
         enable_mc (bool, optional): Whether to enable memcached support.
             Default: True.
+        conf_path (str, optional): Config path of Petrel client. Default: None.
+            `New in version 1.7.1`.
 
     Examples:
         >>> filepath1 = 's3://path/of/file'
@@ -108,14 +110,15 @@ class PetrelBackend(BaseStorageBackend):
 
     def __init__(self,
                  path_mapping: Optional[dict] = None,
-                 enable_mc: bool = True):
+                 enable_mc: bool = True,
+                 conf_path: str = None):
         try:
             from petrel_client import client
         except ImportError:
             raise ImportError('Please install petrel_client to enable '
                               'PetrelBackend.')
 
-        self._client = client.Client(enable_mc=enable_mc)
+        self._client = client.Client(conf_path=conf_path, enable_mc=enable_mc)
         assert isinstance(path_mapping, dict) or path_mapping is None
         self.path_mapping = path_mapping
 
@@ -129,7 +132,7 @@ class PetrelBackend(BaseStorageBackend):
         filepath = str(filepath)
         if self.path_mapping is not None:
             for k, v in self.path_mapping.items():
-                filepath = filepath.replace(k, v)
+                filepath = filepath.replace(k, v, 1)
         return filepath
 
     def _format_path(self, filepath: str) -> str:

@@ -513,7 +513,6 @@ def batch_counter_hook(module: nn.Module, input: tuple, output: Any) -> None:
 
 
 def add_batch_counter_variables_or_reset(module: nn.Module) -> None:
-
     module.__batch_counter__ = 0
 
 

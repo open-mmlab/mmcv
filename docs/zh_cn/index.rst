@@ -10,6 +10,7 @@
    get_started/introduction.md
    get_started/installation.md
    get_started/build.md
+   get_started/article.md
 
 .. toctree::
    :maxdepth: 2
@@ -36,6 +37,11 @@
    deployment/tensorrt_custom_ops.md
 
 .. toctree::
+   :caption: 语言切换
+
+   switch_language.md
+
+.. toctree::
    :maxdepth: 2
    :caption: 兼容性
 
@@ -53,6 +59,7 @@
 
    community/contributing.md
    community/pr.md
+   community/code_style.md
 
 .. toctree::
    :maxdepth: 2

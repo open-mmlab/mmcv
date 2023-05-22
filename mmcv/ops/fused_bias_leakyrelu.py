@@ -257,8 +257,8 @@ def fused_bias_leakyrelu(input: torch.Tensor,
     Returns:
         torch.Tensor: Feature map after non-linear activation.
     """
-
-    if not input.is_cuda:
+    assert scale > 0, 'The scale should be greater than 0'
+    if not input.is_cuda and input.device.type != 'npu':
         return bias_leakyrelu_ref(input, bias, negative_slope, scale)
 
     return FusedBiasLeakyReLUFunction.apply(input, bias.to(input.dtype),

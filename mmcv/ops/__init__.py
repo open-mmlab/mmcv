@@ -1,9 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from mmcv.utils import IS_MLU_AVAILABLE
 from .active_rotated_filter import active_rotated_filter
 from .assign_score_withk import assign_score_withk
 from .ball_query import ball_query
 from .bbox import bbox_overlaps
 from .border_align import BorderAlign, border_align
+from .box_iou_quadri import box_iou_quadri
 from .box_iou_rotated import box_iou_rotated
 from .carafe import CARAFE, CARAFENaive, CARAFEPack, carafe, carafe_naive
 from .cc_attention import CrissCrossAttention
@@ -38,7 +40,7 @@ from .modulated_deform_conv import (ModulatedDeformConv2d,
                                     ModulatedDeformConv2dPack,
                                     modulated_deform_conv2d)
 from .multi_scale_deform_attn import MultiScaleDeformableAttention
-from .nms import batched_nms, nms, nms_match, nms_rotated, soft_nms
+from .nms import batched_nms, nms, nms_match, nms_quadri, nms_rotated, soft_nms
 from .pixel_group import pixel_group
 from .point_sample import (SimpleRoIAlign, point_sample,
                            rel_roi_point_to_rel_img_point)
@@ -84,13 +86,14 @@ __all__ = [
     'ConvTranspose2d', 'Linear', 'MaxPool2d', 'CrissCrossAttention', 'PSAMask',
     'point_sample', 'rel_roi_point_to_rel_img_point', 'SimpleRoIAlign',
     'SAConv2d', 'TINShift', 'tin_shift', 'assign_score_withk',
-    'box_iou_rotated', 'RoIPointPool3d', 'nms_rotated', 'knn', 'ball_query',
-    'upfirdn2d', 'FusedBiasLeakyReLU', 'fused_bias_leakyrelu',
-    'rotated_feature_align', 'RiRoIAlignRotated', 'riroi_align_rotated',
-    'RoIAlignRotated', 'roi_align_rotated', 'pixel_group', 'QueryAndGroup',
-    'GroupAll', 'grouping_operation', 'contour_expand', 'three_nn',
-    'three_interpolate', 'MultiScaleDeformableAttention', 'BorderAlign',
-    'border_align', 'gather_points', 'furthest_point_sample',
+    'box_iou_rotated', 'box_iou_quadri', 'RoIPointPool3d', 'nms_rotated',
+    'knn', 'ball_query', 'upfirdn2d', 'FusedBiasLeakyReLU',
+    'fused_bias_leakyrelu', 'rotated_feature_align', 'RiRoIAlignRotated',
+    'riroi_align_rotated', 'RoIAlignRotated', 'roi_align_rotated',
+    'pixel_group', 'QueryAndGroup', 'GroupAll', 'grouping_operation',
+    'contour_expand', 'three_nn', 'three_interpolate',
+    'MultiScaleDeformableAttention', 'BorderAlign', 'border_align',
+    'gather_points', 'furthest_point_sample', 'nms_quadri',
     'furthest_point_sample_with_dist', 'PointsSampler', 'Correlation',
     'boxes_iou3d', 'boxes_iou_bev', 'boxes_overlap_bev', 'nms_bev',
     'nms_normal_bev', 'nms3d', 'nms3d_normal', 'Voxelization', 'voxelization',
@@ -104,3 +107,9 @@ __all__ = [
     'diff_iou_rotated_2d', 'diff_iou_rotated_3d', 'chamfer_distance',
     'PrRoIPool', 'prroi_pool'
 ]
+
+if IS_MLU_AVAILABLE:
+    from .deform_conv import DeformConv2dPack_MLU  # noqa:F401
+    from .modulated_deform_conv import \
+        ModulatedDeformConv2dPack_MLU  # noqa:F401
+    __all__.extend(['ModulatedDeformConv2dPack_MLU', 'DeformConv2dPack_MLU'])

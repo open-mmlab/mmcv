@@ -48,9 +48,9 @@ jobs:
             pyenv install << parameters.python >>
             pyenv global << parameters.python >>
       - run:
-          name: Upgrade pip
+          name: Upgrade pip and wheel
           command: |
-            python -m pip install pip --upgrade
+            python -m pip install pip wheel --upgrade
       - run:
           name: Install PyTorch
           command: python -m pip install torch==<< parameters.torch >>+cpu torchvision==<< parameters.torchvision >>+cpu -f https://download.pytorch.org/whl/torch_stable.html
@@ -62,7 +62,7 @@ jobs:
           command: |
             rm -rf .eggs
             python setup.py check -m -s
-            python -m pip install -e .
+            python -m pip install -e . -v
           no_output_timeout: 20m
           environment:
             MMCV_WITH_OPS: 1
@@ -116,9 +116,9 @@ jobs:
             pyenv install 3.7.0
             pyenv global 3.7.0
       - run:
-          name: Upgrade pip
+          name: Upgrade pip and wheel
           command: |
-            python -m pip install pip --upgrade
+            python -m pip install pip wheel --upgrade
       - run:
           name: Install PyTorch
           command: python -m pip install torch==1.8.1+cu102 torchvision==0.9.1+cu102 -f https://download.pytorch.org/whl/torch_stable.html
@@ -139,7 +139,7 @@ jobs:
           command: |
             rm -rf .eggs
             python setup.py check -m -s
-            python -m pip install -e .
+            python -m pip install -e . -v
           environment:
             MMCV_WITH_OPS: 1
             MMCV_WITH_ORT: 1

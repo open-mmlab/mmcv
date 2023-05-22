@@ -9,7 +9,7 @@ from mmcv.utils import deprecated_api_warning
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
-    '_ext', ['nms', 'softnms', 'nms_match', 'nms_rotated'])
+    '_ext', ['nms', 'softnms', 'nms_match', 'nms_rotated', 'nms_quadri'])
 
 
 # This function is modified from: https://github.com/pytorch/vision/
@@ -454,6 +454,23 @@ def nms_rotated(dets: Tensor,
     else:
         dets_cw = dets
     multi_label = labels is not None
+    if labels is None:
+        input_labels = scores.new_empty(0, dtype=torch.int)
+    else:
+        input_labels = labels
+    if dets.device.type in ('npu', 'mlu'):
+        order = scores.new_empty(0, dtype=torch.long)
+        if dets.device.type == 'npu':
+            coefficient = 57.29578  # 180 / PI
+            for i in range(dets.size()[0]):
+                dets_cw[i][4] *= coefficient  # radians to angle
+        keep_inds = ext_module.nms_rotated(dets_cw, scores, order, dets_cw,
+                                           input_labels, iou_threshold,
+                                           multi_label)
+        dets = torch.cat((dets[keep_inds], scores[keep_inds].reshape(-1, 1)),
+                         dim=1)
+        return dets, keep_inds
+
     if multi_label:
         dets_wl = torch.cat((dets_cw, labels.unsqueeze(1)), 1)  # type: ignore
     else:
@@ -467,11 +484,55 @@ def nms_rotated(dets: Tensor,
             scores,
             order,
             dets_sorted,
+            input_labels,
             iou_threshold=iou_threshold,
             multi_label=multi_label)
     else:
         keep_inds = ext_module.nms_rotated(dets_wl, scores, order, dets_sorted,
-                                           iou_threshold, multi_label)
+                                           input_labels, iou_threshold,
+                                           multi_label)
+    dets = torch.cat((dets[keep_inds], scores[keep_inds].reshape(-1, 1)),
+                     dim=1)
+    return dets, keep_inds
+
+
+def nms_quadri(dets: Tensor,
+               scores: Tensor,
+               iou_threshold: float,
+               labels: Optional[Tensor] = None) -> Tuple[Tensor, Tensor]:
+    """Performs non-maximum suppression (NMS) on the quadrilateral boxes
+    according to their intersection-over-union (IoU).
+
+    Quadri NMS iteratively removes lower scoring quadrilateral boxes
+    which have an IoU greater than iou_threshold with another (higher
+    scoring) quadrilateral box.
+
+    Args:
+        dets (torch.Tensor):  Quadri boxes in shape (N, 8).
+            They are expected to be in
+            (x1, y1, ..., x4, y4) format.
+        scores (torch.Tensor): scores in shape (N, ).
+        iou_threshold (float): IoU thresh for NMS.
+        labels (torch.Tensor, optional): boxes' label in shape (N,).
+
+    Returns:
+        tuple: kept dets(boxes and scores) and indice, which is always the
+        same data type as the input.
+    """
+    if dets.shape[0] == 0:
+        return dets, None
+
+    multi_label = labels is not None
+    if multi_label:
+        dets_with_lables = \
+            torch.cat((dets, labels.unsqueeze(1)), 1)  # type: ignore
+    else:
+        dets_with_lables = dets
+    _, order = scores.sort(0, descending=True)
+    dets_sorted = dets_with_lables.index_select(0, order)
+
+    keep_inds = ext_module.nms_quadri(dets_with_lables, scores, order,
+                                      dets_sorted, iou_threshold, multi_label)
     dets = torch.cat((dets[keep_inds], scores[keep_inds].reshape(-1, 1)),
                      dim=1)
     return dets, keep_inds

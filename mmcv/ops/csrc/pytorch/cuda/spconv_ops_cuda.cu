@@ -1,9 +1,12 @@
 #include <cuda_runtime_api.h>
 #include <torch/script.h>
+// clang-format off
+// TODO: make spconv_utils.h order agnostic
+#include "../spconv_utils.h"
+// clang-format on
 #include <utils/spconv/spconv/indice.h>
 #include <utils/spconv/spconv/reordering.h>
 
-#include "../spconv_utils.h"
 #include "pytorch_cuda_helper.hpp"
 
 template <unsigned NDim>

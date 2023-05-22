@@ -66,11 +66,11 @@ class RotatedFeatureAlignFunction(Function):
     def backward(ctx: Any, grad_output: torch.Tensor) -> tuple:
         """
         Args:
-            grad_output (torch.Tensor): The gradiant of output features
+            grad_output (torch.Tensor): The gradient of output features
                 with shape [N,C,H,W].
 
         Returns:
-            torch.Tensor: The gradiant of input features with shape [N,C,H,W].
+            torch.Tensor: The gradient of input features with shape [N,C,H,W].
         """
         best_rbboxes = ctx.saved_tensors[0]
         points = ctx.points

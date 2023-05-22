@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2021 by Cambricon.
+ * Copyright (C) 2021 Cambricon.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
@@ -10,97 +10,35 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *************************************************************************/
 
-#include "pytorch_device_registry.hpp"
-#include "pytorch_mlu_helper.hpp"
-
-void KernelNms(cnrtDim3_t k_dim, cnrtFunctionType_t k_type, cnrtQueue_t queue,
-               const cnrtDataType_t data_type_input, const void *boxes_ptr,
-               const void *scores_ptr, const int input_num_boxes,
-               const int input_stride, const int max_output_boxes,
-               const float iou_threshold, const float offset,
-               void *workspace_ptr, void *output_size_ptr, void *output_ptr);
-
-int selectUnionType(uint32_t use_job, int box_num_per_core) {
-  // the box_num_per_core should be at least 256, otherwise the real IO
-  // bandwidth would be very low
-  while (box_num_per_core < 256 && use_job >= 4) {
-    box_num_per_core *= 2;
-    use_job /= 2;
-  }
-  return use_job;
-}
+#include "mlu_common_helper.h"
 
 Tensor NMSMLUKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
                             int offset) {
-  // dimension parameters check
-  TORCH_CHECK(boxes.dim() == 2, "boxes should be a 2d tensor, got ",
-              boxes.dim(), "D");
-  TORCH_CHECK(boxes.size(1) == 4,
-              "boxes should have 4 elements in dimension 1, got ",
-              boxes.size(1));
-  TORCH_CHECK(scores.dim() == 1, "scores should be a 1d tensor, got ",
-              scores.dim(), "D");
-
-  // data type check
-  TORCH_CHECK(boxes.scalar_type() == scores.scalar_type(),
-              "boxes should have the same type as scores");
-  TORCH_CHECK(
-      boxes.scalar_type() == at::kFloat || boxes.scalar_type() == at::kHalf,
-      "data type of boxes should be Float or Half, got ", boxes.scalar_type());
-
   if (boxes.numel() == 0) {
     return at::empty({0}, boxes.options().dtype(at::kLong));
   }
 
-  int input_num_boxes = boxes.size(0);
-  int input_stride = boxes.size(0);
   int max_output_boxes = boxes.size(0);
 
-  cnrtDataType_t data_type_input = torch_mlu::toCnrtDtype(boxes.dtype());
-  cnrtDim3_t k_dim;
-  cnrtJobType_t k_type;
-  uint32_t union_number = torch_mlu::getDeviceAttr(cnrtAttrClusterCount);
-  uint32_t core_dim = torch_mlu::getDeviceAttr(cnrtAttrMcorePerCluster);
-  uint32_t job_limit = union_number * core_dim;
-  uint32_t core_number = union_number * core_dim;
-  int box_num_per_core = (input_num_boxes + core_number - 1) / core_number;
-  // initiate k_type as Union1
-  k_dim.x = core_dim;
-  k_dim.y = 1;
-  k_dim.z = 1;
-  k_type = CNRT_FUNC_TYPE_UNION1;
-  int use_job = selectUnionType(job_limit, box_num_per_core);
-  if (use_job < 4) {
-    k_dim.x = 1;
-    k_type = CNRT_FUNC_TYPE_BLOCK;
-  } else if (use_job == 4) {
-    k_dim.x = core_dim;
-    k_type = CNRT_FUNC_TYPE_UNION1;
-  } else {
-    k_dim.x = use_job;
-    k_type = (cnrtFunctionType_t)use_job;
-  }
-
   // transpose boxes (n, 4) to (4, n) for better performance
-  auto boxes_t = boxes.transpose(0, 1);
-  auto boxes_ = torch_mlu::cnnl::ops::cnnl_contiguous(boxes_t);
+  auto boxes_ = torch_mlu::cnnl::ops::cnnl_contiguous(boxes);
   auto scores_ = torch_mlu::cnnl::ops::cnnl_contiguous(scores);
-  auto output = at::empty({max_output_boxes}, boxes.options().dtype(at::kLong));
+  auto output = at::empty({max_output_boxes}, boxes.options().dtype(at::kInt));
   auto output_size = at::empty({1}, scores.options().dtype(at::kInt));
 
+  MluOpTensorDescriptor boxes_desc, scores_desc, output_desc;
+  boxes_desc.set(boxes_);
+  scores_desc.set(scores_);
+  output_desc.set(output);
+
   // workspace
-  const int info_num = 5;  // x1, x2, y1, y2 and score
-  size_t space_size = 0;
-  if (boxes.scalar_type() == at::kHalf) {
-    space_size = input_num_boxes * sizeof(int16_t) * info_num + sizeof(float);
-  } else {
-    space_size = input_num_boxes * sizeof(float) * info_num + sizeof(float);
-  }
-  auto workspace = at::empty(space_size, boxes.options().dtype(at::kByte));
+  size_t workspace_size = 0;
+  auto handle = mluOpGetCurrentHandle();
+  mluOpGetNmsWorkspaceSize(handle, boxes_desc.desc(), scores_desc.desc(),
+                           &workspace_size);
+  auto workspace = at::empty(workspace_size, boxes.options().dtype(at::kByte));
 
   // get compute queue
-  auto queue = torch_mlu::getCurQueue();
-
   auto boxes_impl = torch_mlu::getMluTensorImpl(boxes_);
   auto boxes_ptr = boxes_impl->cnnlMalloc();
   auto scores_impl = torch_mlu::getMluTensorImpl(scores_);
@@ -112,14 +50,31 @@ Tensor NMSMLUKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
   auto output_size_impl = torch_mlu::getMluTensorImpl(output_size);
   auto output_size_ptr = output_size_impl->cnnlMalloc();
 
-  CNLOG(INFO) << "Launch Kernel MLUUnionX NMS<<<Union" << k_type / core_dim
-              << ", " << k_dim.x << ", " << k_dim.y << ", " << k_dim.z << ">>>";
-  KernelNms(k_dim, k_type, queue, data_type_input, boxes_ptr, scores_ptr,
-            input_num_boxes, input_stride, max_output_boxes, iou_threshold,
-            offset, workspace_ptr, output_size_ptr, output_ptr);
+  // nms desc
+  mluOpNmsDescriptor_t nms_desc;
+  const mluOpNmsBoxPointMode_t box_mode = (mluOpNmsBoxPointMode_t)0;
+  const mluOpNmsOutputMode_t output_mode = (mluOpNmsOutputMode_t)0;
+  const mluOpNmsAlgo_t algo = (mluOpNmsAlgo_t)0;
+  const mluOpNmsMethodMode_t method_mode = (mluOpNmsMethodMode_t)0;
+  const float soft_nms_sigma = 0.0;
+  const float confidence_threshold = 0.0;
+  const int input_layout = 0;
+  const bool pad_to_max_output_size = false;
+  const int max_output_size = max_output_boxes;
 
+  mluOpCreateNmsDescriptor(&nms_desc);
+  mluOpSetNmsDescriptor(nms_desc, box_mode, output_mode, algo, method_mode,
+                        iou_threshold, soft_nms_sigma, max_output_size,
+                        confidence_threshold, (float)offset, input_layout,
+                        pad_to_max_output_size);
+
+  mluOpNms(handle, nms_desc, boxes_desc.desc(), boxes_ptr, scores_desc.desc(),
+           scores_ptr, workspace_ptr, workspace_size, output_desc.desc(),
+           output_ptr, output_size_ptr);
+  mluOpDestroyNmsDescriptor(nms_desc);
   int output_num = *static_cast<int *>(output_size.cpu().data_ptr());
-  return output.slice(0, 0, output_num);
+  auto ret = output.to(boxes.options().dtype(at::kLong));
+  return ret.slice(0, 0, output_num);
 }
 
 Tensor nms_mlu(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
