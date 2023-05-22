@@ -73,6 +73,14 @@ def test_conv_module():
     output = conv(x)
     assert output.shape == (1, 8, 255, 255)
 
+    # conv + norm with fast mode
+    conv = ConvModule(3, 8, 2, norm_cfg=dict(type='BN'))
+    conv.norm.eval()
+    x = torch.rand(1, 3, 256, 256)
+    fast_mode_output = conv(x)
+    plain_implementation = conv.activate(conv.norm(conv.conv(x)))
+    assert torch.allclose(fast_mode_output, plain_implementation, atol=1e-5)
+
     # conv + act
     conv = ConvModule(3, 8, 2)
     assert conv.with_activation
