@@ -1198,7 +1198,7 @@ static __global__ void filtered_lrelu_kernel(filtered_lrelu_kernel_params p) {
                 s += __shfl_xor_sync(groupMask, s, 1);  // Coalesce.
                 s += __shfl_xor_sync(groupMask, s, 2);  // Coalesce.
 #endif
-                p.s[si] = s;                            // Write.
+                p.s[si] = s;  // Write.
               }
             } else {
               // Determine and write sign.
@@ -1221,7 +1221,7 @@ static __global__ void filtered_lrelu_kernel(filtered_lrelu_kernel_params p) {
                 s += __shfl_xor_sync(groupMask, s, 1);  // Coalesce.
                 s += __shfl_xor_sync(groupMask, s, 2);  // Coalesce.
 #endif
-                p.s[si] = s;                            // Write.
+                p.s[si] = s;  // Write.
               } else {
                 // Just compute the value.
                 if (v < 0.f) v *= p.slope;
@@ -1442,12 +1442,12 @@ static __global__ void filtered_lrelu_act_kernel(
         uint32_t m = (threadIdx.x & 16) ? 0xffff0000u : 0x0000ffffu;
         s <<= ((threadIdx.x & 15) << 1);  // Shift into place.
 #ifdef MMCV_WITH_HIP
-        s |= __shfl_xor(s, 1);    // Distribute.
+        s |= __shfl_xor(s, 1);  // Distribute.
         s |= __shfl_xor(s, 2);
         s |= __shfl_xor(s, 4);
         s |= __shfl_xor(s, 8);
 #else
-        s |= __shfl_xor_sync(m, s, 1);    // Distribute.
+        s |= __shfl_xor_sync(m, s, 1);  // Distribute.
         s |= __shfl_xor_sync(m, s, 2);
         s |= __shfl_xor_sync(m, s, 4);
         s |= __shfl_xor_sync(m, s, 8);
@@ -1884,7 +1884,7 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
   }
 #ifdef MMCV_WITH_HIP
   AT_CUDA_CHECK(hipLaunchKernel(spec.setup, 1, 1024, args, 0,
-                                 at::cuda::getCurrentCUDAStream()));
+                                at::cuda::getCurrentCUDAStream()));
 #else
   // Launch filter setup kernel.
   AT_CUDA_CHECK(cudaLaunchKernel(spec.setup, 1, 1024, args, 0,
@@ -1923,8 +1923,8 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
     int subGz = std::min(maxSubGz, gz - zofs);
 #ifdef MMCV_WITH_HIP
     AT_CUDA_CHECK(hipLaunchKernel(spec.exec, dim3(gx, gy, subGz), bx, args,
-                                   spec.dynamicSharedKB << 10,
-                                   at::cuda::getCurrentCUDAStream()));
+                                  spec.dynamicSharedKB << 10,
+                                  at::cuda::getCurrentCUDAStream()));
 #else
     AT_CUDA_CHECK(cudaLaunchKernel(spec.exec, dim3(gx, gy, subGz), bx, args,
                                    spec.dynamicSharedKB << 10,
@@ -2046,7 +2046,7 @@ torch::Tensor filtered_lrelu_act_op(torch::Tensor x, torch::Tensor si, int sx,
   // Launch.
 #ifdef MMCV_WITH_HIP
   AT_CUDA_CHECK(hipLaunchKernel(func, dim3(gx, gy, gz), bx, args, 0,
-                                 at::cuda::getCurrentCUDAStream()));
+                                at::cuda::getCurrentCUDAStream()));
 #else
   AT_CUDA_CHECK(cudaLaunchKernel(func, dim3(gx, gy, gz), bx, args, 0,
                                  at::cuda::getCurrentCUDAStream()));

@@ -291,7 +291,7 @@ torch::Tensor bias_act_op(const torch::Tensor &x, const torch::Tensor &b,
   void *args[] = {&p};
 #ifdef MMCV_WITH_HIP
   AT_CUDA_CHECK(hipLaunchKernel(kernel, gridSize, blockSize, args, 0,
-                                 at::cuda::getCurrentCUDAStream()));
+                                at::cuda::getCurrentCUDAStream()));
 #else
   AT_CUDA_CHECK(cudaLaunchKernel(kernel, gridSize, blockSize, args, 0,
                                  at::cuda::getCurrentCUDAStream()));
