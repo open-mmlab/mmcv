@@ -18,8 +18,8 @@
 #include "pytorch_device_registry.hpp"
 
 #define MLUOP_MAJOR 0
-#define MLUOP_MINOR 5
-#define MLUOP_PATCHLEVEL 302
+#define MLUOP_MINOR 6
+#define MLUOP_PATCHLEVEL 0
 
 mluOpDataType_t getMluOpDataType(const caffe2::TypeMeta& data_type);
 mluOpTensorLayout_t getMluOpSuggestLayout(const at::Tensor& input);

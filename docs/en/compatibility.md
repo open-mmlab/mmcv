@@ -9,7 +9,7 @@ The OpenMMLab team released MMCV v2.0.0 on April 6, 2023. In the 2.x version, it
 - `mmcv.fileio` module, removed in PR [#2179](https://github.com/open-mmlab/mmcv/pull/2179). FileIO module from mmengine will be used wherever required.
 - `mmcv.runner`, `mmcv.parallel`, `mmcv. engine` and `mmcv.device`, removed in PR [#2216](https://github.com/open-mmlab/mmcv/pull/2216).
 - All classes in `mmcv.utils` (eg `Config` and `Registry`) and many functions, removed in PR [#2217](https://github.com/open-mmlab/mmcv/pull/2217). Only a few functions related to mmcv are reserved.
-- `mmcv.onnex`, `mmcv.tensorrt` modules and related functions, removed in PR [#2225](https://github.com/open-mmlab/mmcv/pull/2225).
+- `mmcv.onnx`, `mmcv.tensorrt` modules and related functions, removed in PR [#2225](https://github.com/open-mmlab/mmcv/pull/2225).
 - Removed all root registrars in MMCV and registered classes or functions to the [root registrar](https://github.com/open-mmlab/mmengine/blob/main/mmengine/registry/root.py) in MMEngine.
 
 (2) It added the [`mmcv.transforms`](https://github.com/open-mmlab/mmcv/tree/main/mmcv/transforms) data transformation module.
@@ -27,10 +27,12 @@ The OpenMMLab team released MMCV v2.0.0 on April 6, 2023. In the 2.x version, it
 
 ```bash
 # Contains ops, because the highest version of mmcv-full is less than 2.0.0, so there is no need to add version restrictions
+pip install openmim
 mim install mmcv-full
 
 # do not contain ops
-mmcv install "mmcv < 2.0.0"
+pip install openmim
+mim install "mmcv < 2.0.0"
 ```
 
 </td>
@@ -38,10 +40,11 @@ mmcv install "mmcv < 2.0.0"
 
 ```bash
 # Contains ops
-mim install openmim
+pip install openmim
 mim install mmcv
 
 # Ops are not included, because the starting version of mmcv-lite is 2.0.0rc1, so there is no need to add version restrictions
+pip install openmim
 mim install mmcv-lite
 ```
 

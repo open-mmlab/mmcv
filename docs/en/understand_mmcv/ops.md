@@ -4,12 +4,12 @@ We implement common ops used in detection, segmentation, etc.
 
 | Device                       | CPU | CUDA | MLU | MPS | Ascend |
 | ---------------------------- | --- | ---- | --- | --- | ------ |
-| ActiveRotatedFilter          | √   | √    |     |     |        |
+| ActiveRotatedFilter          | √   | √    |     |     | √      |
 | AssignScoreWithK             |     | √    |     |     |        |
 | BallQuery                    |     | √    | √   |     |        |
 | BBoxOverlaps                 |     | √    | √   | √   | √      |
 | BorderAlign                  |     | √    |     |     |        |
-| BoxIouRotated                | √   | √    |     |     |        |
+| BoxIouRotated                | √   | √    | √   |     |        |
 | BoxIouQuadri                 | √   | √    |     |     |        |
 | CARAFE                       |     | √    | √   |     |        |
 | ChamferDistance              |     | √    |     |     |        |
