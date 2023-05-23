@@ -93,10 +93,7 @@ def _test_roialign_allclose(device, dtype):
             x.grad.data.type(torch.float).cpu().numpy(), np_grad, atol=1e-3)
 
 
-@pytest.mark.parametrize('dtype', [
-    torch.float,
-    torch.half
-])
+@pytest.mark.parametrize('dtype', [torch.float, torch.half])
 @pytest.mark.parametrize('device', [
     'cpu',
     pytest.param(
