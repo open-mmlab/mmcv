@@ -672,8 +672,13 @@ static __global__ void filtered_lrelu_kernel(filtered_lrelu_kernel_params p) {
                 // Combine signs.
                 uint32_t s = sx + sy + sw + sz;
                 s <<= (signX & 3) << 1;
+#ifndef MMCV_WITH_HIP
                 s |= __shfl_xor_sync(groupMask, s, 1);
                 s |= __shfl_xor_sync(groupMask, s, 2);
+#else
+                s |= __shfl_xor(s, 1);
+                s |= __shfl_xor(s, 2);
+#endif
 
                 // Write signs.
                 if ((uint32_t)(signY + 0) < sShapeMaxY) {
@@ -720,8 +725,13 @@ static __global__ void filtered_lrelu_kernel(filtered_lrelu_kernel_params p) {
                 // Combine signs.
                 uint32_t s = sx + sy + sw + sz;
                 s <<= (signX & 3) << 1;
+#ifndef MMCV_WITH_HIP
                 s |= __shfl_xor_sync(groupMask, s, 1);
                 s |= __shfl_xor_sync(groupMask, s, 2);
+#else
+                s |= __shfl_xor(s, 1);
+                s |= __shfl_xor(s, 2);
+#endif
 
                 // Write signs.
                 if ((uint32_t)(signY + 0) < sShapeMaxY) {
@@ -852,8 +862,13 @@ static __global__ void filtered_lrelu_kernel(filtered_lrelu_kernel_params p) {
                 // Combine signs.
                 int s = sx + sy;
                 s <<= signXo;
+#ifndef MMCV_WITH_HIP
                 s |= __shfl_xor_sync(groupMask, s, 1);
                 s |= __shfl_xor_sync(groupMask, s, 2);
+#else
+                s |= __shfl_xor(s, 1);
+                s |= __shfl_xor(s, 2);
+#endif
 
                 // Write signs.
                 if ((uint32_t)(signY + 0) < sShapeMaxY) {
@@ -882,8 +897,13 @@ static __global__ void filtered_lrelu_kernel(filtered_lrelu_kernel_params p) {
                 // Combine signs.
                 int s = sx + sy;
                 s <<= signXo;
+#ifndef MMCV_WITH_HIP
                 s |= __shfl_xor_sync(groupMask, s, 1);
                 s |= __shfl_xor_sync(groupMask, s, 2);
+#else
+                s |= __shfl_xor(s, 1);
+                s |= __shfl_xor(s, 2);
+#endif
 
                 // Write signs.
                 if ((uint32_t)(signY + 0) < sShapeMaxY) {
@@ -1171,8 +1191,13 @@ static __global__ void filtered_lrelu_kernel(filtered_lrelu_kernel_params p) {
               }
               if ((uint32_t)signXb < p.swLimit &&
                   (uint32_t)signY < p.sShape.y && signY >= minY) {
+#ifndef MMCV_WITH_HIP
                 s += __shfl_xor_sync(groupMask, s, 1);  // Coalesce.
                 s += __shfl_xor_sync(groupMask, s, 2);  // Coalesce.
+#else
+                s += __shfl_xor(s, 1);  // Coalesce.
+                s += __shfl_xor(s, 2);  // Coalesce.
+#endif
                 p.s[si] = s;                            // Write.
               }
             } else {
@@ -1189,8 +1214,13 @@ static __global__ void filtered_lrelu_kernel(filtered_lrelu_kernel_params p) {
                   s = signXbit * 2;
                   v = InternalType<T>::clamp(v, p.clamp);
                 }
+#ifndef MMCV_WITH_HIP
                 s += __shfl_xor_sync(groupMask, s, 1);  // Coalesce.
                 s += __shfl_xor_sync(groupMask, s, 2);  // Coalesce.
+#else
+                s += __shfl_xor(s, 1);  // Coalesce.
+                s += __shfl_xor(s, 2);  // Coalesce.
+#endif
                 p.s[si] = s;                            // Write.
               } else {
                 // Just compute the value.
@@ -1411,10 +1441,17 @@ static __global__ void filtered_lrelu_act_kernel(
         // Coalesce into threads 0 and 16 of warp.
         uint32_t m = (threadIdx.x & 16) ? 0xffff0000u : 0x0000ffffu;
         s <<= ((threadIdx.x & 15) << 1);  // Shift into place.
+#ifndef MMCV_WITH_HIP
         s |= __shfl_xor_sync(m, s, 1);    // Distribute.
         s |= __shfl_xor_sync(m, s, 2);
         s |= __shfl_xor_sync(m, s, 4);
         s |= __shfl_xor_sync(m, s, 8);
+#else
+        s |= __shfl_xor(s, 1);    // Distribute.
+        s |= __shfl_xor(s, 2);
+        s |= __shfl_xor(s, 4);
+        s |= __shfl_xor(s, 8);
+#endif
 
         // Write signs if leader and in p.s.
         if (!(threadIdx.x & 15) && x < p.sShape.x)  // y is always in.
@@ -1586,6 +1623,7 @@ filtered_lrelu_kernel_spec choose_filtered_lrelu_kernel(
 
 #define BUILD_FILTERED_LRELU_OP 1
 
+#ifndef MMCV_WITH_HIP
 #ifdef __GNUC__
 #if __GNUC__ < 6
 #undef BUILD_FILTERED_LRELU_OP
@@ -1596,6 +1634,7 @@ filtered_lrelu_kernel_spec choose_filtered_lrelu_kernel(
 #if CUDA_VERSION < 10020
 #undef BUILD_FILTERED_LRELU_OP
 #define BUILD_FILTERED_LRELU_OP 0
+#endif
 #endif
 
 #if BUILD_FILTERED_LRELU_OP == 1
@@ -1637,9 +1676,15 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
 
   // Figure out how much shared memory is available on the device.
   int maxSharedBytes = 0;
+#ifndef MMCV_WITH_HIP
   AT_CUDA_CHECK(cudaDeviceGetAttribute(&maxSharedBytes,
                                        cudaDevAttrMaxSharedMemoryPerBlockOptin,
                                        x.device().index()));
+#else
+  cudaDeviceGetAttribute(&maxSharedBytes,
+                         hipDeviceAttributeSharedMemPerBlockOptin,
+                         x.device().index());
+#endif
   int sharedKB = maxSharedBytes >> 10;
 
   // Populate enough launch parameters to check if a CUDA kernel exists.
@@ -1837,10 +1882,14 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
     p.tilesXrep = 0;
     p.tilesXdim = 0;
   }
-
+#ifndef MMCV_WITH_HIP
   // Launch filter setup kernel.
   AT_CUDA_CHECK(cudaLaunchKernel(spec.setup, 1, 1024, args, 0,
                                  at::cuda::getCurrentCUDAStream()));
+#else
+  AT_CUDA_CHECK(hipLaunchKernel(spec.setup, 1, 1024, args, 0,
+                                 at::cuda::getCurrentCUDAStream()));
+#endif
 
   // Copy kernels to constant memory.
   if (writeSigns && !readSigns)
@@ -1853,9 +1902,15 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
   // Set cache and shared memory configurations for main kernel.
   AT_CUDA_CHECK(cudaFuncSetCacheConfig(spec.exec, cudaFuncCachePreferShared));
   if (spec.dynamicSharedKB)  // Need dynamically allocated shared memory?
+#ifndef MMCV_WITH_HIP
     AT_CUDA_CHECK(cudaFuncSetAttribute(
         spec.exec, cudaFuncAttributeMaxDynamicSharedMemorySize,
         spec.dynamicSharedKB << 10));
+#else
+    AT_CUDA_CHECK(hipFuncSetAttribute(
+        spec.exec, hipFuncAttributeMaxDynamicSharedMemorySize,
+        spec.dynamicSharedKB << 10));
+#endif
   AT_CUDA_CHECK(
       cudaFuncSetSharedMemConfig(spec.exec, cudaSharedMemBankSizeFourByte));
 
@@ -1866,9 +1921,15 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
   {
     p.blockZofs = zofs;
     int subGz = std::min(maxSubGz, gz - zofs);
+#ifndef MMCV_WITH_HIP
     AT_CUDA_CHECK(cudaLaunchKernel(spec.exec, dim3(gx, gy, subGz), bx, args,
                                    spec.dynamicSharedKB << 10,
                                    at::cuda::getCurrentCUDAStream()));
+#else
+    AT_CUDA_CHECK(hipLaunchKernel(spec.exec, dim3(gx, gy, subGz), bx, args,
+                                   spec.dynamicSharedKB << 10,
+                                   at::cuda::getCurrentCUDAStream()));
+#endif
   }
 
   // Done.
@@ -1983,7 +2044,12 @@ torch::Tensor filtered_lrelu_act_op(torch::Tensor x, torch::Tensor si, int sx,
   gz = std::min(gz, gmax);
 
   // Launch.
+#ifndef MMCV_WITH_HIP
   AT_CUDA_CHECK(cudaLaunchKernel(func, dim3(gx, gy, gz), bx, args, 0,
                                  at::cuda::getCurrentCUDAStream()));
+#else
+  AT_CUDA_CHECK(hipLaunchKernel(func, dim3(gx, gy, gz), bx, args, 0,
+                                 at::cuda::getCurrentCUDAStream()));
+#endif
   return so;
 }

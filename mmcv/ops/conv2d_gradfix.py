@@ -39,7 +39,7 @@ def conv2d(input: torch.Tensor,
            dilation: Union[int, Tuple[int, ...]] = 1,
            groups: int = 1):
     flag = True
-    if torch.__version__ >= '1.10.0':
+    if digit_version(torch.__version__) >= digit_version('1.10.0'):
         warnings.warn('Since '
                       'aten:cudnn_convolution_backward_weight is '
                       f'not supported in torch=={torch.__version__},'
@@ -283,15 +283,36 @@ def _conv2d_gradfix(
                     output_padding=output_padding,
                     output_mask=[0, 1, 0])[1]
             else:
-                # General case => cuDNN.
-                name = ('aten::cudnn_convolution_transpose_backward_weight'
-                        if transpose else
-                        'aten::cudnn_convolution_backward_weight')
-                flags = [
-                    torch.backends.cudnn.benchmark,
-                    torch.backends.cudnn.deterministic,
-                    torch.backends.cudnn.allow_tf32
-                ]
+                is_rocm_pytorch = False
+                try:
+                    from torch.utils.cpp_extension import ROCM_HOME
+                    if ((torch.version.hip is not None)
+                            and (ROCM_HOME is not None)):
+                        is_rocm_pytorch = True
+                except ImportError:
+                    pass
+
+                name = ''
+                flags = []
+
+                if is_rocm_pytorch:
+                    name = 'aten::miopen_convolution_transpose_backward_weight'
+                    if not transpose:
+                        name = 'aten::miopen_convolution_backward_weight'
+                    flags = [
+                        torch.backends.cudnn.benchmark,
+                        torch.backends.cudnn.deterministic
+                    ]
+                else:
+                    # General case => cuDNN.
+                    name = ('aten::cudnn_convolution_transpose_backward_weight'
+                            if transpose else
+                            'aten::cudnn_convolution_backward_weight')
+                    flags = [
+                        torch.backends.cudnn.benchmark,
+                        torch.backends.cudnn.deterministic,
+                        torch.backends.cudnn.allow_tf32
+                    ]
                 return torch._C._jit_get_operation(name)(weight_shape,
                                                          grad_output, input,
                                                          padding, stride,
