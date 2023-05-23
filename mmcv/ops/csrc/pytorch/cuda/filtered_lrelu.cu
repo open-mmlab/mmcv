@@ -1447,7 +1447,7 @@ static __global__ void filtered_lrelu_act_kernel(
         s |= __shfl_xor(s, 4);
         s |= __shfl_xor(s, 8);
 #else
-        s |= __shfl_xor_sync(m, s, 1);  // Distribute.
+        s |= __shfl_xor_sync(m, s, 1);                  // Distribute.
         s |= __shfl_xor_sync(m, s, 2);
         s |= __shfl_xor_sync(m, s, 4);
         s |= __shfl_xor_sync(m, s, 8);
