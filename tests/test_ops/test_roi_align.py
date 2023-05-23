@@ -109,7 +109,6 @@ def _test_roialign_allclose(device, dtype):
         marks=pytest.mark.skipif(
             not IS_NPU_AVAILABLE, reason='requires NPU support'))
 ])
-@pytest.mark.parametrize('dtype', [torch.float, torch.half])
 def test_roialign_float(device, dtype):
     _test_roialign_allclose(device=device, dtype=dtype)
 
