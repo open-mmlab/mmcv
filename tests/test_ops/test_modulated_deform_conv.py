@@ -120,12 +120,18 @@ class TestMdconv:
             marks=pytest.mark.skipif(
                 not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
     ])
-    @pytest.mark.parametrize('dtype', [
-        torch.float,
-        torch.double,
+    def test_mdconv_float(self, device):
+        self._test_mdconv(dtype=torch.float, device=device)
+
+    @pytest.mark.parametrize('device', [
+        'cpu',
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
     ])
-    def test_mdconv_float(self, device, dtype):
-        self._test_mdconv(dtype=dtype, device=device)
+    def test_mdconv_double(self, device):
+        self._test_mdconv(dtype=torch.double, device=device)
 
     def test_mdconv_half(self):
         self._test_mdconv(torch.half)
