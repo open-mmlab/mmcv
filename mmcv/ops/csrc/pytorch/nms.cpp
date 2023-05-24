@@ -53,7 +53,7 @@ Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
   LOG(WARNING) << "Fallback to cpu: mmcv ext op nms";
   auto boxes_cpu = boxes.cpu();
   auto scores_cpu = scores.cpu();
-  return nms_impl(boxes_cpu, scores_cpu, iou_threshold, offset);;
+  return nms_impl(boxes_cpu, scores_cpu, iou_threshold, offset);
 #else
   return nms_impl(boxes, scores, iou_threshold, offset);
 #endif
