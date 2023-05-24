@@ -15,7 +15,7 @@ struct Point {
   double x, y;
   __device__ Point() {}
   __device__ Point(double x, double y) : x(x), y(y) {}
-  __device__ friend bool operator<(const Point& lhs, const Point& rhs) {
+  __device__ inline friend bool operator<(const Point& lhs, const Point& rhs) {
     if(lhs.y != rhs.y) return lhs.y < rhs.y;
     if(lhs.x != rhs.x) return lhs.x < rhs.x;
     return true;
