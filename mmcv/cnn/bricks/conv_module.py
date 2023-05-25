@@ -108,9 +108,6 @@ class ConvModule(nn.Module):
             Default: True.
         with_spectral_norm (bool): Whether use spectral norm in conv module.
             Default: False.
-        fast_conv_bn_eval (bool): Whether use fast conv when the consecutive
-            bn is in eval mode (either training or testing), as proposed in
-            https://arxiv.org/abs/2305.11624 . Default: False.
         padding_mode (str): If the `padding_mode` has not been supported by
             current `Conv2d` in PyTorch, we will use our own padding layer
             instead. Currently, we support ['zeros', 'circular'] with official
@@ -120,6 +117,9 @@ class ConvModule(nn.Module):
             sequence of "conv", "norm" and "act". Common examples are
             ("conv", "norm", "act") and ("act", "conv", "norm").
             Default: ('conv', 'norm', 'act').
+        fast_conv_bn_eval (bool): Whether use fast conv when the consecutive
+            bn is in eval mode (either training or testing), as proposed in
+            https://arxiv.org/abs/2305.11624 . Default: False.
     """
 
     _abbr_ = 'conv_block'
@@ -138,9 +138,9 @@ class ConvModule(nn.Module):
                  act_cfg: Optional[Dict] = dict(type='ReLU'),
                  inplace: bool = True,
                  with_spectral_norm: bool = False,
-                 fast_conv_bn_eval: bool = False,
                  padding_mode: str = 'zeros',
-                 order: tuple = ('conv', 'norm', 'act')):
+                 order: tuple = ('conv', 'norm', 'act'),
+                 fast_conv_bn_eval: bool = False):
         super().__init__()
         assert conv_cfg is None or isinstance(conv_cfg, dict)
         assert norm_cfg is None or isinstance(norm_cfg, dict)
