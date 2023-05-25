@@ -280,11 +280,10 @@ class ConvModule(nn.Module):
                         self.with_norm and not self.norm.training and \
                         self.fast_conv_bn_eval_forward is not None:
                     self.conv.forward = self.fast_conv_bn_eval_forward
-                    x = self.conv(x)
                     layer_index += 1
                 else:
                     self.conv.forward = self.original_conv_forward
-                    x = self.conv(x)
+                x = self.conv(x)
             elif layer == 'norm' and norm and self.with_norm:
                 x = self.norm(x)
             elif layer == 'act' and activate and self.with_activation:
