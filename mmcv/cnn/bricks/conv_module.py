@@ -219,8 +219,7 @@ class ConvModule(nn.Module):
                                                      self.norm, self.conv)
         else:
             self.fast_conv_bn_eval_forward = None  # type: ignore
-        self.original_conv_forward = partial(self.conv.__class__.forward,
-                                             self.conv)
+        self.original_conv_forward = self.conv.forward
 
         # build activation layer
         if self.with_activation:
