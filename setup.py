@@ -239,12 +239,8 @@ def get_extensions():
             include_dirs.append(diopi_path + '/include')
             include_dirs.append(dipu_path + '/dist/include')
             include_dirs.append(vendor_include_dirs)
-            # diopi_root = os.getenv('DIOPI_ROOT')
-            # vendor_lib_dirs = os.getenv('VENDOR_LIB_DIRS')
             library_dirs += [dipu_root]
-            # library_dirs += [diopi_root]
             libraries += ['torch_dipu']
-            # libraries += ['diopi_impl']
         elif is_rocm_pytorch or torch.cuda.is_available() or os.getenv(
                 'FORCE_CUDA', '0') == '1':
             if is_rocm_pytorch:
