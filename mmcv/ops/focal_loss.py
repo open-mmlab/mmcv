@@ -6,7 +6,7 @@ import torch.nn as nn
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 
-from ..utils import ext_loader
+from ..utils import IS_DIPU_AVAILABLE, ext_loader
 
 ext_module = ext_loader.load_ext('_ext', [
     'sigmoid_focal_loss_forward', 'sigmoid_focal_loss_backward',
@@ -42,6 +42,11 @@ class SigmoidFocalLossFunction(Function):
         ctx.reduction = ctx.reduction_dict[reduction]
 
         output = input.new_zeros(input.size())
+
+        if IS_DIPU_AVAILABLE:
+            import torch_dipu
+            if torch_dipu._C.dipu_vendor == 'MLU':
+                target = target.int()
 
         ext_module.sigmoid_focal_loss_forward(
             input, target, weight, output, gamma=ctx.gamma, alpha=ctx.alpha)
