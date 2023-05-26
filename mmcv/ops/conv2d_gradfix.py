@@ -295,7 +295,7 @@ def _conv2d_gradfix(
                 name = ''
                 flags = []
 
-                if is_rocm_pytorch:
+                if is_rocm_pytorch():
                     name = 'aten::miopen_convolution_transpose_backward_weight'
                     if not transpose:
                         name = 'aten::miopen_convolution_backward_weight'
