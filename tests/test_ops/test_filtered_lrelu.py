@@ -114,10 +114,22 @@ class TestFilteredLrelu:
             self.input_tensor, bias=self.bias, flip_filter=True)
         assert out.shape == (1, 3, 16, 16)
 
-    @pytest.mark.skipif(
-        not torch.cuda.is_available() or is_rocm_pytorch() or
-        or digit_version(torch.version.cuda) < digit_version('10.2'),
-        reason='requires cuda>=10.2')
+    is_rocm_pytorch = False
+    try:
+        from torch.utils.cpp_extension import ROCM_HOME
+        is_rocm_pytorch = True if ((torch.version.hip is not None) and
+                                   (ROCM_HOME is not None)) else False
+    except ImportError:
+        pass
+
+    is_skipif = True
+    if is_rocm_pytorch:
+        is_skipif = False
+    else:
+        is_skipif = (not torch.cuda.is_available() or
+                     digit_version(torch.version.cuda) < digit_version('10.2'))
+
+    @pytest.mark.skipif(is_skipif, reason='requires cuda>=10.2')
     def test_filtered_lrelu_cuda(self):
         out = filtered_lrelu(self.input_tensor.cuda(), bias=self.bias.cuda())
         assert out.shape == (1, 3, 16, 16)
