@@ -32,12 +32,6 @@ void CARAFEForwardMLUKernelLauncher(const Tensor input, const Tensor mask,
   TORCH_CHECK(mask.dim() == 4, "mask should be a 4-D tensor, but has ",
               input.dim(), "D.");
 
-  // param check
-  TORCH_CHECK(kernel_size <= 45, "kernel_size should be less than 45, got ",
-              kernel_size);
-  TORCH_CHECK(scale_factor <= 5, "scale_factor should be less than 5, got ",
-              scale_factor);
-
   // return fast on zero-element tensor
   if (output.numel() == 0) {
     output = at::zeros(output.sizes().vec(), output.options());
