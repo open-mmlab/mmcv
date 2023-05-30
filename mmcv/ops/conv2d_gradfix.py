@@ -284,8 +284,6 @@ def _conv2d_gradfix(
                     output_padding=output_padding,
                     output_mask=[0, 1, 0])[1]
             else:
-                name = ''
-                flags = []
                 if is_rocm_pytorch():
                     name = 'aten::miopen_convolution_transpose_backward_weight'
                     if not transpose:
