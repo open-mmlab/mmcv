@@ -16,6 +16,7 @@ from typing import Dict, Optional, Tuple, Union
 
 import torch
 from mmengine.utils import digit_version
+from mmengine.utils.dl_utils.parrots_wrapper import is_rocm_pytorch
 
 enabled = True
 weight_gradients_disabled = False
@@ -283,18 +284,9 @@ def _conv2d_gradfix(
                     output_padding=output_padding,
                     output_mask=[0, 1, 0])[1]
             else:
-                is_rocm_pytorch = False
-                try:
-                    from torch.utils.cpp_extension import ROCM_HOME
-                    if ((torch.version.hip is not None)
-                            and (ROCM_HOME is not None)):
-                        is_rocm_pytorch = True
-                except ImportError:
-                    pass
-
                 name = ''
                 flags = []
-                if is_rocm_pytorch:
+                if is_rocm_pytorch():
                     name = 'aten::miopen_convolution_transpose_backward_weight'
                     if not transpose:
                         name = 'aten::miopen_convolution_backward_weight'
