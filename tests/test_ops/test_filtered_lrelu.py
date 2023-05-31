@@ -2,6 +2,7 @@
 import pytest
 import torch
 from mmengine.utils import digit_version
+from mmengine.utils.dl_utils.parrots_wrapper import is_rocm_pytorch
 
 from mmcv.ops import filtered_lrelu
 
@@ -115,7 +116,7 @@ class TestFilteredLrelu:
         assert out.shape == (1, 3, 16, 16)
 
     @pytest.mark.skipif(
-        not torch.cuda.is_available()
+        not torch.cuda.is_available() or is_rocm_pytorch()
         or digit_version(torch.version.cuda) < digit_version('10.2'),
         reason='requires cuda>=10.2')
     def test_filtered_lrelu_cuda(self):
