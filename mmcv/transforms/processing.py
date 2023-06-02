@@ -1031,7 +1031,7 @@ class RandomChoiceResize(BaseTransform):
 
     - scale
     - scale_factor
-    - scale_idx or ratio_idx
+    - scale_idx or scale_factor_idx
     - keep_ratio
 
 
