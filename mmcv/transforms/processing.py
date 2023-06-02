@@ -1112,7 +1112,7 @@ class RandomChoiceResize(BaseTransform):
         """
         scale_factor_idx = np.random.randint(len(
             self.scale_factor_choices))  # type: ignore
-        scale_factor = self.scale_factor_choices[
+        scale_factor = self.scale_factor_choices[  # type: ignore
             scale_factor_idx]  # type: ignore
         return scale_factor, scale_factor_idx
 
