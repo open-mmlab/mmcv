@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 import mmcv
+from mmcv.image.geometric import _scale_size
 from mmcv.transforms import (TRANSFORMS, Normalize, Pad, RandomFlip,
                              RandomResize, Resize, TestTimeAug)
 from mmcv.transforms.base import BaseTransform
@@ -702,6 +703,32 @@ class TestRandomChoiceResize:
         results = random_multiscale_resize(results)
         assert (results['img'].shape[1],
                 results['img'].shape[0]) in _scale_choice
+
+        # test with one ratio
+        _scale_factor_choices = [0.5]
+        transform = dict(
+            type='RandomChoiceResize',
+            scale_factor_choices=_scale_factor_choices)
+        random_multiscale_resize = TRANSFORMS.build(transform)
+        self.reset_results(results)
+        results = random_multiscale_resize(results)
+        scale_factor_idx = results['scale_factor_idx']
+        assert results['img'].shape[:2] == _scale_size(
+            self.original_img.shape[:2],
+            _scale_factor_choices[scale_factor_idx])
+
+        # test with multi ratios
+        _scale_factor_choices = [0.5, 1.5]
+        transform = dict(
+            type='RandomChoiceResize',
+            scale_factor_choices=_scale_factor_choices)
+        random_multiscale_resize = TRANSFORMS.build(transform)
+        self.reset_results(results)
+        results = random_multiscale_resize(results)
+        scale_factor_idx = results['scale_factor_idx']
+        assert results['img'].shape[:2] == _scale_size(
+            self.original_img.shape[:2],
+            _scale_factor_choices[scale_factor_idx])
 
         # test keep_ratio
         transform = dict(

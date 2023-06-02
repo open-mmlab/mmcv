@@ -1031,12 +1031,15 @@ class RandomChoiceResize(BaseTransform):
 
     - scale
     - scale_factor
-    - scale_idx
+    - scale_idx or ratio_idx
     - keep_ratio
 
 
     Args:
-        scales (Union[list, Tuple]): Images scales for resizing.
+        scales (Sequence[Union[list, Tuple]], optional): Images scales for
+            resizing. Defaults to None.
+        scale_factor_choices (Sequence[float], optional): resize scale_factor
+            available for selection. Defaults to None.
         resize_type (str): The type of resize class to use. Defaults to
             "Resize".
         **resize_kwargs: Other keyword arguments for the ``resize_type``.
@@ -1054,20 +1057,34 @@ class RandomChoiceResize(BaseTransform):
 
     def __init__(
         self,
-        scales: Sequence[Union[int, Tuple]],
+        scales: Optional[Sequence[Union[int, Tuple[int]]]] = None,
+        scale_factor_choices: Optional[Sequence[float]] = None,
         resize_type: str = 'Resize',
         **resize_kwargs,
     ) -> None:
         super().__init__()
-        if isinstance(scales, list):
-            self.scales = scales
+        assert scales is not None or scale_factor_choices is not None, (
+            'scales and scale_factor_choices can not both be `None`')
+
+        _resize_cfg = dict(scale=None, scale_factor=None)
+
+        if scales is not None:
+            if isinstance(scales, list):
+                self.scales = scales
+            else:
+                self.scales = [scales]
+            assert mmengine.is_seq_of(self.scales, (tuple, int))
+            self.scale_factor_choices = None
+            _resize_cfg['scale'] = 0  # type: ignore
         else:
-            self.scales = [scales]
-        assert mmengine.is_seq_of(self.scales, (tuple, int))
+            assert mmengine.is_seq_of(scale_factor_choices, float)
+            self.scale_factor_choices = scale_factor_choices
+            self.scales = None  # type: ignore
+            _resize_cfg['scale_factor'] = 0.  # type: ignore
 
         self.resize_cfg = dict(type=resize_type, **resize_kwargs)
         # create a empty Resize object
-        self.resize = TRANSFORMS.build({'scale': 0, **self.resize_cfg})
+        self.resize = TRANSFORMS.build({**_resize_cfg, **self.resize_cfg})
 
     @cache_randomness
     def _random_select(self) -> Tuple[int, int]:
@@ -1083,6 +1100,22 @@ class RandomChoiceResize(BaseTransform):
         scale = self.scales[scale_idx]
         return scale, scale_idx
 
+    @cache_randomness
+    def _random_select_scale_factor(self) -> Tuple[float, int]:
+        """Randomly select an scale_factor from given candidates.
+
+        Returns:
+            tuple: Returns a tuple ``(scale_factor, scale_factor_dix)``, where
+                ``scale_factor`` is the selected resize scale_factor and
+                ``scale_factor_idx`` is the selected index in the given
+                candidates.
+        """
+        scale_factor_idx = np.random.randint(len(
+            self.scale_factor_choices))  # type: ignore
+        scale_factor = self.scale_factor_choices[
+            scale_factor_idx]  # type: ignore
+        return scale_factor, scale_factor_idx
+
     def transform(self, results: dict) -> dict:
         """Apply resize transforms on results from a list of scales.
 
@@ -1095,15 +1128,22 @@ class RandomChoiceResize(BaseTransform):
             and 'keep_ratio' keys are updated in result dict.
         """
 
-        target_scale, scale_idx = self._random_select()
-        self.resize.scale = target_scale
-        results = self.resize(results)
-        results['scale_idx'] = scale_idx
+        if self.scales is not None:
+            target_scale, scale_idx = self._random_select()
+            self.resize.scale = target_scale
+            results = self.resize(results)
+            results['scale_idx'] = scale_idx
+        else:
+            scale_factor, scale_factor_idx = self._random_select_scale_factor()
+            self.resize.scale_factor = scale_factor
+            results = self.resize(results)
+            results['scale_factor_idx'] = scale_factor_idx
         return results
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
         repr_str += f'(scales={self.scales}'
+        repr_str += f'(scale_factor_choices={self.scale_factor_choices}'
         repr_str += f', resize_cfg={self.resize_cfg})'
         return repr_str
 
