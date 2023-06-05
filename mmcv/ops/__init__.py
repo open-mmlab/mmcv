@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from mmcv.utils import IS_MLU_AVAILABLE
 from .active_rotated_filter import active_rotated_filter
 from .assign_score_withk import assign_score_withk
 from .ball_query import ball_query
@@ -109,3 +110,8 @@ __all__ = [
     'PrRoIPool', 'prroi_pool', 'bias_act', 'filtered_lrelu', 'conv2d',
     'conv_transpose2d', 'filter2d', 'upsample2d', 'BezierAlign', 'bezier_align'
 ]
+
+if IS_MLU_AVAILABLE:
+    from .modulated_deform_conv import \
+        ModulatedDeformConv2dPack_MLU  # noqa:F401
+    __all__.append('ModulatedDeformConv2dPack_MLU')
