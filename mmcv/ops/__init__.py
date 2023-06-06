@@ -112,6 +112,7 @@ __all__ = [
 ]
 
 if IS_MLU_AVAILABLE:
+    from .deform_conv import DeformConv2dPack_MLU  # noqa:F401
     from .modulated_deform_conv import \
         ModulatedDeformConv2dPack_MLU  # noqa:F401
-    __all__.append('ModulatedDeformConv2dPack_MLU')
+    __all__.extend(['ModulatedDeformConv2dPack_MLU', 'DeformConv2dPack_MLU'])
