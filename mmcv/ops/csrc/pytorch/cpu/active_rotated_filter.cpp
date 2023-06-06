@@ -22,8 +22,8 @@ void active_rotated_filter_forward_cpu_kernel(
         int fmIndex = (l / (kH * kW)) * kH * kW;
         for (k = 0; k < num_rotations; k++) {
           int index = (int)(*(indicesData + l * num_rotations + k)) - 1;
-          T* target = outputData +
-              i * (num_rotations * num_input_planes * nEntry) +
+          T* target =
+              outputData + i * (num_rotations * num_input_planes * nEntry) +
               k * (num_input_planes * nEntry) + j * (nEntry) + index + fmIndex;
           *target = val;
         }
