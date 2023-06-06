@@ -159,7 +159,7 @@ def get_extensions():
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
         extra_compile_args = {
             'nvcc': [cuda_args, '-std=c++14'] if cuda_args else ['-std=c++14'],
-            'cxx': ['-std=c++14'],
+            'cxx': ['-std=c++17'],
         }
         if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
             define_macros += [('MMCV_WITH_CUDA', None)]
@@ -201,13 +201,13 @@ def get_extensions():
         extra_compile_args = {'cxx': []}
 
         if platform.system() != 'Windows':
-            extra_compile_args['cxx'] = ['-std=c++14']
+            extra_compile_args['cxx'] = ['-std=c++17']
         else:
             # TODO: In Windows, C++17 is chosen to compile extensions in
             # PyTorch2.0 , but a compile error will be reported.
             # As a temporary solution, force the use of C++14.
             if parse_version(torch.__version__) >= parse_version('2.0.0'):
-                extra_compile_args['cxx'] = ['/std:c++14']
+                extra_compile_args['cxx'] = ['/std:c++17']
 
         include_dirs = []
         library_dirs = []
