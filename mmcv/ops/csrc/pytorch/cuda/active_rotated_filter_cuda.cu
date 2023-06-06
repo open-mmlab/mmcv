@@ -24,7 +24,7 @@ void ActiveRotatedFilterForwardCUDAKernelLauncher(const Tensor input,
             <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
                 output_size, input.data_ptr<scalar_t>(),
                 indices.data_ptr<int>(), num_input_planes, num_output_planes,
-                num_orientations, num_rotations, nEntry,
+                num_orientations, num_rotations, nEntry, kH, kW,
                 output.data_ptr<scalar_t>());
       });
   AT_CUDA_CHECK(cudaGetLastError());
@@ -51,7 +51,7 @@ void ActiveRotatedFilterBackwardCUDAKernelLauncher(const Tensor grad_out,
             <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
                 output_size, grad_out.data_ptr<scalar_t>(),
                 indices.data_ptr<int>(), num_input_planes, num_output_planes,
-                num_orientations, num_rotations, nEntry,
+                num_orientations, num_rotations, nEntry, kH, kW,
                 grad_in.data_ptr<scalar_t>());
       });
   AT_CUDA_CHECK(cudaGetLastError());
