@@ -27,9 +27,16 @@
 
 #define NPU_NAME_SPACE at_npu::native
 
+#if MMCV_WITH_XLA
 #define REGISTER_NPU_IMPL(key, value) REGISTER_DEVICE_IMPL(key, XLA, value)
+#else
+#define REGISTER_NPU_IMPL(key, value) \
+  REGISTER_DEVICE_IMPL(key, PrivateUse1, value)
+#endif
 
-#define CHECK_NPU(x) \
-  TORCH_CHECK(x.device().type() == at::kXLA, #x " must be a NPU tensor")
+#define CHECK_NPU(x)                                                          \
+  TORCH_CHECK(                                                                \
+      x.device().type() == at::kXLA || x.device().type() == at::kPrivateUse1, \
+      #x " must be a NPU tensor")
 
 #endif  // PYTORCH_NPU_HELPER_HPP_

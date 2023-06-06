@@ -396,6 +396,8 @@ def get_extensions():
                 from torch_npu.utils.cpp_extension import NpuExtension
                 define_macros += [('MMCV_WITH_NPU', None)]
                 extension = NpuExtension
+                if parse_version(torch.__version__) >= parse_version('2.0.0'):
+                    define_macros += [('MMCV_WITH_XLA', None)]
             except Exception:
                 raise ImportError('can not find any torch_npu')
             # src
