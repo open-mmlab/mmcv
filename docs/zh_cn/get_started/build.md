@@ -367,6 +367,14 @@ output = sigmoid_focal_loss(x, y, 2.0, 0.25, w, 'none')
 git pull https://github.com/open-mmlab/mmcv.git
 ```
 
+#### 选项 2: 使用 pip 安装 Ascend 编译版本的 mmcv
+
+Ascend 编译版本的 mmcv-lite 在 mmcv >= 1.7.0 时已经支持直接 pip 安装
+
+```bash
+pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/ascend/torch1.8.0/index.html
+```
+
 - 编译
 
 ```bash
@@ -377,14 +385,6 @@ MMCV_WITH_OPS=1 MAX_JOBS=8 FORCE_NPU=1 python setup.py build_ext
 
 ```bash
 MMCV_WITH_OPS=1 FORCE_NPU=1 python setup.py develop
-```
-
-#### 选项 2: 使用 pip 安装 Ascend 编译版本的 mmcv
-
-Ascend 编译版本的 mmcv 在 mmcv >= 1.7.0 时已经支持直接 pip 安装
-
-```bash
-pip install mmcv -f https://download.openmmlab.com/mmcv/dist/ascend/torch1.8.0/index.html
 ```
 
 #### 验证
