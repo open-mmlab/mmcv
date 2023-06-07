@@ -99,8 +99,8 @@ void roi_align_backward(Tensor grad_output, Tensor rois, Tensor argmax_y,
   if (reinterpret_cast<void*>(diopiRoiAlignBackwardMmcv) != nullptr) {
     auto ret = diopiRoiAlignBackwardMmcv(ch, grad_input_, grad_output_, rois_,
                                          argmax_y_, argmax_x_, aligned_height,
-                                         aligned_width, spatial_scale,
-                                         pool_mode, sampling_ratio, aligned);
+                                         aligned_width, sampling_ratio,
+                                         pool_mode, spatial_scale, aligned);
     if (ret == diopiSuccess) return;
   }
   LOG(WARNING) << "Fallback to cpu: mmcv ext op roi_align_backward";
