@@ -43,11 +43,6 @@ class SigmoidFocalLossFunction(Function):
 
         output = input.new_zeros(input.size())
 
-        if IS_DIPU_AVAILABLE:
-            import torch_dipu
-            if torch_dipu._C.dipu_vendor == 'MLU':
-                target = target.int()
-
         ext_module.sigmoid_focal_loss_forward(
             input, target, weight, output, gamma=ctx.gamma, alpha=ctx.alpha)
         if ctx.reduction == ctx.reduction_dict['mean']:
