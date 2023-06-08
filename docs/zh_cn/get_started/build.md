@@ -359,7 +359,7 @@ output = sigmoid_focal_loss(x, y, 2.0, 0.25, w, 'none')
 
 在编译 mmcv 前，需要安装 torch_npu，完整安装教程详见 [PyTorch 安装指南](https://gitee.com/ascend/pytorch/blob/master/docs/zh/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97.md#pytorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97)
 
-#### 使用 NPU 设备源码编译安装 mmcv
+#### 选项 1: 使用 NPU 设备源码编译安装 mmcv (推荐方式)
 
 - 拉取 [MMCV 源码](https://github.com/open-mmlab/mmcv.git)
 
@@ -377,6 +377,14 @@ MMCV_WITH_OPS=1 MAX_JOBS=8 FORCE_NPU=1 python setup.py build_ext
 
 ```bash
 MMCV_WITH_OPS=1 FORCE_NPU=1 python setup.py develop
+```
+
+#### 选项 2: 使用 pip 安装 Ascend 编译版本的 mmcv
+
+Ascend 编译版本的 mmcv 在 mmcv >= 1.7.0 时已经支持直接 pip 安装
+
+```bash
+pip install mmcv -f https://download.openmmlab.com/mmcv/dist/ascend/torch1.8.0/index.html
 ```
 
 #### 验证

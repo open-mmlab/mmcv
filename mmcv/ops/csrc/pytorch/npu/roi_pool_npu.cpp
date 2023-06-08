@@ -42,7 +42,6 @@ void roi_pool_forward_npu(Tensor input, Tensor rois, Tensor output,
         .Attr("_exclude_engines", (string) "AiCore")
         .Run();
   }
-
 }
 
 void roi_pool_backward_npu(Tensor grad_output, Tensor rois, Tensor argmax,
