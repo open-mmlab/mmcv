@@ -19,11 +19,12 @@ void active_rotated_filter_forward_cpu_kernel(
       for (l = 0; l < nEntry; l++) {
         int weightIndex = i * num_input_planes * nEntry + j * nEntry + l;
         T val = *(weightData + weightIndex);
+        int fmIndex = (l / (kH * kW)) * kH * kW;
         for (k = 0; k < num_rotations; k++) {
           int index = (int)(*(indicesData + l * num_rotations + k)) - 1;
-          T* target = outputData +
-                      i * (num_rotations * num_input_planes * nEntry) +
-                      k * (num_input_planes * nEntry) + j * (nEntry) + index;
+          T* target =
+              outputData + i * (num_rotations * num_input_planes * nEntry) +
+              k * (num_input_planes * nEntry) + j * (nEntry) + index + fmIndex;
           *target = val;
         }
       }
@@ -48,11 +49,12 @@ void active_rotated_filter_backward_cpu_kernel(
         int gradInputIndex = i * num_input_planes * nEntry + j * nEntry + l;
         T* val = gradInputData + gradInputIndex;
         *val = 0;
+        int fmIndex = (l / (kH * kW)) * kH * kW;
         for (k = 0; k < num_rotations; k++) {
           int index = (int)(*(indicesData + l * num_rotations + k)) - 1;
           const T* target =
               gradOutputData + i * (num_rotations * num_input_planes * nEntry) +
-              k * (num_input_planes * nEntry) + j * (nEntry) + index;
+              k * (num_input_planes * nEntry) + j * (nEntry) + index + fmIndex;
           *val = *val + *target;
         }
       }
