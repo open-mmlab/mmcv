@@ -354,3 +354,51 @@ y = torch.tensor([1, 5, 3]).mlu()
 w = torch.ones(10).float().mlu()
 output = sigmoid_focal_loss(x, y, 2.0, 0.25, w, 'none')
 ```
+
+### 在昇腾 NPU 机器编译 mmcv
+
+在编译 mmcv 前，需要安装 torch_npu，完整安装教程详见 [PyTorch 安装指南](https://gitee.com/ascend/pytorch/blob/master/docs/zh/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97/PyTorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97.md#pytorch%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97)
+
+#### 选项 1: 使用 NPU 设备源码编译安装 mmcv (推荐方式)
+
+- 拉取 [MMCV 源码](https://github.com/open-mmlab/mmcv.git)
+
+```bash
+git pull https://github.com/open-mmlab/mmcv.git
+```
+
+- 编译
+
+```bash
+MMCV_WITH_OPS=1 MAX_JOBS=8 FORCE_NPU=1 python setup.py build_ext
+```
+
+- 安装
+
+```bash
+MMCV_WITH_OPS=1 FORCE_NPU=1 python setup.py develop
+```
+
+#### 选项 2: 使用 pip 安装 Ascend 编译版本的 mmcv
+
+Ascend 编译版本的 mmcv 在 mmcv >= 1.7.0 时已经支持直接 pip 安装
+
+```bash
+pip install mmcv -f https://download.openmmlab.com/mmcv/dist/ascend/torch1.8.0/index.html
+```
+
+#### 验证
+
+```python
+import torch
+import torch_npu
+from mmcv.ops import softmax_focal_loss
+
+# Init tensor to the NPU
+x = torch.randn(3, 10).npu()
+y = torch.tensor([1, 5, 3]).npu()
+w = torch.ones(10).float().npu()
+
+output = softmax_focal_loss(x, y, 2.0, 0.25, w, 'none')
+print(output)
+```
