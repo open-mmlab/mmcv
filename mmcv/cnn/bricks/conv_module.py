@@ -290,3 +290,52 @@ class ConvModule(nn.Module):
                 x = self.activate(x)
             layer_index += 1
         return x
+
+    @staticmethod
+    def create_from_conv_bn(conv: torch.nn.modules.conv._ConvNd,
+                            bn: torch.nn.modules.batchnorm._BatchNorm,
+                            fast_conv_bn_eval=True) -> 'ConvModule':
+        """Create a ConvModule from a conv and a bn module."""
+        self = ConvModule.__new__(ConvModule)
+        super(ConvModule, self).__init__()
+
+        self.conv_cfg = None
+        self.norm_cfg = None
+        self.act_cfg = None
+        self.inplace = False
+        self.with_spectral_norm = False
+        self.with_explicit_padding = False
+        self.order = ('conv', 'norm', 'act')
+
+        self.with_norm = True
+        self.with_activation = False
+        self.with_bias = conv.bias is not None
+
+        # build convolution layer
+        self.conv = conv
+        # export the attributes of self.conv to a higher level for convenience
+        self.in_channels = self.conv.in_channels
+        self.out_channels = self.conv.out_channels
+        self.kernel_size = self.conv.kernel_size
+        self.stride = self.conv.stride
+        self.padding = self.conv.padding
+        self.dilation = self.conv.dilation
+        self.transposed = self.conv.transposed
+        self.output_padding = self.conv.output_padding
+        self.groups = self.conv.groups
+
+        # build normalization layers
+        self.norm_name, norm = 'bn', bn
+        self.add_module(self.norm_name, norm)
+
+        # fast_conv_bn_eval works for conv + bn
+        # with `track_running_stats` option
+        if fast_conv_bn_eval and self.norm and isinstance(
+                self.norm, _BatchNorm) and self.norm.track_running_stats:
+            self.fast_conv_bn_eval_forward = partial(fast_conv_bn_eval_forward,
+                                                     self.norm, self.conv)
+        else:
+            self.fast_conv_bn_eval_forward = None  # type: ignore
+        self.original_conv_forward = self.conv.forward
+
+        return self
