@@ -18,9 +18,10 @@ void bbox_overlaps_impl(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
                        aligned, offset);
 }
 
-void bbox_overlaps(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
-                   const int mode, const bool aligned, const int offset) {
 #ifdef MMCV_WITH_DIOPI
+void bbox_overlaps_diopi(const Tensor bboxes1, const Tensor bboxes2,
+                         Tensor ious, const int mode, const bool aligned,
+                         const int offset) {
   auto bboxes1_p = toDiopiTensorHandle(bboxes1);
   diopiDevice_t device;
   diopiGetTensorDevice(bboxes1_p, &device);
@@ -43,6 +44,13 @@ void bbox_overlaps(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
   auto ious_cpu = ious.cpu();
   bbox_overlaps_impl(bboxes1_cpu, bboxes2_cpu, ious_cpu, mode, aligned, offset);
   ious.copy_(ious_cpu);
+}
+#endif
+
+void bbox_overlaps(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
+                   const int mode, const bool aligned, const int offset) {
+#ifdef MMCV_WITH_DIOPI
+  bbox_overlaps_diopi(bboxes1, bboxes2, ious, mode, aligned, offset);
 #else
   bbox_overlaps_impl(bboxes1, bboxes2, ious, mode, aligned, offset);
 #endif

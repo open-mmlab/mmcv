@@ -39,9 +39,10 @@ void softmax_focal_loss_backward_impl(Tensor input, Tensor target,
                        buff, grad_input, gamma, alpha);
 }
 
-void sigmoid_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
-                                Tensor output, float gamma, float alpha) {
 #ifdef MMCV_WITH_DIOPI
+void sigmoid_focal_loss_forward_diopi(Tensor input, Tensor target,
+                                      Tensor weight, Tensor output, float gamma,
+                                      float alpha) {
   auto input_p = toDiopiTensorHandle(input);
   diopiDevice_t device;
   diopiGetTensorDevice(input_p, &device);
@@ -70,14 +71,11 @@ void sigmoid_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
                                   gamma, alpha);
   output.copy_(output_cpu);
   return;
-#else
-  sigmoid_focal_loss_forward_impl(input, target, weight, output, gamma, alpha);
-#endif
 }
 
-void sigmoid_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
-                                 Tensor grad_input, float gamma, float alpha) {
-#ifdef MMCV_WITH_DIOPI
+void sigmoid_focal_loss_backward_diopi(Tensor input, Tensor target,
+                                       Tensor weight, Tensor grad_input,
+                                       float gamma, float alpha) {
   auto input_p = toDiopiTensorHandle(input);
   diopiDevice_t device;
   diopiGetTensorDevice(input_p, &device);
@@ -106,6 +104,23 @@ void sigmoid_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
                                    grad_input_cpu, gamma, alpha);
   grad_input.copy_(grad_input_cpu);
   return;
+}
+#endif
+
+void sigmoid_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
+                                Tensor output, float gamma, float alpha) {
+#ifdef MMCV_WITH_DIOPI
+  sigmoid_focal_loss_forward_diopi(input, target, weight, output, gamma, alpha);
+#else
+  sigmoid_focal_loss_forward_impl(input, target, weight, output, gamma, alpha);
+#endif
+}
+
+void sigmoid_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
+                                 Tensor grad_input, float gamma, float alpha) {
+#ifdef MMCV_WITH_DIOPI
+  sigmoid_focal_loss_backward_diopi(input, target, weight, grad_input, gamma,
+                                    alpha);
 #else
   sigmoid_focal_loss_backward_impl(input, target, weight, grad_input, gamma,
                                    alpha);

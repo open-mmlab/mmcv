@@ -28,8 +28,8 @@ std::vector<std::vector<int> > nms_match_impl(Tensor dets,
   return DISPATCH_DEVICE_IMPL(nms_match_impl, dets, iou_threshold);
 }
 
-Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
 #ifdef MMCV_WITH_DIOPI
+Tensor nms_diopi(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
   auto boxes_p = toDiopiTensorHandle(boxes);
   diopiDevice_t device;
   diopiGetTensorDevice(boxes_p, &device);
@@ -54,6 +54,12 @@ Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
   auto boxes_cpu = boxes.cpu();
   auto scores_cpu = scores.cpu();
   return nms_impl(boxes_cpu, scores_cpu, iou_threshold, offset);
+}
+#endif
+
+Tensor nms(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
+#ifdef MMCV_WITH_DIOPI
+  return nms_diopi(boxes, scores, iou_threshold, offset);
 #else
   return nms_impl(boxes, scores, iou_threshold, offset);
 #endif

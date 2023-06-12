@@ -43,14 +43,15 @@ void dynamic_voxelize_forward_impl(const at::Tensor &points, at::Tensor &coors,
                        coors_range, NDim);
 }
 
-void hard_voxelize_forward(const at::Tensor &points,
-                           const at::Tensor &voxel_size,
-                           const at::Tensor &coors_range, at::Tensor &voxels,
-                           at::Tensor &coors, at::Tensor &num_points_per_voxel,
-                           at::Tensor &voxel_num, const int max_points,
-                           const int max_voxels, const int NDim = 3,
-                           const bool deterministic = true) {
 #ifdef MMCV_WITH_DIOPI
+void hard_voxelize_forward_diopi(const at::Tensor &points,
+                                 const at::Tensor &voxel_size,
+                                 const at::Tensor &coors_range,
+                                 at::Tensor &voxels, at::Tensor &coors,
+                                 at::Tensor &num_points_per_voxel,
+                                 at::Tensor &voxel_num, const int max_points,
+                                 const int max_voxels, const int NDim = 3,
+                                 const bool deterministic = true) {
   auto points_p = toDiopiTensorHandle(points);
   diopiDevice_t device;
   diopiGetTensorDevice(points_p, &device);
@@ -119,32 +120,12 @@ void hard_voxelize_forward(const at::Tensor &points,
   num_points_per_voxel.copy_(num_points_per_voxel_cpu);
   voxel_num.copy_(voxel_num_cpu);
   return;
-#else
-  int64_t *voxel_num_data = voxel_num.data_ptr<int64_t>();
-  std::vector<float> voxel_size_v(
-      voxel_size.data_ptr<float>(),
-      voxel_size.data_ptr<float>() + voxel_size.numel());
-  std::vector<float> coors_range_v(
-      coors_range.data_ptr<float>(),
-      coors_range.data_ptr<float>() + coors_range.numel());
-
-  if (deterministic) {
-    *voxel_num_data = hard_voxelize_forward_impl(
-        points, voxels, coors, num_points_per_voxel, voxel_size_v,
-        coors_range_v, max_points, max_voxels, NDim);
-  } else {
-    *voxel_num_data = nondeterministic_hard_voxelize_forward_impl(
-        points, voxels, coors, num_points_per_voxel, voxel_size_v,
-        coors_range_v, max_points, max_voxels, NDim);
-  }
-#endif
 }
 
-void dynamic_voxelize_forward(const at::Tensor &points,
-                              const at::Tensor &voxel_size,
-                              const at::Tensor &coors_range, at::Tensor &coors,
-                              const int NDim = 3) {
-#ifdef MMCV_WITH_DIOPI
+void dynamic_voxelize_forward_diopi(const at::Tensor &points,
+                                    const at::Tensor &voxel_size,
+                                    const at::Tensor &coors_range,
+                                    at::Tensor &coors, const int NDim = 3) {
   auto points_p = toDiopiTensorHandle(points);
   diopiDevice_t device;
   diopiGetTensorDevice(points_p, &device);
@@ -185,6 +166,47 @@ void dynamic_voxelize_forward(const at::Tensor &points,
                                 coors_range_v_cpu, NDim);
   coors.copy_(coors_cpu);
   return;
+}
+#endif
+
+void hard_voxelize_forward(const at::Tensor &points,
+                           const at::Tensor &voxel_size,
+                           const at::Tensor &coors_range, at::Tensor &voxels,
+                           at::Tensor &coors, at::Tensor &num_points_per_voxel,
+                           at::Tensor &voxel_num, const int max_points,
+                           const int max_voxels, const int NDim = 3,
+                           const bool deterministic = true) {
+#ifdef MMCV_WITH_DIOPI
+  hard_voxelize_forward_diopi(points, voxel_size, coors_range, voxels, coors,
+                              num_points_per_voxel, voxel_num, max_points,
+                              max_voxels, NDim, deterministic);
+#else
+  int64_t *voxel_num_data = voxel_num.data_ptr<int64_t>();
+  std::vector<float> voxel_size_v(
+      voxel_size.data_ptr<float>(),
+      voxel_size.data_ptr<float>() + voxel_size.numel());
+  std::vector<float> coors_range_v(
+      coors_range.data_ptr<float>(),
+      coors_range.data_ptr<float>() + coors_range.numel());
+
+  if (deterministic) {
+    *voxel_num_data = hard_voxelize_forward_impl(
+        points, voxels, coors, num_points_per_voxel, voxel_size_v,
+        coors_range_v, max_points, max_voxels, NDim);
+  } else {
+    *voxel_num_data = nondeterministic_hard_voxelize_forward_impl(
+        points, voxels, coors, num_points_per_voxel, voxel_size_v,
+        coors_range_v, max_points, max_voxels, NDim);
+  }
+#endif
+}
+
+void dynamic_voxelize_forward(const at::Tensor &points,
+                              const at::Tensor &voxel_size,
+                              const at::Tensor &coors_range, at::Tensor &coors,
+                              const int NDim = 3) {
+#ifdef MMCV_WITH_DIOPI
+  dynamic_voxelize_forward_diopi(points, voxel_size, coors_range, coors, NDim);
 #else
   std::vector<float> voxel_size_v(
       voxel_size.data_ptr<float>(),

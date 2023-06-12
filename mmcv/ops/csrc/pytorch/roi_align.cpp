@@ -32,11 +32,12 @@ void roi_align_backward_impl(Tensor grad_output, Tensor rois, Tensor argmax_y,
                        spatial_scale, sampling_ratio, pool_mode, aligned);
 }
 
-void roi_align_forward(Tensor input, Tensor rois, Tensor output,
-                       Tensor argmax_y, Tensor argmax_x, int aligned_height,
-                       int aligned_width, float spatial_scale,
-                       int sampling_ratio, int pool_mode, bool aligned) {
 #ifdef MMCV_WITH_DIOPI
+void roi_align_forward_diopi(Tensor input, Tensor rois, Tensor output,
+                             Tensor argmax_y, Tensor argmax_x,
+                             int aligned_height, int aligned_width,
+                             float spatial_scale, int sampling_ratio,
+                             int pool_mode, bool aligned) {
   auto input_p = toDiopiTensorHandle(input);
   diopiDevice_t device;
   diopiGetTensorDevice(input_p, &device);
@@ -68,19 +69,13 @@ void roi_align_forward(Tensor input, Tensor rois, Tensor output,
                          argmax_x_cpu, aligned_height, aligned_width,
                          spatial_scale, sampling_ratio, pool_mode, aligned);
   output.copy_(out_cpu);
-
-#else
-  roi_align_forward_impl(input, rois, output, argmax_y, argmax_x,
-                         aligned_height, aligned_width, spatial_scale,
-                         sampling_ratio, pool_mode, aligned);
-#endif
 }
 
-void roi_align_backward(Tensor grad_output, Tensor rois, Tensor argmax_y,
-                        Tensor argmax_x, Tensor grad_input, int aligned_height,
-                        int aligned_width, float spatial_scale,
-                        int sampling_ratio, int pool_mode, bool aligned) {
-#ifdef MMCV_WITH_DIOPI
+void roi_align_backward_diopi(Tensor grad_output, Tensor rois, Tensor argmax_y,
+                              Tensor argmax_x, Tensor grad_input,
+                              int aligned_height, int aligned_width,
+                              float spatial_scale, int sampling_ratio,
+                              int pool_mode, bool aligned) {
   auto grad_output_ = toDiopiTensorHandle(grad_output);
   diopiDevice_t device;
   diopiGetTensorDevice(grad_output_, &device);
@@ -113,7 +108,32 @@ void roi_align_backward(Tensor grad_output, Tensor rois, Tensor argmax_y,
                           grad_input_cpu, aligned_height, aligned_width,
                           spatial_scale, sampling_ratio, pool_mode, aligned);
   grad_input.copy_(grad_input_cpu);
+}
+#endif
 
+void roi_align_forward(Tensor input, Tensor rois, Tensor output,
+                       Tensor argmax_y, Tensor argmax_x, int aligned_height,
+                       int aligned_width, float spatial_scale,
+                       int sampling_ratio, int pool_mode, bool aligned) {
+#ifdef MMCV_WITH_DIOPI
+  roi_align_forward_diopi(input, rois, output, argmax_y, argmax_x,
+                          aligned_height, aligned_width, spatial_scale,
+                          sampling_ratio, pool_mode, aligned);
+#else
+  roi_align_forward_impl(input, rois, output, argmax_y, argmax_x,
+                         aligned_height, aligned_width, spatial_scale,
+                         sampling_ratio, pool_mode, aligned);
+#endif
+}
+
+void roi_align_backward(Tensor grad_output, Tensor rois, Tensor argmax_y,
+                        Tensor argmax_x, Tensor grad_input, int aligned_height,
+                        int aligned_width, float spatial_scale,
+                        int sampling_ratio, int pool_mode, bool aligned) {
+#ifdef MMCV_WITH_DIOPI
+  roi_align_backward_diopi(grad_output, rois, argmax_y, argmax_x, grad_input,
+                           aligned_height, aligned_width, spatial_scale,
+                           sampling_ratio, pool_mode, aligned);
 #else
   roi_align_backward_impl(grad_output, rois, argmax_y, argmax_x, grad_input,
                           aligned_height, aligned_width, spatial_scale,

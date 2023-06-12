@@ -133,62 +133,6 @@ void modulated_deform_conv_forward_fallthrough(
   }
 }
 
-void modulated_deform_conv_forward(
-    Tensor input, Tensor weight, Tensor bias, Tensor ones, Tensor offset,
-    Tensor mask, Tensor output, Tensor columns, int kernel_h, int kernel_w,
-    const int stride_h, const int stride_w, const int pad_h, const int pad_w,
-    const int dilation_h, const int dilation_w, const int group,
-    const int deformable_group, const bool with_bias) {
-#ifdef MMCV_WITH_DIOPI
-  auto input_p = toDiopiTensorHandle(input);
-  diopiDevice_t device;
-  diopiGetTensorDevice(input_p, &device);
-  if (device == diopi_host) {
-    modulated_deform_conv_forward_fallthrough(
-        input, weight, bias, ones, offset, mask, output, columns, kernel_h,
-        kernel_w, stride_h, stride_w, pad_h, pad_w, dilation_h, dilation_w,
-        group, deformable_group, with_bias);
-    return;
-  }
-  diopiContext ctx(dipu::getCurrentDIPUStream().rawstream());
-  diopiContextHandle_t ch = &ctx;
-  auto weight_p = toDiopiTensorHandle(weight);
-  auto bias_p = toDiopiTensorHandle(bias);
-  auto ones_p = toDiopiTensorHandle(ones);
-  auto offset_p = toDiopiTensorHandle(offset);
-  auto mask_p = toDiopiTensorHandle(mask);
-  auto output_p = toDiopiTensorHandle(output);
-  auto columns_p = toDiopiTensorHandle(columns);
-  if (reinterpret_cast<void*>(diopiModulatedDeformConvMmcv) != nullptr) {
-    auto ret = diopiModulatedDeformConvMmcv(
-        ch, output_p, columns_p, ones_p, input_p, weight_p, bias_p, offset_p,
-        mask_p, kernel_h, kernel_w, stride_h, stride_w, pad_h, pad_w,
-        dilation_h, dilation_w, group, deformable_group, with_bias);
-    if (ret == diopiSuccess) return;
-  }
-  LOG(WARNING) << "Fallback to cpu: mmcv ext op modulated_deform_conv_forward";
-  auto input_cpu = input.cpu();
-  auto weight_cpu = weight.cpu();
-  auto bias_cpu = bias.cpu();
-  auto ones_cpu = ones.cpu();
-  auto offset_cpu = offset.cpu();
-  auto mask_cpu = mask.cpu();
-  auto output_cpu = output.cpu();
-  auto columns_cpu = columns.cpu();
-  modulated_deform_conv_forward_fallthrough(
-      input_cpu, weight_cpu, bias_cpu, ones_cpu, offset_cpu, mask_cpu,
-      output_cpu, columns_cpu, kernel_h, kernel_w, stride_h, stride_w, pad_h,
-      pad_w, dilation_h, dilation_w, group, deformable_group, with_bias);
-  output.copy_(output_cpu);
-  return;
-#else
-  modulated_deform_conv_forward_fallthrough(
-      input, weight, bias, ones, offset, mask, output, columns, kernel_h,
-      kernel_w, stride_h, stride_w, pad_h, pad_w, dilation_h, dilation_w, group,
-      deformable_group, with_bias);
-#endif
-}
-
 void modulated_deform_conv_backward_fallthrough(
     Tensor input, Tensor weight, Tensor bias, Tensor ones, Tensor offset,
     Tensor mask, Tensor columns, Tensor grad_input, Tensor grad_weight,
@@ -302,14 +246,63 @@ void modulated_deform_conv_backward_fallthrough(
                                   grad_output.size(4)});
 }
 
-void modulated_deform_conv_backward(
+#ifdef MMCV_WITH_DIOPI
+void modulated_deform_conv_forward_diopi(
+    Tensor input, Tensor weight, Tensor bias, Tensor ones, Tensor offset,
+    Tensor mask, Tensor output, Tensor columns, int kernel_h, int kernel_w,
+    const int stride_h, const int stride_w, const int pad_h, const int pad_w,
+    const int dilation_h, const int dilation_w, const int group,
+    const int deformable_group, const bool with_bias) {
+  auto input_p = toDiopiTensorHandle(input);
+  diopiDevice_t device;
+  diopiGetTensorDevice(input_p, &device);
+  if (device == diopi_host) {
+    modulated_deform_conv_forward_fallthrough(
+        input, weight, bias, ones, offset, mask, output, columns, kernel_h,
+        kernel_w, stride_h, stride_w, pad_h, pad_w, dilation_h, dilation_w,
+        group, deformable_group, with_bias);
+    return;
+  }
+  diopiContext ctx(dipu::getCurrentDIPUStream().rawstream());
+  diopiContextHandle_t ch = &ctx;
+  auto weight_p = toDiopiTensorHandle(weight);
+  auto bias_p = toDiopiTensorHandle(bias);
+  auto ones_p = toDiopiTensorHandle(ones);
+  auto offset_p = toDiopiTensorHandle(offset);
+  auto mask_p = toDiopiTensorHandle(mask);
+  auto output_p = toDiopiTensorHandle(output);
+  auto columns_p = toDiopiTensorHandle(columns);
+  if (reinterpret_cast<void*>(diopiModulatedDeformConvMmcv) != nullptr) {
+    auto ret = diopiModulatedDeformConvMmcv(
+        ch, output_p, columns_p, ones_p, input_p, weight_p, bias_p, offset_p,
+        mask_p, kernel_h, kernel_w, stride_h, stride_w, pad_h, pad_w,
+        dilation_h, dilation_w, group, deformable_group, with_bias);
+    if (ret == diopiSuccess) return;
+  }
+  LOG(WARNING) << "Fallback to cpu: mmcv ext op modulated_deform_conv_forward";
+  auto input_cpu = input.cpu();
+  auto weight_cpu = weight.cpu();
+  auto bias_cpu = bias.cpu();
+  auto ones_cpu = ones.cpu();
+  auto offset_cpu = offset.cpu();
+  auto mask_cpu = mask.cpu();
+  auto output_cpu = output.cpu();
+  auto columns_cpu = columns.cpu();
+  modulated_deform_conv_forward_fallthrough(
+      input_cpu, weight_cpu, bias_cpu, ones_cpu, offset_cpu, mask_cpu,
+      output_cpu, columns_cpu, kernel_h, kernel_w, stride_h, stride_w, pad_h,
+      pad_w, dilation_h, dilation_w, group, deformable_group, with_bias);
+  output.copy_(output_cpu);
+  return;
+}
+
+void modulated_deform_conv_backward_diopi(
     Tensor input, Tensor weight, Tensor bias, Tensor ones, Tensor offset,
     Tensor mask, Tensor columns, Tensor grad_input, Tensor grad_weight,
     Tensor grad_bias, Tensor grad_offset, Tensor grad_mask, Tensor grad_output,
     int kernel_h, int kernel_w, int stride_h, int stride_w, int pad_h,
     int pad_w, int dilation_h, int dilation_w, int group, int deformable_group,
     const bool with_bias) {
-#ifdef MMCV_WITH_DIOPI
   auto input_p = toDiopiTensorHandle(input);
   diopiDevice_t device;
   diopiGetTensorDevice(input_p, &device);
@@ -371,6 +364,41 @@ void modulated_deform_conv_backward(
   grad_offset.copy_(grad_offset_cpu);
   grad_mask.copy_(grad_mask_cpu);
   return;
+}
+#endif
+
+void modulated_deform_conv_forward(
+    Tensor input, Tensor weight, Tensor bias, Tensor ones, Tensor offset,
+    Tensor mask, Tensor output, Tensor columns, int kernel_h, int kernel_w,
+    const int stride_h, const int stride_w, const int pad_h, const int pad_w,
+    const int dilation_h, const int dilation_w, const int group,
+    const int deformable_group, const bool with_bias) {
+#ifdef MMCV_WITH_DIOPI
+  modulated_deform_conv_forward_diopi(
+      input, weight, bias, ones, offset, mask, output, columns, kernel_h,
+      kernel_w, stride_h, stride_w, pad_h, pad_w, dilation_h, dilation_w, group,
+      deformable_group, with_bias);
+#else
+  modulated_deform_conv_forward_fallthrough(
+      input, weight, bias, ones, offset, mask, output, columns, kernel_h,
+      kernel_w, stride_h, stride_w, pad_h, pad_w, dilation_h, dilation_w, group,
+      deformable_group, with_bias);
+#endif
+}
+
+void modulated_deform_conv_backward(
+    Tensor input, Tensor weight, Tensor bias, Tensor ones, Tensor offset,
+    Tensor mask, Tensor columns, Tensor grad_input, Tensor grad_weight,
+    Tensor grad_bias, Tensor grad_offset, Tensor grad_mask, Tensor grad_output,
+    int kernel_h, int kernel_w, int stride_h, int stride_w, int pad_h,
+    int pad_w, int dilation_h, int dilation_w, int group, int deformable_group,
+    const bool with_bias) {
+#ifdef MMCV_WITH_DIOPI
+  modulated_deform_conv_backward_diopi(
+      input, weight, bias, ones, offset, mask, columns, grad_input, grad_weight,
+      grad_bias, grad_offset, grad_mask, grad_output, kernel_h, kernel_w,
+      stride_h, stride_w, pad_h, pad_w, dilation_h, dilation_w, group,
+      deformable_group, with_bias);
 #else
   modulated_deform_conv_backward_fallthrough(
       input, weight, bias, ones, offset, mask, columns, grad_input, grad_weight,
