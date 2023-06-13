@@ -139,16 +139,20 @@ def test_voxelization_nondeterministic():
     assert len(coors_set) == len(coors) == len(coors_all_set)
 
 
-@pytest.mark.parametrize('device_type', [
-    pytest.param(
-        'cuda:0',
-        marks=pytest.mark.skipif(
-            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
-    pytest.param(
-        'mlu',
-        marks=pytest.mark.skipif(
-            not IS_MLU_AVAILABLE, reason='requires MLU support'))
-])
+@pytest.mark.parametrize(
+    'device_type',
+    [
+        pytest.param(
+            # this is only used for dipu device testing case.
+            # dipu will mock to cuda automatically on mlu physical device.
+            'cuda:0',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'mlu',
+            marks=pytest.mark.skipif(
+                not IS_MLU_AVAILABLE, reason='requires MLU support'))
+    ])
 def test_voxelization_mlu(device_type):
     voxel_size = [0.5, 0.5, 0.5]
     point_cloud_range = [0, -40, -3, 70.4, 40, 1]
