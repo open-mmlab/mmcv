@@ -225,10 +225,11 @@ def get_extensions():
 
         if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
             import mmengine  # NOQA: F401
-            major, minor, micro = mmengine.version_info
-            if major == 0 and (minor < 7 or (minor == 7 and micro < 4)):
-                raise RuntimeError(f'mmengine >= 0.7.4 is required but \
-                        {mmengine.__version__} is installed')
+            from mmengine.utils.version_utils import digit_version
+            assert digit_version(mmengine.__version__) >= digit_version(
+                '0.7.4'), f'mmengine >= 0.7.4 is required \
+                but {mmengine.__version__} is installed'
+
             print(f'Compiling {ext_name} with CPU and DIPU')
             define_macros += [('MMCV_WITH_DIOPI', None)]
             define_macros += [('DIOPI_ATTR_WEAK', None)]
