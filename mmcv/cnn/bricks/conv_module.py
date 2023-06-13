@@ -48,19 +48,18 @@ def fast_conv_bn_eval_forward(bn: _BatchNorm, conv: nn.modules.conv._ConvNd,
     else:
         bn_bias = torch.zeros_like(bn.running_var)
 
+    # shape of [C_out, 1, 1, 1] in Conv2d
     weight_coeff = torch.rsqrt(bn.running_var +
-                               bn.eps)  # shape of [C_out] in Conv2d
-    weight_coeff = torch.tensor(
-        weight_coeff.reshape([-1] + [1] * (len(conv.weight.shape) - 1))
-    )  # shape of [C_out, 1, 1, 1] in Conv2d
-    coefff_on_the_fly = bn_weight.view_as(
-        weight_coeff) * weight_coeff  # shape of [C_out, 1, 1, 1]
+                               bn.eps).reshape([-1] + [1] *
+                                               (len(conv.weight.shape) - 1))
+    # shape of [C_out, 1, 1, 1] in Conv2d
+    coefff_on_the_fly = bn_weight.view_as(weight_coeff) * weight_coeff
 
     # shape of [C_out, C_in, k, k] in Conv2d
     weight_on_the_fly = weight_on_the_fly * coefff_on_the_fly
-    bias_on_the_fly = (
-        bias_on_the_fly - bn.running_mean
-    ) * coefff_on_the_fly.flatten() + bn_bias  # shape of [C_out]
+    # shape of [C_out] in Conv2d
+    bias_on_the_fly = bn_bias + coefff_on_the_fly.flatten() *\
+        (bias_on_the_fly - bn.running_mean)
 
     return conv.__class__._conv_forward(conv, x, weight_on_the_fly,
                                         bias_on_the_fly)
