@@ -61,8 +61,7 @@ def fast_conv_bn_eval_forward(bn: _BatchNorm, conv: nn.modules.conv._ConvNd,
     bias_on_the_fly = bn_bias + coefff_on_the_fly.flatten() *\
         (bias_on_the_fly - bn.running_mean)
 
-    return conv.__class__._conv_forward(conv, x, weight_on_the_fly,
-                                        bias_on_the_fly)
+    return conv._conv_forward(x, weight_on_the_fly, bias_on_the_fly)
 
 
 @MODELS.register_module()
