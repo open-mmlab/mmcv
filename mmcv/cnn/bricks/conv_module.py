@@ -276,7 +276,8 @@ class ConvModule(nn.Module):
                 # eval mode and we have enabled fast_conv_bn_eval for the conv
                 # operator, then activate the optimized forward and skip the
                 # next norm operator since it has been fused
-                if self.order[layer_index + 1] == 'norm' and norm and \
+                if layer_index + 1 < len(self.order) and \
+                        self.order[layer_index + 1] == 'norm' and norm and \
                         self.with_norm and not self.norm.training and \
                         self.fast_conv_bn_eval_forward is not None:
                     self.conv.forward = self.fast_conv_bn_eval_forward
