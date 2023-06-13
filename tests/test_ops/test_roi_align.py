@@ -93,15 +93,7 @@ def _test_roialign_allclose(device, dtype):
             x.grad.data.type(torch.float).cpu().numpy(), np_grad, atol=1e-3)
 
 
-@pytest.mark.parametrize('dtype', [
-    torch.float,
-    pytest.param(
-        torch.double,
-        marks=pytest.mark.skipif(
-            IS_MLU_AVAILABLE or IS_NPU_AVAILABLE,
-            reason='MLU and NPU do not support for 64-bit floating point')),
-    torch.half
-])
+@pytest.mark.parametrize('dtype', [torch.float, torch.half])
 @pytest.mark.parametrize('device', [
     'cpu',
     pytest.param(
@@ -117,8 +109,17 @@ def _test_roialign_allclose(device, dtype):
         marks=pytest.mark.skipif(
             not IS_NPU_AVAILABLE, reason='requires NPU support'))
 ])
-def test_roialign(device, dtype):
-    # check double only
-    if dtype is torch.double:
-        _test_roialign_gradcheck(device=device, dtype=dtype)
+def test_roialign_float(device, dtype):
     _test_roialign_allclose(device=device, dtype=dtype)
+
+
+@pytest.mark.parametrize('device', [
+    'cpu',
+    pytest.param(
+        'cuda',
+        marks=pytest.mark.skipif(
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+])
+def test_roialign_float64(device):
+    _test_roialign_allclose(device=device, dtype=torch.double)
+    _test_roialign_gradcheck(device=device, dtype=torch.double)

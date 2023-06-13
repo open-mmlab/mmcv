@@ -7,6 +7,8 @@ import torch
 from mmengine.utils import digit_version
 from mmengine.utils.dl_utils import TORCH_VERSION
 
+from mmcv.utils import IS_CUDA_AVAILABLE
+
 try:
     # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast
     # would be imported and used; we should test if our modules support it.
@@ -111,13 +113,28 @@ class TestMdconv:
         assert numpy.allclose(dcn.conv_offset.bias.grad.cpu().detach().numpy(),
                               dcn_offset_b_grad, 1e-2)
 
-    def test_mdconv(self):
-        self._test_mdconv(torch.double, device='cpu')
-        self._test_mdconv(torch.float, device='cpu')
-        self._test_mdconv(torch.double)
-        self._test_mdconv(torch.float)
-        self._test_mdconv(torch.half)
+    @pytest.mark.parametrize('device', [
+        'cpu',
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    ])
+    def test_mdconv_float(self, device):
+        self._test_mdconv(dtype=torch.float, device=device)
 
+    @pytest.mark.parametrize('device', [
+        'cpu',
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    ])
+    def test_mdconv_double(self, device):
+        self._test_mdconv(dtype=torch.double, device=device)
+
+    def test_mdconv_half(self):
+        self._test_mdconv(torch.half)
         # test amp when torch version >= '1.6.0', the type of
         # input data for mdconv might be torch.float or torch.half
         if (TORCH_VERSION != 'parrots'
