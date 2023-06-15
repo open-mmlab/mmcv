@@ -273,10 +273,11 @@ class ConvModule(nn.Module):
                     self.conv.forward = partial(self.fast_conv_bn_eval_forward,
                                                 self.norm, self.conv)
                     layer_index += 1
-                else:
+                    x = self.conv(x)
                     self.conv.forward = partial(self.original_conv_forward,
                                                 self.conv)
-                x = self.conv(x)
+                else:
+                    x = self.conv(x)
             elif layer == 'norm' and norm and self.with_norm:
                 x = self.norm(x)
             elif layer == 'act' and activate and self.with_activation:
