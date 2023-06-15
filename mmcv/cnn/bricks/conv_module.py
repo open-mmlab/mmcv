@@ -209,8 +209,7 @@ class ConvModule(nn.Module):
         else:
             self.norm_name = None  # type: ignore
 
-        if fast_conv_bn_eval:
-            self.turn_on_fast_conv_bn_eval()
+        self.turn_on_fast_conv_bn_eval(fast_conv_bn_eval)
 
         # build activation layer
         if self.with_activation:
@@ -283,11 +282,12 @@ class ConvModule(nn.Module):
             layer_index += 1
         return x
 
-    def turn_on_fast_conv_bn_eval(self):
+    def turn_on_fast_conv_bn_eval(self, fast_conv_bn_eval=True):
         # fast_conv_bn_eval works for conv + bn
         # with `track_running_stats` option
-        if self.norm and isinstance(self.norm, _BatchNorm) \
-                    and self.norm.track_running_stats:
+        if fast_conv_bn_eval and self.norm \
+                            and isinstance(self.norm, _BatchNorm) \
+                            and self.norm.track_running_stats:
             self.fast_conv_bn_eval_forward = partial(fast_conv_bn_eval_forward,
                                                      self.norm, self.conv)
         else:
@@ -331,7 +331,6 @@ class ConvModule(nn.Module):
         self.norm_name, norm = 'bn', bn
         self.add_module(self.norm_name, norm)
 
-        if fast_conv_bn_eval:
-            self.turn_on_fast_conv_bn_eval()
+        self.turn_on_fast_conv_bn_eval(fast_conv_bn_eval)
 
         return self
