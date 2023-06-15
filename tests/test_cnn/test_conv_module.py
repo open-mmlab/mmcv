@@ -76,14 +76,26 @@ def test_conv_module():
     assert output.shape == (1, 8, 255, 255)
 
     # conv + norm with fast mode
-    conv = ConvModule(
-        3, 8, 2, norm_cfg=dict(type='BN'), fast_conv_bn_eval=True)
-    conv.norm.eval()
-    x = torch.rand(1, 3, 256, 256)
-    fast_mode_output = conv(x)
-    conv.conv.forward = conv.original_conv_forward
-    plain_implementation = conv.activate(conv.norm(conv.conv(x)))
-    assert torch.allclose(fast_mode_output, plain_implementation, atol=1e-5)
+    fast_conv = ConvModule(
+        3, 8, 2, norm_cfg=dict(type='BN'), fast_conv_bn_eval=True).eval()
+    plain_conv = ConvModule(
+        3, 8, 2, norm_cfg=dict(type='BN'), fast_conv_bn_eval=False).eval()
+    for fast_param, plain_param in zip(fast_conv.state_dict().values(),
+                                       plain_conv.state_dict().values()):
+        plain_param.copy_(fast_param)
+
+    fast_mode_output = fast_conv(x)
+    plain_mode_output = plain_conv(x)
+    assert torch.allclose(fast_mode_output, plain_mode_output, atol=1e-5)
+
+    # `conv` attribute can be dynamically modified in fast mode
+    fast_conv = ConvModule(
+        3, 8, 2, norm_cfg=dict(type='BN'), fast_conv_bn_eval=True).eval()
+    new_conv = nn.Conv2d(3, 8, 2).eval()
+    fast_conv.conv = new_conv
+    fast_mode_output = fast_conv(x)
+    plain_mode_output = fast_conv.activate(fast_conv.norm(new_conv(x)))
+    assert torch.allclose(fast_mode_output, plain_mode_output, atol=1e-5)
 
     # conv + act
     conv = ConvModule(3, 8, 2)

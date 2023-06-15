@@ -213,11 +213,9 @@ class ConvModule(nn.Module):
         # with `track_running_stats` option
         if fast_conv_bn_eval and self.norm and isinstance(
                 self.norm, _BatchNorm) and self.norm.track_running_stats:
-            self.fast_conv_bn_eval_forward = partial(fast_conv_bn_eval_forward,
-                                                     self.norm, self.conv)
+            self.fast_conv_bn_eval_forward = True
         else:
-            self.fast_conv_bn_eval_forward = None  # type: ignore
-        self.original_conv_forward = self.conv.forward
+            self.fast_conv_bn_eval_forward = False  # type: ignore
 
         # build activation layer
         if self.with_activation:
@@ -277,12 +275,13 @@ class ConvModule(nn.Module):
                 if layer_index + 1 < len(self.order) and \
                         self.order[layer_index + 1] == 'norm' and norm and \
                         self.with_norm and not self.norm.training and \
-                        self.fast_conv_bn_eval_forward is not None:
-                    self.conv.forward = self.fast_conv_bn_eval_forward
+                        self.fast_conv_bn_eval_forward:
+                    self.conv.forward = partial(fast_conv_bn_eval_forward,
+                                                self.bn, self.conv)
                     layer_index += 1
-                else:
-                    self.conv.forward = self.original_conv_forward
                 x = self.conv(x)
+                # clear the partial function attribute
+                self.conv.__dict__.pop('forward', None)
             elif layer == 'norm' and norm and self.with_norm:
                 x = self.norm(x)
             elif layer == 'act' and activate and self.with_activation:
