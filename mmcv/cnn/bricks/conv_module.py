@@ -274,8 +274,7 @@ class ConvModule(nn.Module):
                                                 self.norm, self.conv)
                     layer_index += 1
                     x = self.conv(x)
-                    self.conv.forward = partial(self.original_conv_forward,
-                                                self.conv)
+                    del self.conv.forward
                 else:
                     x = self.conv(x)
             elif layer == 'norm' and norm and self.with_norm:
@@ -294,7 +293,6 @@ class ConvModule(nn.Module):
             self.fast_conv_bn_eval_forward = fast_conv_bn_eval_forward
         else:
             self.fast_conv_bn_eval_forward = None  # type: ignore
-        self.original_conv_forward = self.conv.__class__.forward
 
     @staticmethod
     def create_from_conv_bn(conv: torch.nn.modules.conv._ConvNd,
