@@ -270,10 +270,12 @@ class ConvModule(nn.Module):
                         self.order[layer_index + 1] == 'norm' and norm and \
                         self.with_norm and not self.norm.training and \
                         self.fast_conv_bn_eval_forward is not None:
-                    self.conv.forward = self.fast_conv_bn_eval_forward
+                    self.conv.forward = partial(self.fast_conv_bn_eval_forward,
+                                                self.norm, self.conv)
                     layer_index += 1
                 else:
-                    self.conv.forward = self.original_conv_forward
+                    self.conv.forward = partial(self.original_conv_forward,
+                                                self.conv)
                 x = self.conv(x)
             elif layer == 'norm' and norm and self.with_norm:
                 x = self.norm(x)
@@ -288,11 +290,10 @@ class ConvModule(nn.Module):
         if fast_conv_bn_eval and self.norm \
                             and isinstance(self.norm, _BatchNorm) \
                             and self.norm.track_running_stats:
-            self.fast_conv_bn_eval_forward = partial(fast_conv_bn_eval_forward,
-                                                     self.norm, self.conv)
+            self.fast_conv_bn_eval_forward = fast_conv_bn_eval_forward
         else:
             self.fast_conv_bn_eval_forward = None  # type: ignore
-        self.original_conv_forward = self.conv.forward
+        self.original_conv_forward = self.conv.__class__.forward
 
     @staticmethod
     def create_from_conv_bn(conv: torch.nn.modules.conv._ConvNd,
