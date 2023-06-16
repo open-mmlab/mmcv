@@ -5,7 +5,7 @@ import torch
 from mmengine.utils import digit_version
 from mmengine.utils.dl_utils import TORCH_VERSION
 
-from mmcv.utils import IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
 try:
     # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast
@@ -191,13 +191,21 @@ class TestDeformconv:
         with pytest.raises(AssertionError):
             model = DeformConv2d(3, 4, 3, groups=3)
 
-    def test_deformconv(self):
-        self._test_deformconv(torch.double, device='cpu')
-        self._test_deformconv(torch.float, device='cpu', threshold=1e-1)
-        device = 'mlu' if IS_MLU_AVAILABLE else 'cuda'
-        self._test_deformconv(torch.double, device=device)
-        self._test_deformconv(torch.float, device=device)
-        self._test_deformconv(torch.half, threshold=1e-1, device=device)
+    @pytest.mark.parametrize('device, threshold', [
+        ('cpu', 1e-1),
+        pytest.param(
+            'cuda',
+            1e-3,
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'mlu',
+            1e-3,
+            marks=pytest.mark.skipif(
+                not IS_MLU_AVAILABLE, reason='requires MLU support')),
+    ])
+    def test_deformconv_float(self, device, threshold):
+        self._test_deformconv(torch.float, device=device, threshold=threshold)
         # test batch_size < im2col_step
         self._test_deformconv(
             torch.float, batch_size=1, im2col_step=2, device=device)
@@ -208,10 +216,40 @@ class TestDeformconv:
             self._test_deformconv(
                 torch.float, batch_size=10, im2col_step=3, device=device)
 
+    @pytest.mark.parametrize('device', [
+        'cpu',
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'mlu',
+            marks=pytest.mark.skipif(
+                not IS_MLU_AVAILABLE, reason='requires MLU support')),
+    ])
+    def test_deformconv_double(self, device):
+        self._test_deformconv(torch.double, device=device)
+
+    @pytest.mark.parametrize('device, threshold', [
+        pytest.param(
+            'cuda',
+            1e-1,
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'mlu',
+            1e-1,
+            marks=pytest.mark.skipif(
+                not IS_MLU_AVAILABLE, reason='requires MLU support')),
+    ])
+    def test_deformconv_half(self, device, threshold):
+        self._test_deformconv(torch.half, device=device, threshold=threshold)
         # test amp when torch version >= '1.6.0', the type of
         # input data for deformconv might be torch.float or torch.half
         if (TORCH_VERSION != 'parrots'
                 and digit_version(TORCH_VERSION) >= digit_version('1.6.0')):
             with autocast(enabled=True):
-                self._test_amp_deformconv(torch.float, 1e-1, device)
-                self._test_amp_deformconv(torch.half, 1e-1, device)
+                self._test_amp_deformconv(
+                    torch.float, device=device, threshold=threshold)
+                self._test_amp_deformconv(
+                    torch.half, device=device, threshold=threshold)
