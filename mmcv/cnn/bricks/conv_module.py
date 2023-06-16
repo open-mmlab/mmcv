@@ -209,15 +209,7 @@ class ConvModule(nn.Module):
         else:
             self.norm_name = None  # type: ignore
 
-        # fast_conv_bn_eval works for conv + bn
-        # with `track_running_stats` option
-        if fast_conv_bn_eval and self.norm and isinstance(
-                self.norm, _BatchNorm) and self.norm.track_running_stats:
-            self.fast_conv_bn_eval_forward = partial(fast_conv_bn_eval_forward,
-                                                     self.norm, self.conv)
-        else:
-            self.fast_conv_bn_eval_forward = None  # type: ignore
-        self.original_conv_forward = self.conv.forward
+        self.turn_on_fast_conv_bn_eval(fast_conv_bn_eval)
 
         # build activation layer
         if self.with_activation:
@@ -278,17 +270,29 @@ class ConvModule(nn.Module):
                         self.order[layer_index + 1] == 'norm' and norm and \
                         self.with_norm and not self.norm.training and \
                         self.fast_conv_bn_eval_forward is not None:
-                    self.conv.forward = self.fast_conv_bn_eval_forward
+                    self.conv.forward = partial(self.fast_conv_bn_eval_forward,
+                                                self.norm, self.conv)
                     layer_index += 1
+                    x = self.conv(x)
+                    del self.conv.forward
                 else:
-                    self.conv.forward = self.original_conv_forward
-                x = self.conv(x)
+                    x = self.conv(x)
             elif layer == 'norm' and norm and self.with_norm:
                 x = self.norm(x)
             elif layer == 'act' and activate and self.with_activation:
                 x = self.activate(x)
             layer_index += 1
         return x
+
+    def turn_on_fast_conv_bn_eval(self, fast_conv_bn_eval=True):
+        # fast_conv_bn_eval works for conv + bn
+        # with `track_running_stats` option
+        if fast_conv_bn_eval and self.norm \
+                            and isinstance(self.norm, _BatchNorm) \
+                            and self.norm.track_running_stats:
+            self.fast_conv_bn_eval_forward = fast_conv_bn_eval_forward
+        else:
+            self.fast_conv_bn_eval_forward = None  # type: ignore
 
     @staticmethod
     def create_from_conv_bn(conv: torch.nn.modules.conv._ConvNd,
@@ -327,14 +331,6 @@ class ConvModule(nn.Module):
         self.norm_name, norm = 'bn', bn
         self.add_module(self.norm_name, norm)
 
-        # fast_conv_bn_eval works for conv + bn
-        # with `track_running_stats` option
-        if fast_conv_bn_eval and self.norm and isinstance(
-                self.norm, _BatchNorm) and self.norm.track_running_stats:
-            self.fast_conv_bn_eval_forward = partial(fast_conv_bn_eval_forward,
-                                                     self.norm, self.conv)
-        else:
-            self.fast_conv_bn_eval_forward = None  # type: ignore
-        self.original_conv_forward = self.conv.forward
+        self.turn_on_fast_conv_bn_eval(fast_conv_bn_eval)
 
         return self
