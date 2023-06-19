@@ -33,7 +33,8 @@ void bbox_overlaps_diopi(const Tensor bboxes1, const Tensor bboxes2,
   diopiContextHandle_t ch = &ctx;
   auto bboxes2_p = toDiopiTensorHandle(bboxes2);
   auto ious_p = toDiopiTensorHandle(ious);
-  if (reinterpret_cast<void *>(diopiBboxOverlapsMmcv) != nullptr) {
+  bool is_mock_cuda = bboxes1.device().type() == c10::DeviceType::PrivateUse1;
+  if (is_mock_cuda && reinterpret_cast<void *>(diopiBboxOverlapsMmcv) != nullptr) {
     auto ret = diopiBboxOverlapsMmcv(ch, ious_p, bboxes1_p, bboxes2_p, mode,
                                      offset, aligned);
     if (ret == diopiSuccess) return;
