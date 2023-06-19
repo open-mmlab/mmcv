@@ -227,7 +227,7 @@ def get_extensions():
             import mmengine  # NOQA: F401
             from mmengine.utils.version_utils import digit_version
             assert digit_version(mmengine.__version__) >= digit_version(
-                '0.7.4'), f'mmengine >= 0.7.4 is required \
+                '0.7.3'), f'mmengine >= 0.7.3 is required \
                 but {mmengine.__version__} is installed'
 
             print(f'Compiling {ext_name} with CPU and DIPU')
