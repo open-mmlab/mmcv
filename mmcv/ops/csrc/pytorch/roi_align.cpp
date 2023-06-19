@@ -53,7 +53,8 @@ void roi_align_forward_diopi(Tensor input, Tensor rois, Tensor output,
   auto out_p = toDiopiTensorHandle(output);
   auto argmax_y_p = toDiopiTensorHandle(argmax_y);
   auto argmax_x_p = toDiopiTensorHandle(argmax_x);
-  if (reinterpret_cast<void*>(diopiRoiAlignMmcv) != nullptr) {
+  bool is_mock_cuda = input.device().type() == c10::DeviceType::PrivateUse1;
+  if (is_mock_cuda && reinterpret_cast<void*>(diopiRoiAlignMmcv) != nullptr) {
     auto ret = diopiRoiAlignMmcv(
         ch, out_p, argmax_y_p, argmax_x_p, input_p, rois_p, aligned_height,
         aligned_width, sampling_ratio, pool_mode, spatial_scale, aligned);
@@ -91,7 +92,8 @@ void roi_align_backward_diopi(Tensor grad_output, Tensor rois, Tensor argmax_y,
   auto grad_input_ = toDiopiTensorHandle(grad_input);
   diopiContext ctx(dipu::getCurrentDIPUStream().rawstream());
   diopiContextHandle_t ch = &ctx;
-  if (reinterpret_cast<void*>(diopiRoiAlignBackwardMmcv) != nullptr) {
+  bool is_mock_cuda = grad_output.device().type() == c10::DeviceType::PrivateUse1;
+  if (is_mock_cuda && reinterpret_cast<void*>(diopiRoiAlignBackwardMmcv) != nullptr) {
     auto ret = diopiRoiAlignBackwardMmcv(ch, grad_input_, grad_output_, rois_,
                                          argmax_y_, argmax_x_, aligned_height,
                                          aligned_width, sampling_ratio,
