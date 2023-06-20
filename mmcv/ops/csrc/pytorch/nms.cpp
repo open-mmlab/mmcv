@@ -42,7 +42,8 @@ Tensor nms_diopi(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
   auto outp = toDiopiTensorHandle(out);
   diopiTensorHandle_t* outhandle = &outp;
   auto scores_p = toDiopiTensorHandle(scores);
-  if (reinterpret_cast<void*>(diopiNmsMmcv) != nullptr) {
+  bool is_mock_cuda = boxes.device().type() == c10::DeviceType::PrivateUse1;
+  if (is_mock_cuda && reinterpret_cast<void*>(diopiNmsMmcv) != nullptr) {
     auto ret =
         diopiNmsMmcv(ch, outhandle, boxes_p, scores_p, iou_threshold, offset);
     if (ret == diopiSuccess) {
