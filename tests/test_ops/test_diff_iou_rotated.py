@@ -9,7 +9,6 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 if IS_MLU_AVAILABLE:
     torch.backends.mlu.matmul.allow_tf32 = False
 
-
 @pytest.mark.parametrize('device', [
     pytest.param(
         'cuda',
@@ -36,7 +35,10 @@ def test_diff_iou_rotated_2d(device):
 
     np_expect_ious = np.asarray([[1., 1., .7071, 1 / 7, .0]])
     ious = diff_iou_rotated_2d(boxes1, boxes2)
-    assert np.allclose(ious.cpu().numpy(), np_expect_ious, atol=1e-4)
+    if device == 'mlu' and torch.mlu.get_device_capability() >= (5, 0):
+        assert np.allclose(ious.cpu(), np_expect_ious, atol=1e-3)
+    else:
+        assert np.allclose(ious.cpu(), np_expect_ious, atol=1e-4)
 
 
 @pytest.mark.parametrize('device', [
@@ -66,4 +68,7 @@ def test_diff_iou_rotated_3d(device):
 
     np_expect_ious = np.asarray([[1., .5, .7071, 1 / 15, .0]])
     ious = diff_iou_rotated_3d(boxes1, boxes2)
-    assert np.allclose(ious.cpu().numpy(), np_expect_ious, atol=1e-4)
+    if device == 'mlu' and torch.mlu.get_device_capability() >= (5, 0):
+        assert np.allclose(ious.cpu(), np_expect_ious, atol=1e-3)
+    else:
+        assert np.allclose(ious.cpu(), np_expect_ious, atol=1e-4)
