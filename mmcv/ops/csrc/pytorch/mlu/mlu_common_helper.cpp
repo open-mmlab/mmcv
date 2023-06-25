@@ -56,6 +56,19 @@ mluOpTensorLayout_t getMluOpSuggestLayout(const at::Tensor& input) {
   return layout;
 }
 
+mluOpReduceMode_t getMluOpReduceMode(const reduce_t reduce_type) {
+  const std::map<reduce_t, mluOpReduceMode_t> mapping_type = {
+      {reduce_t::MAX, MLUOP_REDUCE_DMAX},
+      {reduce_t::SUM, MLUOP_REDUCE_DSUM},
+      {reduce_t::MEAN, MLUOP_REDUCE_DMEAN}};
+  if (mapping_type.find(reduce_type) != mapping_type.end()) {
+    return mapping_type.find(reduce_type)->second;
+  } else {
+    TORCH_CHECK(false, "Unsupported reduce type: ", to_string(reduce_type));
+    return MLUOP_REDUCE_DSUM;
+  }
+}
+
 void MluOpTensorDescriptor::set(Tensor t) {
   mluOpDataType_t data_type = getMluOpDataType(t.dtype());
   mluOpTensorLayout_t layout = getMluOpSuggestLayout(t);

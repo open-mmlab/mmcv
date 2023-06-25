@@ -13,19 +13,6 @@
 #include "pytorch_device_registry.hpp"
 #include "pytorch_mlu_helper.hpp"
 
-/*************************************************************************
- * This MACRO contains operations of simple tensor to mlu-tensor.
- * _contiguous, _desc, _impl, _ptr will be automatically generated in
- * this MACRO.
- *************************************************************************/
-#define INITIAL_MLU_PARAM_WITH_TENSOR(NAME)                         \
-  auto NAME##_contigous = torch_mlu::cnnl::ops::cnnl_contiguous(    \
-      NAME, NAME.suggest_memory_format());                          \
-  MluOpTensorDescriptor NAME##_desc;                                \
-  NAME##_desc.set(NAME##_contigous);                                \
-  auto NAME##_impl = torch_mlu::getMluTensorImpl(NAME##_contigous); \
-  auto NAME##_ptr = NAME##_impl->cnnlMalloc();
-
 Tensor MsDeformAttnForwardLauncher(const Tensor& value,
                                    const Tensor& spatial_shapes,
                                    const Tensor& level_start_index,
