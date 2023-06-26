@@ -39,7 +39,7 @@ We implement common ops used in detection, segmentation, etc.
 | NMSQuadri                    | √   | √    |     |     |        |
 | PixelGroup                   | √   |      |     |     |        |
 | PointsInBoxes                | √   | √    |     |     |        |
-| PointsInPolygons             |     | √    |     |     |        |
+| PointsInPolygons             |     | √    |     |     | √      |
 | PSAMask                      | √   | √    | √   |     | √      |
 | RotatedFeatureAlign          | √   | √    | √   |     |        |
 | RoIPointPool3d               |     | √    | √   |     |        |
