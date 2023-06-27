@@ -9,7 +9,7 @@ At the same time, MMCV released [2.x](https://github.com/open-mmlab/mmcv/tree/2.
 - `mmcv.fileio` module, removed in PR [#2179](https://github.com/open-mmlab/mmcv/pull/2179). FileIO module from mmengine will be used wherever required.
 - `mmcv.runner`, `mmcv.parallel`, `mmcv. engine` and `mmcv.device`, removed in PR [#2216](https://github.com/open-mmlab/mmcv/pull/2216).
 - All classes in `mmcv.utils` (eg `Config` and `Registry`) and many functions, removed in PR [#2217](https://github.com/open-mmlab/mmcv/pull/2217). Only a few functions related to mmcv are reserved.
-- `mmcv.onnex`, `mmcv.tensorrt` modules and related functions, removed in PR [#2225](https://github.com/open-mmlab/mmcv/pull/2225).
+- `mmcv.onnx`, `mmcv.tensorrt` modules and related functions, removed in PR [#2225](https://github.com/open-mmlab/mmcv/pull/2225).
 
 (2) It added the [`mmcv.transforms`](https://github.com/open-mmlab/mmcv/tree/2.x/mmcv/transforms) data transformation module.
 

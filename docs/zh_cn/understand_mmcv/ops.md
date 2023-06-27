@@ -4,12 +4,12 @@ MMCV 提供了检测、分割等任务中常用的算子
 
 | Device                       | CPU | CUDA | MLU | MPS | Ascend |
 | ---------------------------- | --- | ---- | --- | --- | ------ |
-| ActiveRotatedFilter          | √   | √    |     |     |        |
+| ActiveRotatedFilter          | √   | √    |     |     | √      |
 | AssignScoreWithK             |     | √    |     |     |        |
 | BallQuery                    |     | √    | √   |     |        |
 | BBoxOverlaps                 |     | √    | √   | √   | √      |
 | BorderAlign                  |     | √    |     |     |        |
-| BoxIouRotated                | √   | √    |     |     |        |
+| BoxIouRotated                | √   | √    | √   |     |        |
 | BoxIouQuadri                 | √   | √    |     |     |        |
 | CARAFE                       |     | √    | √   |     |        |
 | ChamferDistance              |     | √    |     |     |        |
@@ -35,28 +35,28 @@ MMCV 提供了检测、分割等任务中常用的算子
 | ModulatedDeformConv2d        | √   | √    | √   |     | √      |
 | MultiScaleDeformableAttn     |     | √    | √   |     |        |
 | NMS                          | √   | √    | √   |     | √      |
-| NMSRotated                   | √   | √    |     |     | √      |
+| NMSRotated                   | √   | √    | √   |     | √      |
 | NMSQuadri                    | √   | √    |     |     |        |
 | PixelGroup                   | √   |      |     |     |        |
 | PointsInBoxes                | √   | √    |     |     |        |
 | PointsInPolygons             |     | √    |     |     |        |
 | PSAMask                      | √   | √    | √   |     | √      |
-| RotatedFeatureAlign          | √   | √    |     |     |        |
+| RotatedFeatureAlign          | √   | √    | √   |     |        |
 | RoIPointPool3d               |     | √    | √   |     |        |
 | RoIPool                      |     | √    | √   |     | √      |
 | RoIAlignRotated              | √   | √    | √   |     |        |
 | RiRoIAlignRotated            |     | √    |     |     |        |
-| RoIAlign                     | √   | √    | √   |     |        |
+| RoIAlign                     | √   | √    | √   |     | √      |
 | RoIAwarePool3d               |     | √    | √   |     |        |
 | SAConv2d                     |     | √    |     |     |        |
 | SigmoidFocalLoss             |     | √    | √   |     | √      |
 | SoftmaxFocalLoss             |     | √    |     |     | √      |
 | SoftNMS                      |     | √    |     |     |        |
-| Sparse Convolution           |     | √    |     |     |        |
+| Sparse Convolution           |     | √    | √   |     |        |
 | Synchronized BatchNorm       |     | √    |     |     |        |
 | ThreeInterpolate             |     | √    |     |     |        |
 | ThreeNN                      |     | √    | √   |     |        |
 | TINShift                     |     | √    | √   |     |        |
 | UpFirDn2d                    |     | √    |     |     |        |
-| Voxelization                 | √   | √    | √   |     |        |
+| Voxelization                 | √   | √    | √   |     | √      |
 | PrRoIPool                    |     | √    |     |     |        |

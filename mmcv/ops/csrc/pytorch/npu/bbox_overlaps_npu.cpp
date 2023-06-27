@@ -12,19 +12,40 @@ void bbox_overlaps_npu(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
   if (mode == 1) {
     modeStr = "iof";
   }
-  at::Tensor bboxes = at::ones_like(bboxes2);
-  at::Tensor gtboxes = at::ones_like(bboxes1);
-  bboxes = aligned ? bboxes2.transpose(0, 1) : bboxes2;
-  gtboxes = aligned ? bboxes1.transpose(0, 1) : bboxes1;
+  bool swap_flag = false;
+  at::Tensor bboxesFP32 = bboxes2;
+  at::Tensor gtboxesFP32 = bboxes1;
+  if (bboxes2.size(0) < bboxes1.size(0)) {
+    swap_flag = true;
+    bboxesFP32 = bboxes1;
+    gtboxesFP32 = bboxes2;
+  }
+  if (bboxes2.scalar_type() != at::ScalarType::Float) {
+    bboxesFP32 = NPUNativeFunctions::npu_dtype_cast(bboxesFP32, at::kFloat);
+    gtboxesFP32 = NPUNativeFunctions::npu_dtype_cast(gtboxesFP32, at::kFloat);
+  }
+  c10::SmallVector<int64_t, SIZE> iousSize = {gtboxesFP32.size(0),
+                                              bboxesFP32.size(0)};
+  if (aligned) {
+    iousSize = {gtboxesFP32.size(0), 1};
+  }
+  at::Tensor iousFP32 = OpPreparation::ApplyTensor(bboxesFP32, iousSize);
+  bboxesFP32 = aligned ? bboxesFP32.transpose(0, 1) : bboxesFP32;
+  gtboxesFP32 = aligned ? gtboxesFP32.transpose(0, 1) : gtboxesFP32;
   OpCommand cmd;
   cmd.Name("Iou")
-      .Input(bboxes)
-      .Input(gtboxes)
-      .Output(ious)
+      .Input(bboxesFP32)
+      .Input(gtboxesFP32)
+      .Output(iousFP32)
       .Attr("mode", modeStr)
       .Attr("eps", (float)offset)
       .Attr("aligned", aligned)
       .Run();
+  if (bboxes2.scalar_type() != at::ScalarType::Float) {
+    iousFP32 = NPUNativeFunctions::npu_dtype_cast(iousFP32, at::kHalf);
+  }
+  iousFP32 = swap_flag ? iousFP32.transpose(0, 1) : iousFP32;
+  ious.copy_(iousFP32);
 }
 
 REGISTER_NPU_IMPL(bbox_overlaps_impl, bbox_overlaps_npu);

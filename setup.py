@@ -212,6 +212,7 @@ def get_extensions():
             glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') +\
             glob.glob('./mmcv/ops/csrc/parrots/*.cpp')
         op_files.remove('./mmcv/ops/csrc/pytorch/cuda/iou3d_cuda.cu')
+        op_files.remove('./mmcv/ops/csrc/pytorch/cpu/bbox_overlaps_cpu.cpp')
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
         include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
         cuda_args = os.getenv('MMCV_CUDA_ARGS')
@@ -271,6 +272,7 @@ def get_extensions():
         include_dirs = []
 
         extra_objects = []
+        extra_link_args = []
         is_rocm_pytorch = False
         try:
             from torch.utils.cpp_extension import ROCM_HOME
@@ -368,7 +370,7 @@ def get_extensions():
                         exit()
 
             define_macros += [('MMCV_WITH_MLU', None)]
-            mlu_args = os.getenv('MMCV_MLU_ARGS')
+            mlu_args = os.getenv('MMCV_MLU_ARGS', '-DNDEBUG ')
             mluops_includes = []
             mluops_includes.append('-I' +
                                    os.path.abspath('./mlu-ops/bangc-ops'))
@@ -387,8 +389,11 @@ def get_extensions():
                     './mlu-ops/bangc-ops/kernels/**/*.cpp', recursive=True) + \
                 glob.glob(
                     './mlu-ops/bangc-ops/kernels/**/*.mlu', recursive=True)
-            extra_objects = glob.glob(
-                './mlu-ops/bangc-ops/kernels/*/x86_64/*.o')
+            extra_link_args = [
+                '-Wl,--whole-archive',
+                './mlu-ops/bangc-ops/kernels/kernel_wrapper/lib/libextops.a',
+                '-Wl,--no-whole-archive'
+            ]
             extension = MLUExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/mlu'))
@@ -455,7 +460,8 @@ def get_extensions():
             include_dirs=include_dirs,
             define_macros=define_macros,
             extra_objects=extra_objects,
-            extra_compile_args=extra_compile_args)
+            extra_compile_args=extra_compile_args,
+            extra_link_args=extra_link_args)
         extensions.append(ext_ops)
 
     if EXT_TYPE == 'pytorch' and os.getenv('MMCV_WITH_ORT', '0') != '0':
