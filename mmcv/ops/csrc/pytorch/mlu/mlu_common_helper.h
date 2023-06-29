@@ -34,8 +34,23 @@
   auto NAME##_impl = torch_mlu::getMluTensorImpl(NAME##_contigous); \
   auto NAME##_ptr = NAME##_impl->cnnlMalloc();
 
+enum class reduce_t { SUM = 0, MEAN = 1, MAX = 2 };
+
+inline std::string to_string(reduce_t reduce_type) {
+  if (reduce_type == reduce_t::MAX) {
+    return "max";
+  } else if (reduce_type == reduce_t::MEAN) {
+    return "mean";
+  } else if (reduce_type == reduce_t::SUM) {
+    return "sum";
+  } else {
+    return "unknown reduce type";
+  }
+}
+
 mluOpDataType_t getMluOpDataType(const caffe2::TypeMeta& data_type);
 mluOpTensorLayout_t getMluOpSuggestLayout(const at::Tensor& input);
+mluOpReduceMode_t getMluOpReduceMode(const reduce_t reduce_type);
 
 class MluOpTensorDescriptor {
  public:
