@@ -21,7 +21,10 @@ class DvcliveLoggerHook(LoggerHook):
             if less than `interval`. Default: True.
         reset_flag (bool): Whether to clear the output buffer after logging.
             Default: False.
-        by_epoch (bool): Whether EpochBasedRunner is used. Default: True.
+        by_epoch (bool): Whether EpochBasedRunner is used.
+            Determines whether `log` is called `after_train_iter` or
+            `after_train_epoch`.
+            Default: True.
         dvclive (Live, optional): An instance of the `Live`_ logger to use
             instead of initializing a new one internally. Defaults to None.
         kwargs: Arguments for instantiating `Live`_ (ignored if `dvclive` is
@@ -58,16 +61,23 @@ class DvcliveLoggerHook(LoggerHook):
     def log(self, runner) -> None:
         tags = self.get_loggable_tags(runner)
         if tags:
-            self.dvclive.set_step(self.get_iter(runner))
+            step = self.get_epoch(runner) if self.by_epoch else self.get_iter(
+                runner)
+            self.dvclive.set_step(step)
+
             for k, v in tags.items():
                 self.dvclive.log(k, v)
 
-    @master_only
     def after_train_epoch(self, runner) -> None:
-        super().after_train_epoch(runner)
         if self.model_file is not None:
             runner.save_checkpoint(
                 Path(self.model_file).parent,
                 filename_tmpl=Path(self.model_file).name,
                 create_symlink=False,
             )
+        if self.by_epoch:
+            super().after_train_epoch(runner)
+
+    def after_train_iter(self, runner) -> None:
+        if not self.by_epoch:
+            super().after_train_iter(runner)
