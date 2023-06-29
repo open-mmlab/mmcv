@@ -6,7 +6,8 @@ import torch
 from mmcv.ops import diff_iou_rotated_2d, diff_iou_rotated_3d
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
-torch.backends.mlu.matmul.allow_tf32 = False
+if IS_MLU_AVAILABLE:
+    torch.backends.mlu.matmul.allow_tf32 = False
 
 
 @pytest.mark.parametrize('device', [
