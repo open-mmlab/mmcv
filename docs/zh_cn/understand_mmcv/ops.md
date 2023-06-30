@@ -20,7 +20,7 @@ MMCV 提供了检测、分割等任务中常用的算子
 | Correlation                  |     | √    |     |     |        |
 | Deformable Convolution v1/v2 | √   | √    | √   |     | √      |
 | Deformable RoIPool           |     | √    | √   |     | √      |
-| DiffIoURotated               |     | √    |     |     |        |
+| DiffIoURotated               |     | √    | √   |     |        |
 | DynamicScatter               |     | √    |     |     |        |
 | FurthestPointSample          |     | √    |     |     |        |
 | FurthestPointSampleWithDist  |     | √    |     |     |        |

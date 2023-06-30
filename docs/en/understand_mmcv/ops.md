@@ -20,7 +20,7 @@ We implement common ops used in detection, segmentation, etc.
 | Correlation                  |     | √    |     |     |        |
 | Deformable Convolution v1/v2 | √   | √    | √   |     | √      |
 | Deformable RoIPool           |     | √    | √   |     | √      |
-| DiffIoURotated               |     | √    |     |     |        |
+| DiffIoURotated               |     | √    | √   |     |        |
 | DynamicScatter               |     | √    |     |     |        |
 | FurthestPointSample          |     | √    |     |     |        |
 | FurthestPointSampleWithDist  |     | √    |     |     |        |
