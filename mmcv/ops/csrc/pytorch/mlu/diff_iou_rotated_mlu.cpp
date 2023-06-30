@@ -11,16 +11,15 @@
  *************************************************************************/
 #include "mlu_common_helper.h"
 
-Tensor diff_iou_rotated_sort_vertices_forward_mlu(Tensor vertices,
-                                                  Tensor mask,
+Tensor diff_iou_rotated_sort_vertices_forward_mlu(Tensor vertices, Tensor mask,
                                                   Tensor num_valid) {
   // params check
   TORCH_CHECK(vertices.scalar_type() == at::kFloat,
-      "vertices type should be Float, got ", vertices.scalar_type());
-  TORCH_CHECK(mask.scalar_type() == at::kBool,
-      "mask should be Bool, got ", mask.scalar_type());
+              "vertices type should be Float, got ", vertices.scalar_type());
+  TORCH_CHECK(mask.scalar_type() == at::kBool, "mask should be Bool, got ",
+              mask.scalar_type());
   TORCH_CHECK(num_valid.scalar_type() == at::kInt,
-      "num_valid type should be Int32, got ", num_valid.scalar_type());
+              "num_valid type should be Int32, got ", num_valid.scalar_type());
   TORCH_CHECK(vertices.size(2) == 24, "vertices.dim(2) should be 24, got ",
               vertices.size(2));
   TORCH_CHECK(mask.size(2) == 24, "mask.dim(2) should be 24, got ",
@@ -31,8 +30,8 @@ Tensor diff_iou_rotated_sort_vertices_forward_mlu(Tensor vertices,
     return at::empty({0}, num_valid.options().dtype(at::kInt));
   }
 
-  auto idx =
-      at::empty({vertices.size(0), vertices.size(1), 9}, num_valid.options().dtype(at::kInt));
+  auto idx = at::empty({vertices.size(0), vertices.size(1), 9},
+                       num_valid.options().dtype(at::kInt));
 
   INITIAL_MLU_PARAM_WITH_TENSOR(vertices);
   INITIAL_MLU_PARAM_WITH_TENSOR(mask);
@@ -43,15 +42,13 @@ Tensor diff_iou_rotated_sort_vertices_forward_mlu(Tensor vertices,
   auto handle = mluOpGetCurrentHandle();
 
   // launch kernel
-  mluOpDiffIouRotatedSortVerticesForward(handle, vertices_desc.desc(), vertices_ptr,
-                                         mask_desc.desc(), mask_ptr,
-                                         num_valid_desc.desc(), num_valid_ptr,
-                                         idx_desc.desc(), idx_ptr);
+  mluOpDiffIouRotatedSortVerticesForward(
+      handle, vertices_desc.desc(), vertices_ptr, mask_desc.desc(), mask_ptr,
+      num_valid_desc.desc(), num_valid_ptr, idx_desc.desc(), idx_ptr);
   return idx;
 }
 
-Tensor diff_iou_rotated_sort_vertices_forward_impl(Tensor vertices,
-                                                   Tensor mask,
+Tensor diff_iou_rotated_sort_vertices_forward_impl(Tensor vertices, Tensor mask,
                                                    Tensor num_valid);
 
 REGISTER_DEVICE_IMPL(diff_iou_rotated_sort_vertices_forward_impl, MLU,
