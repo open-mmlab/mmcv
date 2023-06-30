@@ -60,10 +60,10 @@ void sigmoid_focal_loss_forward_mlu(Tensor input, Tensor target,
 
   // set tensor descriptor
   MluOpTensorDescriptor input_desc, target_desc, weight_desc, output_desc;
-  input_desc.set_with_layout(input_contiguous, MLUOP_LAYOUT_ARRAY);
-  target_desc.set_with_layout(target_contiguous, MLUOP_LAYOUT_ARRAY);
-  weight_desc.set_with_layout(weight_contiguous, MLUOP_LAYOUT_ARRAY);
-  output_desc.set_with_layout(output_contiguous, MLUOP_LAYOUT_ARRAY);
+  input_desc.set(input_contiguous);
+  target_desc.set(target_contiguous);
+  weight_desc.set(weight_contiguous);
+  output_desc.set(output_contiguous);
 
   // get ptr of tensors
   auto input_impl = torch_mlu::getMluTensorImpl(input_contiguous);
@@ -135,10 +135,10 @@ void sigmoid_focal_loss_backward_mlu(Tensor input, Tensor target,
 
   // set tensor descriptor
   MluOpTensorDescriptor input_desc, target_desc, weight_desc, output_desc;
-  input_desc.set_with_layout(input_contiguous, MLUOP_LAYOUT_ARRAY);
-  target_desc.set_with_layout(target_contiguous, MLUOP_LAYOUT_ARRAY);
-  weight_desc.set_with_layout(weight_contiguous, MLUOP_LAYOUT_ARRAY);
-  output_desc.set_with_layout(output_contiguous, MLUOP_LAYOUT_ARRAY);
+  input_desc.set(input_contiguous);
+  target_desc.set(target_contiguous);
+  weight_desc.set(weight_contiguous);
+  output_desc.set(output_contiguous);
 
   // get ptr of tensors
   auto input_impl = torch_mlu::getMluTensorImpl(input_contiguous);
