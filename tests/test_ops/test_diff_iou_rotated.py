@@ -9,6 +9,7 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 if IS_MLU_AVAILABLE:
     torch.backends.mlu.matmul.allow_tf32 = False
 
+
 @pytest.mark.parametrize('device', [
     pytest.param(
         'cuda',
