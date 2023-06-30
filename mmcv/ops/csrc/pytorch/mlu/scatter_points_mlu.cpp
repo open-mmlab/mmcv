@@ -11,9 +11,8 @@
  *************************************************************************/
 #include "mlu_common_helper.h"
 
-std::vector<Tensor>
-dynamic_point_to_voxel_forward_mlu(const Tensor &feats, const Tensor &coors,
-                                   const reduce_t reduce_type) {
+std::vector<Tensor> dynamic_point_to_voxel_forward_mlu(
+    const Tensor &feats, const Tensor &coors, const reduce_t reduce_type) {
   // params check
   TORCH_CHECK(feats.scalar_type() == at::kFloat,
               "feats type should be Float, got ", feats.scalar_type());
@@ -100,8 +99,7 @@ void dynamic_point_to_voxel_backward_mlu(
   grad_feats.fill_(0);
 
   // zero-element check
-  if (num_input == 0 || num_reduced == 0)
-    return;
+  if (num_input == 0 || num_reduced == 0) return;
 
   // TODO(miaochen): remove this after mlu-ops supports other mode of reduce.
   TORCH_CHECK(reduce_type == reduce_t::MAX,
@@ -144,9 +142,8 @@ void dynamic_point_to_voxel_backward_mlu(
       workspace_size, grad_feats_desc.desc(), grad_feats_ptr);
 }
 
-std::vector<Tensor>
-dynamic_point_to_voxel_forward_impl(const Tensor &feats, const Tensor &coors,
-                                    const reduce_t reduce_type);
+std::vector<Tensor> dynamic_point_to_voxel_forward_impl(
+    const Tensor &feats, const Tensor &coors, const reduce_t reduce_type);
 
 void dynamic_point_to_voxel_backward_impl(
     Tensor &grad_feats, const Tensor &grad_reduced_feats, const Tensor &feats,
