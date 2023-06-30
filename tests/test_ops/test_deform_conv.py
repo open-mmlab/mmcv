@@ -7,6 +7,9 @@ from mmengine.utils.dl_utils import TORCH_VERSION
 
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
+if IS_MLU_AVAILABLE:
+    torch.backends.cnnl.allow_tf32 = False
+
 try:
     # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast
     # would be imported and used; we should test if our modules support it.
