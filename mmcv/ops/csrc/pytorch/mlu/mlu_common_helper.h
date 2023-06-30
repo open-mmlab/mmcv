@@ -34,7 +34,7 @@
   auto NAME##_impl = torch_mlu::getMluTensorImpl(NAME##_contigous); \
   auto NAME##_ptr = NAME##_impl->cnnlMalloc();
 
-enum class reduce_t{ SUM = 0, MEAN = 1, MAX = 2  };
+enum class reduce_t { SUM = 0, MEAN = 1, MAX = 2 };
 
 inline std::string to_string(reduce_t reduce_type) {
   if (reduce_type == reduce_t::MAX) {
