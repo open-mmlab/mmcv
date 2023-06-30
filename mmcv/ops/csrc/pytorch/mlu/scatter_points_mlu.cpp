@@ -11,16 +11,16 @@
  *************************************************************************/
 #include "mlu_common_helper.h"
 
-std::vector<Tensor> dynamic_point_to_voxel_forward_mlu(const Tensor &feats,
-                                                       const Tensor &coors,
-                                                       const reduce_t reduce_type) {
+std::vector<Tensor> dynamic_point_to_voxel_forward_mlu(
+    const Tensor &feats, const Tensor &coors, const reduce_t reduce_type) {
   // params check
   TORCH_CHECK(feats.scalar_type() == at::kFloat,
-      "feats type should be Float, got ", feats.scalar_type());
+              "feats type should be Float, got ", feats.scalar_type());
   TORCH_CHECK(coors.scalar_type() == at::kInt,
-      "coors type should be Int32, got ", coors.scalar_type());
+              "coors type should be Int32, got ", coors.scalar_type());
   TORCH_CHECK(feats.size(0) == coors.size(0),
-      "feats.dim(0) and coors.dim(0) should be same, got ", feats.size(0), " vs ", coors.size(0));
+              "feats.dim(0) and coors.dim(0) should be same, got ",
+              feats.size(0), " vs ", coors.size(0));
 
   const int num_input = feats.size(0);
   const int num_feats = feats.size(1);
@@ -49,59 +49,48 @@ std::vector<Tensor> dynamic_point_to_voxel_forward_mlu(const Tensor &feats,
   auto handle = mluOpGetCurrentHandle();
 
   size_t workspace_size;
-  mluOpGetDynamicPointToVoxelForwardWorkspaceSize(handle,
-                                                  feats_desc.desc(),
-                                                  coors_desc.desc(),
-                                                  &workspace_size);
+  mluOpGetDynamicPointToVoxelForwardWorkspaceSize(
+      handle, feats_desc.desc(), coors_desc.desc(), &workspace_size);
   auto workspace_tensor =
       at::empty(workspace_size, feats.options().dtype(at::kByte));
   INITIAL_MLU_PARAM_WITH_TENSOR(workspace_tensor);
 
   // launch kernel
-  mluOpDynamicPointToVoxelForward(handle,
-                                  mlu_reduce_type,
-                                  feats_desc.desc(),
-                                  feats_ptr,
-                                  coors_desc.desc(),
-                                  coors_ptr,
-                                  workspace_tensor_ptr,
-                                  workspace_size,
-                                  reduced_feats_desc.desc(),
-                                  reduced_feats_ptr,
-                                  out_coors_desc.desc(),
-                                  out_coors_ptr,
-                                  coors_map_desc.desc(),
-                                  coors_map_ptr,
-                                  reduce_count_desc.desc(),
-                                  reduce_count_ptr,
-                                  voxel_num_desc.desc(),
-                                  voxel_num_ptr);
+  mluOpDynamicPointToVoxelForward(
+      handle, mlu_reduce_type, feats_desc.desc(), feats_ptr, coors_desc.desc(),
+      coors_ptr, workspace_tensor_ptr, workspace_size,
+      reduced_feats_desc.desc(), reduced_feats_ptr, out_coors_desc.desc(),
+      out_coors_ptr, coors_map_desc.desc(), coors_map_ptr,
+      reduce_count_desc.desc(), reduce_count_ptr, voxel_num_desc.desc(),
+      voxel_num_ptr);
 
   int voxel_num_value = *static_cast<int *>(voxel_num.cpu().data_ptr());
   TORCH_CHECK(voxel_num_value <= feats.size(0),
-      "voxel_num should be less than or equal to feats_num, got ", voxel_num_value, " vs ", feats.size(0));
-  return {reduced_feats.slice(0, 0, voxel_num_value), out_coors.slice(0, 0, voxel_num_value),
-          coors_map, reduce_count.slice(0, 0, voxel_num_value)};
+              "voxel_num should be less than or equal to feats_num, got ",
+              voxel_num_value, " vs ", feats.size(0));
+  return {reduced_feats.slice(0, 0, voxel_num_value),
+          out_coors.slice(0, 0, voxel_num_value), coors_map,
+          reduce_count.slice(0, 0, voxel_num_value)};
 }
 
-void dynamic_point_to_voxel_backward_mlu(Tensor &grad_feats,
-                                         const Tensor &grad_reduced_feats,
-                                         const Tensor &feats,
-                                         const Tensor &reduced_feats,
-                                         const Tensor &coors_idx,
-                                         const Tensor &reduce_count,
-                                         const reduce_t reduce_type) {
+void dynamic_point_to_voxel_backward_mlu(
+    Tensor &grad_feats, const Tensor &grad_reduced_feats, const Tensor &feats,
+    const Tensor &reduced_feats, const Tensor &coors_idx,
+    const Tensor &reduce_count, const reduce_t reduce_type) {
   // params check
   TORCH_CHECK(grad_reduced_feats.scalar_type() == at::kFloat,
-      "grad_reduced_feats type should be Float, got ", grad_reduced_feats.scalar_type());
+              "grad_reduced_feats type should be Float, got ",
+              grad_reduced_feats.scalar_type());
   TORCH_CHECK(feats.scalar_type() == at::kFloat,
-      "feats type should be Float, got ", feats.scalar_type());
+              "feats type should be Float, got ", feats.scalar_type());
   TORCH_CHECK(reduced_feats.scalar_type() == at::kFloat,
-      "reduced_feats type should be Float, got ", reduced_feats.scalar_type());
+              "reduced_feats type should be Float, got ",
+              reduced_feats.scalar_type());
   TORCH_CHECK(coors_idx.scalar_type() == at::kInt,
-      "coors_idx type should be Int32, got ", coors_idx.scalar_type());
+              "coors_idx type should be Int32, got ", coors_idx.scalar_type());
   TORCH_CHECK(reduce_count.scalar_type() == at::kInt,
-      "reduce_count type should be Int32, got ", reduce_count.scalar_type());
+              "reduce_count type should be Int32, got ",
+              reduce_count.scalar_type());
 
   const int num_input = feats.size(0);
   const int num_reduced = reduced_feats.size(0);
@@ -114,11 +103,13 @@ void dynamic_point_to_voxel_backward_mlu(Tensor &grad_feats,
 
   // TODO(miaochen): remove this after mlu-ops supports other mode of reduce.
   TORCH_CHECK(reduce_type == reduce_t::MAX,
-      "only supports max reduce in current version, got ", to_string(reduce_type));
+              "only supports max reduce in current version, got ",
+              to_string(reduce_type));
 
   int voxel_num_value = reduced_feats.size(0);
   auto opts = torch::TensorOptions().dtype(torch::kInt32);
-  auto voxel_num = torch::from_blob(&voxel_num_value, {1}, opts).clone().to(at::kMLU);
+  auto voxel_num =
+      torch::from_blob(&voxel_num_value, {1}, opts).clone().to(at::kMLU);
   auto mlu_reduce_type = getMluOpReduceMode(reduce_type);
 
   INITIAL_MLU_PARAM_WITH_TENSOR(grad_feats);
@@ -134,43 +125,30 @@ void dynamic_point_to_voxel_backward_mlu(Tensor &grad_feats,
 
   size_t workspace_size;
   mluOpGetDynamicPointToVoxelBackwardWorkspaceSize(
-    handle, mlu_reduce_type,
-    grad_feats_desc.desc(),
-    feats_desc.desc(),
-    grad_reduced_feats_desc.desc(),
-    coors_idx_desc.desc(),
-    reduce_count_desc.desc(),
-    voxel_num_desc.desc(),
-    &workspace_size);
+      handle, mlu_reduce_type, grad_feats_desc.desc(), feats_desc.desc(),
+      grad_reduced_feats_desc.desc(), coors_idx_desc.desc(),
+      reduce_count_desc.desc(), voxel_num_desc.desc(), &workspace_size);
   auto workspace_tensor =
       at::empty(workspace_size, feats.options().dtype(at::kByte));
   INITIAL_MLU_PARAM_WITH_TENSOR(workspace_tensor);
 
   // launch kernel
   mluOpDynamicPointToVoxelBackward(
-    handle, mlu_reduce_type,
-    grad_reduced_feats_desc.desc(),
-    grad_reduced_feats_ptr,
-    feats_desc.desc(), feats_ptr,
-    reduced_feats_desc.desc(), reduced_feats_ptr,
-    coors_idx_desc.desc(), coors_idx_ptr,
-    reduce_count_desc.desc(), reduce_count_ptr,
-    voxel_num_desc.desc(), voxel_num_ptr,
-    workspace_tensor_ptr, workspace_size,
-    grad_feats_desc.desc(), grad_feats_ptr);
+      handle, mlu_reduce_type, grad_reduced_feats_desc.desc(),
+      grad_reduced_feats_ptr, feats_desc.desc(), feats_ptr,
+      reduced_feats_desc.desc(), reduced_feats_ptr, coors_idx_desc.desc(),
+      coors_idx_ptr, reduce_count_desc.desc(), reduce_count_ptr,
+      voxel_num_desc.desc(), voxel_num_ptr, workspace_tensor_ptr,
+      workspace_size, grad_feats_desc.desc(), grad_feats_ptr);
 }
 
-std::vector<Tensor> dynamic_point_to_voxel_forward_impl(const Tensor &feats,
-                                                        const Tensor &coors,
-                                                        const reduce_t reduce_type);
+std::vector<Tensor> dynamic_point_to_voxel_forward_impl(
+    const Tensor &feats, const Tensor &coors, const reduce_t reduce_type);
 
-void dynamic_point_to_voxel_backward_impl(Tensor &grad_feats,
-                                          const Tensor &grad_reduced_feats,
-                                          const Tensor &feats,
-                                          const Tensor &reduced_feats,
-                                          const Tensor &coors_idx,
-                                          const Tensor &reduce_count,
-                                          const reduce_t reduce_type);
+void dynamic_point_to_voxel_backward_impl(
+    Tensor &grad_feats, const Tensor &grad_reduced_feats, const Tensor &feats,
+    const Tensor &reduced_feats, const Tensor &coors_idx,
+    const Tensor &reduce_count, const reduce_t reduce_type);
 
 REGISTER_DEVICE_IMPL(dynamic_point_to_voxel_forward_impl, MLU,
                      dynamic_point_to_voxel_forward_mlu);
