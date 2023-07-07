@@ -18,11 +18,39 @@
 #include "pytorch_device_registry.hpp"
 
 #define MLUOP_MAJOR 0
-#define MLUOP_MINOR 6
-#define MLUOP_PATCHLEVEL 0
+#define MLUOP_MINOR 7
+#define MLUOP_PATCHLEVEL 1
+
+/*************************************************************************
+ * This MACRO contains operations of simple tensor to mlu-tensor.
+ * _contiguous, _desc, _impl, _ptr will be automatically generated in
+ * this MACRO.
+ *************************************************************************/
+#define INITIAL_MLU_PARAM_WITH_TENSOR(NAME)                         \
+  auto NAME##_contigous = torch_mlu::cnnl::ops::cnnl_contiguous(    \
+      NAME, NAME.suggest_memory_format());                          \
+  MluOpTensorDescriptor NAME##_desc;                                \
+  NAME##_desc.set(NAME##_contigous);                                \
+  auto NAME##_impl = torch_mlu::getMluTensorImpl(NAME##_contigous); \
+  auto NAME##_ptr = NAME##_impl->cnnlMalloc();
+
+enum class reduce_t { SUM = 0, MEAN = 1, MAX = 2 };
+
+inline std::string to_string(reduce_t reduce_type) {
+  if (reduce_type == reduce_t::MAX) {
+    return "max";
+  } else if (reduce_type == reduce_t::MEAN) {
+    return "mean";
+  } else if (reduce_type == reduce_t::SUM) {
+    return "sum";
+  } else {
+    return "unknown reduce type";
+  }
+}
 
 mluOpDataType_t getMluOpDataType(const caffe2::TypeMeta& data_type);
 mluOpTensorLayout_t getMluOpSuggestLayout(const at::Tensor& input);
+mluOpReduceMode_t getMluOpReduceMode(const reduce_t reduce_type);
 
 class MluOpTensorDescriptor {
  public:

@@ -20,8 +20,8 @@ We implement common ops used in detection, segmentation, etc.
 | Correlation                  |     | √    |     |     |        |
 | Deformable Convolution v1/v2 | √   | √    |     |     | √      |
 | Deformable RoIPool           |     | √    | √   |     | √      |
-| DiffIoURotated               |     | √    |     |     |        |
-| DynamicScatter               |     | √    |     |     |        |
+| DiffIoURotated               |     | √    | √   |     |        |
+| DynamicScatter               |     | √    | √   |     |        |
 | FurthestPointSample          |     | √    |     |     |        |
 | FurthestPointSampleWithDist  |     | √    |     |     |        |
 | FusedBiasLeakyrelu           |     | √    |     |     | √      |
@@ -39,7 +39,7 @@ We implement common ops used in detection, segmentation, etc.
 | NMSQuadri                    | √   | √    |     |     |        |
 | PixelGroup                   | √   |      |     |     |        |
 | PointsInBoxes                | √   | √    |     |     |        |
-| PointsInPolygons             |     | √    |     |     |        |
+| PointsInPolygons             |     | √    |     |     | √      |
 | PSAMask                      | √   | √    | √   |     | √      |
 | RotatedFeatureAlign          | √   | √    | √   |     |        |
 | RoIPointPool3d               |     | √    | √   |     |        |
