@@ -38,9 +38,9 @@ void BoxIouRotatedMLUKernelLauncher(const Tensor boxes1, const Tensor boxes2,
   auto ious_ptr = ious_impl->cnnlMalloc();
 
   CNLOG(INFO) << "Call mluOpBoxIouRotated().";
-  mluOpBoxIouRotated(handle, mode_flag, aligned, boxes1_desc.desc(), boxes1_ptr,
-                     boxes2_desc.desc(), boxes2_ptr, ious_desc.desc(),
-                     ious_ptr);
+  TORCH_MLUOP_CHECK(mluOpBoxIouRotated(handle, mode_flag, aligned, boxes1_desc.desc(), boxes1_ptr,
+                                       boxes2_desc.desc(), boxes2_ptr, ious_desc.desc(),
+                                       ious_ptr));
 }
 
 void box_iou_rotated_mlu(const Tensor boxes1, const Tensor boxes2, Tensor ious,
