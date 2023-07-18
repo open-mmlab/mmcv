@@ -42,9 +42,9 @@ Tensor diff_iou_rotated_sort_vertices_forward_mlu(Tensor vertices, Tensor mask,
   auto handle = mluOpGetCurrentHandle();
 
   // launch kernel
-  mluOpDiffIouRotatedSortVerticesForward(
-      handle, vertices_desc.desc(), vertices_ptr, mask_desc.desc(), mask_ptr,
-      num_valid_desc.desc(), num_valid_ptr, idx_desc.desc(), idx_ptr);
+  TORCH_MLUOP_CHECK(mluOpDiffIouRotatedSortVerticesForward(
+                        handle, vertices_desc.desc(), vertices_ptr, mask_desc.desc(), mask_ptr,
+                        num_valid_desc.desc(), num_valid_ptr, idx_desc.desc(), idx_ptr));
   return idx;
 }
 

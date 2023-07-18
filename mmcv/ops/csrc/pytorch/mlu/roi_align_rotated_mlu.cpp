@@ -40,10 +40,10 @@ void ROIAlignRotatedForwardMLUKernelLauncher(Tensor input, Tensor rois,
 
   // get compute handle
   auto handle = mluOpGetCurrentHandle();
-  mluOpRoiAlignRotatedForward(
-      handle, input_desc.desc(), input_ptr, rois_desc.desc(), rois_ptr,
-      pooled_height, pooled_width, sampling_ratio, spatial_scale, aligned,
-      clockwise, output_desc.desc(), output_ptr);
+  TORCH_MLUOP_CHECK(mluOpRoiAlignRotatedForward(
+                        handle, input_desc.desc(), input_ptr, rois_desc.desc(), rois_ptr,
+                        pooled_height, pooled_width, sampling_ratio, spatial_scale, aligned,
+                        clockwise, output_desc.desc(), output_ptr);
 
   output.copy_(output_contiguous);
 }
@@ -76,10 +76,10 @@ void ROIAlignRotatedBackwardMLUKernelLauncher(
 
   // get compute handle
   auto handle = mluOpGetCurrentHandle();
-  mluOpRoiAlignRotatedBackward(
-      handle, top_grad_desc.desc(), top_grad_ptr, rois_desc.desc(), rois_ptr,
-      pooled_height, pooled_width, sampling_ratio, spatial_scale, aligned,
-      clockwise, bottom_grad_desc.desc(), bottom_grad_ptr);
+  TORCH_MLUOP_CHECK(mluOpRoiAlignRotatedBackward(
+                        handle, top_grad_desc.desc(), top_grad_ptr, rois_desc.desc(), rois_ptr,
+                        pooled_height, pooled_width, sampling_ratio, spatial_scale, aligned,
+                        clockwise, bottom_grad_desc.desc(), bottom_grad_ptr);
   bottom_grad.copy_(bottom_grad_);
 }
 

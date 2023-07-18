@@ -54,8 +54,8 @@ mluOpReduceMode_t getMluOpReduceMode(const reduce_t reduce_type);
 
 class MluOpTensorDescriptor {
  public:
-  MluOpTensorDescriptor() { mluOpCreateTensorDescriptor(&desc_); };
-  ~MluOpTensorDescriptor() { mluOpDestroyTensorDescriptor(desc_); }
+  MluOpTensorDescriptor() { TORCH_MLUOP_CHECK(mluOpCreateTensorDescriptor(&desc_)); };
+  ~MluOpTensorDescriptor() { TORCH_MLUOP_CHECK(mluOpDestroyTensorDescriptor(desc_)); }
 
   void set(at::Tensor);
   void set_with_layout(at::Tensor, mluOpTensorLayout_t layout);
@@ -71,14 +71,14 @@ mluOpHandle_t mluOpGetCurrentHandle(c10::DeviceIndex device_index = -1);
 
 class MluOpHandle {
  public:
-  MluOpHandle() : handle(nullptr) { mluOpCreate(&handle); }
+  MluOpHandle() : handle(nullptr) { TORCH_MLUOP_CHECK(mluOpCreate(&handle)); }
   ~MluOpHandle() {
     if (handle) {
-      mluOpDestroy(handle);
+      TORCH_MLUOP_CHECK(mluOpDestroy(handle));
       handle = nullptr;
     }
   }
-  void setQueue(cnrtQueue_t queue) { mluOpSetQueue(handle, queue); }
+  void setQueue(cnrtQueue_t queue) { TORCH_MLUOP_CHECK(mluOpSetQueue(handle, queue)); }
   mluOpHandle_t handle;
 };
 
