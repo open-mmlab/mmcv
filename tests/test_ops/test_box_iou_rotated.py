@@ -4,7 +4,7 @@ import pytest
 import torch
 
 from mmcv.ops import box_iou_rotated
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
 
 
 class TestBoxIoURotated:
@@ -54,7 +54,11 @@ class TestBoxIoURotated:
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
-                not IS_MLU_AVAILABLE, reason='requires MLU support'))
+                not IS_MLU_AVAILABLE, reason='requires MLU support')),
+        pytest.param(
+            'npu',
+            marks=pytest.mark.skipif(
+                not IS_NPU_AVAILABLE, reason='requires NPU support'))
     ])
     def test_box_iou_rotated(self, device):
         np_boxes1 = np.asarray(
@@ -137,7 +141,11 @@ class TestBoxIoURotated:
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
-                not IS_MLU_AVAILABLE, reason='requires MLU support'))
+                not IS_MLU_AVAILABLE, reason='requires MLU support')),
+        pytest.param(
+            'npu',
+            marks=pytest.mark.skipif(
+                not IS_NPU_AVAILABLE, reason='requires NPU support'))
     ])
     def test_box_iou_rotated_iof(self, device):
         np_boxes1 = np.asarray(
