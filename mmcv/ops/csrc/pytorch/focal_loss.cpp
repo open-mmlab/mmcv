@@ -7,6 +7,7 @@
 #include <diopi/functions_mmcv.h>
 
 #include "csrc_dipu/diopirt/diopirt_impl.h"
+#include "csrc_dipu/base/base_def.h"
 
 using dipu::diopi_helper::toDiopiScalar;
 using dipu::diopi_helper::toDiopiTensorHandle;
@@ -56,7 +57,8 @@ void sigmoid_focal_loss_forward_diopi(Tensor input, Tensor target,
   auto target_p = toDiopiTensorHandle(target);
   auto weight_p = toDiopiTensorHandle(weight);
   auto output_p = toDiopiTensorHandle(output);
-  if (reinterpret_cast<void *>(diopiSigmoidFocalLossMmcv) != nullptr) {
+  bool is_mock_cuda = input.device().type() == dipu::DIPU_DEVICE_TYPE;
+  if (is_mock_cuda && reinterpret_cast<void *>(diopiSigmoidFocalLossMmcv) != nullptr) {
     auto ret = diopiSigmoidFocalLossMmcv(ch, output_p, input_p, target_p,
                                          weight_p, gamma, alpha);
     if (ret == diopiSuccess) return;
@@ -89,7 +91,8 @@ void sigmoid_focal_loss_backward_diopi(Tensor input, Tensor target,
   auto target_p = toDiopiTensorHandle(target);
   auto weight_p = toDiopiTensorHandle(weight);
   auto grad_input_p = toDiopiTensorHandle(grad_input);
-  if (reinterpret_cast<void *>(diopiSigmoidFocalLossBackwardMmcv) != nullptr) {
+  bool is_mock_cuda = input.device().type() == dipu::DIPU_DEVICE_TYPE;
+  if (is_mock_cuda && reinterpret_cast<void *>(diopiSigmoidFocalLossBackwardMmcv) != nullptr) {
     auto ret = diopiSigmoidFocalLossBackwardMmcv(
         ch, grad_input_p, input_p, target_p, weight_p, gamma, alpha);
     if (ret == diopiSuccess) return;

@@ -7,6 +7,7 @@
 #include <diopi/functions_mmcv.h>
 
 #include "csrc_dipu/diopirt/diopirt_impl.h"
+#include "csrc_dipu/base/base_def.h"
 
 using dipu::diopi_helper::toDiopiScalar;
 using dipu::diopi_helper::toDiopiTensorHandle;
@@ -83,7 +84,8 @@ void hard_voxelize_forward_diopi(const at::Tensor &points,
   auto coors_p = toDiopiTensorHandle(coors);
   auto num_points_per_voxel_p = toDiopiTensorHandle(num_points_per_voxel);
   auto voxel_num_p = toDiopiTensorHandle(voxel_num);
-  if (reinterpret_cast<void *>(diopiHardVoxelizeMmcv) != nullptr) {
+  bool is_mock_cuda = input.device().type() == dipu::DIPU_DEVICE_TYPE;
+  if (is_mock_cuda && reinterpret_cast<void *>(diopiHardVoxelizeMmcv) != nullptr) {
     auto ret = diopiHardVoxelizeMmcv(
         ch, voxels_p, coors_p, num_points_per_voxel_p, voxel_num_p, points_p,
         voxel_size_p, coors_range_p, max_points, max_voxels, NDim,
@@ -145,7 +147,8 @@ void dynamic_voxelize_forward_diopi(const at::Tensor &points,
   auto voxel_size_p = toDiopiTensorHandle(voxel_size);
   auto coors_range_p = toDiopiTensorHandle(coors_range);
   auto coors_p = toDiopiTensorHandle(coors);
-  if (reinterpret_cast<void *>(diopiDynamicVoxelizeMmcv) != nullptr) {
+  bool is_mock_cuda = input.device().type() == dipu::DIPU_DEVICE_TYPE;
+  if (is_mock_cuda && reinterpret_cast<void *>(diopiDynamicVoxelizeMmcv) != nullptr) {
     auto ret = diopiDynamicVoxelizeMmcv(ch, coors_p, points_p, voxel_size_p,
                                         coors_range_p, NDim);
     if (ret == diopiSuccess) return;

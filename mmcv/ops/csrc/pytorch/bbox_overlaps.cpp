@@ -7,6 +7,7 @@
 #include <diopi/functions_mmcv.h>
 
 #include "csrc_dipu/diopirt/diopirt_impl.h"
+#include "csrc_dipu/base/base_def.h"
 
 using dipu::diopi_helper::toDiopiScalar;
 using dipu::diopi_helper::toDiopiTensorHandle;
@@ -33,7 +34,7 @@ void bbox_overlaps_diopi(const Tensor bboxes1, const Tensor bboxes2,
   diopiContextHandle_t ch = &ctx;
   auto bboxes2_p = toDiopiTensorHandle(bboxes2);
   auto ious_p = toDiopiTensorHandle(ious);
-  bool is_mock_cuda = bboxes1.device().type() == c10::DeviceType::PrivateUse1;
+  bool is_mock_cuda = input.device().type() == dipu::DIPU_DEVICE_TYPE;
   if (is_mock_cuda &&
       reinterpret_cast<void *>(diopiBboxOverlapsMmcv) != nullptr) {
     auto ret = diopiBboxOverlapsMmcv(ch, ious_p, bboxes1_p, bboxes2_p, mode,
