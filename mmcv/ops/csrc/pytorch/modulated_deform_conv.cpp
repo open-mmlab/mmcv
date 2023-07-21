@@ -7,7 +7,7 @@
 #include <diopi/functions_mmcv.h>
 
 #include "csrc_dipu/diopirt/diopirt_impl.h"
-#include "csrc_dipu/base/base_def.h"
+#include "csrc_dipu/base/basedef.h"
 
 using dipu::diopi_helper::toDiopiScalar;
 using dipu::diopi_helper::toDiopiTensorHandle;
