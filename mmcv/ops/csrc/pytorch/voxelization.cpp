@@ -84,7 +84,7 @@ void hard_voxelize_forward_diopi(const at::Tensor &points,
   auto coors_p = toDiopiTensorHandle(coors);
   auto num_points_per_voxel_p = toDiopiTensorHandle(num_points_per_voxel);
   auto voxel_num_p = toDiopiTensorHandle(voxel_num);
-  bool is_mock_cuda = input.device().type() == dipu::DIPU_DEVICE_TYPE;
+  bool is_mock_cuda = points.device().type() == dipu::DIPU_DEVICE_TYPE;
   if (is_mock_cuda && reinterpret_cast<void *>(diopiHardVoxelizeMmcv) != nullptr) {
     auto ret = diopiHardVoxelizeMmcv(
         ch, voxels_p, coors_p, num_points_per_voxel_p, voxel_num_p, points_p,
@@ -147,7 +147,7 @@ void dynamic_voxelize_forward_diopi(const at::Tensor &points,
   auto voxel_size_p = toDiopiTensorHandle(voxel_size);
   auto coors_range_p = toDiopiTensorHandle(coors_range);
   auto coors_p = toDiopiTensorHandle(coors);
-  bool is_mock_cuda = input.device().type() == dipu::DIPU_DEVICE_TYPE;
+  bool is_mock_cuda = points.device().type() == dipu::DIPU_DEVICE_TYPE;
   if (is_mock_cuda && reinterpret_cast<void *>(diopiDynamicVoxelizeMmcv) != nullptr) {
     auto ret = diopiDynamicVoxelizeMmcv(ch, coors_p, points_p, voxel_size_p,
                                         coors_range_p, NDim);
