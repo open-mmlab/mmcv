@@ -82,10 +82,10 @@ void sigmoid_focal_loss_forward_mlu(Tensor input, Tensor target,
   auto handle = mluOpGetCurrentHandle();
 
   // launch kernel
-  mluOpFocalLossSigmoidForward(handle, prefer, reduction, input_desc.desc(),
+  TORCH_MLUOP_CHECK(mluOpFocalLossSigmoidForward(handle, prefer, reduction, input_desc.desc(),
                                input_ptr, target_desc.desc(), target_ptr,
                                weight_desc.desc(), weight_ptr, alpha, gamma,
-                               output_desc.desc(), output_ptr);
+                               output_desc.desc(), output_ptr));
 }
 
 void sigmoid_focal_loss_backward_mlu(Tensor input, Tensor target,
@@ -158,10 +158,10 @@ void sigmoid_focal_loss_backward_mlu(Tensor input, Tensor target,
   auto handle = mluOpGetCurrentHandle();
 
   // launch kernel
-  mluOpFocalLossSigmoidBackward(handle, prefer, reduction, input_desc.desc(),
+  TORCH_MLUOP_CHECK(mluOpFocalLossSigmoidBackward(handle, prefer, reduction, input_desc.desc(),
                                 input_ptr, target_desc.desc(), target_ptr,
                                 weight_desc.desc(), weight_ptr, alpha, gamma,
-                                output_desc.desc(), output_ptr);
+                                output_desc.desc(), output_ptr));
 }
 
 void sigmoid_focal_loss_forward_impl(Tensor input, Tensor target, Tensor weight,
