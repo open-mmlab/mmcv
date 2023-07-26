@@ -34,6 +34,17 @@
   auto NAME##_impl = torch_mlu::getMluTensorImpl(NAME##_contigous); \
   auto NAME##_ptr = NAME##_impl->cnnlMalloc();
 
+#ifndef TORCH_MLUOP_CHECK
+#define TORCH_MLUOP_CHECK(EXPR)                                                \
+  do {                                                                         \
+    mluOpStatus_t status = EXPR;                                               \
+      if (status != MLUOP_STATUS_SUCCESS) {                                    \
+        CNLOG(ERROR) << "";                                                    \
+        TORCH_CHECK(false, "MLUOPS error: ", mluOpGetErrorString(status));     \
+      }                                                                        \
+  } while (0);
+#endif
+
 enum class reduce_t { SUM = 0, MEAN = 1, MAX = 2 };
 
 inline std::string to_string(reduce_t reduce_type) {
