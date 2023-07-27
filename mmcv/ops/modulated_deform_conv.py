@@ -11,6 +11,7 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair, _single
 
+from mmcv.utils import IS_MLU_AVAILABLE
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
@@ -358,3 +359,68 @@ class ModulatedDeformConv2dPack(ModulatedDeformConv2d):
         super()._load_from_state_dict(state_dict, prefix, local_metadata,
                                       strict, missing_keys, unexpected_keys,
                                       error_msgs)
+
+
+if IS_MLU_AVAILABLE:
+    import torchvision
+    from mmengine.utils import digit_version
+    from torchvision.ops import deform_conv2d as tv_deform_conv2d
+
+    @MODELS.register_module('DCNv2', force=True)
+    class ModulatedDeformConv2dPack_MLU(ModulatedDeformConv2d):
+        """This class is the DCNv2 implementation of the MLU device.
+
+        The MLU backend support of the operator has been implemented
+        in torchvision. The mmcv registration mechanism is used for
+        multiplexing here. The torchvision implementation of DCNv2 is called.
+        Args:
+            in_channels (int): Same as nn.Conv2d.
+            out_channels (int): Same as nn.Conv2d.
+            kernel_size (int or tuple[int]): Same as nn.Conv2d.
+            stride (int): Same as nn.Conv2d, while tuple is not supported.
+            padding (int): Same as nn.Conv2d, while tuple is not supported.
+            dilation (int): Same as nn.Conv2d, while tuple is not supported.
+            groups (int): Same as nn.Conv2d.
+            bias (bool or str): If specified as `auto`, it will be decided by
+                the norm_cfg. Bias will be set as True if norm_cfg is None,
+                otherwise False.
+        """
+
+        def __init__(self, *args, **kwargs):
+            assert digit_version(torchvision.__version__) >= digit_version(
+                '0.10.0a0'), 'the version of torchvision should be >= 0.10.0'
+            super().__init__(*args, **kwargs)
+            self.conv_offset = nn.Conv2d(
+                self.in_channels,
+                self.deform_groups * 3 * self.kernel_size[0] *
+                self.kernel_size[1],
+                kernel_size=self.kernel_size,
+                stride=self.stride,
+                padding=self.padding,
+                dilation=self.dilation,
+                bias=True)
+            self.init_weights()
+
+        def init_weights(self):
+            super().init_weights()
+            if hasattr(self, 'conv_offset'):
+                self.conv_offset.weight.data.zero_()
+                self.conv_offset.bias.data.zero_()
+
+        def forward(self, x):
+            out = self.conv_offset(x)
+            o1, o2, mask = torch.chunk(out, 3, dim=1)
+            offset = torch.cat((o1, o2), dim=1)
+            mask = torch.sigmoid(mask)
+            x = x.type_as(offset)
+            weight = self.weight.type_as(x)
+            mask = mask.type_as(x)
+            return tv_deform_conv2d(
+                x,
+                offset,
+                weight,
+                bias=self.bias,
+                stride=self.stride,
+                padding=self.padding,
+                dilation=self.dilation,
+                mask=mask)

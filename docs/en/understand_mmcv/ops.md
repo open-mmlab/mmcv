@@ -18,7 +18,7 @@ We implement common ops used in detection, segmentation, etc.
 | ConvexIoU                    |     | √    |     |     |        |
 | CornerPool                   |     | √    |     |     |        |
 | Correlation                  |     | √    |     |     |        |
-| Deformable Convolution v1/v2 | √   | √    |     |     | √      |
+| Deformable Convolution v1/v2 | √   | √    | √   |     | √      |
 | Deformable RoIPool           |     | √    | √   |     | √      |
 | DiffIoURotated               |     | √    | √   |     |        |
 | DynamicScatter               |     | √    | √   |     |        |
@@ -32,7 +32,7 @@ We implement common ops used in detection, segmentation, etc.
 | MaskedConv                   |     | √    | √   |     | √      |
 | MergeCells                   |     | √    |     |     |        |
 | MinAreaPolygon               |     | √    |     |     |        |
-| ModulatedDeformConv2d        | √   | √    |     |     | √      |
+| ModulatedDeformConv2d        | √   | √    | √   |     | √      |
 | MultiScaleDeformableAttn     |     | √    | √   |     |        |
 | NMS                          | √   | √    | √   |     | √      |
 | NMSRotated                   | √   | √    | √   |     | √      |
