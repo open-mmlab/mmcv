@@ -292,9 +292,7 @@ class ConvModule(nn.Module):
         if efficient_conv_bn_eval and self.norm \
                             and isinstance(self.norm, _BatchNorm) \
                             and self.norm.track_running_stats:
-            # this is to bypass the flake8 check for 79 chars in one line
-            enabled = efficient_conv_bn_eval_forward
-            self.efficient_conv_bn_eval_forward = enabled
+            self.efficient_conv_bn_eval_forward = efficient_conv_bn_eval_forward  # noqa: E501
         else:
             self.efficient_conv_bn_eval_forward = None  # type: ignore
 
