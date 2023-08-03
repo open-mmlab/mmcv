@@ -49,20 +49,20 @@ std::vector<Tensor> dynamic_point_to_voxel_forward_mlu(
   auto handle = mluOpGetCurrentHandle();
 
   size_t workspace_size;
-  mluOpGetDynamicPointToVoxelForwardWorkspaceSize(
-      handle, feats_desc.desc(), coors_desc.desc(), &workspace_size);
+  TORCH_MLUOP_CHECK(mluOpGetDynamicPointToVoxelForwardWorkspaceSize(
+      handle, feats_desc.desc(), coors_desc.desc(), &workspace_size));
   auto workspace_tensor =
       at::empty(workspace_size, feats.options().dtype(at::kByte));
   INITIAL_MLU_PARAM_WITH_TENSOR(workspace_tensor);
 
   // launch kernel
-  mluOpDynamicPointToVoxelForward(
+  TORCH_MLUOP_CHECK(mluOpDynamicPointToVoxelForward(
       handle, mlu_reduce_type, feats_desc.desc(), feats_ptr, coors_desc.desc(),
       coors_ptr, workspace_tensor_ptr, workspace_size,
       reduced_feats_desc.desc(), reduced_feats_ptr, out_coors_desc.desc(),
       out_coors_ptr, coors_map_desc.desc(), coors_map_ptr,
       reduce_count_desc.desc(), reduce_count_ptr, voxel_num_desc.desc(),
-      voxel_num_ptr);
+      voxel_num_ptr));
 
   int voxel_num_value = *static_cast<int *>(voxel_num.cpu().data_ptr());
   TORCH_CHECK(voxel_num_value <= feats.size(0),
@@ -124,22 +124,22 @@ void dynamic_point_to_voxel_backward_mlu(
   auto handle = mluOpGetCurrentHandle();
 
   size_t workspace_size;
-  mluOpGetDynamicPointToVoxelBackwardWorkspaceSize(
+  TORCH_MLUOP_CHECK(mluOpGetDynamicPointToVoxelBackwardWorkspaceSize(
       handle, mlu_reduce_type, grad_feats_desc.desc(), feats_desc.desc(),
       grad_reduced_feats_desc.desc(), coors_idx_desc.desc(),
-      reduce_count_desc.desc(), voxel_num_desc.desc(), &workspace_size);
+      reduce_count_desc.desc(), voxel_num_desc.desc(), &workspace_size));
   auto workspace_tensor =
       at::empty(workspace_size, feats.options().dtype(at::kByte));
   INITIAL_MLU_PARAM_WITH_TENSOR(workspace_tensor);
 
   // launch kernel
-  mluOpDynamicPointToVoxelBackward(
+  TORCH_MLUOP_CHECK(mluOpDynamicPointToVoxelBackward(
       handle, mlu_reduce_type, grad_reduced_feats_desc.desc(),
       grad_reduced_feats_ptr, feats_desc.desc(), feats_ptr,
       reduced_feats_desc.desc(), reduced_feats_ptr, coors_idx_desc.desc(),
       coors_idx_ptr, reduce_count_desc.desc(), reduce_count_ptr,
       voxel_num_desc.desc(), voxel_num_ptr, workspace_tensor_ptr,
-      workspace_size, grad_feats_desc.desc(), grad_feats_ptr);
+      workspace_size, grad_feats_desc.desc(), grad_feats_ptr));
 }
 
 std::vector<Tensor> dynamic_point_to_voxel_forward_impl(
