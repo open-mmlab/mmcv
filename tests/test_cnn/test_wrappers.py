@@ -374,3 +374,25 @@ def test_nn_op_forward_called():
         wrapper = Linear(3, 3)
         wrapper(x_normal)
         nn_module_forward.assert_called_with(x_normal)
+
+
+def test_fx_compatibility():
+    try:
+        from torch import fx
+
+        # ensure the fx trace can pass the network
+        for Net in (MaxPool2d, MaxPool3d):
+            net = Net(1)
+            gm_module = fx.symbolic_trace(net)
+            print(gm_module.code)
+        for Net in (Linear, ):
+            net = Net(1, 1)
+            gm_module = fx.symbolic_trace(net)
+            print(gm_module.code)
+        for Net in (Conv2d, ConvTranspose2d, Conv3d, ConvTranspose3d):
+            net = Net(1, 1, 1)
+            gm_module = fx.symbolic_trace(net)
+            print(gm_module.code)
+    except ImportError:
+        # torch.fx might not be available
+        pass

@@ -41,7 +41,7 @@ class NewEmptyTensorOp(torch.autograd.Function):
 class Conv2d(nn.Conv2d):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        if x.numel() == 0 and obsolete_torch_version(TORCH_VERSION, (1, 4)):
+        if obsolete_torch_version(TORCH_VERSION, (1, 4)) and x.numel() == 0:
             out_shape = [x.shape[0], self.out_channels]
             for i, k, p, s, d in zip(x.shape[-2:], self.kernel_size,
                                      self.padding, self.stride, self.dilation):
@@ -62,7 +62,7 @@ class Conv2d(nn.Conv2d):
 class Conv3d(nn.Conv3d):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        if x.numel() == 0 and obsolete_torch_version(TORCH_VERSION, (1, 4)):
+        if obsolete_torch_version(TORCH_VERSION, (1, 4)) and x.numel() == 0:
             out_shape = [x.shape[0], self.out_channels]
             for i, k, p, s, d in zip(x.shape[-3:], self.kernel_size,
                                      self.padding, self.stride, self.dilation):
@@ -84,7 +84,7 @@ class Conv3d(nn.Conv3d):
 class ConvTranspose2d(nn.ConvTranspose2d):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        if x.numel() == 0 and obsolete_torch_version(TORCH_VERSION, (1, 4)):
+        if obsolete_torch_version(TORCH_VERSION, (1, 4)) and x.numel() == 0:
             out_shape = [x.shape[0], self.out_channels]
             for i, k, p, s, d, op in zip(x.shape[-2:], self.kernel_size,
                                          self.padding, self.stride,
@@ -106,7 +106,7 @@ class ConvTranspose2d(nn.ConvTranspose2d):
 class ConvTranspose3d(nn.ConvTranspose3d):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        if x.numel() == 0 and obsolete_torch_version(TORCH_VERSION, (1, 4)):
+        if obsolete_torch_version(TORCH_VERSION, (1, 4)) and x.numel() == 0:
             out_shape = [x.shape[0], self.out_channels]
             for i, k, p, s, d, op in zip(x.shape[-3:], self.kernel_size,
                                          self.padding, self.stride,
@@ -127,7 +127,7 @@ class MaxPool2d(nn.MaxPool2d):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # PyTorch 1.9 does not support empty tensor inference yet
-        if x.numel() == 0 and obsolete_torch_version(TORCH_VERSION, (1, 9)):
+        if obsolete_torch_version(TORCH_VERSION, (1, 9)) and x.numel() == 0:
             out_shape = list(x.shape[:2])
             for i, k, p, s, d in zip(x.shape[-2:], _pair(self.kernel_size),
                                      _pair(self.padding), _pair(self.stride),
@@ -145,7 +145,7 @@ class MaxPool3d(nn.MaxPool3d):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # PyTorch 1.9 does not support empty tensor inference yet
-        if x.numel() == 0 and obsolete_torch_version(TORCH_VERSION, (1, 9)):
+        if obsolete_torch_version(TORCH_VERSION, (1, 9)) and x.numel() == 0:
             out_shape = list(x.shape[:2])
             for i, k, p, s, d in zip(x.shape[-3:], _triple(self.kernel_size),
                                      _triple(self.padding),
@@ -164,7 +164,7 @@ class Linear(torch.nn.Linear):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # empty tensor forward of Linear layer is supported in Pytorch 1.6
-        if x.numel() == 0 and obsolete_torch_version(TORCH_VERSION, (1, 5)):
+        if obsolete_torch_version(TORCH_VERSION, (1, 5)) and x.numel() == 0:
             out_shape = [x.shape[0], self.out_features]
             empty = NewEmptyTensorOp.apply(x, out_shape)
             if self.training:
