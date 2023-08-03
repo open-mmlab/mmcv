@@ -35,12 +35,12 @@ Tensor MsDeformAttnForwardLauncher(const Tensor& value,
   INITIAL_MLU_PARAM_WITH_TENSOR(sampling_loc);
   INITIAL_MLU_PARAM_WITH_TENSOR(attn_weight);
 
-  mluOpMsDeformAttnForward(
-      handle, value_desc.desc(), value_ptr, spatial_shapes_int_desc.desc(),
-      spatial_shapes_int_ptr, level_start_index_int_desc.desc(),
-      level_start_index_int_ptr, sampling_loc_desc.desc(), sampling_loc_ptr,
-      attn_weight_desc.desc(), attn_weight_ptr, im2col_step, output_desc.desc(),
-      output_ptr);
+  TORCH_MLUOP_CHECK(mluOpMsDeformAttnForward(
+                        handle, value_desc.desc(), value_ptr, spatial_shapes_int_desc.desc(),
+                        spatial_shapes_int_ptr, level_start_index_int_desc.desc(),
+                        level_start_index_int_ptr, sampling_loc_desc.desc(), sampling_loc_ptr,
+                        attn_weight_desc.desc(), attn_weight_ptr, im2col_step, output_desc.desc(),
+                        output_ptr));
 
   output = output.view({batch_size, num_queries, num_heads * channels});
   return output;

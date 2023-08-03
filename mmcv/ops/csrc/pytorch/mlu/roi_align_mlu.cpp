@@ -48,10 +48,10 @@ void ROIAlignForwardMLUKernelLauncher(Tensor input, Tensor rois, Tensor output,
   auto output_ptr = output_impl->cnnlMalloc();
 
   mluOpRoiAlignForwardDescriptor_t roialign_desc;
-  mluOpCreateRoiAlignForwardDescriptor(&roialign_desc);
-  mluOpSetRoiAlignForwardDescriptor_v2(roialign_desc, aligned_height,
-                                       aligned_width, sampling_ratio,
-                                       spatial_scale, pool_mode, aligned);
+  TORCH_MLUOP_CHECK(mluOpCreateRoiAlignForwardDescriptor(&roialign_desc));
+  TORCH_MLUOP_CHECK(mluOpSetRoiAlignForwardDescriptor_v2(roialign_desc, aligned_height,
+                                                         aligned_width, sampling_ratio,
+                                                         spatial_scale, pool_mode, aligned));
 
   auto handle = mluOpGetCurrentHandle();
   if (pool_mode == 0) {
@@ -65,18 +65,18 @@ void ROIAlignForwardMLUKernelLauncher(Tensor input, Tensor rois, Tensor output,
     auto argmax_y_ptr = argmax_y_impl->cnnlMalloc();
     argmax_y_desc.set_with_layout(argmax_x_contiguous, MLUOP_LAYOUT_NHWC);
     argmax_x_desc.set_with_layout(argmax_x_contiguous, MLUOP_LAYOUT_NHWC);
-    mluOpRoiAlignForward_v2(handle, roialign_desc, input_desc.desc(), self_ptr,
-                            rois_desc.desc(), rois_ptr, output_desc.desc(),
-                            output_ptr, argmax_x_desc.desc(), argmax_x_ptr,
-                            argmax_y_desc.desc(), argmax_y_ptr);
+    TORCH_MLUOP_CHECK(mluOpRoiAlignForward_v2(handle, roialign_desc, input_desc.desc(), self_ptr,
+                                              rois_desc.desc(), rois_ptr, output_desc.desc(),
+                                              output_ptr, argmax_x_desc.desc(), argmax_x_ptr,
+                                              argmax_y_desc.desc(), argmax_y_ptr);
     argmax_x.copy_(argmax_x_contiguous);
     argmax_y.copy_(argmax_y_contiguous);
   } else {
-    mluOpRoiAlignForward_v2(handle, roialign_desc, input_desc.desc(), self_ptr,
-                            rois_desc.desc(), rois_ptr, output_desc.desc(),
-                            output_ptr, NULL, NULL, NULL, NULL);
+    TORCH_MLUOP_CHECK(mluOpRoiAlignForward_v2(handle, roialign_desc, input_desc.desc(), self_ptr,
+                                              rois_desc.desc(), rois_ptr, output_desc.desc(),
+                                              output_ptr, NULL, NULL, NULL, NULL);
   }
-  mluOpDestroyRoiAlignForwardDescriptor(roialign_desc);
+  TORCH_MLUOP_CHECK(mluOpDestroyRoiAlignForwardDescriptor(roialign_desc));
   output.copy_(output_contiguous);
 }
 
@@ -136,16 +136,16 @@ void ROIAlignBackwardMLUKernelLauncher(Tensor grad, Tensor rois,
     auto argmax_y_ptr = argmax_y_impl->cnnlMalloc();
     argmax_y_desc.set_with_layout(argmax_x_contiguous, MLUOP_LAYOUT_NHWC);
     argmax_x_desc.set_with_layout(argmax_x_contiguous, MLUOP_LAYOUT_NHWC);
-    mluOpRoiAlignBackward_v2(handle, grads_desc.desc(), grad_ptr,
-                             rois_desc.desc(), rois_ptr, argmax_y_desc.desc(),
-                             argmax_x_ptr, argmax_y_desc.desc(), argmax_y_ptr,
-                             spatial_scale, sampling_ratio, aligned, pool_mode,
-                             grad_input_desc.desc(), grad_input_ptr);
+    TORCH_MLUOP_CHECK(mluOpRoiAlignBackward_v2(handle, grads_desc.desc(), grad_ptr,
+                          rois_desc.desc(), rois_ptr, argmax_y_desc.desc(),
+                          argmax_x_ptr, argmax_y_desc.desc(), argmax_y_ptr,
+                          spatial_scale, sampling_ratio, aligned, pool_mode,
+                          grad_input_desc.desc(), grad_input_ptr));
   } else {
-    mluOpRoiAlignBackward_v2(handle, grads_desc.desc(), grad_ptr,
-                             rois_desc.desc(), rois_ptr, NULL, NULL, NULL, NULL,
-                             spatial_scale, sampling_ratio, aligned, pool_mode,
-                             grad_input_desc.desc(), grad_input_ptr);
+    TORCH_MLUOP_CHECK(mluOpRoiAlignBackward_v2(handle, grads_desc.desc(), grad_ptr,
+                          rois_desc.desc(), rois_ptr, NULL, NULL, NULL, NULL,
+                          spatial_scale, sampling_ratio, aligned, pool_mode,
+                          grad_input_desc.desc(), grad_input_ptr));
   }
   grad_input.copy_(grad_input_);
 }

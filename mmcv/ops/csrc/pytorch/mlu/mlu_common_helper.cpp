@@ -123,7 +123,7 @@ void MluOpTensorDescriptor::set_desc(const at::Tensor& t,
                                      mluOpDataType_t dtype,
                                      std::vector<int>& dims) {
   int dimNb = dims.size();
-  mluOpSetTensorDescriptor(desc_, layout, dtype, dimNb, dims.data());
+  TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(desc_, layout, dtype, dimNb, dims.data()));
 }
 
 // Handles
