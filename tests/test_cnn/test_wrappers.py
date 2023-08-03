@@ -376,6 +376,7 @@ def test_nn_op_forward_called():
         nn_module_forward.assert_called_with(x_normal)
 
 
+@patch('mmcv.cnn.bricks.wrappers.TORCH_VERSION', (1, 10))
 def test_fx_compatibility():
     try:
         from torch import fx
