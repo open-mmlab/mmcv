@@ -15,8 +15,9 @@ from .norm import build_norm_layer
 from .padding import build_padding_layer
 
 
-def fast_conv_bn_eval_forward(bn: _BatchNorm, conv: nn.modules.conv._ConvNd,
-                              x: torch.Tensor):
+def efficient_conv_bn_eval_forward(bn: _BatchNorm,
+                                   conv: nn.modules.conv._ConvNd,
+                                   x: torch.Tensor):
     """
     Implementation based on https://arxiv.org/abs/2305.11624
     "Tune-Mode ConvBN Blocks For Efficient Transfer Learning"
@@ -115,9 +116,9 @@ class ConvModule(nn.Module):
             sequence of "conv", "norm" and "act". Common examples are
             ("conv", "norm", "act") and ("act", "conv", "norm").
             Default: ('conv', 'norm', 'act').
-        fast_conv_bn_eval (bool): Whether use fast conv when the consecutive
-            bn is in eval mode (either training or testing), as proposed in
-            https://arxiv.org/abs/2305.11624 . Default: False.
+        efficient_conv_bn_eval (bool): Whether use efficient conv when the
+            consecutive bn is in eval mode (either training or testing), as
+            proposed in https://arxiv.org/abs/2305.11624 . Default: `False`.
     """
 
     _abbr_ = 'conv_block'
@@ -138,7 +139,7 @@ class ConvModule(nn.Module):
                  with_spectral_norm: bool = False,
                  padding_mode: str = 'zeros',
                  order: tuple = ('conv', 'norm', 'act'),
-                 fast_conv_bn_eval: bool = False):
+                 efficient_conv_bn_eval: bool = False):
         super().__init__()
         assert conv_cfg is None or isinstance(conv_cfg, dict)
         assert norm_cfg is None or isinstance(norm_cfg, dict)
@@ -209,7 +210,7 @@ class ConvModule(nn.Module):
         else:
             self.norm_name = None  # type: ignore
 
-        self.turn_on_fast_conv_bn_eval(fast_conv_bn_eval)
+        self.turn_on_efficient_conv_bn_eval(efficient_conv_bn_eval)
 
         # build activation layer
         if self.with_activation:
@@ -263,15 +264,16 @@ class ConvModule(nn.Module):
                 if self.with_explicit_padding:
                     x = self.padding_layer(x)
                 # if the next operation is norm and we have a norm layer in
-                # eval mode and we have enabled fast_conv_bn_eval for the conv
-                # operator, then activate the optimized forward and skip the
-                # next norm operator since it has been fused
+                # eval mode and we have enabled `efficient_conv_bn_eval` for
+                # the conv operator, then activate the optimized forward and
+                # skip the next norm operator since it has been fused
                 if layer_index + 1 < len(self.order) and \
                         self.order[layer_index + 1] == 'norm' and norm and \
                         self.with_norm and not self.norm.training and \
-                        self.fast_conv_bn_eval_forward is not None:
-                    self.conv.forward = partial(self.fast_conv_bn_eval_forward,
-                                                self.norm, self.conv)
+                        self.efficient_conv_bn_eval_forward is not None:
+                    self.conv.forward = partial(
+                        self.efficient_conv_bn_eval_forward, self.norm,
+                        self.conv)
                     layer_index += 1
                     x = self.conv(x)
                     del self.conv.forward
@@ -284,20 +286,20 @@ class ConvModule(nn.Module):
             layer_index += 1
         return x
 
-    def turn_on_fast_conv_bn_eval(self, fast_conv_bn_eval=True):
-        # fast_conv_bn_eval works for conv + bn
+    def turn_on_efficient_conv_bn_eval(self, efficient_conv_bn_eval=True):
+        # efficient_conv_bn_eval works for conv + bn
         # with `track_running_stats` option
-        if fast_conv_bn_eval and self.norm \
+        if efficient_conv_bn_eval and self.norm \
                             and isinstance(self.norm, _BatchNorm) \
                             and self.norm.track_running_stats:
-            self.fast_conv_bn_eval_forward = fast_conv_bn_eval_forward
+            self.efficient_conv_bn_eval_forward = efficient_conv_bn_eval_forward  # noqa: E501
         else:
-            self.fast_conv_bn_eval_forward = None  # type: ignore
+            self.efficient_conv_bn_eval_forward = None  # type: ignore
 
     @staticmethod
     def create_from_conv_bn(conv: torch.nn.modules.conv._ConvNd,
                             bn: torch.nn.modules.batchnorm._BatchNorm,
-                            fast_conv_bn_eval=True) -> 'ConvModule':
+                            efficient_conv_bn_eval=True) -> 'ConvModule':
         """Create a ConvModule from a conv and a bn module."""
         self = ConvModule.__new__(ConvModule)
         super(ConvModule, self).__init__()
@@ -331,6 +333,6 @@ class ConvModule(nn.Module):
         self.norm_name, norm = 'bn', bn
         self.add_module(self.norm_name, norm)
 
-        self.turn_on_fast_conv_bn_eval(fast_conv_bn_eval)
+        self.turn_on_efficient_conv_bn_eval(efficient_conv_bn_eval)
 
         return self
