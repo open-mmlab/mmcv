@@ -30,8 +30,8 @@ void ThreeNNMLUKernelLauncher(int b, int n, int m, const Tensor unknown,
 
   auto handle = mluOpGetCurrentHandle();
   size_t workspace_size = 0;
-  TORCH_MLUOP_CHECK(mluOpGetThreeNNForwardWorkspaceSize(handle, known_desc.desc(),
-                                                        &workspace_size));
+  TORCH_MLUOP_CHECK(mluOpGetThreeNNForwardWorkspaceSize(
+      handle, known_desc.desc(), &workspace_size));
   auto known_workspace =
       at::empty(workspace_size, known.options().dtype(at::kByte));
 
@@ -46,10 +46,10 @@ void ThreeNNMLUKernelLauncher(int b, int n, int m, const Tensor unknown,
   auto idx_ptr = idx_impl->cnnlMalloc();
   auto workspace_ptr = workspace_impl->cnnlMalloc();
 
-  TORCH_MLUOP_CHECK(mluOpThreeNNForward(handle, unknown_desc.desc(), unknown_ptr,
-                                        known_desc.desc(), known_ptr, workspace_ptr,
-                                        workspace_size, dist2_desc.desc(), dist2_ptr,
-                                        idx_desc.desc(), idx_ptr));
+  TORCH_MLUOP_CHECK(mluOpThreeNNForward(
+      handle, unknown_desc.desc(), unknown_ptr, known_desc.desc(), known_ptr,
+      workspace_ptr, workspace_size, dist2_desc.desc(), dist2_ptr,
+      idx_desc.desc(), idx_ptr));
 }
 
 void three_nn_forward_mlu(int b, int n, int m, const Tensor unknown,
