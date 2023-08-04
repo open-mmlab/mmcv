@@ -45,8 +45,8 @@ void RoiawarePool3dForwardMLUKernelLauncher(
   // allocate extra space for workspace
   size_t workspace_size = 0;
   TORCH_MLUOP_CHECK(mluOpGetRoiawarePool3dForwardWorkspaceSize(
-                        handle, rois_desc.desc(), pts_desc.desc(), pts_feature_desc.desc(),
-                        &workspace_size));
+      handle, rois_desc.desc(), pts_desc.desc(), pts_feature_desc.desc(),
+      &workspace_size));
 
   auto workspace = at::empty(workspace_size, rois.options().dtype(at::kByte));
   auto workspace_impl = torch_mlu::getMluTensorImpl(workspace);
