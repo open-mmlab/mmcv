@@ -34,9 +34,9 @@ void ball_query_forward_mlu(int b, int n, int m, float min_radius,
   auto idx_ptr = idx_impl->cnnlMalloc();
 
   auto handle = mluOpGetCurrentHandle();
-  TORCH_MLUOP_CHECK(mluOpBallQuery(handle, new_xyz_desc.desc(), new_xyz_ptr, xyz_desc.desc(),
-                                   xyz_ptr, min_radius, max_radius, nsample, idx_desc.desc(),
-                                   idx_ptr));
+  TORCH_MLUOP_CHECK(mluOpBallQuery(
+      handle, new_xyz_desc.desc(), new_xyz_ptr, xyz_desc.desc(), xyz_ptr,
+      min_radius, max_radius, nsample, idx_desc.desc(), idx_ptr));
 }
 
 void ball_query_forward_impl(int b, int n, int m, float min_radius,
