@@ -35,13 +35,13 @@
   auto NAME##_ptr = NAME##_impl->cnnlMalloc();
 
 #ifndef TORCH_MLUOP_CHECK
-#define TORCH_MLUOP_CHECK(EXPR)                                                \
-  do {                                                                         \
-    mluOpStatus_t status = EXPR;                                               \
-      if (status != MLUOP_STATUS_SUCCESS) {                                    \
-        CNLOG(ERROR) << "";                                                    \
-        TORCH_CHECK(false, "MLUOPS error: ", mluOpGetErrorString(status));     \
-      }                                                                        \
+#define TORCH_MLUOP_CHECK(EXPR)                                          \
+  do {                                                                   \
+    mluOpStatus_t status = EXPR;                                         \
+    if (status != MLUOP_STATUS_SUCCESS) {                                \
+      CNLOG(ERROR) << "";                                                \
+      TORCH_CHECK(false, "MLUOPS error: ", mluOpGetErrorString(status)); \
+    }                                                                    \
   } while (0);
 #endif
 
@@ -65,8 +65,12 @@ mluOpReduceMode_t getMluOpReduceMode(const reduce_t reduce_type);
 
 class MluOpTensorDescriptor {
  public:
-  MluOpTensorDescriptor() { TORCH_MLUOP_CHECK(mluOpCreateTensorDescriptor(&desc_)); };
-  ~MluOpTensorDescriptor() { TORCH_MLUOP_CHECK(mluOpDestroyTensorDescriptor(desc_)); }
+  MluOpTensorDescriptor() {
+    TORCH_MLUOP_CHECK(mluOpCreateTensorDescriptor(&desc_));
+  };
+  ~MluOpTensorDescriptor() {
+    TORCH_MLUOP_CHECK(mluOpDestroyTensorDescriptor(desc_));
+  }
 
   void set(at::Tensor);
   void set_with_layout(at::Tensor, mluOpTensorLayout_t layout);
@@ -89,7 +93,9 @@ class MluOpHandle {
       handle = nullptr;
     }
   }
-  void setQueue(cnrtQueue_t queue) { TORCH_MLUOP_CHECK(mluOpSetQueue(handle, queue)); }
+  void setQueue(cnrtQueue_t queue) {
+    TORCH_MLUOP_CHECK(mluOpSetQueue(handle, queue));
+  }
   mluOpHandle_t handle;
 };
 

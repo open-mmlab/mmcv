@@ -86,17 +86,17 @@ std::vector<torch::Tensor> GetIndicePairsForwardMLUKernelLauncher(
     mluOpDataType_t dtype = MLUOP_DTYPE_INT32;
     std::vector<int> dims;
     dims = {numAct, coorDim + 1};
-    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(indices_desc.desc(), layout, dtype, dims.size(),
-                          dims.data()));
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        indices_desc.desc(), layout, dtype, dims.size(), dims.data()));
     dims = {kernelVolume, 2, numAct};
-    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(indicePairs_desc.desc(), layout, dtype,
-                          dims.size(), dims.data()));
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        indicePairs_desc.desc(), layout, dtype, dims.size(), dims.data()));
     dims = {kernelVolume};
-    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(indiceNum_desc.desc(), layout, dtype, dims.size(),
-                          dims.data()));
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        indiceNum_desc.desc(), layout, dtype, dims.size(), dims.data()));
     dims = {out_size, coorDim + 1};
-    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(out_indices_desc.desc(), layout, dtype,
-                          dims.size(), dims.data()));
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        out_indices_desc.desc(), layout, dtype, dims.size(), dims.data()));
   }
 
   mluOpSparseConvolutionDescriptor_t sparse_conv_desc;
@@ -127,13 +127,14 @@ std::vector<torch::Tensor> GetIndicePairsForwardMLUKernelLauncher(
   auto indiceNum_ptr = indiceNum_impl->cnnlMalloc();
   auto indice_workspace_ptr = indice_workspace_impl->cnnlMalloc();
 
-  TORCH_MLUOP_CHECK(mluOpGetIndicePairs(handle, sparse_conv_desc, indices_desc.desc(),
-                                        indices_ptr, indice_workspace_ptr, workspace_size,
-                                        indicePairs_desc.desc(), indicePairs_ptr,
-                                        out_indices_desc.desc(), out_indices_ptr,
-                                        indiceNum_desc.desc(), indiceNum_ptr));
+  TORCH_MLUOP_CHECK(mluOpGetIndicePairs(
+      handle, sparse_conv_desc, indices_desc.desc(), indices_ptr,
+      indice_workspace_ptr, workspace_size, indicePairs_desc.desc(),
+      indicePairs_ptr, out_indices_desc.desc(), out_indices_ptr,
+      indiceNum_desc.desc(), indiceNum_ptr));
   int num_act_out = 0;
-  TORCH_MLUOP_CHECK(mluOpGetSparseConvolutionNumActOut(sparse_conv_desc, &num_act_out));
+  TORCH_MLUOP_CHECK(
+      mluOpGetSparseConvolutionNumActOut(sparse_conv_desc, &num_act_out));
   TORCH_MLUOP_CHECK(mluOpDestroySparseConvolutionDescriptor(sparse_conv_desc));
   if (!sub_m) {
     return {out_indices.slice(0, 0, num_act_out), indicePairs, indiceNum};
@@ -179,25 +180,28 @@ torch::Tensor IndiceConvForwardMLUKernelLauncher(
     int dims[8];
 
     // features_desc
-    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(features_desc.desc(), &layout, &dtype, &dim, dims));
-    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(features_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype,
-                          dim, dims));
+    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(features_desc.desc(), &layout,
+                                               &dtype, &dim, dims));
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        features_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims));
 
     // filters_desc
-    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(filters_desc.desc(), &layout, &dtype, &dim, dims));
-    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(filters_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype,
-                          dim, dims));
+    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(filters_desc.desc(), &layout,
+                                               &dtype, &dim, dims));
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        filters_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims));
 
     // indice_pairs_desc
-    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(indice_pairs_desc.desc(), &layout, &dtype, &dim,
-                          dims));
-    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(indice_pairs_desc.desc(), MLUOP_LAYOUT_ARRAY,
-                          dtype, dim, dims));
+    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(indice_pairs_desc.desc(),
+                                               &layout, &dtype, &dim, dims));
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        indice_pairs_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims));
 
     // output_desc
-    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(output_desc.desc(), &layout, &dtype, &dim, dims));
-    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(output_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim,
-                          dims));
+    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(output_desc.desc(), &layout,
+                                               &dtype, &dim, dims));
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        output_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims));
   }
 
   auto handle = mluOpGetCurrentHandle();
@@ -290,37 +294,39 @@ std::vector<torch::Tensor> IndiceConvBackwardMLUKernelLauncher(
     int dims[8];
 
     // features_desc
-    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(features_desc.desc(), &layout, &dtype, &dim, dims));
-    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(features_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype,
-                          dim, dims));
+    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(features_desc.desc(), &layout,
+                                               &dtype, &dim, dims));
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        features_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims));
 
     // filters_desc
-    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(filters_desc.desc(), &layout, &dtype, &dim, dims));
+    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(filters_desc.desc(), &layout,
+                                               &dtype, &dim, dims));
     if (dim == 4) {
-      TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(filters_desc.desc(), MLUOP_LAYOUT_HWCN, dtype,
-                            dim, dims));
+      TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+          filters_desc.desc(), MLUOP_LAYOUT_HWCN, dtype, dim, dims));
     } else {
-      TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(filters_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype,
-                            dim, dims));
+      TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+          filters_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims));
     }
 
     // output_grad_desc
-    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(output_grad_desc.desc(), &layout, &dtype, &dim,
-                          dims));
-    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(output_grad_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype,
-                          dim, dims));
+    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(output_grad_desc.desc(), &layout,
+                                               &dtype, &dim, dims));
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        output_grad_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims));
 
     // indice_pairs_desc
-    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(indice_pairs_desc.desc(), &layout, &dtype, &dim,
-                          dims));
-    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(indice_pairs_desc.desc(), MLUOP_LAYOUT_ARRAY,
-                          dtype, dim, dims));
+    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(indice_pairs_desc.desc(),
+                                               &layout, &dtype, &dim, dims));
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        indice_pairs_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims));
 
     // input_grad_desc
-    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(input_grad_desc.desc(), &layout, &dtype, &dim,
-                          dims));
-    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(input_grad_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype,
-                          dim, dims));
+    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(input_grad_desc.desc(), &layout,
+                                               &dtype, &dim, dims));
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        input_grad_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims));
   }
 
   auto handle = mluOpGetCurrentHandle();
