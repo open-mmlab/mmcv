@@ -7,6 +7,7 @@
 #include <diopi/functions_mmcv.h>
 
 #include "csrc_dipu/diopirt/diopirt_impl.h"
+#include "csrc_dipu/base/basedef.h"
 
 using dipu::diopi_helper::toDiopiScalar;
 using dipu::diopi_helper::toDiopiTensorHandle;
@@ -272,7 +273,8 @@ void modulated_deform_conv_forward_diopi(
   auto mask_p = toDiopiTensorHandle(mask);
   auto output_p = toDiopiTensorHandle(output);
   auto columns_p = toDiopiTensorHandle(columns);
-  if (reinterpret_cast<void*>(diopiModulatedDeformConvMmcv) != nullptr) {
+  bool is_mock_cuda = input.device().type() == dipu::DIPU_DEVICE_TYPE;
+  if (is_mock_cuda && reinterpret_cast<void*>(diopiModulatedDeformConvMmcv) != nullptr) {
     auto ret = diopiModulatedDeformConvMmcv(
         ch, output_p, columns_p, ones_p, input_p, weight_p, bias_p, offset_p,
         mask_p, kernel_h, kernel_w, stride_h, stride_w, pad_h, pad_w,
@@ -328,8 +330,9 @@ void modulated_deform_conv_backward_diopi(
   auto grad_offset_p = toDiopiTensorHandle(grad_offset);
   auto grad_mask_p = toDiopiTensorHandle(grad_mask);
   auto grad_output_p = toDiopiTensorHandle(grad_output);
+  bool is_mock_cuda = input.device().type() == dipu::DIPU_DEVICE_TYPE;
 
-  if (reinterpret_cast<void*>(diopiModulatedDeformConvBackwardMmcv) !=
+  if (is_mock_cuda && reinterpret_cast<void*>(diopiModulatedDeformConvBackwardMmcv) !=
       nullptr) {
     auto ret = diopiModulatedDeformConvBackwardMmcv(
         ch, grad_input_p, grad_weight_p, grad_bias_p, grad_offset_p,
