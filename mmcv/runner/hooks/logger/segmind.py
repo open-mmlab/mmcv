@@ -6,8 +6,7 @@ from .base import LoggerHook
 
 @HOOKS.register_module()
 class SegmindLoggerHook(LoggerHook):
-    """Segmind is no longer supported.
-    Class to log metrics to Segmind.
+    """Segmind is no longer supported. Class to log metrics to Segmind.
 
     It requires `Segmind`_ to be installed.
 
