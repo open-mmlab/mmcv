@@ -19,8 +19,8 @@ class SegmindLoggerHook(LoggerHook):
             Default False.
         by_epoch (bool): Whether EpochBasedRunner is used. Default True.
 
-    .. _Segmind:
-        https://docs.segmind.com/python-library
+    .. _Segmind-old:
+        https://github.com/segmind/segmind-old
     """
 
     def __init__(self,
