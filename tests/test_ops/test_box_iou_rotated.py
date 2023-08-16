@@ -3,8 +3,6 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.ops import box_iou_rotated
-
 try:
     # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast
     # would be imported and used; we should test if our modules support it.
@@ -99,6 +97,7 @@ class TestBoxIoURotated:
     @pytest.mark.skipif(
         not torch.cuda.is_available(), reason='requires CUDA support')
     def test_box_iou_rotated_with_autocast(self, device):
+        from mmcv.ops import box_iou_rotated
         np_boxes1 = np.asarray(
             [[1.0, 1.0, 3.0, 4.0, 0.5], [2.0, 2.0, 3.0, 4.0, 0.6],
              [7.0, 7.0, 8.0, 8.0, 0.4]],
