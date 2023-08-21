@@ -6,8 +6,8 @@
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
 
-#include "csrc_dipu/diopirt/diopirt_impl.h"
 #include "csrc_dipu/base/basedef.h"
+#include "csrc_dipu/diopirt/diopirt_impl.h"
 
 using dipu::diopi_helper::toDiopiScalar;
 using dipu::diopi_helper::toDiopiTensorHandle;
@@ -55,7 +55,7 @@ void roi_align_forward_diopi(Tensor input, Tensor rois, Tensor output,
   auto argmax_y_p = toDiopiTensorHandle(argmax_y);
   auto argmax_x_p = toDiopiTensorHandle(argmax_x);
   bool is_mock_cuda = input.device().type() == dipu::DIPU_DEVICE_TYPE;
-  if (is_mock_cuda && reinterpret_cast<void*>(diopiRoiAlignMmcv) != nullptr) {
+  if (is_mock_cuda && reinterpret_cast<void *>(diopiRoiAlignMmcv) != nullptr) {
     auto ret = diopiRoiAlignMmcv(
         ch, out_p, argmax_y_p, argmax_x_p, input_p, rois_p, aligned_height,
         aligned_width, sampling_ratio, pool_mode, spatial_scale, aligned);
@@ -95,7 +95,7 @@ void roi_align_backward_diopi(Tensor grad_output, Tensor rois, Tensor argmax_y,
   diopiContextHandle_t ch = &ctx;
   bool is_mock_cuda = grad_output.device().type() == dipu::DIPU_DEVICE_TYPE;
   if (is_mock_cuda &&
-      reinterpret_cast<void*>(diopiRoiAlignBackwardMmcv) != nullptr) {
+      reinterpret_cast<void *>(diopiRoiAlignBackwardMmcv) != nullptr) {
     auto ret = diopiRoiAlignBackwardMmcv(ch, grad_input_, grad_output_, rois_,
                                          argmax_y_, argmax_x_, aligned_height,
                                          aligned_width, sampling_ratio,
