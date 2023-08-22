@@ -104,6 +104,7 @@ class LoadImageFromFile(BaseTransform):
             if self.ignore_empty:
                 return None
             else:
+                e = type(e)(f'`{str(e)}` occurs when loading `{filename}`')
                 raise e
         if self.to_float32:
             img = img.astype(np.float32)
