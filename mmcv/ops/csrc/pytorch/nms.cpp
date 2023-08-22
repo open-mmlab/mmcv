@@ -6,6 +6,7 @@
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
 
+#include "csrc_dipu/base/basedef.h"
 #include "csrc_dipu/diopirt/diopirt_impl.h"
 
 using dipu::diopi_helper::toDiopiScalar;
@@ -42,7 +43,7 @@ Tensor nms_diopi(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
   auto outp = toDiopiTensorHandle(out);
   diopiTensorHandle_t* outhandle = &outp;
   auto scores_p = toDiopiTensorHandle(scores);
-  bool is_mock_cuda = boxes.device().type() == c10::DeviceType::PrivateUse1;
+  bool is_mock_cuda = boxes.device().type() == dipu::DIPU_DEVICE_TYPE;
   if (is_mock_cuda && reinterpret_cast<void*>(diopiNmsMmcv) != nullptr) {
     auto ret =
         diopiNmsMmcv(ch, outhandle, boxes_p, scores_p, iou_threshold, offset);
