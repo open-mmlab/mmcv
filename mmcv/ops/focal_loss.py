@@ -132,13 +132,6 @@ class SoftmaxFocalLossFunction(Function):
         ctx.alpha = float(alpha)
         ctx.reduction = ctx.reduction_dict[reduction]
 
-        channel_stats, _ = torch.max(input, dim=1)
-        input_softmax = input - channel_stats.unsqueeze(1).expand_as(input)
-        input_softmax.exp_()
-
-        channel_stats = input_softmax.sum(dim=1)
-        input_softmax /= channel_stats.unsqueeze(1).expand_as(input)
-
         log_softmax_prob = input.new_zeros(input.size())
         output = input.new_zeros(input.size())
 

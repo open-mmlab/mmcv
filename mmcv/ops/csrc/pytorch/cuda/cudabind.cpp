@@ -409,14 +409,15 @@ void SigmoidFocalLossBackwardCUDAKernelLauncher(Tensor input, Tensor target,
                                                 const float gamma,
                                                 const float alpha);
 
-void SoftmaxFocalLossForwardCUDAKernelLauncher(Tensor softmax, Tensor target,
+void SoftmaxFocalLossForwardCUDAKernelLauncher(Tensor input, Tensor target,
                                                Tensor weight, Tensor output,
+                                               Tensor log_softmax_prob,
                                                const float gamma,
                                                const float alpha);
 
-void SoftmaxFocalLossBackwardCUDAKernelLauncher(Tensor softmax, Tensor target,
-                                                Tensor weight, Tensor buff,
-                                                Tensor grad_input,
+void SoftmaxFocalLossBackwardCUDAKernelLauncher(Tensor log_softmax_prob,
+                                                Tensor target,
+                                                Tensor weight, Tensor grad_input,
                                                 const float gamma,
                                                 const float alpha);
 
@@ -434,16 +435,17 @@ void sigmoid_focal_loss_backward_cuda(Tensor input, Tensor target,
 }
 
 void softmax_focal_loss_forward_cuda(Tensor input, Tensor target, Tensor weight,
-                                     Tensor output, float gamma, float alpha) {
+                                     Tensor output, Tensor log_softmax_prob,
+                                     float gamma, float alpha) {
   SoftmaxFocalLossForwardCUDAKernelLauncher(input, target, weight, output,
-                                            gamma, alpha);
+                                            log_softmax_prob, gamma, alpha);
 }
 
-void softmax_focal_loss_backward_cuda(Tensor input, Tensor target,
-                                      Tensor weight, Tensor buff,
-                                      Tensor grad_input, float gamma,
-                                      float alpha) {
-  SoftmaxFocalLossBackwardCUDAKernelLauncher(input, target, weight, buff,
+void softmax_focal_loss_backward_cuda(Tensor log_softmax_prob, Tensor target,
+                                      Tensor weight, Tensor grad_input,
+                                      const float gamma,
+                                      const float alpha) {
+  SoftmaxFocalLossBackwardCUDAKernelLauncher(log_softmax_prob, target, weight,
                                              grad_input, gamma, alpha);
 }
 
@@ -455,12 +457,13 @@ void sigmoid_focal_loss_backward_impl(Tensor input, Tensor target,
                                       float gamma, float alpha);
 
 void softmax_focal_loss_forward_impl(Tensor input, Tensor target, Tensor weight,
-                                     Tensor output, float gamma, float alpha);
+                                     Tensor output, Tensor log_softmax_prob,
+                                     float gamma, float alpha);
 
-void softmax_focal_loss_backward_impl(Tensor input, Tensor target,
-                                      Tensor weight, Tensor buff,
-                                      Tensor grad_input, float gamma,
-                                      float alpha);
+void softmax_focal_loss_backward_impl(Tensor log_softmax_prob, Tensor target,
+                                      Tensor weight, Tensor grad_input,
+                                      const float gamma,
+                                      const float alpha);
 
 REGISTER_DEVICE_IMPL(sigmoid_focal_loss_forward_impl, CUDA,
                      sigmoid_focal_loss_forward_cuda);
