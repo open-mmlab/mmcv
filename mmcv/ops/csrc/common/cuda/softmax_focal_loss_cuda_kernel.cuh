@@ -44,7 +44,7 @@ __global__ void softmax_focal_loss_forward_cuda_kernel(
     // FL(p) = - alpha * (1-p)^gamma * log(p) if curr_class == label
     const int64_t label = target[n];
     if (c == label) {
-      const T w = (weight != NULL) ? weight[label] : 1;
+      const T w = (weight != NULL) ? weight[label] : T(1);
       const T alpha_fac = ((label == 0) * (1 - alpha) + (label >= 1) * alpha) * w;
 
       const T pred = exp(log_pred);
@@ -95,7 +95,7 @@ __global__ void softmax_focal_loss_backward_cuda_kernel(
 
     const int64_t label = target[n];
     if (c == label) {
-      const T w = (weight != NULL) ? weight[label] : 1;
+      const T w = (weight != NULL) ? weight[label] : T(1);
       const T alpha_fac = ((label == 0) * (1 - alpha) + (label >= 1) * alpha) * w;
 
       const T log_pred = log_softmax_prob[index];
