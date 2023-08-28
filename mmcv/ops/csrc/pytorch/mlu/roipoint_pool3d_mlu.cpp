@@ -74,8 +74,8 @@ void RoIPointPool3dForwardMLUKernelLauncher(
               pts_feature.numel(), ".");
 
   // set contiguous
-  auto xyz_contiguous = torch_mlu::cnnl::ops::cnnl_contiguous(
-      xyz, xyz.suggest_memory_format());
+  auto xyz_contiguous =
+      torch_mlu::cnnl::ops::cnnl_contiguous(xyz, xyz.suggest_memory_format());
   auto pts_feature_contiguous = torch_mlu::cnnl::ops::cnnl_contiguous(
       pts_feature, pts_feature.suggest_memory_format());
   auto boxes3d_contiguous = torch_mlu::cnnl::ops::cnnl_contiguous(
@@ -92,13 +92,16 @@ void RoIPointPool3dForwardMLUKernelLauncher(
   auto pts_feature_ptr = pts_feature_impl->cnnlMalloc();
   auto boxes3d_impl = torch_mlu::getMluTensorImpl(boxes3d_contiguous);
   auto boxes3d_ptr = boxes3d_impl->cnnlMalloc();
-  auto pooled_features_impl = torch_mlu::getMluTensorImpl(pooled_features_contiguous);
+  auto pooled_features_impl =
+      torch_mlu::getMluTensorImpl(pooled_features_contiguous);
   auto pooled_features_ptr = pooled_features_impl->cnnlMalloc();
-  auto pooled_empty_flag_impl = torch_mlu::getMluTensorImpl(pooled_empty_flag_contiguous);
+  auto pooled_empty_flag_impl =
+      torch_mlu::getMluTensorImpl(pooled_empty_flag_contiguous);
   auto pooled_empty_flag_ptr = pooled_empty_flag_impl->cnnlMalloc();
 
   // create tensor descriptors
-  MluOpTensorDescriptor xyz_desc, pts_feature_desc, boxes3d_desc, pooled_features_desc, pooled_empty_flag_desc;
+  MluOpTensorDescriptor xyz_desc, pts_feature_desc, boxes3d_desc,
+      pooled_features_desc, pooled_empty_flag_desc;
   xyz_desc.set(xyz_contiguous);
   pts_feature_desc.set(pts_feature_contiguous);
   boxes3d_desc.set(boxes3d_contiguous);
@@ -108,10 +111,11 @@ void RoIPointPool3dForwardMLUKernelLauncher(
   // get workspace
   size_t workspace_size = 0;
   auto handle = mluOpGetCurrentHandle();
-  TORCH_MLUOP_CHECK(mluOpGetRoiPointPool3dWorkspaceSize(handle, batch_size,
-      pts_num, boxes_num, feature_in_len, sampled_pts_num, xyz_desc.desc(),
-      pts_feature_desc.desc(), boxes3d_desc.desc(), pooled_features_desc.desc(),
-      pooled_empty_flag_desc.desc(), &workspace_size));
+  TORCH_MLUOP_CHECK(mluOpGetRoiPointPool3dWorkspaceSize(
+      handle, batch_size, pts_num, boxes_num, feature_in_len, sampled_pts_num,
+      xyz_desc.desc(), pts_feature_desc.desc(), boxes3d_desc.desc(),
+      pooled_features_desc.desc(), pooled_empty_flag_desc.desc(),
+      &workspace_size));
 
   auto workspace = at::empty(workspace_size, xyz.options().dtype(at::kByte));
   auto workspace_impl = torch_mlu::getMluTensorImpl(workspace);
@@ -120,8 +124,8 @@ void RoIPointPool3dForwardMLUKernelLauncher(
       handle, batch_size, pts_num, boxes_num, feature_in_len, sampled_pts_num,
       xyz_desc.desc(), xyz_ptr, pts_feature_desc.desc(), pts_feature_ptr,
       boxes3d_desc.desc(), boxes3d_ptr, workspace_ptr, workspace_size,
-      pooled_features_desc.desc(), pooled_features_ptr, pooled_empty_flag_desc.desc(),
-      (int *)pooled_empty_flag_ptr));
+      pooled_features_desc.desc(), pooled_features_ptr,
+      pooled_empty_flag_desc.desc(), (int *)pooled_empty_flag_ptr));
 }
 
 void roipoint_pool3d_forward_mlu(int batch_size, int pts_num, int boxes_num,
