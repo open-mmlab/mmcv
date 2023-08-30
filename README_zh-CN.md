@@ -146,7 +146,7 @@ mim install "mmcv-lite>=2.0.0rc1"
 
 ## 欢迎加入 OpenMMLab 社区
 
-扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，扫描下方微信二维码添加喵喵好友，进入 MMCV 微信交流社群。【加好友申请格式：研究方向+地区+学校/公司+姓名】
+扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，扫描下方微信二维码添加喵喵好友，进入 MMEngine 微信交流社群。【加好友申请格式：研究方向+地区+学校/公司+姓名】
 
 <div align="center">
 <img src="https://user-images.githubusercontent.com/25839884/205870927-39f4946d-8751-4219-a4c0-740117558fd7.jpg" height="400" />  <img src="https://github.com/open-mmlab/mmcv/assets/62195058/7df8baf4-ab79-408a-9119-1ad9352477b3" height="400" />
