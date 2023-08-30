@@ -10,8 +10,9 @@
 
 template <typename T>
 __global__ void softmax_focal_loss_forward_cuda_kernel(
-    const int nthreads, const T* input, const int64_t* target,
-    const T* weight, T* output, T* log_softmax_prob,
+    const int nthreads, const T* __restrict__ input,
+    const int64_t* __restrict__ target, const T* __restrict__ weight,
+    T* __restrict__ output, T* __restrict__ log_softmax_prob,
     const T gamma, const T alpha, const int num_classes) {
   CUDA_1D_KERNEL_LOOP(index, nthreads) {
     const int n = index / num_classes;
@@ -24,7 +25,7 @@ __global__ void softmax_focal_loss_forward_cuda_kernel(
     const T max_val_along_class = [&] {
       T max_val_along_class = -FLT_MAX;
       for(int c_idx = start; c_idx < end; ++c_idx) {
-        max_val_along_class = max(max_val_along_class, input[c_idx]);
+        max_val_along_class = max(max_val_along_class, __ldg(&input[c_idx]));
       }
       return max_val_along_class;
     }();
@@ -32,12 +33,12 @@ __global__ void softmax_focal_loss_forward_cuda_kernel(
     const T expsum = [&] {
       T expsum = 0;
       for(int c_idx = start; c_idx < end; ++c_idx) {
-        expsum += exp(input[c_idx] - max_val_along_class);
+        expsum += exp(__ldg(&input[c_idx]) - __ldg(&max_val_along_class));
       }
       return expsum;
     }();
 
-    const T log_pred = input[index] - max_val_along_class - log(expsum);
+    const T log_pred = __ldg(&input[index]) - __ldg(&max_val_along_class) - log(expsum);
     log_softmax_prob[index] = log_pred;
 
     // focal loss
@@ -58,9 +59,10 @@ __global__ void softmax_focal_loss_forward_cuda_kernel(
 
 template <typename T>
 __global__ void softmax_focal_loss_backward_cuda_kernel(
-    const int nthreads, const T* log_softmax_prob, const int64_t* target,
-    const T* weight, T* grad_input, const T gamma, const T alpha,
-    const int num_classes) {
+    const int nthreads, const T* __restrict__ log_softmax_prob,
+    const int64_t* __restrict__ target, const T* __restrict__ weight,
+    T* __restrict__ sum_buff_along_class, T* __restrict__ grad_input,
+    const T gamma, const T alpha, const int num_classes) {
     // forward:  x ----> p ----> FL
     //              SM      FL
     // backward: x <---- p <---- FL,
@@ -85,7 +87,7 @@ __global__ void softmax_focal_loss_backward_cuda_kernel(
     // and indices {i} is summed for all classes at index j
     // since x_j received all the gradients from {p_i}.
     // Then, dFL/dx_j = sum_i{ (delta - p_j) * B_i }
-    //                = sum_i{ (delta*B_i - p_j*B_i }
+    //                = sum_i{  delta*B_i - p_j*B_i }
     //                = B_j - (p_j * sum_i{B_i})
 
   CUDA_1D_KERNEL_LOOP(index, nthreads) {
@@ -102,11 +104,12 @@ __global__ void softmax_focal_loss_backward_cuda_kernel(
       const T pred = exp(log_pred);
       const T one_minus_pred = 1 - pred;
 
-      grad_input[index] =
-          alpha_fac * (
-              -pow(one_minus_pred, gamma) +
-              gamma * pow(one_minus_pred, gamma - 1) * log_pred * pred
-            );
+      const T buff = alpha_fac * (
+        -pow(one_minus_pred, gamma) +
+        gamma * pow(one_minus_pred, gamma - 1) * log_pred * pred
+      );
+      grad_input[index] = buff;
+      sum_buff_along_class[n] += buff;
     } else {
       grad_input[index] = 0;
     }
@@ -116,19 +119,8 @@ __global__ void softmax_focal_loss_backward_cuda_kernel(
     // dFL/dx_j
     const int n = index / num_classes;
 
-    const int start = n * num_classes;
-    const int end = start + num_classes;
-
-    const T sum_buff_along_class = [&] {
-      T sum_buff_along_class = 0;
-      for(int c_idx = start; c_idx < end; ++c_idx) {
-        sum_buff_along_class += grad_input[c_idx];
-      }
-      return sum_buff_along_class;
-    }();
-
     const T pred = exp(log_softmax_prob[index]);
-    grad_input[index] -= pred * sum_buff_along_class;
+    grad_input[index] -= pred * sum_buff_along_class[n];
   }
 }
 

@@ -47,8 +47,8 @@ void SigmoidFocalLossBackwardCUDAKernelLauncher(Tensor input, Tensor target,
   AT_CUDA_CHECK(cudaGetLastError());
 }
 
-void SoftmaxFocalLossForwardCUDAKernelLauncher(Tensor input, Tensor target,
-                                               Tensor weight, Tensor output,
+void SoftmaxFocalLossForwardCUDAKernelLauncher(const Tensor input, const Tensor target,
+                                               const Tensor weight, Tensor output,
                                                Tensor log_softmax_prob,
                                                const float gamma,
                                                const float alpha) {
@@ -73,8 +73,11 @@ void SoftmaxFocalLossForwardCUDAKernelLauncher(Tensor input, Tensor target,
   AT_CUDA_CHECK(cudaGetLastError());
 }
 
-void SoftmaxFocalLossBackwardCUDAKernelLauncher(Tensor log_softmax_prob, Tensor target,
-                                                Tensor weight, Tensor grad_input,
+void SoftmaxFocalLossBackwardCUDAKernelLauncher(const Tensor log_softmax_prob,
+                                                const Tensor target,
+                                                const Tensor weight,
+                                                Tensor sum_buff_along_class,
+                                                Tensor grad_input,
                                                 const float gamma,
                                                 const float alpha) {
   int output_size = grad_input.numel();
@@ -88,7 +91,8 @@ void SoftmaxFocalLossBackwardCUDAKernelLauncher(Tensor log_softmax_prob, Tensor 
             <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
                 output_size,
                 log_softmax_prob.data_ptr<scalar_t>(), target.data_ptr<int64_t>(),
-                weight.data_ptr<scalar_t>(), grad_input.data_ptr<scalar_t>(),
+                weight.data_ptr<scalar_t>(), sum_buff_along_class.data_ptr<scalar_t>(),
+                grad_input.data_ptr<scalar_t>(),
                 gamma, alpha, num_classes);
       });
 

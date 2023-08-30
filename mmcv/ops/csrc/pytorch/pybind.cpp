@@ -103,12 +103,17 @@ void sigmoid_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
 void sigmoid_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
                                  Tensor grad_input, float gamma, float alpha);
 
-void softmax_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
-                                Tensor output, Tensor log_softmax_prob,
-                                float gamma, float alpha);
+void softmax_focal_loss_forward(const Tensor input, const Tensor target,
+                                const Tensor weight, Tensor output,
+                                Tensor log_softmax_prob,
+                                const float gamma,
+                                const float alpha);
 
-void softmax_focal_loss_backward(Tensor log_softmax_prob, Tensor target,
-                                 Tensor weight, Tensor grad_input,
+void softmax_focal_loss_backward(const Tensor log_softmax_prob,
+                                 const Tensor target,
+                                 const Tensor weight,
+                                 Tensor sum_buff_along_class,
+                                 Tensor grad_input,
                                  const float gamma,
                                  const float alpha);
 
@@ -573,8 +578,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("gamma"), py::arg("alpha"));
   m.def("softmax_focal_loss_backward", &softmax_focal_loss_backward,
         "softmax_focal_loss_backward", py::arg("log_softmax_prob"),
-        py::arg("target"), py::arg("weight"), py::arg("grad_input"),
-        py::arg("gamma"), py::arg("alpha"));
+        py::arg("target"), py::arg("weight"), py::arg("sum_buff_along_class"),
+        py::arg("grad_input"), py::arg("gamma"), py::arg("alpha"));
   m.def("three_interpolate_forward", &three_interpolate_forward,
         "three_interpolate_forward", py::arg("points_tensor"),
         py::arg("idx_tensor"), py::arg("weight_tensor"), py::arg("out_tensor"),
