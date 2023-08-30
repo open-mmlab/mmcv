@@ -24,6 +24,8 @@ git clone https://gitee.com/open-mmlab/mmcv.git
 pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
+- 由于 MMCV 有两个包名，分别是 mmcv 和 mmcv-lite，为了避免包名冲突产生不符合期望的行为，需要在编译前删除 mmcv 根目录的 .egg-info 文件
+
 :::
 
 #### 在 Linux 上编译 mmcv

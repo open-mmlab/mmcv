@@ -11,9 +11,9 @@ python -c 'import torch;print(torch.__version__)'
 If version information is output, then PyTorch is installed.
 
 ```{note}
-If you would like to use `opencv-python-headless` instead of `opencv-python`,
-e.g., in a minimum container environment or servers without GUI,
-you can first install it before installing MMCV to skip the installation of `opencv-python`.
+- If you would like to use `opencv-python-headless` instead of `opencv-python`, e.g., in a minimum container environment or servers without GUI, you can first install it before installing MMCV to skip the installation of `opencv-python`.
+
+- Since MMCV has two package names, mmcv and mmcv-lite, you need to delete the .egg-info file in the root directory of mmcv before compiling in order to avoid package name conflicts that cause unexpected behavior.
 ```
 
 #### Build on Linux
