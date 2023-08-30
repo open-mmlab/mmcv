@@ -33,7 +33,7 @@ __global__ void softmax_focal_loss_forward_cuda_kernel(
     const T expsum = [&] {
       T expsum = 0;
       for(int c_idx = start; c_idx < end; ++c_idx) {
-        expsum += exp(input[c_idx]) - __ldg(&max_val_along_class));
+        expsum += exp(input[c_idx] - __ldg(&max_val_along_class));
       }
       return expsum;
     }();
