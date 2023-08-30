@@ -156,7 +156,9 @@ class SoftmaxFocalLossFunction(Function):
     def backward(ctx, grad_output: torch.Tensor) -> tuple:
         log_softmax_prob, target, weight = ctx.saved_tensors
 
-        sum_buff_along_class = log_softmax_prob.new_zeros(log_softmax_prob.size(0))
+        sum_buff_along_class = log_softmax_prob.new_zeros(
+            log_softmax_prob.size(0)
+        )
         grad_input = log_softmax_prob.new_zeros(log_softmax_prob.size())
 
         ext_module.softmax_focal_loss_backward(
