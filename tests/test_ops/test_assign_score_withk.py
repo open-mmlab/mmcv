@@ -3,11 +3,20 @@ import pytest
 import torch
 
 from mmcv.ops import assign_score_withk
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
 
-@pytest.mark.skipif(
-    not torch.cuda.is_available(), reason='requires CUDA support')
-def test_paconv_assign_scores():
+@pytest.mark.parametrize('device', [
+    pytest.param(
+        'cuda',
+        marks=pytest.mark.skipif(
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    pytest.param(
+        'mlu',
+        marks=pytest.mark.skipif(
+            not IS_MLU_AVAILABLE, reason='requires MLU support'))
+])
+def test_paconv_assign_scores(device):
     scores = torch.tensor([[[[0.06947571, 0.6065746], [0.28462553, 0.8378516],
                              [0.7595994, 0.97220325], [0.519155, 0.766185]],
                             [[0.15348864, 0.6051019], [0.21510637, 0.31916398],
@@ -16,7 +25,7 @@ def test_paconv_assign_scores():
                              [0.6887394, 0.22089851], [0.0502342, 0.79228795]],
                             [[0.44883424, 0.15427643],
                              [0.13817799, 0.34856772], [0.7989621, 0.33788306],
-                             [0.15699774, 0.7693662]]]]).float().cuda()
+                             [0.15699774, 0.7693662]]]]).float()
     scores.requires_grad_()
     points = torch.tensor([[[[0.06001121, 0.92963666, 0.5753327, 0.7251477],
                              [0.53563064, 0.23129565, 0.92366195, 0.44261628]],
@@ -50,7 +59,7 @@ def test_paconv_assign_scores():
                              [0.25223452, 0.46696228, 0.7051136, 0.892151]],
                             [[0.49615085, 0.47321403, 0.93138885, 0.7652197],
                              [0.38766378, 0.30332977, 0.23131835,
-                              0.02863514]]]]).float().cuda()
+                              0.02863514]]]]).float()
     points.requires_grad_()
     centers = torch.tensor([[[[0.83878064, 0.96658987, 0.8033424, 0.9598312],
                               [0.45035273, 0.8768925, 0.977736, 0.54547966]],
@@ -86,10 +95,10 @@ def test_paconv_assign_scores():
                                0.44358212]],
                              [[0.5274848, 0.82096446, 0.9415489, 0.7123748],
                               [0.7537517, 0.8086482, 0.85345286,
-                               0.7472754]]]]).float().cuda()
+                               0.7472754]]]]).float()
     centers.requires_grad_()
     knn_idx = torch.tensor([[[6, 7, 4, 6], [2, 4, 2, 4]],
-                            [[7, 1, 3, 2], [6, 0, 2, 6]]]).long().cuda()
+                            [[7, 1, 3, 2], [6, 0, 2, 6]]]).long()
     aggregate = 'sum'
     expected_output = torch.tensor(
         [[[[-0.08134781, 0.03877336, -0.8212776, -0.2869547],
@@ -109,8 +118,14 @@ def test_paconv_assign_scores():
           [[-0.3879708, -0.3991068, 0.05276498, -0.46989647],
            [0.32522714, -0.02163534, 0.21604237, 0.4346682]]]]).float()
 
-    # test forward
+    # test cpu forward
     output = assign_score_withk(scores, points, centers, knn_idx, aggregate)
+    assert torch.allclose(output, expected_output, atol=1e-6)
+
+    # test gpu forward
+    output = assign_score_withk(
+        scores.to(device), points.to(device), centers.to(device),
+        knn_idx.to(device), aggregate)
     assert torch.allclose(output.detach().cpu(), expected_output, atol=1e-6)
 
     # test backward
