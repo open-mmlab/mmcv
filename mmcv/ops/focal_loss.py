@@ -3,6 +3,7 @@ from typing import Optional, Union
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 
@@ -132,15 +133,16 @@ class SoftmaxFocalLossFunction(Function):
         ctx.alpha = float(alpha)
         ctx.reduction = ctx.reduction_dict[reduction]
 
-        log_softmax_prob = input.new_zeros(input.size())
+        # log_softmax for numerical stability
+        log_softmax_prob = F.log_softmax(input, dim=1)
+
         output = input.new_zeros(input.size())
 
         ext_module.softmax_focal_loss_forward(
-            input,
+            log_softmax_prob,
             target,
             weight,
             output,
-            log_softmax_prob,
             gamma=ctx.gamma,
             alpha=ctx.alpha)
 
@@ -157,8 +159,7 @@ class SoftmaxFocalLossFunction(Function):
         log_softmax_prob, target, weight = ctx.saved_tensors
 
         sum_buff_along_class = log_softmax_prob.new_zeros(
-            log_softmax_prob.size(0)
-        )
+            log_softmax_prob.size(0))
         grad_input = log_softmax_prob.new_zeros(log_softmax_prob.size())
 
         ext_module.softmax_focal_loss_backward(

@@ -47,26 +47,26 @@ void SigmoidFocalLossBackwardCUDAKernelLauncher(Tensor input, Tensor target,
   AT_CUDA_CHECK(cudaGetLastError());
 }
 
-void SoftmaxFocalLossForwardCUDAKernelLauncher(const Tensor input, const Tensor target,
-                                               const Tensor weight, Tensor output,
-                                               Tensor log_softmax_prob,
+void SoftmaxFocalLossForwardCUDAKernelLauncher(const Tensor log_softmax_prob,
+                                               const Tensor target,
+                                               const Tensor weight,
+                                               Tensor output,
                                                const float gamma,
                                                const float alpha) {
   int output_size = output.numel();
-  int num_classes = input.size(1);
+  int num_classes = log_softmax_prob.size(1);
 
   AT_ASSERTM(target.max().item<int64_t>() <= (int64_t)num_classes,
              "target label should smaller or equal than num classes");
-  at::cuda::CUDAGuard device_guard(input.device());
+  at::cuda::CUDAGuard device_guard(log_softmax_prob.device());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      input.scalar_type(), "softmax_focal_loss_forward_cuda_kernel", [&] {
+      log_softmax_prob.scalar_type(), "softmax_focal_loss_forward_cuda_kernel", [&] {
         softmax_focal_loss_forward_cuda_kernel<scalar_t>
             <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
                 output_size,
-                input.data_ptr<scalar_t>(), target.data_ptr<int64_t>(),
+                log_softmax_prob.data_ptr<scalar_t>(), target.data_ptr<int64_t>(),
                 weight.data_ptr<scalar_t>(), output.data_ptr<scalar_t>(),
-                log_softmax_prob.data_ptr<scalar_t>(),
                 gamma, alpha, num_classes);
       });
 

@@ -103,9 +103,10 @@ void sigmoid_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
 void sigmoid_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
                                  Tensor grad_input, float gamma, float alpha);
 
-void softmax_focal_loss_forward(const Tensor input, const Tensor target,
-                                const Tensor weight, Tensor output,
-                                Tensor log_softmax_prob,
+void softmax_focal_loss_forward(const Tensor log_softmax_prob,
+                                const Tensor target,
+                                const Tensor weight,
+                                Tensor output,
                                 const float gamma,
                                 const float alpha);
 
@@ -573,8 +574,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("weight"), py::arg("grad_input"), py::arg("gamma"),
         py::arg("alpha"));
   m.def("softmax_focal_loss_forward", &softmax_focal_loss_forward,
-        "softmax_focal_loss_forward", py::arg("input"), py::arg("target"),
-        py::arg("weight"), py::arg("output"), py::arg("log_softmax_prob"),
+        "softmax_focal_loss_forward", py::arg("log_softmax_prob"),
+        py::arg("target"), py::arg("weight"), py::arg("output"),
         py::arg("gamma"), py::arg("alpha"));
   m.def("softmax_focal_loss_backward", &softmax_focal_loss_backward,
         "softmax_focal_loss_backward", py::arg("log_softmax_prob"),
