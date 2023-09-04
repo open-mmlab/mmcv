@@ -201,12 +201,12 @@ def get_extensions():
         extra_compile_args = {'cxx': []}
 
         if platform.system() != 'Windows':
-            if parse_version(torch.__version__) <= parse_version('1.12.0'):
+            if parse_version(torch.__version__) <= parse_version('1.12.1'):
                 extra_compile_args['cxx'] = ['-std=c++14']
             else:
                 extra_compile_args['cxx'] = ['-std=c++17']
         else:
-            if parse_version(torch.__version__) <= parse_version('1.12.0'):
+            if parse_version(torch.__version__) <= parse_version('1.12.1'):
                 extra_compile_args['cxx'] = ['/std:c++14']
             else:
                 extra_compile_args['cxx'] = ['/std:c++17']
@@ -420,7 +420,7 @@ def get_extensions():
         # to compile those cpp files, so there is no need to add the
         # argument
         if 'nvcc' in extra_compile_args and platform.system() != 'Windows':
-            if parse_version(torch.__version__) <= parse_version('1.12.0'):
+            if parse_version(torch.__version__) <= parse_version('1.12.1'):
                 extra_compile_args['nvcc'] += ['-std=c++14']
             else:
                 extra_compile_args['nvcc'] += ['-std=c++17']
