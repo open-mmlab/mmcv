@@ -206,7 +206,9 @@ def get_extensions():
             else:
                 extra_compile_args['cxx'] = ['-std=c++17']
         else:
-            if parse_version(torch.__version__) >= parse_version('2.0.0'):
+            if parse_version(torch.__version__) <= parse_version('1.12.0'):
+                extra_compile_args['cxx'] = ['/std:c++14']
+            else:
                 extra_compile_args['cxx'] = ['/std:c++17']
 
         include_dirs = []
