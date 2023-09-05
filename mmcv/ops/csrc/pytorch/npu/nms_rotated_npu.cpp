@@ -14,7 +14,8 @@ Tensor nms_rotated_npu(const Tensor dets, const Tensor scores,
   c10::SmallVector<int64_t, SIZE> selectedIndexSize = {dets.size(0)};
 
   at::Tensor selectedBox = at::empty_like(dets);
-  at::Tensor selectedIndex = at::empty(selectedIndexSize, dets.options().dtype(at::kInt));
+  at::Tensor selectedIndex =
+      at::empty(selectedIndexSize, dets.options().dtype(at::kInt));
 
   c10::SmallVector<int64_t, N> output_sync_idx = {0, 1};
   OpCommand cmd;
@@ -27,6 +28,6 @@ Tensor nms_rotated_npu(const Tensor dets, const Tensor scores,
       .Output(selectedIndex)
       .Attr("iou_threshold", (float)iou_threshold)
       .Run();
-    selectedIndex = selectedIndex.to(at::kLong);
+  selectedIndex = selectedIndex.to(at::kLong);
   return selectedIndex;
 }

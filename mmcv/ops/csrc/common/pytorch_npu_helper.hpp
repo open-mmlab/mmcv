@@ -18,9 +18,9 @@
 #ifndef PYTORCH_NPU_HELPER_HPP_
 #define PYTORCH_NPU_HELPER_HPP_
 
+#include <torch_npu/csrc/aten/CustomFunctions.h>
 #include <torch_npu/csrc/framework/utils/CalcuOpUtil.h>
 #include <torch_npu/csrc/framework/utils/OpAdapter.h>
-#include <torch_npu/csrc/aten/CustomFunctions.h>
 
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"
