@@ -42,7 +42,7 @@ void roi_align_backward_npu(Tensor grad_output, Tensor rois, Tensor argmax_y,
     roi_end_mode = 0;
   }
   c10::SmallVector<int64_t, SIZE> xdiff_shape =
-      at_npu::native::array_to_small_vector(grad_input.sizes());
+      array_to_small_vector(grad_input.sizes());
   OpCommand cmd;
   cmd.Name("ROIAlignGrad")
       .Input(grad_output)
