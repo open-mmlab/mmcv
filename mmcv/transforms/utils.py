@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+import copy
 import functools
 import inspect
 import weakref
@@ -80,7 +81,7 @@ class cache_randomness:
 
     def __get__(self, obj, cls):
         self.instance_ref = weakref.ref(obj)
-        return self
+        return copy.deepcopy(self)
 
 
 def avoid_cache_randomness(cls):
