@@ -81,7 +81,7 @@ class cache_randomness:
 
     def __get__(self, obj, cls):
         self.instance_ref = weakref.ref(obj)
-        return copy.deepcopy(self)
+        return copy.copy(self)
 
 
 def avoid_cache_randomness(cls):
