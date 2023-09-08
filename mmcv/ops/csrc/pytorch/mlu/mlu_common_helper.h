@@ -19,7 +19,7 @@
 
 #define MLUOP_MAJOR 0
 #define MLUOP_MINOR 8
-#define MLUOP_PATCHLEVEL 0
+#define MLUOP_PATCHLEVEL 1
 
 /*************************************************************************
  * This MACRO contains operations of simple tensor to mlu-tensor.
