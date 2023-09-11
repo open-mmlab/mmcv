@@ -32,6 +32,6 @@
 
 #define CHECK_NPU(x)                                 \
   TORCH_CHECK(x.device().type() == at::kPrivateUse1, \
-  #x " must be a NPU tensor")
+              #x " must be a NPU tensor")
 
 #endif  // PYTORCH_NPU_HELPER_HPP_
