@@ -26,7 +26,7 @@ MMCV 提供了检测、分割等任务中常用的算子
 | FurthestPointSampleWithDist  |     | √    |     |     |        |
 | FusedBiasLeakyrelu           |     | √    |     |     | √      |
 | GatherPoints                 |     | √    |     |     | √      |
-| GroupPoints                  |     | √    |     |     | √       |
+| GroupPoints                  |     | √    |     |     | √      |
 | Iou3d                        |     | √    | √   |     |        |
 | KNN                          |     | √    |     |     |        |
 | MaskedConv                   |     | √    | √   |     | √      |
