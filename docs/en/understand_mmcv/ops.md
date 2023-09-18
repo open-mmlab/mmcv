@@ -26,7 +26,7 @@ We implement common ops used in detection, segmentation, etc.
 | FurthestPointSampleWithDist  |     | √    |     |     |        |
 | FusedBiasLeakyrelu           |     | √    |     |     | √      |
 | GatherPoints                 |     | √    |     |     | √      |
-| GroupPoints                  |     | √    |     |     |        |
+| GroupPoints                  |     | √    |     |     | √      |
 | Iou3d                        |     | √    | √   |     |        |
 | KNN                          |     | √    |     |     |        |
 | MaskedConv                   |     | √    | √   |     | √      |
