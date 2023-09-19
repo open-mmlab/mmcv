@@ -3,16 +3,25 @@ import pytest
 import torch
 
 from mmcv.ops import grouping_operation
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
 
 
-@pytest.mark.skipif(
-    not torch.cuda.is_available(), reason='requires CUDA support')
+@pytest.mark.parametrize('device', [
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'npu',
+            marks=pytest.mark.skipif(
+                not IS_NPU_AVAILABLE, reason='requires NPU support'))
+    ])
 @pytest.mark.parametrize('dtype', [torch.half, torch.float, torch.double])
-def test_grouping_points(dtype):
+def test_grouping_points(dtype, device):
     idx = torch.tensor([[[0, 0, 0], [3, 3, 3], [8, 8, 8], [0, 0, 0], [0, 0, 0],
                          [0, 0, 0]],
                         [[0, 0, 0], [6, 6, 6], [9, 9, 9], [0, 0, 0], [0, 0, 0],
-                         [0, 0, 0]]]).int().cuda()
+                         [0, 0, 0]]]).int().to(device)
     features = torch.tensor([[[
         0.5798, -0.7981, -0.9280, -1.3311, 1.3687, 0.9277, -0.4164, -1.8274,
         0.9268, 0.8414
@@ -37,7 +46,7 @@ def test_grouping_points(dtype):
                                   -0.6646, -0.6870, -0.1125, -0.2224, -0.3445,
                                   -1.4049, 0.4990, -0.7037, -0.9924, 0.0386
                               ]]],
-                            dtype=dtype).cuda()
+                            dtype=dtype).to(device)
 
     output = grouping_operation(features, idx)
     expected_output = torch.tensor(
@@ -59,7 +68,7 @@ def test_grouping_points(dtype):
           [[-0.6646, -0.6646, -0.6646], [0.4990, 0.4990, 0.4990],
            [0.0386, 0.0386, 0.0386], [-0.6646, -0.6646, -0.6646],
            [-0.6646, -0.6646, -0.6646], [-0.6646, -0.6646, -0.6646]]]],
-        dtype=dtype).cuda()
+        dtype=dtype).to(device)
     assert torch.allclose(output, expected_output)
 
 
