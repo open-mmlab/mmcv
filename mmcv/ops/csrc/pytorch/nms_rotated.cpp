@@ -36,11 +36,13 @@ Tensor nms_rotated(const Tensor dets, const Tensor scores, const Tensor order,
 #else
     AT_ERROR("Not compiled with GPU support");
 #endif
+#ifdef MMCV_WITH_XLA
   } else if (dets.device().type() == at::kXLA) {
-#ifdef MMCV_WITH_NPU
     return nms_rotated_npu(dets, scores, labels, iou_threshold);
-#else
-    AT_ERROR("Not compiled with NPU support");
+#endif
+#ifdef MMCV_WITH_KPRIVATE
+  } else if (dets.device().type() == at::kPrivateUse1) {
+    return nms_rotated_npu(dets, scores, labels, iou_threshold);
 #endif
 #ifdef MMCV_WITH_MLU
   } else if (dets.device().type() == at::kMLU) {
