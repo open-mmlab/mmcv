@@ -58,7 +58,8 @@ class ModulatedDeformConv2dFunction(Function):
                 kernel_w, kernel_h, ctx.deform_groups)
         select_offset = offset.index_select(1, sort_index_fp)
         offset_all = torch.cat([select_offset, mask], dim=1)
-        output, offset_out = torch.npu_deformable_conv2d(
+        import torch_npu
+        output, offset_out = torch_npu.npu_deformable_conv2d(
             input_tensor,
             weight,
             offset_all,
