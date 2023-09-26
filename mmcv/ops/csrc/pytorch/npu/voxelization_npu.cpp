@@ -18,9 +18,8 @@ int hard_voxelize_forward_npu(const at::Tensor &points, at::Tensor &voxels,
                               const std::vector<float> coors_range,
                               const int max_points, const int max_voxels,
                               const int NDim = 3) {
-  at::Tensor voxel_num_tmp = OpPreparation::ApplyTensor(points, {1});
-  at::Tensor voxel_num = at_npu::native::NPUNativeFunctions::npu_dtype_cast(
-      voxel_num_tmp, at::kInt);
+  at::Tensor voxel_num_tmp = at::empty({1}, points.options());
+  at::Tensor voxel_num = voxel_num_tmp.to(at::kInt);
 
   at::Tensor voxel_size_cpu = at::from_blob(
       const_cast<float *>(voxel_size.data()), {3}, dtype(at::kFloat));
