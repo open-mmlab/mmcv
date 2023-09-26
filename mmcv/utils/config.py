@@ -15,11 +15,13 @@ from collections import abc
 from importlib import import_module
 from pathlib import Path
 
+import yapf
 from addict import Dict
 from yapf.yapflib.yapf_api import FormatCode
 
 from .misc import import_modules_from_strings
 from .path import check_file_exist
+from .version_utils import digit_version
 
 if platform.system() == 'Windows':
     import regex as re  # type: ignore
@@ -505,7 +507,10 @@ class Config:
             based_on_style='pep8',
             blank_line_before_nested_class_or_def=True,
             split_before_expression_after_opening_paren=True)
-        text, _ = FormatCode(text, style_config=yapf_style, verify=True)
+        if digit_version(yapf.__version__) >= digit_version('0.40.2'):
+            text, _ = FormatCode(text, style_config=yapf_style)
+        else:
+            text, _ = FormatCode(text, style_config=yapf_style, verify=True)
 
         return text
 
