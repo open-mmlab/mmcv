@@ -38,6 +38,7 @@ Tensor nms_rotated(const Tensor dets, const Tensor scores, const Tensor order,
 #endif
 #ifdef MMCV_WITH_XLA
   } else if (dets.device().type() == at::kXLA) {
+    return nms_rotated_npu(dets, scores, labels, iou_threshold);
 #endif
 #ifdef MMCV_WITH_KPRIVATE
   } else if (dets.device().type() == at::kPrivateUse1) {
