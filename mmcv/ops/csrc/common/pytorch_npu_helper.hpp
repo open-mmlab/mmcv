@@ -18,7 +18,6 @@
 #ifndef PYTORCH_NPU_HELPER_HPP_
 #define PYTORCH_NPU_HELPER_HPP_
 
-#include <torch_npu/csrc/aten/CustomFunctions.h>
 #include <torch_npu/csrc/framework/utils/CalcuOpUtil.h>
 #include <torch_npu/csrc/framework/utils/OpAdapter.h>
 
@@ -26,6 +25,18 @@
 #include "pytorch_device_registry.hpp"
 
 #define NPU_NAME_SPACE at_npu::native
+
+const int SIZE = 8;
+c10::SmallVector<int64_t, SIZE> array_to_small_vector(c10::IntArrayRef shape)
+{
+  c10::SmallVector<int64_t, SIZE> shape_small_vec;
+  for (int i = 0; i < shape.size(); i++)
+  {
+    shape_small_vec.emplace_back(shape[i]);
+  }
+
+  return shape_small_vec;
+}
 
 #ifdef MMCV_WITH_XLA
 #define REGISTER_NPU_IMPL(key, value) REGISTER_DEVICE_IMPL(key, XLA, value)
