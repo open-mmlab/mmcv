@@ -8,7 +8,7 @@ concurrency:
 
 jobs:
   build_macos10_wheel:
-    runs-on: macos-10.15
+    runs-on: macos-latest
     # if: contains(github.event.head_commit.message, 'Bump version to')
     strategy:
       matrix:
