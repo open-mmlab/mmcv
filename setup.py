@@ -386,7 +386,7 @@ def get_extensions():
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp')
             # TODO: support mps ops on torch>=2.1.0
-            if torch.__version__ < '2.1.0':
+            if parse_version(torch.__version__) < parse_version('2.1.0'):
                 op_files += glob.glob('./mmcv/ops/csrc/common/mps/*.mm') + \
                     glob.glob('./mmcv/ops/csrc/pytorch/mps/*.mm')
             extension = CppExtension
