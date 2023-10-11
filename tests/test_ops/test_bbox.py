@@ -56,7 +56,8 @@ class TestBBox:
         pytest.param(
             'mps',
             marks=pytest.mark.skipif(
-                not IS_MPS_AVAILABLE, reason='requires MPS support')),
+                not IS_MPS_AVAILABLE or torch.__version__ >= '2.1.0',
+                reason='requires MPS support')),
         pytest.param(
             'npu',
             marks=pytest.mark.skipif(
