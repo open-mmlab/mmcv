@@ -187,17 +187,18 @@ HOST_DEVICE_INLINE int convex_hull_graham(const Point<T> (&p)[24],
   // (essentially sorting according to angles)
   // If the angles are the same, sort according to their distance to origin
   T dist[24];
-  for (int i = 0; i < num_in; i++) {
-    dist[i] = dot_2d<T>(q[i], q[i]);
-  }
 
 #ifdef __CUDACC__
   // CUDA version
   // In the future, we can potentially use thrust
   // for sorting here to improve speed (though not guaranteed)
+  for (int i = 0; i < num_in; i++) {
+    dist[i] = dot_2d<T>(q[i], q[i]);
+    dist[i] = sqrtf(float(dist[i]));
+  }
   for (int i = 1; i < num_in - 1; i++) {
     for (int j = i + 1; j < num_in; j++) {
-      T crossProduct = cross_2d<T>(q[i], q[j]);
+      T crossProduct = cross_2d<T>(q[i]*(1/dist[i]), q[j]*(1/dist[j]));
       if ((crossProduct < -1e-6) ||
           (fabs(crossProduct) < 1e-6 && dist[i] > dist[j])) {
         auto q_tmp = q[i];
@@ -211,19 +212,22 @@ HOST_DEVICE_INLINE int convex_hull_graham(const Point<T> (&p)[24],
   }
 #else
   // CPU version
+  // compute distance to origin after sort, since the points are now different.
+  for (int i = 0; i < num_in; i++) {
+    dist[i] = dot_2d<T>(q[i], q[i]);
+    dist[i] = sqrtf(float(dist[i]));
+  }
   std::sort(q + 1, q + num_in,
             [](const Point<T>& A, const Point<T>& B) -> bool {
-              T temp = cross_2d<T>(A, B);
+              const T dot_A = sqrtf(float(dot_2d<T>(A, A)));
+              const T dot_B =sqrtf(float( dot_2d<T>(B, B)));
+              T temp = cross_2d<T>(A*(1/dot_A), B*(1/dot_B));
               if (fabs(temp) < 1e-6) {
-                return dot_2d<T>(A, A) < dot_2d<T>(B, B);
+                return dot_A < dot_B;
               } else {
                 return temp > 0;
               }
             });
-  // compute distance to origin after sort, since the points are now different.
-  for (int i = 0; i < num_in; i++) {
-    dist[i] = dot_2d<T>(q[i], q[i]);
-  }
 #endif
 
   // Step 4:
