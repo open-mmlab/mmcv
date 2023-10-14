@@ -194,11 +194,11 @@ HOST_DEVICE_INLINE int convex_hull_graham(const Point<T> (&p)[24],
   // for sorting here to improve speed (though not guaranteed)
   for (int i = 0; i < num_in; i++) {
     dist[i] = dot_2d<T>(q[i], q[i]);
-    dist[i] = sqrtf(float(dist[i]));
+    dist[i] = sqrtf(float(dist[i])) + 1e-6;
   }
   for (int i = 1; i < num_in - 1; i++) {
     for (int j = i + 1; j < num_in; j++) {
-      T crossProduct = cross_2d<T>(q[i]*(1/dist[i]), q[j]*(1/dist[j]));
+      T crossProduct = cross_2d<T>(q[i] * (1 / dist[i]), q[j] * (1 / dist[j]));
       if ((crossProduct < -1e-6) ||
           (fabs(crossProduct) < 1e-6 && dist[i] > dist[j])) {
         auto q_tmp = q[i];
@@ -213,21 +213,21 @@ HOST_DEVICE_INLINE int convex_hull_graham(const Point<T> (&p)[24],
 #else
   // CPU version
   // compute distance to origin after sort, since the points are now different.
-  for (int i = 0; i < num_in; i++) {
-    dist[i] = dot_2d<T>(q[i], q[i]);
-    dist[i] = sqrtf(float(dist[i]));
-  }
   std::sort(q + 1, q + num_in,
             [](const Point<T>& A, const Point<T>& B) -> bool {
-              const T dot_A = sqrtf(float(dot_2d<T>(A, A)));
-              const T dot_B =sqrtf(float( dot_2d<T>(B, B)));
-              T temp = cross_2d<T>(A*(1/dot_A), B*(1/dot_B));
+              const T dot_A = sqrtf(float(dot_2d<T>(A, A))) + 1e-6;
+              const T dot_B = sqrtf(float(dot_2d<T>(B, B))) + 1e-6;
+              T temp = cross_2d<T>(A * (1 / dot_A), B * (1 / dot_B));
               if (fabs(temp) < 1e-6) {
                 return dot_A < dot_B;
               } else {
                 return temp > 0;
               }
             });
+  for (int i = 0; i < num_in; i++) {
+    dist[i] = dot_2d<T>(q[i], q[i]);
+    dist[i] = sqrtf(float(dist[i]));
+  }
 #endif
 
   // Step 4:
