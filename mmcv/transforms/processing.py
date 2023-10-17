@@ -1400,7 +1400,7 @@ class RandomResize(BaseTransform):
         target\\_scale[0] \\sim Uniform([ratio\\_range[0], ratio\\_range[1]])
             * scale[0]
     .. math::
-        target\\_scale[0] \\sim Uniform([ratio\\_range[0], ratio\\_range[1]])
+        target\\_scale[1] \\sim Uniform([ratio\\_range[0], ratio\\_range[1]])
             * scale[1]
 
     Following the resize order of weight and height in cv2, ``ratio_range[0]``

@@ -293,8 +293,9 @@ def batched_nms(boxes: Tensor,
                 max_coordinate + torch.tensor(1).to(boxes))
             boxes_for_nms = boxes + offsets[:, None]
 
-    nms_type = nms_cfg_.pop('type', 'nms')
-    nms_op = eval(nms_type)
+    nms_op = nms_cfg_.pop('type', 'nms')
+    if isinstance(nms_op, str):
+        nms_op = eval(nms_op)
 
     split_thr = nms_cfg_.pop('split_thr', 10000)
     # Won't split to multiple nms nodes when exporting to onnx
@@ -406,6 +407,23 @@ def nms_rotated(dets: Tensor,
     else:
         dets_cw = dets
     multi_label = labels is not None
+    if labels is None:
+        input_labels = scores.new_empty(0, dtype=torch.int)
+    else:
+        input_labels = labels
+    if dets.device.type in ('npu', 'mlu'):
+        order = scores.new_empty(0, dtype=torch.long)
+        if dets.device.type == 'npu':
+            coefficient = 57.29578  # 180 / PI
+            for i in range(dets.size()[0]):
+                dets_cw[i][4] *= coefficient  # radians to angle
+        keep_inds = ext_module.nms_rotated(dets_cw, scores, order, dets_cw,
+                                           input_labels, iou_threshold,
+                                           multi_label)
+        dets = torch.cat((dets[keep_inds], scores[keep_inds].reshape(-1, 1)),
+                         dim=1)
+        return dets, keep_inds
+
     if multi_label:
         dets_wl = torch.cat((dets_cw, labels.unsqueeze(1)), 1)  # type: ignore
     else:
@@ -419,11 +437,13 @@ def nms_rotated(dets: Tensor,
             scores,
             order,
             dets_sorted,
+            input_labels,
             iou_threshold=iou_threshold,
             multi_label=multi_label)
     else:
         keep_inds = ext_module.nms_rotated(dets_wl, scores, order, dets_sorted,
-                                           iou_threshold, multi_label)
+                                           input_labels, iou_threshold,
+                                           multi_label)
     dets = torch.cat((dets[keep_inds], scores[keep_inds].reshape(-1, 1)),
                      dim=1)
     return dets, keep_inds

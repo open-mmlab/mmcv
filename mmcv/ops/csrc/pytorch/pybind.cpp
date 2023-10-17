@@ -309,12 +309,12 @@ void box_iou_rotated(const Tensor boxes1, const Tensor boxes2, Tensor ious,
                      const int mode_flag, const bool aligned);
 
 Tensor nms_rotated(const Tensor dets, const Tensor scores, const Tensor order,
-                   const Tensor dets_sorted, const float iou_threshold,
-                   const int multi_label);
+                   const Tensor dets_sorted, const Tensor labels,
+                   const float iou_threshold, const int multi_label);
 
-Tensor upfirdn2d(const Tensor &input, const Tensor &kernel, int up_x, int up_y,
-                 int down_x, int down_y, int pad_x0, int pad_x1, int pad_y0,
-                 int pad_y1);
+Tensor upfirdn2d(torch::Tensor input, torch::Tensor filter, int upx, int upy,
+                 int downx, int downy, int padx0, int padx1, int pady0,
+                 int pady1, bool flip, float gain);
 
 Tensor fused_bias_leakyrelu(const Tensor &input, const Tensor &bias,
                             const Tensor &refer, int act, int grad, float alpha,
@@ -439,6 +439,20 @@ void chamfer_distance_backward(const Tensor xyz1, const Tensor xyz2,
                                Tensor graddist2, Tensor gradxyz1,
                                Tensor gradxyz2);
 
+Tensor bias_act(const Tensor &input, const Tensor &bias, const Tensor &xref,
+                const Tensor &yref, const Tensor &dy, int grad, int dim,
+                int act, float alpha, float gain, float clamp);
+
+std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu(
+    torch::Tensor x, torch::Tensor fu, torch::Tensor fd, torch::Tensor b,
+    torch::Tensor si, int up, int down, int px0, int px1, int py0, int py1,
+    int sx, int sy, float gain, float slope, float clamp, bool flip_filters,
+    bool writeSigns);
+
+torch::Tensor filtered_lrelu_act_(torch::Tensor x, torch::Tensor si, int sx,
+                                  int sy, float gain, float slope, float clamp,
+                                  bool writeSigns);
+
 void box_iou_quadri(const Tensor boxes1, const Tensor boxes2, Tensor ious,
                     const int mode_flag, const bool aligned);
 
@@ -458,9 +472,9 @@ void bezier_align_backward(Tensor grad_output, Tensor rois, Tensor grad_input,
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
-        py::arg("kernel"), py::arg("up_x"), py::arg("up_y"), py::arg("down_x"),
-        py::arg("down_y"), py::arg("pad_x0"), py::arg("pad_x1"),
-        py::arg("pad_y0"), py::arg("pad_y1"));
+        py::arg("filter"), py::arg("upx"), py::arg("upy"), py::arg("downx"),
+        py::arg("downy"), py::arg("padx0"), py::arg("padx1"), py::arg("pady0"),
+        py::arg("pady1"), py::arg("flip"), py::arg("gain"));
   m.def("fused_bias_leakyrelu", &fused_bias_leakyrelu,
         "fused_bias_leakyrelu (CUDA)", py::arg("input"), py::arg("bias"),
         py::arg("empty"), py::arg("act"), py::arg("grad"), py::arg("alpha"),
@@ -758,7 +772,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("mode_flag"), py::arg("aligned"));
   m.def("nms_rotated", &nms_rotated, "NMS for rotated boxes", py::arg("dets"),
         py::arg("scores"), py::arg("order"), py::arg("dets_sorted"),
-        py::arg("iou_threshold"), py::arg("multi_label"));
+        py::arg("labels"), py::arg("iou_threshold"), py::arg("multi_label"));
   m.def("ball_query_forward", &ball_query_forward, "ball_query_forward",
         py::arg("new_xyz_tensor"), py::arg("xyz_tensor"), py::arg("idx_tensor"),
         py::arg("b"), py::arg("n"), py::arg("m"), py::arg("min_radius"),
@@ -902,6 +916,20 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("input"), py::arg("rois"), py::arg("grad_rois"),
         py::arg("pooled_height"), py::arg("pooled_width"),
         py::arg("spatial_scale"));
+  m.def("bias_act", &bias_act, "bias_act (CUDA)", py::arg("input"),
+        py::arg("bias"), py::arg("xref"), py::arg("yref"), py::arg("dy"),
+        py::arg("grad"), py::arg("dim"), py::arg("act"), py::arg("alpha"),
+        py::arg("gain"), py::arg("clamp"));
+  m.def("filtered_lrelu", &filtered_lrelu, "filtered_lrelu (CUDA)",
+        py::arg("x"), py::arg("fu"), py::arg("fd"), py::arg("b"), py::arg("si"),
+        py::arg("up"), py::arg("down"), py::arg("px0"), py::arg("px1"),
+        py::arg("py0"), py::arg("py1"), py::arg("sx"), py::arg("sy"),
+        py::arg("gain"), py::arg("slope"), py::arg("clamp"),
+        py::arg("flip_filters"), py::arg("writeSigns"));
+  m.def("filtered_lrelu_act_", &filtered_lrelu_act_,
+        "filtered_lrelu_act_ (CUDA)", py::arg("x"), py::arg("si"),
+        py::arg("sx"), py::arg("sy"), py::arg("gain"), py::arg("slope"),
+        py::arg("clamp"), py::arg("writeSigns"));
   m.def("box_iou_quadri", &box_iou_quadri, "IoU for quadrilateral boxes",
         py::arg("boxes1"), py::arg("boxes2"), py::arg("ious"),
         py::arg("mode_flag"), py::arg("aligned"));

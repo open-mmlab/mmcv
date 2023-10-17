@@ -11,7 +11,6 @@ try:
 except ImportError:
     from torch.autograd import gradcheck
     _USING_PARROTS = False
-
 # yapf:disable
 inputs = [([[[[1., 2.], [3., 4.]]]],
            [[0., 0.5, 0.5, 1., 1., 0]]),

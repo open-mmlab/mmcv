@@ -2,6 +2,8 @@
 #ifndef CARAFE_CUDA_KERNEL_CUH
 #define CARAFE_CUDA_KERNEL_CUH
 
+#include <ATen/cuda/DeviceUtils.cuh>
+
 #ifdef MMCV_USE_PARROTS
 #include "parrots_cuda_helper.hpp"
 #else
@@ -56,10 +58,11 @@ template <>
 __device__ __forceinline__ phalf warpReduceSum(phalf val) {
   for (int offset = WARP_SIZE / 2; offset > 0; offset /= 2)
 #ifdef MMCV_WITH_HIP
-    __PHALF(val) += __shfl_down(val, offset);
+    // Using PyTorch's macro for half support
+    __PHALF(val) += WARP_SHFL_DOWN(val, offset);
 #else
     __PHALF(val) +=
-        __shfl_down_sync(FULL_MASK, static_cast<__half>(__PHALF(val)), offset);
+        __shfl_down_sync(FULL_MASK, __PHALF(val).operator __half(), offset);
 #endif
   return val;
 }
