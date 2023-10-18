@@ -2,8 +2,12 @@ version: 2
 
 formats: all
 
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "3.7"
+
 python:
-  version: 3.7
   install:
     - requirements: requirements/runtime.txt
     - requirements: requirements/docs.txt
