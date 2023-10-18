@@ -79,71 +79,83 @@ python -c 'import torch;print(torch.__version__);print(torch.version.cuda)'
 
 <html>
 <body>
-    <style>
-      select {
-          z-index: 1000;
-          position: absolute;
-          top: 10px;
-          width: 6.7rem;
-      }
-      #select-container {
-          position: relative;
-          height: 30px;
-      }
-      #select-cmd {
-          background-color: #f5f6f7;
-          font-size: 14px;
-          margin-top: 20px;
-      }
-      /* 让每一个都间隔1.3rem */
-      #select-os {
-          /* left: 1.375rem; */
-          left: 0;
-      }
-      #select-cuda {
-          /* left: 9.375rem;    9.375 = 1.375 + 6.7 + 1.3 */
-          left: 8rem;
-      }
-      #select-torch {
-          /* left: 17.375rem;    17.375 = 9.375 + 6.7 + 1.3 */
-          left: 16rem;
-      }
-      #select-mmcv {
-          /* left: 25.375rem;    25.375 = 17.375 + 6.7 + 1.3 */
-          left: 24rem;
-      }
-    </style>
-    <div id="select-container">
-        <select
+<style>
+    select {
+        /*z-index: 1000;*/
+        position: absolute;
+        top: 10px;
+        width: 6.7rem;
+    }
+    #select-container {
+        position: relative;
+        height: 30px;
+    }
+    #select-cmd {
+        background-color: #f5f6f7;
+        font-size: 14px;
+        margin-top: 20px;
+    }
+    /* 让每一个都间隔1.3rem */
+    #select-os {
+        /* left: 1.375rem; */
+        left: 0;
+    }
+    #select-cuda {
+        /* left: 9.375rem;    9.375 = 1.375 + 6.7 + 1.3 */
+        left: 8rem;
+    }
+    #select-torch {
+        /* left: 17.375rem;    17.375 = 9.375 + 6.7 + 1.3 */
+        left: 16rem;
+    }
+    #select-mmcv {
+        /* left: 25.375rem;    25.375 = 17.375 + 6.7 + 1.3 */
+        left: 24rem;
+    }
+</style>
+<div id="select-container">
+    <select
+            size="1"
             onmousedown="handleSelectMouseDown(this.id)"
-            onblur="handleSelectBlur(this.id)"
+            onclick="clickOutside(this, () => handleSelectBlur(this.id))"
             onchange="changeOS(this.value)"
             id="select-os">
-        </select>
-        <select
+    </select>
+    <select
+            size="1"
             onmousedown="handleSelectMouseDown(this.id)"
-            onblur="handleSelectBlur(this.id)"
+            onclick="clickOutside(this, () => handleSelectBlur(this.is))"
             onchange="changeCUDA(this.value)"
             id="select-cuda">
-        </select>
-        <select
+    </select>
+    <select
+            size="1"
             onmousedown="handleSelectMouseDown(this.id)"
-            onblur="handleSelectBlur(this.id)"
+            onclick="clickOutside(this, () => handleSelectBlur(this.is))"
             onchange="changeTorch(this.value)"
             id="select-torch">
-        </select>
-        <select
+    </select>
+    <select
+            size="1"
             onmousedown="handleSelectMouseDown(this.id)"
-            onblur="handleSelectBlur(this.id)"
+            onclick="clickOutside(this, () => handleSelectBlur(this.is))"
             onchange="changeMMCV(this.value)"
             id="select-mmcv">
-        </select>
-    </div>
-    <pre id="select-cmd"></pre>
+    </select>
+</div>
+<pre id="select-cmd"></pre>
 </body>
 <script>
     // 各个select当前的值
     let osVal, cudaVal, torchVal, mmcvVal;
+    function clickOutside(targetDom, handler) {
+        const clickHandler = (e) => {
+            if (!targetDom || targetDom.contains(e.target)) return;
+            handler?.();
+            document.removeEventListener('click', clickHandler, false);
+        };
+        document.addEventListener('click', clickHandler, false);
+    }
     function changeMMCV(val) {
         mmcvVal = val;
         change("select-mmcv");
@@ -165,7 +177,7 @@ python -c 'import torch;print(torch.__version__);print(torch.version.cuda)'
         const dom = document.getElementById(id);
         if (!dom) return;
         const len = dom?.options?.length;
-        if (len >= 9) {
+        if (len >= 10) {
             dom.size = 10;
             dom.style.zIndex = 100;
         }
@@ -235,7 +247,7 @@ python -c 'import torch;print(torch.__version__);print(torch.version.cuda)'
      * 1. 各个下拉框数据的联动
      *      OS ==> cuda ==> torch ==> mmcv
      * 2. 命令行的修改
-    */
+     */
     function change(id) {
         const order = ["select-mmcv", "select-torch", "select-cuda", "select-os"];
         const idx = order.indexOf(id);
@@ -274,7 +286,7 @@ python -c 'import torch;print(torch.__version__);print(torch.version.cuda)'
     // 初始化，处理version数据，并调用findAndAppend
     function init() {
         // 增加一个全局的click事件监听，作为select onBlur事件失效的兜底
-        document.addEventListener("click", handleSelectBlur);
+        // document.addEventListener("click", handleSelectBlur);
         const version = window.version;
         // OS
         const os = Object.keys(version);
@@ -285,7 +297,7 @@ python -c 'import torch;print(torch.__version__);print(torch.version.cuda)'
     }
     // 利用xhr获取本地version数据，如果作为html直接浏览的话需要使用本地服务器打开，否则会有跨域问题
     window.onload = function () {
-        const url = "../_static/version.json"
+        const url = "./version.json"
         // 申明一个XMLHttpRequest
         const request = new XMLHttpRequest();
         // 设置请求方法与路径
