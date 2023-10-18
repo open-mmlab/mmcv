@@ -299,7 +299,7 @@ Select the appropriate installation command depending on the type of system, CUD
     }
     // 利用xhr获取本地version数据，如果作为html直接浏览的话需要使用本地服务器打开，否则会有跨域问题
     window.onload = function () {
-        const url = "./version.json"
+        const url = "../_static/version.json"
         // 申明一个XMLHttpRequest
         const request = new XMLHttpRequest();
         // 设置请求方法与路径
