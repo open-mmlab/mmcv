@@ -2,6 +2,9 @@ version: 2
 
 formats: all
 
+build:
+  os: ubuntu-22.04
+
 python:
   version: 3.7
   install:
