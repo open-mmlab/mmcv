@@ -1,0 +1,312 @@
+# API reference table
+
+Due to the removal of the `mmcv.fileio`, `mmcv.runner`, `mmcv.parallel`, `mmcv.engine`, `mmcv.device` modules, and all classes and most of the functions in the `mmcv.utils` module during the upgrade from MMCV v1.x to MMCV v2.x, which were removed at PR [#2179](https://github.com/open-mmlab/mmcv/pull/2179)，PR [#2216](https://github.com/open-mmlab/mmcv/pull/2216)，PR [#2217](https://github.com/open-mmlab/mmcv/pull/2217)。Therefore, we provide the following api reference table to make it easier to quickly find the migrated interfaces.
+
+## Related issues, PRs and discussions
+
+- [Remove runner, parallel, engine and device](https://github.com/open-mmlab/mmcv/pull/2216)
+- [ImportError: cannot import name 'is_list_of' from 'mmcv.utils'](https://github.com/open-mmlab/mmcv/issues/2282)
+- [Could not find the files in MMengine which are removed in MMCV_v2x parallel. example, for DataContainer](https://github.com/open-mmlab/mmcv/issues/2934)
+- [mmcv.cnn.bricks.registry](https://github.com/open-mmlab/mmengine/discussions/1356)
+- [Replace mmcv's function and modules imported with mmengine's](https://github.com/open-mmlab/mmdetection/pull/8594)
+
+## `mmcv.fileio`
+
+| MMCV | MMCV URL | MMEngine | MMEngine URL |
+| --- | --- | --- | --- |
+| mmcv.fileio.file_client.BaseStorageBackend  | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/fileio/file_client.py | mmengine.fileio.backends.base.BaseStorageBackend | https://github.com/open-mmlab/mmengine/blob/main/mmengine/fileio/backends/base.py |
+| mmcv.fileio.file_client.CephBackend | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/fileio/file_client.py |  |  |
+| mmcv.fileio.file_client.PetrelBackend | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/fileio/file_client.py | mmengine.fileio.backends.petrel_backend.PetrelBackend | https://github.com/open-mmlab/mmengine/blob/main/mmengine/fileio/backends/petrel_backend.py |
+| mmcv.fileio.file_client.MemcachedBackend | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/fileio/file_client.py | mmengine.fileio.backends.memcached_backend.MemcachedBackend | https://github.com/open-mmlab/mmengine/blob/main/mmengine/fileio/backends/memcached_backend.py |
+| mmcv.fileio.file_client.LmdbBackend | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/fileio/file_client.py | mmengine.fileio.backends.lmdb_backend.LmdbBackend | https://github.com/open-mmlab/mmengine/blob/main/mmengine/fileio/backends/lmdb_backend.py |
+| mmcv.fileio.file_client.HardDiskBackend | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/fileio/file_client.py | mmengine.fileio.file_client.HardDiskBackend  | https://github.com/open-mmlab/mmengine/blob/main/mmengine/fileio/file_client.py  |
+| mmcv.fileio.file_client.HTTPBackend | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/fileio/file_client.py | mmengine.fileio.backends.http_backend.HTTPBackend | https://github.com/open-mmlab/mmengine/blob/main/mmengine/fileio/backends/http_backend.py |
+| mmcv.fileio.file_client.FileClient | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/fileio/file_client.py | mmengine.fileio.file_client.FileClient | https://github.com/open-mmlab/mmengine/blob/main/mmengine/fileio/file_client.py |
+| mmcv.fileio.io.load | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/fileio/io.py | mmengine.fileio.io.load | https://github.com/open-mmlab/mmengine/blob/main/mmengine/fileio/io.py |
+| mmcv.fileio.io.dump | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/fileio/io.py | mmengine.fileio.io.dump | https://github.com/open-mmlab/mmengine/blob/main/mmengine/fileio/io.py |
+| mmcv.fileio.io._register_handler  | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/fileio/io.py | mmengine.fileio.handlers._register_handler | https://github.com/open-mmlab/mmengine/blob/main/mmengine/fileio/handlers/registry_utils.py |
+| mmcv.fileio.io.register_handler | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/fileio/io.py | mmengine.fileio.handlers.register_handler | https://github.com/open-mmlab/mmengine/blob/main/mmengine/fileio/handlers/registry_utils.py |
+| mmcv.fileio.parse.list_from_file | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/fileio/parse.py | mmengine.fileio.parse.list_from_file | https://github.com/open-mmlab/mmengine/blob/main/mmengine/fileio/parse.py |
+| mmcv.fileio.parse.dict_from_file | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/fileio/parse.py | mmengine.fileio.parse.dict_from_file | https://github.com/open-mmlab/mmengine/blob/main/mmengine/fileio/parse.py |
+| mmcv.fileio.handlers.base.BaseFileHandler | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/fileio/handlers/base.py | mmengine.fileio.handlers.base.BaseFileHandler | https://github.com/open-mmlab/mmengine/blob/main/mmengine/fileio/handlers/base.py |
+| mmcv.fileio.handlers.json_handler.set_default | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/fileio/handlers/json_handler.py | mmengine.fileio.handlers.json_handler.set_default | https://github.com/open-mmlab/mmengine/blob/main/mmengine/fileio/handlers/json_handler.py |
+| mmcv.fileio.handlers.json_handler.JsonHandler | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/fileio/handlers/json_handler.py | mmengine.fileio.handlers.json_handler.JsonHandler | https://github.com/open-mmlab/mmengine/blob/main/mmengine/fileio/handlers/json_handler.py |
+| mmcv.fileio.handlers.pickle_handler.PickleHandler | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/fileio/handlers/pickle_handler.py | mmengine.fileio.handlers.pickle_handler.PickleHandler | https://github.com/open-mmlab/mmengine/blob/main/mmengine/fileio/handlers/pickle_handler.py |
+| mmcv.fileio.handlers.yaml_handler.YamlHandler | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/fileio/handlers/yaml_handler.py | mmengine.fileio.handlers.yaml_handler.YamlHandler | https://github.com/open-mmlab/mmengine/blob/main/mmengine/fileio/handlers/yaml_handler.py |
+
+## `mmcv.runner`
+
+| MMCV | MMCV URL | MMEngine | MMEngine URL |
+| --- | --- | --- | --- |
+| mmcv.runner.hooks.logger.base.LoggerHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/logger/base.py | mmengine.hooks.logger_hook.LoggerHook | https://github.com/open-mmlab/mmengine/blob/main/mmengine/hooks/logger_hook.py |
+| mmcv.runner.hooks.logger.clearml.ClearMLLoggerHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/logger/clearml.py | Similar: mmengine.visualization.vis_backend.ClearMLVisBackend | https://github.com/open-mmlab/mmengine/blob/main/mmengine/visualization/vis_backend.py |
+| mmcv.runner.hooks.logger.dvclive.DvcliveLoggerHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/logger/dvclive.py | Similar: mmengine.visualization.vis_backend.DVCLiveVisBackend | https://github.com/open-mmlab/mmengine/blob/main/mmengine/visualization/vis_backend.py |
+| mmcv.runner.hooks.logger.mlflow.MlflowLoggerHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/logger/mlflow.py | Similar: mmengine.visualization.vis_backend.MLflowVisBackend | https://github.com/open-mmlab/mmengine/blob/main/mmengine/visualization/vis_backend.py |
+| mmcv.runner.hooks.logger.neptune.NeptuneLoggerHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/logger/neptune.py | Similar: mmengine.visualization.vis_backend.NeptuneVisBackend | https://github.com/open-mmlab/mmengine/blob/main/mmengine/visualization/vis_backend.py |
+| mmcv.runner.hooks.logger.pavi.PaviLoggerHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/logger/pavi.py |  |  |
+| mmcv.runner.hooks.logger.segmind.SegmindLoggerHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/logger/segmind.py |  |  |
+| mmcv.runner.hooks.logger.tensorboard.TensorboardLoggerHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/logger/tensorboard.py | Similar: mmengine.visualization.vis_backend.TensorboardVisBackend | https://github.com/open-mmlab/mmengine/blob/main/mmengine/visualization/vis_backend.py |
+| mmcv.runner.hooks.logger.text.TextLoggerHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/logger/text.py |  |  |
+| mmcv.runner.hooks.logger.wandb.WandbLoggerHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/logger/wandb.py | Similar: mmengine.visualization.vis_backend.WandbVisBackend | https://github.com/open-mmlab/mmengine/blob/main/mmengine/visualization/vis_backend.py |
+| mmcv.runner.hooks.checkpoint.CheckpointHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/checkpoint.py | mmengine.hooks.checkpoint_hook.CheckpointHook | https://github.com/open-mmlab/mmengine/blob/main/mmengine/hooks/checkpoint_hook.py |
+| mmcv.runner.hooks.closure.ClosureHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/closure.py |  |  |
+| mmcv.runner.hooks.ema.EMAHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/ema.py | mmengine.hooks.ema_hook.EMAHook | https://github.com/open-mmlab/mmengine/blob/main/mmengine/hooks/ema_hook.py |
+| mmcv.runner.hooks.evaluation.EvalHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/evaluation.py | Some features have been moved to: mmengine.hooks.checkpoint_hook.CheckpointHook | https://github.com/open-mmlab/mmengine/blob/main/mmengine/hooks/checkpoint_hook.py |
+| mmcv.runner.hooks.evaluation.DistEvalHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/evaluation.py | Some features have been moved to: mmengine.hooks.checkpoint_hook.CheckpointHook | https://github.com/open-mmlab/mmengine/blob/main/mmengine/hooks/checkpoint_hook.py |
+| mmcv.runner.hooks.hook.HOOKS | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/hook.py | mmengine.registry.root.HOOKS | https://github.com/open-mmlab/mmengine/blob/main/mmengine/registry/root.py |
+| mmcv.runner.hooks.hook.Hook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/hook.py | mmengine.hooks.hook.Hook | https://github.com/open-mmlab/mmengine/blob/main/mmengine/hooks/hook.py |
+| mmcv.runner.hooks.iter_timer.IterTimerHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/iter_timer.py | mmengine.hooks.iter_timer_hook.IterTimerHook | https://github.com/open-mmlab/mmengine/blob/main/mmengine/hooks/iter_timer_hook.py |
+| mmcv.runner.hooks.lr_updater.LrUpdaterHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/lr_updater.py | mmengine.optim.scheduler.lr_scheduler.LRSchedulerMixin | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/lr_scheduler.py |
+| mmcv.runner.hooks.lr_updater.FixedLrUpdaterHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/lr_updater.py | mmengine.optim.scheduler.lr_scheduler.ConstantLR | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/lr_scheduler.py |
+| mmcv.runner.hooks.lr_updater.StepLrUpdaterHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/lr_updater.py | mmengine.optim.scheduler.lr_scheduler.StepLR | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/lr_scheduler.py |
+| mmcv.runner.hooks.lr_updater.ExpLrUpdaterHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/lr_updater.py | mmengine.optim.scheduler.lr_scheduler.ExponentialLR | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/lr_scheduler.py |
+| mmcv.runner.hooks.lr_updater.PolyLrUpdaterHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/lr_updater.py | mmengine.optim.scheduler.lr_scheduler.PolyLR | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/lr_scheduler.py |
+| mmcv.runner.hooks.lr_updater.InvLrUpdaterHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/lr_updater.py |  |  |
+| mmcv.runner.hooks.lr_updater.CosineAnnealingUpdaterHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/lr_updater.py | mmengine.optim.scheduler.lr_scheduler.CosineAnnealingLR | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/lr_scheduler.py |
+| mmcv.runner.hooks.lr_updater.FlatCosineAnnealingUpdaterHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/lr_updater.py |  |  |
+| mmcv.runner.hooks.lr_updater.CosineRestartLrUpdaterHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/lr_updater.py | mmengine.optim.scheduler.lr_scheduler.CosineRestartLR | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/lr_scheduler.py |
+| mmcv.runner.hooks.lr_updater.get_position_from_periods | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/lr_updater.py | mmengine.optim.scheduler.lr_scheduler.CosineRestartLR.get_position_from_periods | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/lr_scheduler.py |
+| mmcv.runner.hooks.lr_updater.CyclicLrUpdaterHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/lr_updater.py |  |  |
+| mmcv.runner.hooks.lr_updater.OneCycleLrUpdaterHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/lr_updater.py | mmengine.optim.scheduler.lr_scheduler.OneCycleLR | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/lr_scheduler.py |
+| mmcv.runner.hooks.lr_updater.LinearAnnealingLrUpdaterHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/lr_updater.py |  |  |
+| mmcv.runner.hooks.lr_updater.annealing_cos | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/lr_updater.py | mmengine.optim.scheduler.lr_scheduler.OneCycleLR._annealing_cos | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/lr_scheduler.py |
+| mmcv.runner.hooks.lr_updater.annealing_linear | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/lr_updater.py | mmengine.optim.scheduler.lr_scheduler.OneCycleLR._annealing_linear | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/lr_scheduler.py |
+| mmcv.runner.hooks.lr_updater.format_param | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/lr_updater.py | mmengine.optim.scheduler.lr_scheduler.OneCycleLR._format_param | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/lr_scheduler.py |
+| mmcv.runner.hooks.memory.EmptyCacheHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/memory.py | mmengine.hoos.empty_cache_hook.EmptyCacheHook | https://github.com/open-mmlab/mmengine/blob/main/mmengine/hooks/empty_cache_hook.py |
+| mmcv.runner.hooks.momentum_updater.MomentumUpdaterHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/momentum_updater.py | mmengine.optim.scheduler.momentum_scheduler.MomentumSchedulerMixin | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/momentum_scheduler.py |
+| mmcv.runner.hooks.momentum_updater.StepMomentumUpdaterHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/momentum_updater.py | mmengine.optim.scheduler.momentum_scheduler.StepMomentum | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/momentum_scheduler.py |
+| mmcv.runner.hooks.momentum_updater.CosineAnnealingMomentumUpdaterHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/momentum_updater.py | mmengine.optim.scheduler.momentum_scheduler.CosineAnnealingMomentum | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/momentum_scheduler.py |
+| mmcv.runner.hooks.momentum_updater.LinearAnnealingMomentumUpdaterHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/momentum_updater.py |  |  |
+| mmcv.runner.hooks.momentum_updater.CyclikcMomentumUpdaterHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/momentum_updater.py |  |  |
+| mmcv.runner.hooks.momentum_updater.OneCycleMomentumUpdaterHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/momentum_updater.py |  |  |
+| mmcv.runner.hooks.optimizer.OptimizerHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/optimizer.py | mmengine.optimizer.optimizer_wrapper.OptimWrapper | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/optimizer_wrapper.py |
+| mmcv.runner.hooks.optimizer.GradientCumulativeOptimizerHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/optimizer.py |  |  |
+| mmcv.runner.hooks.optimizer.Fp16OptimizerHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/optimizer.py | Moved to: mmengine.optimizer.amp_optimizer_wrapper.AmpOptimWrapper and mmengine.optimizer.apex_optimizer_wrapper.ApexOptimWrapper | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/amp_optimizer_wrapper.py https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/apex_optimizer_wrapper.py |
+| mmcv.runner.hooks.optimizer.GradientCumulativeFp16OptimizerHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/optimizer.py |  |  |
+| mmcv.runner.hooks.optimizer.Fp16OptimizerHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/optimizer.py | Moved to: mmengine.optimizer.amp_optimizer_wrapper.AmpOptimWrapper and mmengine.optimizer.apex_optimizer_wrapper.ApexOptimWrapper | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/amp_optimizer_wrapper.py https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/apex_optimizer_wrapper.py |
+| mmcv.runner.hooks.optimizer.GradientCumulativeFp16OptimizerHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/optimizer.py |  |  |
+| mmcv.runner.hooks.profiler.ProfilerHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/profiler.py | mmengine.hooks.profiler_hook.ProfilerHook | https://github.com/open-mmlab/mmengine/blob/main/mmengine/hooks/profiler_hook.py |
+| mmcv.runner.hooks.sampler_seed.DistSamplerSeedHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/sampler_seed.py | mmengine.hooks.sampler_seed_hook.DistSamplerSeedHook | https://github.com/open-mmlab/mmengine/blob/main/mmengine/hooks/sampler_seed_hook.py |
+| mmcv.runner.hooks.sync_buffer.SyncbuffersHook | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/hooks/sync_buffer.py | mmengine.hooks.sync_buffer_hook.SyncBufferHook | https://github.com/open-mmlab/mmengine/blob/main/mmengine/hooks/sync_buffer_hook.py |
+| mmcv.runner.optimizer.builder.OPTIMIZERS | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/optimizer/builder.py | mmengine.registry.root.OPTIMIZERS | https://github.com/open-mmlab/mmengine/blob/main/mmengine/registry/root.py |
+| mmcv.runner.optimizer.builder.OPTIMIZER_BUILDERS | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/optimizer/builder.py |  |  |
+| mmcv.runner.optimizer.builder.register_torch_optimizers | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/optimizer/builder.py | mmengine.optim.optimizer.builder.register_torch_optimizers | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/builder.py |
+| mmcv.runner.optimizer.builder.TORCH_OPTIMIZERS | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/optimizer/builder.py |  |  |
+| mmcv.runner.optimizer.builder.build_optimizer_constructor | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/optimizer/builder.py |  |  |
+| mmcv.runner.optimizer.builder.build_optimizer | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/optimizer/builder.py |  |  |
+| mmcv.runner.optimizer.default_constructor.DefaultOptimizerConstructor | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/optimizer/default_constructor.py |  |  |
+| mmcv.runner.base_module.BaseModule | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/base_module.py | mmengine.model.base_module.BaseModule | https://github.com/open-mmlab/mmengine/blob/main/mmengine/model/base_module.py |
+| mmcv.runner.base_module.Sequential | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/base_module.py | mmengine.model.base_module.Sequential | https://github.com/open-mmlab/mmengine/blob/main/mmengine/model/base_module.py |
+| mmcv.runner.base_module.ModuleList | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/base_module.py | mmengine.model.base_module.ModuleList | https://github.com/open-mmlab/mmengine/blob/main/mmengine/model/base_module.py |
+| mmcv.runner.base_module.ModuleDict | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/base_module.py | mmengine.model.base_module.ModuleDict | https://github.com/open-mmlab/mmengine/blob/main/mmengine/model/base_module.py |
+| mmcv.runner.base_runner.BaseRunner | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/base_runner.py | mmengine.runner.runner.Runner | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/runner.py |
+| mmcv.runner.builder.RUNNERS | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/builder.py | mmengine.registry.root.RUNNERS | https://github.com/open-mmlab/mmengine/blob/main/mmengine/registry/root.py |
+| mmcv.runner.builder.RUNNER_BUILDERS | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/builder.py | mmengine.registry.root.RUNNER_CONSTRUCTORS | https://github.com/open-mmlab/mmengine/blob/main/mmengine/registry/root.py |
+| mmcv.runner.builder.build_runner_constructor | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/builder.py |  |  |
+| mmcv.runner.builder.build_runner | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/builder.py |  |  |
+| mmcv.runner.checkpoint.ENV_MMCV_HOME | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint.ENV_MMENGINE_HOME | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint.ENV_XDG_CACHE_HOME | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint.ENV_XDG_CACHE_HOME | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint.DEFAULT_CACHE_HOME | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint.DEFAULT_CACHE_DIR | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint._get_mmcv_home  | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint._get_mmengine_home | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint.load_state_dict | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint.load_state_dict | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint.get_torchvision_models | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint.get_torchvision_models | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint.get_external_models | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint.get_external_models | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint.get_mmcls_models | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint.get_mmcls_models | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint.get_deprecated_model_names | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint.get_deprecated_model_names | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint._process_mmcls_checkpoint | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint._process_mmcls_checkpoint | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint.CheckpointLoader | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint.CheckpointLoader | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint.load_from_local | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint.load_from_local | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint.load_from_http | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint.load_from_http | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint.load_from_pavi | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint.load_from_pavi | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint.load_from_ceph | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint.load_from_ceph | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint.load_from_torchvision | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint.load_from_torchvision | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint.load_from_openmmlab | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint.load_from_openmmlab | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint.load_from_mmcls | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint.load_from_mmcls | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint._load_checkpoint | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint._load_checkpoint | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint._load_checkpoint_with_prefix | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint._load_checkpoint_with_prefix | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint.load_checkpoint | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint.load_checkpoint | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint.weights_to_cpu | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint.weights_to_cpu | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint._save_to_state_dict | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint._save_to_state_dict | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint.get_state_dict | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint.get_state_dict | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.checkpoint.save_checkpoint | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/checkpoint.py | mmengine.runner.checkpoint.save_checkpoint | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/checkpoint.py |
+| mmcv.runner.default_coonstructor.DefaultRunnerConstructor | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/default_constructor.py |  |  |
+| mmcv.runner.dist_utils._find_free_port | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/dist_utils.py |  |  |
+| mmcv.runner.dist_utils._is_free_port | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/dist_utils.py |  |  |
+| mmcv.runner.dist_utils.init_dist | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/dist_utils.py | mmengine.dist.utils.init_dist | https://github.com/open-mmlab/mmengine/blob/main/mmengine/dist/utils.py |
+| mmcv.runner.dist_utils._init_dist_pytorch | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/dist_utils.py | mmengine.dist.utils._init_dist_pytorch | https://github.com/open-mmlab/mmengine/blob/main/mmengine/dist/utils.py |
+| mmcv.runner.dist_utils._init_dist_mpi | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/dist_utils.py | mmengine.dist.utils._init_dist_mpi | https://github.com/open-mmlab/mmengine/blob/main/mmengine/dist/utils.py |
+| mmcv.runner.dist_utils._init_dist_slurm | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/dist_utils.py | mmengine.dist.utils._init_dist_slurm | https://github.com/open-mmlab/mmengine/blob/main/mmengine/dist/utils.py |
+| mmcv.runner.dist_utils.get_dist_info | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/dist_utils.py | mmengine.dist.utils.get_dist_info | https://github.com/open-mmlab/mmengine/blob/main/mmengine/dist/utils.py |
+| mmcv.runner.dist_utils.master_only | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/dist_utils.py | mmengine.dist.utils.master_only | https://github.com/open-mmlab/mmengine/blob/main/mmengine/dist/utils.py |
+| mmcv.runner.dist_utils.allreduce_params | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/dist_utils.py |  |  |
+| mmcv.runner.dist_utils.allreduce_grads | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/dist_utils.py |  |  |
+| mmcv.runner.dist_utils._allreduce_coalesced | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/dist_utils.py |  |  |
+| mmcv.runner.epoch_based_runner.EpochBasedRunner | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/epoch_based_runner.py | mmengine.runner.loops.EpochBasedTrainLoop | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/loops.py |
+| mmcv.runner.epoch_based_runner.Runner | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/epoch_based_runner.py |  |  |
+| mmcv.runner.fp16_utils.cast_tensor_type | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/fp16_utils.py | Moved fp16-related to: mmengine.optimizer.amp_optimizer_wrapper.AmpOptimWrapper and mmengine.optimizer.apex_optimizer_wrapper.ApexOptimWrapper | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/amp_optimizer_wrapper.py https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/apex_optimizer_wrapper.py |
+| mmcv.runner.fp16_utils.auto_fp16 | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/fp16_utils.py | Moved fp16-related to: mmengine.optimizer.amp_optimizer_wrapper.AmpOptimWrapper and mmengine.optimizer.apex_optimizer_wrapper.ApexOptimWrapper | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/amp_optimizer_wrapper.py https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/apex_optimizer_wrapper.py |
+| mmcv.runner.fp16_utils.force_fp32 | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/fp16_utils.py | Moved fp16-related to: mmengine.optimizer.amp_optimizer_wrapper.AmpOptimWrapper and mmengine.optimizer.apex_optimizer_wrapper.ApexOptimWrapper | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/amp_optimizer_wrapper.py https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/apex_optimizer_wrapper.py |
+| mmcv.runner.fp16_utils.allreduce_grads | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/fp16_utils.py | Moved fp16-related to: mmengine.optimizer.amp_optimizer_wrapper.AmpOptimWrapper and mmengine.optimizer.apex_optimizer_wrapper.ApexOptimWrapper | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/amp_optimizer_wrapper.py https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/apex_optimizer_wrapper.py |
+| mmcv.runner.fp16_utils.wrap_fp16_model | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/fp16_utils.py | Moved fp16-related to: mmengine.optimizer.amp_optimizer_wrapper.AmpOptimWrapper and mmengine.optimizer.apex_optimizer_wrapper.ApexOptimWrapper | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/amp_optimizer_wrapper.py https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/apex_optimizer_wrapper.py |
+| mmcv.runner.fp16_utils.patch_norm_fp32 | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/fp16_utils.py | Moved fp16-related to: mmengine.optimizer.amp_optimizer_wrapper.AmpOptimWrapper and mmengine.optimizer.apex_optimizer_wrapper.ApexOptimWrapper | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/amp_optimizer_wrapper.py https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/apex_optimizer_wrapper.py |
+| mmcv.runner.fp16_utils.patch_forward_method | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/fp16_utils.py | Moved fp16-related to: mmengine.optimizer.amp_optimizer_wrapper.AmpOptimWrapper and mmengine.optimizer.apex_optimizer_wrapper.ApexOptimWrapper | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/amp_optimizer_wrapper.py https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/apex_optimizer_wrapper.py |
+| mmcv.runner.fp16_utils.LossScaler | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/fp16_utils.py | Moved fp16-related to: mmengine.optimizer.amp_optimizer_wrapper.AmpOptimWrapper and mmengine.optimizer.apex_optimizer_wrapper.ApexOptimWrapper | https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/amp_optimizer_wrapper.py https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/apex_optimizer_wrapper.py |
+| mmcv.runner.iter_based_runner.IterLoader | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/iter_based_runner.py |  |  |
+| mmcv.runner.iter_based_runner.IterBasedRunner | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/iter_based_runner.py | mmengine.runner.loops.IterBasedTrainLoop | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/loops.py |
+| mmcv.runner.log_buffer.LogBuffer | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/log_buffer.py |  |  |
+| mmcv.runner.priority.Priority | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/priority.py | mmengine.runer.priority.Priority | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/priority.py |
+| mmcv.runner.priority.get_priority | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/priority.py | mmengine.runner.priority.get_priority | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/priority.py |
+| mmcv.runner.utils.get_host_info | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/utils.py |  |  |
+| mmcv.runner.utils.get_time_str | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/utils.py |  |  |
+| mmcv.runner.utils.obj_from_dict | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/utils.py |  |  |
+| mmcv.runner.utils.set_random_seed | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/runner/utils.py | mmengine.runner.utils.set_random_seed | https://github.com/open-mmlab/mmengine/blob/main/mmengine/runner/utils.py |
+
+## `mmcv.parallel`
+
+| MMCV | MMCV URL | MMEngine | MMEngine URL |
+| --- | --- | --- | --- |
+| mmcv.parallel._functions.scatter | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/parallel/_functions.py |  |  |
+| mmcv.parallel._functions.synchronize_stream | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/parallel/_functions.py |  |  |
+| mmcv.parallel._functions.get_input_device | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/parallel/_functions.py |  |  |
+| mmcv.parallel._functions.Scatter | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/parallel/_functions.py |  |  |
+| mmcv.parallel.collate.collate | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/parallel/collate.py |  |  |
+| mmcv.parallel.data_container.assert_tensor_type | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/parallel/data_container.py |  |  |
+| mmcv.parallel.data_container.DataContainer | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/parallel/data_container.py | Similar: mmengine/structures/base_data_element.BaseDataElement | https://github.com/open-mmlab/mmengine/blob/main/mmengine/structures/base_data_element.py |
+| mmcv.parallel.data_parallel.MMDataParallel | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/parallel/data_parallel.py |  |  |
+| mmcv.parallel.distributed.MMDistributedDataParallel | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/parallel/distributed.py | mmengine.model.wrappers.distributed.MMDistributedDataParallel | https://github.com/open-mmlab/mmengine/blob/main/mmengine/model/wrappers/distributed.py |
+| mmcv.parallel.distributed_deprecated.MMDistributedDataParallel | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/parallel/distributed.py | mmengine.model.wrappers.distributed.MMDistributedDataParallel | https://github.com/open-mmlab/mmengine/blob/main/mmengine/model/wrappers/distributed.py |
+| mmcv.parallel.registry.MODULE_WRAPPERS | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/parallel/registry.py | mmengine.registry.root.MODEL_WRAPPERS | https://github.com/open-mmlab/mmengine/blob/main/mmengine/registry/root.py |
+| mmcv.parallel.scatter_gather.scatter | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/parallel/scatter_gather.py |  |  |
+| mmcv.parallel.scatter_gather.scatter_kwargs | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/parallel/scatter_gather.py |  |  |
+| mmcv.parallel.utils.is_module_wrapper | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/parallel/utils.py | mmengine.model.wrappers.utils.is_model_wrapper | https://github.com/open-mmlab/mmengine/blob/main/mmengine/model/wrappers/utils.py |
+
+## `mmcv.engine`
+
+| MMCV | MMCV URL | MMEngine | MMEngine URL |
+| --- | --- | --- | --- |
+| mmcv.engine.test.single_gpu_test  | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/engine/test.py |  |  |
+| mmcv.engine.test.multi_gpu_test | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/engine/test.py |  |  |
+| mmcv.engine.test.collect_results_cpu | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/engine/test.py |  |  |
+| mmcv.engine.test.collect_results_gpu | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/engine/test.py |  |  |
+
+## `mmcv.device`
+
+| MMCV | MMCV URL | MMEngine | MMEngine URL |
+| --- | --- | --- | --- |
+| mmcv.device.ipu | https://github.com/open-mmlab/mmcv/tree/v1.7.1/mmcv/device/ipu |  |  |
+| mmcv.device.mlu | https://github.com/open-mmlab/mmcv/tree/v1.7.1/mmcv/device/mlu |  |  |
+| mmcv.device.mps | https://github.com/open-mmlab/mmcv/tree/v1.7.1/mmcv/device/mps |  |  |
+| mmcv.device.npu | https://github.com/open-mmlab/mmcv/tree/v1.7.1/mmcv/device/npu |  |  |
+| mmcv.device._functions.scatter | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/device/_functions.py |  |  |
+| mmcv.device._functions.Scatter | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/device/_functions.py |  |  |
+| mmcv.device.scatter_gather.scatter | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/device/scatter_gather.py |  |  |
+| mmcv.device.scatter_gather.scatter_kwargs | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/device/scatter_gather.py |  |  |
+| mmcv.device.utils.get_device | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/device/utils.py | mmengine.device.utils.get_device | https://github.com/open-mmlab/mmengine/blob/main/mmengine/device/utils.py |
+
+## `mmcv.utils`
+
+| MMCV | MMCV URL | MMEngine | MMEngine URL |
+| --- | --- | --- | --- |
+| mmcv.utils.config.BASE_KEY | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/config.py | mmengine.config.config.BASE_KEY | https://github.com/open-mmlab/mmengine/blob/main/mmengine/config/config.py |
+| mmcv.utils.config.DELETE_KEY | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/config.py | mmengine.config.config.DELETE_KEY  | https://github.com/open-mmlab/mmengine/blob/main/mmengine/config/config.py |
+| mmcv.utils.config.DEPRECATION_KEY | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/config.py | mmengine.config.config.DEPRECATION_KEY | https://github.com/open-mmlab/mmengine/blob/main/mmengine/config/config.py |
+| mmcv.utils.config.ConfigDict | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/config.py | mmengine.config.config.ConfigDict | https://github.com/open-mmlab/mmengine/blob/main/mmengine/config/config.py |
+| mmcv.utils.config.add_args | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/config.py | mmengine.config.config.add_args  | https://github.com/open-mmlab/mmengine/blob/main/mmengine/config/config.py |
+| mmcv.utils.config.Config | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/config.py | mmengine.config.config.Config  | https://github.com/open-mmlab/mmengine/blob/main/mmengine/config/config.py |
+| mmcv.utils.config.DictAction | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/config.py | mmengine.config.config.DictAction | https://github.com/open-mmlab/mmengine/blob/main/mmengine/config/config.py |
+| mmcv.utils.device_type.is_ipu_available | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/device_type.py |  |  |
+| mmcv.utils.device_type.IS_IPU_AVAILABLE | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/device_type.py |  |  |
+| mmcv.utils.device_type.is_mlu_available | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/device_type.py | mmengine.device.utils.is_mlu_available | https://github.com/open-mmlab/mmengine/blob/main/mmengine/device/utils.py |
+| mmcv.utils.device_type.is_mps_available | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/device_type.py | mmengine.device.utils.is_mps_available | https://github.com/open-mmlab/mmengine/blob/main/mmengine/device/utils.py |
+| mmcv.utils.device_type.is_npu_available | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/device_type.py | mmengine.device.utils.is_npu_available | https://github.com/open-mmlab/mmengine/blob/main/mmengine/device/utils.py |
+| mmcv.utils.hub._is_legacy_zip_format | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/hub.py | mmengine.utils.dl_utils.hub._is_legacy_zip_format | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/dl_utils/hub.py |
+| mmcv.utils.hub._legacy_zip_load | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/hub.py | mmengine.utils.dl_utils.hub._legacy_zip_load | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/dl_utils/hub.py |
+| mmcv.utils.hub.load_url | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/hub.py | mmengine.utils.dl_utils.hub.load_url | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/dl_utils/hub.py |
+| mmcv.utils.logging.logger_initialized | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/logging.py |  |  |
+| mmcv.utils.logging.get_logger | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/logging.py |  |  |
+| mmcv.utils.logging.print_log | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/logging.py |  |  |
+| mmcv.utils.misc._ntuple | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc._ntuple  | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc.to_1tuple | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc.to_1tuple | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc.to_2tuple | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc.to_2tuple | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc.to_3tuple | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc.to_3tuple  | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc.to_4tuple | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc.to_4tuple | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc.to_ntuple | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc.to_ntuple | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc.is_str | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc.is_str  | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc.import_modules_from_strings | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc.import_modules_from_strings  | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc.iter_cast | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc.iter_cast | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc.list_cast | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc.list_cast | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc.tuple_cast | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc.tuple_cast | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc.is_seq_of | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc.is_seq_of | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc.is_list_of | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc.is_list_of | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc.is_tuple_of | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc.is_tuple_of | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc.slice_list | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc.slice_list | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc.concat_list | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc.concat_list | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc.check_prerequisites | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc.check_prerequisites | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc._check_py_package | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc._check_py_package | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc._check_executable | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc._check_executable | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc.requires_package | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc.requires_package | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc.requires_executable | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc.requires_executable | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc.deprecated_api_warning | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc.deprecated_api_warning | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc.is_method_overridden | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc.is_method_overridden | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.misc.has_method | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/misc.py | mmengine.utils.misc.has_method | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/misc.py |
+| mmcv.utils.parrots_wrapper.TORCH_VERSION | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/parrots_wrapper.py | mmengine.utils.dl_utils.parrots_wrapper.TORCH_VERSION | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/dl_utils/parrots_wrapper.py |
+| mmcv.utils.parrots_wrapper.is_cuda_available | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/parrots_wrapper.py | mmengine.devices.utils.is_cuda_available | https://github.com/open-mmlab/mmengine/blob/main/mmengine/device/utils.py |
+| mmcv.utils.parrots_wrapper.IS_CUDA_AVAILABLE | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/parrots_wrapper.py |  |  |
+| mmcv.utils.parrots_wrapper.is_rocm_pytorch | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/parrots_wrapper.py | mmengine.utils.dl_utils.parrots_wrapper.is_rocm_pytorch | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/dl_utils/parrots_wrapper.py |
+| mmcv.utils.parrots_wrapper._get_cuda_home | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/parrots_wrapper.py | mmengine.utils.dl_utils.parrots_wrapper._get_cuda_home | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/dl_utils/parrots_wrapper.py |
+| mmcv.utils.parrots_wrapper.get_build_config | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/parrots_wrapper.py | mmengine.utils.dl_utils.parrots_wrapper.get_build_config | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/dl_utils/parrots_wrapper.py |
+| mmcv.utils.parrots_wrapper._get_conv | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/parrots_wrapper.py | mmengine.utils.dl_utils.parrots_wrapper._get_conv | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/dl_utils/parrots_wrapper.py |
+| mmcv.utils.parrots_wrapper._get_dataloader | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/parrots_wrapper.py | mmengine.utils.dl_utils.parrots_wrapper._get_dataloader | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/dl_utils/parrots_wrapper.py |
+| mmcv.utils.parrots_wrapper._get_extension | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/parrots_wrapper.py | mmengine.utils.dl_utils.parrots_wrapper._get_extension | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/dl_utils/parrots_wrapper.py |
+| mmcv.utils.parrots_wrapper._get_pool | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/parrots_wrapper.py | mmengine.utils.dl_utils.parrots_wrapper._get_pool | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/dl_utils/parrots_wrapper.py |
+| mmcv.utils.parrots_wrapper._get_norm | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/parrots_wrapper.py | mmengine.utils.dl_utils.parrots_wrapper._get_norm | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/dl_utils/parrots_wrapper.py |
+| mmcv.utils.parrots_wrapper.SyncBatchNorm | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/parrots_wrapper.py | mmengine.utils.dl_utils.parrots_wrapper.SyncBatchNorm | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/dl_utils/parrots_wrapper.py |
+| mmcv.utils.path.is_filepath | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/path.py | mmengine.utils.path.is_filepath | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/path.py |
+| mmcv.utils.path.fopen | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/path.py | mmengine.utils.path.fopen | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/path.py |
+| mmcv.utils.path.check_file_exist | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/path.py | mmengine.path.check_file_exist | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/path.py |
+| mmcv.utils.path.mkdir_or_exist | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/path.py | mmengine.utils.path.mkdir_or_exist | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/path.py |
+| mmcv.utils.path.symlink | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/path.py | mmengine.utils.path.symlink | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/path.py |
+| mmcv.utils.path.scandir | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/path.py | mmengine.utils.path.scandir | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/path.py |
+| mmcv.utils.path.find_vcs_root | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/path.py | mmengine.utils.path.find_vcs_root | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/path.py |
+| mmcv.utils.progressbar.ProgressBar | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/progressbar.py | mmengine.utils.progressbar.ProgressBar | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/progressbar.py |
+| mmcv.utils.progressbar.track_progress | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/progressbar.py | mmengine.utils.progressbar.track_progress | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/progressbar.py |
+| mmcv.utils.progressbar.init_pool | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/progressbar.py | mmengine.utils.progressbar.init_pool | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/progressbar.py |
+| mmcv.utils.progressbar.track_parallel_progress | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/progressbar.py | mmengine.utils.progressbar.track_parallel_progress | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/progressbar.py |
+| mmcv.utils.progressbar.track_iter_progress | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/progressbar.py | mmengine.utils.progressbar.track_iter_progress | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/progressbar.py |
+| mmcv.utils.registry.build_from_cfg | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/registry.py | mmengine.registry.build_functions.build_from_cfg | https://github.com/open-mmlab/mmengine/blob/main/mmengine/registry/build_functions.py |
+| mmcv.utils.registry.Registry | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/registry.py | mmengine.registry.registry.Registry | https://github.com/open-mmlab/mmengine/blob/main/mmengine/registry/registry.py |
+| mmcv.utils.seed.worker_init_fn | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/seed.py | mmengine.dataset.utils.worker_init_fn | https://github.com/open-mmlab/mmengine/blob/main/mmengine/dataset/utils.py |
+| mmcv.utils.testing.check_python_script | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/testing.py | mmengine.testing.compare.check_python_script | https://github.com/open-mmlab/mmengine/blob/main/mmengine/testing/compare.py |
+| mmcv.utils.testing._any | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/testing.py | mmengine.testing.compare._any | https://github.com/open-mmlab/mmengine/blob/main/mmengine/testing/compare.py |
+| mmcv.utils.testing.assert_dict_contains_subset | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/testing.py | mmengine.testing.compare.assert_dict_contains_subset | https://github.com/open-mmlab/mmengine/blob/main/mmengine/testing/compare.py |
+| mmcv.utils.testing.assert_attrs_equal | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/testing.py | mmengine.testing.compare.assert_attrs_equal | https://github.com/open-mmlab/mmengine/blob/main/mmengine/testing/compare.py |
+| mmcv.utils.testing.assert_dict_has_keys | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/testing.py | mmengine.testing.compare.assert_dict_has_keys | https://github.com/open-mmlab/mmengine/blob/main/mmengine/testing/compare.py |
+| mmcv.utils.testing.assert_keys_equal | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/testing.py | mmengine.testing.compare.assert_keys_equal | https://github.com/open-mmlab/mmengine/blob/main/mmengine/testing/compare.py |
+| mmcv.utils.testing.assert_is_norm_layer | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/testing.py | mmengine.testing.compare.assert_is_norm_layer | https://github.com/open-mmlab/mmengine/blob/main/mmengine/testing/compare.py |
+| mmcv.utils.testing.assert_params_all_zeros | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/testing.py | mmengine.testing.compare.assert_params_all_zeros | https://github.com/open-mmlab/mmengine/blob/main/mmengine/testing/compare.py |
+| mmcv.utils.timer.TimerError | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/timer.py | mmengine.utils.timer.TimerError | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/timer.py |
+| mmcv.utils.timer.Timer | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/timer.py | mmengine.utils.timer.Timer | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/timer.py |
+| mmcv.utils.timer._g_timers | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/timer.py | mmengine.utils.timer._g_timers | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/timer.py |
+| mmcv.utils.timer.check_time | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/timer.py | mmengine.utils.timer.check_time | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/timer.py |
+| mmcv.utils.torch_ops._torch_version_meshgrid_indexing | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/torch_ops.py | mmengine.utils.dl_utils.torch_ops._torch_version_meshgrid_indexing | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/dl_utils/torch_ops.py |
+| mmcv.utils.torch_ops.torch_meshgrid | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/torch_ops.py | mmengine.utils.dl_utils.torch_ops.torch_meshgrid | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/dl_utils/torch_ops.py |
+| mmcv.utils.trace.is_jit_tracing | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/trace.py | mmengine.utils.dl_utils.trace.is_jit_tracing | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/dl_utils/trace.py |
+| mmcv.utils.version_utils.digit_version | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/version_utils.py | mmengine.utils.version_utils.digit_version | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/version_utils.py |
+| mmcv.utils.version_utils._minimal_ext_cmd | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/version_utils.py | mmengine.utils.version_utils._minimal_ext_cmd | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/version_utils.py |
+| mmcv.utils.version_utils.get_git_hash | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/utils/version_utils.py | mmengine.utils.version_utils.get_git_hash | https://github.com/open-mmlab/mmengine/blob/main/mmengine/utils/version_utils.py |
+
+## `mmcv.cnn`
+
+| MMCV | MMCV URL | MMEngine | MMEngine URL |
+| --- | --- | --- | --- |
+| mmcv.cnn.utils.sync_bn._BatchNormXd | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/cnn/utils/sync_bn.py | mmengine.model.utils._BatchNormXd | https://github.com/open-mmlab/mmengine/blob/main/mmengine/model/utils.py |
+| mmcv.cnn.utils.sync_bn.revert_sync_batchnorm | https://github.com/open-mmlab/mmcv/blob/v1.7.1/mmcv/cnn/utils/sync_bn.py | mmengine.model.utils.revert_sync_batchnorm | https://github.com/open-mmlab/mmengine/blob/main/mmengine/model/utils.py |
+
+## `mmcv.model_zoo`
+
+| MMCV | MMCV URL | MMEngine | MMEngine URL |
+| --- | --- | --- | --- |
+| mmcv.model_zoo.deprecated.json | https://github.com/open-mmlab/mmcv/tree/v1.7.1/mmcv/model_zoo/deprecated.json | mmengine.hub.deprecated.json | https://github.com/open-mmlab/mmengine/tree/main/mmengine/hub/deprecated.json |
+| mmcv.model_zoo.mmcls.json | https://github.com/open-mmlab/mmcv/tree/v1.7.1/mmcv/model_zoo/mmcls.json | mmengine.hub.mmcls.json | https://github.com/open-mmlab/mmengine/tree/main/mmengine/hub/mmcls.json |
+| mmcv.model_zoo.open_mmlab.json | https://github.com/open-mmlab/mmcv/tree/v1.7.1/mmcv/model_zoo/open_mmlab.json | mmengine.hub.openmmlab.json | https://github.com/open-mmlab/mmengine/tree/main/mmengine/hub/openmmlab.json |
+| mmcv.model_zoo.torchvision_0.12.json | https://github.com/open-mmlab/mmcv/tree/v1.7.1/mmcv/model_zoo/torchvision_0.12.json | mmengine.hub.torchvision_0.12.json  | https://github.com/open-mmlab/mmengine/tree/main/mmengine/hub/torchvision_0.12.json |
