@@ -99,8 +99,20 @@ void softmax_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
   c10::SmallVector<int64_t, 2> offsets = {0, 0};
   c10::SmallVector<int64_t, 2> sizes = {n_batch, 1};
   at::IntArrayRef offset = at::IntArrayRef(offsets);
-  at::IntArrayRef size = at::IntArrayRef(sizes);
-  at_npu::native::custom_ops::npu_slice_out(op_output, offset, size, output);
+  at::IntArrayRef size_array = at::IntArrayRef(sizes);
+  c10::SmallVector<int64_t, N> output_size;
+  for (uint64_t i = 0; i < size_array.size(); i++) {
+    output_size.emplace_back(size_array[i]);
+  }
+  at::Tensor result = at::empty(output_size, op_output.options());
+  c10::SmallVector<int64_t, N> offsetVec = array_to_small_vector(offset);
+  c10::SmallVector<int64_t, N> sizeVec = array_to_small_vector(size_array);
+  cmd.Name("Slice")
+      .Input(op_output)
+      .Input(offsetVec)
+      .Input(sizeVec)
+      .Output(output)
+      .Run();
 }
 
 void softmax_focal_loss_forward_impl(Tensor input, Tensor target, Tensor weight,
