@@ -75,6 +75,31 @@ def test_conv_module():
     output = conv(x)
     assert output.shape == (1, 8, 255, 255)
 
+    # conv + norm with efficient mode
+    efficient_conv = ConvModule(
+        3, 8, 2, norm_cfg=dict(type='BN'), efficient_conv_bn_eval=True).eval()
+    plain_conv = ConvModule(
+        3, 8, 2, norm_cfg=dict(type='BN'),
+        efficient_conv_bn_eval=False).eval()
+    for efficient_param, plain_param in zip(
+            efficient_conv.state_dict().values(),
+            plain_conv.state_dict().values()):
+        plain_param.copy_(efficient_param)
+
+    efficient_mode_output = efficient_conv(x)
+    plain_mode_output = plain_conv(x)
+    assert torch.allclose(efficient_mode_output, plain_mode_output, atol=1e-5)
+
+    # `conv` attribute can be dynamically modified in efficient mode
+    efficient_conv = ConvModule(
+        3, 8, 2, norm_cfg=dict(type='BN'), efficient_conv_bn_eval=True).eval()
+    new_conv = nn.Conv2d(3, 8, 2).eval()
+    efficient_conv.conv = new_conv
+    efficient_mode_output = efficient_conv(x)
+    plain_mode_output = efficient_conv.activate(
+        efficient_conv.norm(new_conv(x)))
+    assert torch.allclose(efficient_mode_output, plain_mode_output, atol=1e-5)
+
     # conv + act
     conv = ConvModule(3, 8, 2)
     assert conv.with_activation

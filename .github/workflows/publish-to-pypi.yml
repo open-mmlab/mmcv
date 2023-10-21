@@ -7,8 +7,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-n-publish:
-    runs-on: ubuntu-18.04
+  build-n-publish_without_ops:
+    runs-on: ubuntu-22.04
     if: startsWith(github.event.ref, 'refs/tags')
     steps:
       - uses: actions/checkout@v2
@@ -17,7 +17,7 @@ jobs:
         with:
           python-version: 3.7
       - name: Upgrade Setuptools
-        run: pip install setuptools --upgrade
+        run: pip install setuptools wheel --upgrade
       - name: Build MMCV
         run: |
           sed -i "s/os.getenv('MMCV_WITH_OPS', '1')/os.getenv('MMCV_WITH_OPS', '0')/g" setup.py
@@ -28,7 +28,7 @@ jobs:
           twine upload dist/* -u __token__ -p ${{ secrets.pypi_password }}
 
   build-n-publish_with_ops:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     if: startsWith(github.event.ref, 'refs/tags')
     steps:
       - uses: actions/checkout@v2

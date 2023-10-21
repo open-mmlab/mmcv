@@ -158,7 +158,7 @@ jobs:
           name: Install unit tests dependencies
           command: pip install -r requirements/test.txt
       - run:
-          name: Run unittests
+          name: Run unit tests
           command: |
             coverage run --branch --source mmcv -m pytest tests/
             coverage xml
@@ -169,16 +169,22 @@ jobs:
         type: string
       cuda:
         type: enum
-        enum: ["10.1", "10.2", "11.1"]
+        enum: ["10.1", "10.2", "11.1", "11.7", "11.8"]
       cudnn:
         type: integer
         default: 7
     machine:
-      image: ubuntu-2004-cuda-11.4:202110-01
+      image: linux-cuda-11:default
       docker_layer_caching: true
-    resource_class: gpu.nvidia.small
+    resource_class: gpu.nvidia.small.multi
     steps:
       - checkout
+      - run:
+          name: Install nvidia-container-toolkit and Restart Docker
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y nvidia-container-toolkit
+            sudo systemctl restart docker
       - run:
           name: Build Docker image
           command: |
@@ -188,14 +194,18 @@ jobs:
           name: Install MMEngine from main branch
           command: docker exec mmcv pip install git+https://github.com/open-mmlab/mmengine.git@main
       - run:
+          name: Install ninja to speed the compilation
+          command: docker exec mmcv pip install ninja
+      - run:
           name: Build MMCV from source
           command: docker exec mmcv pip install -e . -v
       - run:
           name: Install unit tests dependencies
           command: docker exec mmcv pip install -r requirements/test.txt
       - run:
-          name: Run unittests
+          name: Run unit tests
           command: docker exec mmcv python -m pytest tests/
+
 workflows:
   pr_stage_lint:
     when: << pipeline.parameters.lint_only >>
@@ -205,7 +215,7 @@ workflows:
           filters:
             branches:
               ignore:
-                - 2.x
+                - main
   pr_stage_test:
     when:
       not:
@@ -216,43 +226,50 @@ workflows:
           filters:
             branches:
               ignore:
-                - 2.x
+                - main
       - build_without_torch:
           name: build_without_torch
           requires:
             - lint
       - build_without_ops:
           name: build_without_ops
-          torch: 1.6.0
-          torchvision: 0.7.0
+          torch: 1.8.1
+          torchvision: 0.9.1
           requires:
             - build_without_torch
       - build_cpu:
           name: minimum_version_cpu
-          torch: 1.6.0
-          torchvision: 0.7.0
+          torch: 1.8.1
+          torchvision: 0.9.1
           python: 3.7.4
           requires:
             - build_without_ops
       - build_cpu:
           name: maximum_version_cpu
-          torch: 1.13.0
-          torchvision: 0.14.0
+          torch: 2.1.0
+          torchvision: 0.16.0
           python: 3.9.0
           requires:
             - minimum_version_cpu
-      - hold:
+      - hold_cuda_test:
           type: approval
-          requires:
-            - maximum_version_cpu
       - build_cuda:
-          name: mainstream_version_gpu
+          name: minimum_version_gpu
           torch: 1.8.1
           # Use double quotation mark to explicitly specify its type
           # as string instead of number
           cuda: "10.2"
           requires:
-            - hold
+            - hold_cuda_test
+      - build_cuda:
+          name: maximum_version_gpu
+          torch: 2.1.0
+          # Use double quotation mark to explicitly specify its type
+          # as string instead of number
+          cuda: "11.8"
+          cudnn: 8
+          requires:
+            - hold_cuda_test
   merge_stage_test:
     when:
       not:
@@ -260,11 +277,22 @@ workflows:
     jobs:
       - build_cuda:
           name: minimum_version_gpu
-          torch: 1.6.0
+          torch: 1.8.1
           # Use double quotation mark to explicitly specify its type
           # as string instead of number
-          cuda: "10.1"
+          cuda: "10.2"
           filters:
             branches:
               only:
-                - 2.x
+                - main
+      - build_cuda:
+          name: maximum_version_gpu
+          torch: 2.1.0
+          # Use double quotation mark to explicitly specify its type
+          # as string instead of number
+          cuda: "11.8"
+          cudnn: 8
+          filters:
+            branches:
+              only:
+                - main

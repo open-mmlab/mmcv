@@ -4,6 +4,8 @@ from unittest.mock import patch
 import pytest
 import torch
 import torch.nn as nn
+from mmengine.utils import digit_version
+from mmengine.utils.dl_utils import TORCH_VERSION
 
 from mmcv.cnn.bricks import (Conv2d, Conv3d, ConvTranspose2d, ConvTranspose3d,
                              Linear, MaxPool2d, MaxPool3d)
@@ -374,3 +376,21 @@ def test_nn_op_forward_called():
         wrapper = Linear(3, 3)
         wrapper(x_normal)
         nn_module_forward.assert_called_with(x_normal)
+
+
+@pytest.mark.skipif(
+    digit_version(TORCH_VERSION) < digit_version('1.10'),
+    reason='MaxPool2d and MaxPool3d will fail fx for torch<=1.9')
+def test_fx_compatibility():
+    from torch import fx
+
+    # ensure the fx trace can pass the network
+    for Net in (MaxPool2d, MaxPool3d):
+        net = Net(1)
+        gm_module = fx.symbolic_trace(net)  # noqa: F841
+    for Net in (Linear, ):
+        net = Net(1, 1)
+        gm_module = fx.symbolic_trace(net)  # noqa: F841
+    for Net in (Conv2d, ConvTranspose2d, Conv3d, ConvTranspose3d):
+        net = Net(1, 1, 1)
+        gm_module = fx.symbolic_trace(net)  # noqa: F841

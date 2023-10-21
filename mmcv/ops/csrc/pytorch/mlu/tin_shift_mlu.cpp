@@ -9,65 +9,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *************************************************************************/
-#include "pytorch_device_registry.hpp"
-#include "pytorch_mlu_helper.hpp"
-
-void KernelTinShiftForward(
-    cnrtDim3_t k_dim, cnrtFunctionType_t k_type, cnrtQueue_t queue,
-    const void *input, const void *shifts, void *output, const int batch_size,
-    const int time_size, const int channel_size, const int hw_size,
-    const int group_size, const int group_channel,
-    const cnrtDataType_t data_dtype, const int channel_per_core,
-    const int max_number_hw_per_core, const int max_length_per_core);
-
-void KernelTinShiftBackward(
-    cnrtDim3_t k_dim, cnrtFunctionType_t k_type, cnrtQueue_t queue,
-    const void *grad_output, const void *shifts, void *grad_input,
-    const int batch_size, const int time_size, const int channel_size,
-    const int hw_size, const int group_size, const int group_channel,
-    const cnrtDataType_t data_dtype, const int channel_per_core,
-    const int max_number_hw_per_core, const int max_length_per_core);
-
-// policy function
-static void policyFunc(const Tensor &input, cnrtDim3_t *k_dim,
-                       cnrtFunctionType_t *k_type, int *channel_per_core,
-                       int *max_number_hw_per_core, int *max_length_per_core) {
-  const int32_t cluster_limit = torch_mlu::getDeviceAttr(cnrtAttrClusterCount);
-  const int32_t core_limit = torch_mlu::getDeviceAttr(cnrtAttrMcorePerCluster);
-  auto nram_size = torch_mlu::getDeviceAttr(cnrtAttrNramSizePerMcore);
-  const int core_num = core_limit * cluster_limit;
-  const int batch_size = input.size(0);
-  const int time_size = input.size(1);
-  const int channel_size = input.size(2);
-  const int hw_size = input.size(3);
-
-  const size_t size_per_channel = time_size * hw_size * input.itemsize();
-  *channel_per_core = nram_size / size_per_channel;
-  int task_dim = 0;
-  if (*channel_per_core == 0) {
-    const size_t size_per_hw = hw_size * input.itemsize();
-    *max_number_hw_per_core = nram_size / size_per_hw;
-    if (*max_number_hw_per_core <= 0) {
-      *max_length_per_core = nram_size / input.itemsize();
-    }
-    int tmp_max_number_hw_per_core =
-        *max_number_hw_per_core > 0 ? *max_number_hw_per_core : 1;
-    const int loop_time =
-        (time_size / (tmp_max_number_hw_per_core)) +
-        ((time_size % (tmp_max_number_hw_per_core)) > 0 ? 1 : 0);
-    task_dim = batch_size * channel_size * loop_time < core_num
-                   ? batch_size * channel_size * loop_time
-                   : core_num;
-  } else {
-    task_dim = batch_size * channel_size < core_num ? batch_size * channel_size
-                                                    : core_num;
-  }
-
-  k_dim->x = core_limit;
-  k_dim->y = (task_dim / core_limit) > 0 ? (task_dim / core_limit) : 1;
-  k_dim->z = 1;
-  *k_type = CNRT_FUNC_TYPE_UNION1;
-}
+#include "mlu_common_helper.h"
 
 void TINShiftForwardMLUKernelLauncher(Tensor input, Tensor shift,
                                       Tensor output) {
@@ -89,40 +31,37 @@ void TINShiftForwardMLUKernelLauncher(Tensor input, Tensor shift,
   if (input.size(1) == 0) {
     return;
   }
-  cnrtDim3_t k_dim;
-  cnrtFunctionType_t k_type;
-  int channel_per_core = 0;
-  int max_number_hw_per_core = 0;
-  int max_length_per_core = 0;
-  policyFunc(input, &k_dim, &k_type, &channel_per_core, &max_number_hw_per_core,
-             &max_length_per_core);
 
-  const int batch_size = input.size(0);
-  const int time_size = input.size(1);
-  const int channel_size = input.size(2);
-  const int hw_size = input.size(3);
-  const int group_size = shift.size(1);
-  int group_channel = channel_size / group_size;
+  // set contiguous
+  auto input_contiguous = torch_mlu::cnnl::ops::cnnl_contiguous(
+      input, input.suggest_memory_format());
+  auto shift_contiguous = torch_mlu::cnnl::ops::cnnl_contiguous(
+      shift, shift.suggest_memory_format());
+  auto output_contiguous = torch_mlu::cnnl::ops::cnnl_contiguous(
+      output, output.suggest_memory_format());
 
   // get tensor impl
-  auto input_impl = torch_mlu::getMluTensorImpl(input);
-  auto shift_impl = torch_mlu::getMluTensorImpl(shift);
-  auto output_impl = torch_mlu::getMluTensorImpl(output);
-
-  // get compute queue
-  auto queue = torch_mlu::getCurQueue();
+  auto input_impl = torch_mlu::getMluTensorImpl(input_contiguous);
+  auto shift_impl = torch_mlu::getMluTensorImpl(shift_contiguous);
+  auto output_impl = torch_mlu::getMluTensorImpl(output_contiguous);
 
   // get the mlu ptr
   auto input_ptr = input_impl->cnnlMalloc();
   auto shift_ptr = shift_impl->cnnlMalloc();
   auto output_ptr = output_impl->cnnlMalloc();
 
-  cnrtDataType_t data_dtype = torch_mlu::toCnrtDtype(input.dtype());
+  // set tensor descriptor
+  MluOpTensorDescriptor input_desc, shift_desc, output_desc;
+  input_desc.set(input_contiguous);
+  shift_desc.set(shift_contiguous);
+  output_desc.set(output_contiguous);
 
-  KernelTinShiftForward(k_dim, k_type, queue, input_ptr, shift_ptr, output_ptr,
-                        batch_size, time_size, channel_size, hw_size,
-                        group_size, group_channel, data_dtype, channel_per_core,
-                        max_number_hw_per_core, max_length_per_core);
+  // get current handle
+  auto handle = mluOpGetCurrentHandle();
+
+  TORCH_MLUOP_CHECK(mluOpTinShiftForward(handle, input_desc.desc(), input_ptr,
+                                         shift_desc.desc(), shift_ptr,
+                                         output_desc.desc(), output_ptr));
 }
 
 void TINShiftBackwardMLUKernelLauncher(Tensor grad_output, Tensor shift,
@@ -148,41 +87,37 @@ void TINShiftBackwardMLUKernelLauncher(Tensor grad_output, Tensor shift,
   if (grad_output.size(1) == 0) {
     return;
   }
-  cnrtDim3_t k_dim;
-  cnrtFunctionType_t k_type;
-  int channel_per_core = 0;
-  int max_number_hw_per_core = 0;
-  int max_length_per_core = 0;
-  policyFunc(grad_output, &k_dim, &k_type, &channel_per_core,
-             &max_number_hw_per_core, &max_length_per_core);
 
-  const int batch_size = grad_output.size(0);
-  const int time_size = grad_output.size(1);
-  const int channel_size = grad_output.size(2);
-  const int hw_size = grad_output.size(3);
-  const int group_size = shift.size(1);
-  int group_channel = channel_size / group_size;
+  // set contiguous
+  auto grad_output_contiguous = torch_mlu::cnnl::ops::cnnl_contiguous(
+      grad_output, grad_output.suggest_memory_format());
+  auto shift_contiguous = torch_mlu::cnnl::ops::cnnl_contiguous(
+      shift, shift.suggest_memory_format());
+  auto grad_input_contiguous = torch_mlu::cnnl::ops::cnnl_contiguous(
+      grad_input, grad_input.suggest_memory_format());
 
   // get tensor impl
-  auto grad_output_impl = torch_mlu::getMluTensorImpl(grad_output);
-  auto shift_impl = torch_mlu::getMluTensorImpl(shift);
-  auto grad_input_impl = torch_mlu::getMluTensorImpl(grad_input);
-
-  // get compute queue
-  auto queue = torch_mlu::getCurQueue();
+  auto grad_output_impl = torch_mlu::getMluTensorImpl(grad_output_contiguous);
+  auto shift_impl = torch_mlu::getMluTensorImpl(shift_contiguous);
+  auto grad_input_impl = torch_mlu::getMluTensorImpl(grad_input_contiguous);
 
   // get the mlu ptr
   auto grad_output_ptr = grad_output_impl->cnnlMalloc();
   auto shift_ptr = shift_impl->cnnlMalloc();
   auto grad_input_ptr = grad_input_impl->cnnlMalloc();
 
-  cnrtDataType_t data_dtype = torch_mlu::toCnrtDtype(grad_output.dtype());
+  // set tensor descriptor
+  MluOpTensorDescriptor grad_output_desc, shift_desc, grad_input_desc;
+  grad_output_desc.set(grad_output_contiguous);
+  shift_desc.set(shift_contiguous);
+  grad_input_desc.set(grad_input_contiguous);
 
-  KernelTinShiftBackward(k_dim, k_type, queue, grad_output_ptr, shift_ptr,
-                         grad_input_ptr, batch_size, time_size, channel_size,
-                         hw_size, group_size, group_channel, data_dtype,
-                         channel_per_core, max_number_hw_per_core,
-                         max_length_per_core);
+  // get current handle
+  auto handle = mluOpGetCurrentHandle();
+
+  TORCH_MLUOP_CHECK(mluOpTinShiftBackward(
+      handle, grad_output_desc.desc(), grad_output_ptr, shift_desc.desc(),
+      shift_ptr, grad_input_desc.desc(), grad_input_ptr));
 }
 
 void tin_shift_forward_mlu(Tensor input, Tensor shift, Tensor output) {

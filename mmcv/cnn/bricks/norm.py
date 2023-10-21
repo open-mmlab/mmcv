@@ -98,14 +98,17 @@ def build_norm_layer(cfg: Dict,
 
     layer_type = cfg_.pop('type')
 
-    # Switch registry to the target scope. If `norm_layer` cannot be found
-    # in the registry, fallback to search `norm_layer` in the
-    # mmengine.MODELS.
-    with MODELS.switch_scope_and_registry(None) as registry:
-        norm_layer = registry.get(layer_type)
-    if norm_layer is None:
-        raise KeyError(f'Cannot find {norm_layer} in registry under scope '
-                       f'name {registry.scope}')
+    if inspect.isclass(layer_type):
+        norm_layer = layer_type
+    else:
+        # Switch registry to the target scope. If `norm_layer` cannot be found
+        # in the registry, fallback to search `norm_layer` in the
+        # mmengine.MODELS.
+        with MODELS.switch_scope_and_registry(None) as registry:
+            norm_layer = registry.get(layer_type)
+        if norm_layer is None:
+            raise KeyError(f'Cannot find {norm_layer} in registry under '
+                           f'scope name {registry.scope}')
     abbr = infer_abbr(norm_layer)
 
     assert isinstance(postfix, (int, str))
@@ -113,7 +116,7 @@ def build_norm_layer(cfg: Dict,
 
     requires_grad = cfg_.pop('requires_grad', True)
     cfg_.setdefault('eps', 1e-5)
-    if layer_type != 'GN':
+    if norm_layer is not nn.GroupNorm:
         layer = norm_layer(num_features, **cfg_)
         if layer_type == 'SyncBN' and hasattr(layer, '_specify_ddp_gpu_num'):
             layer._specify_ddp_gpu_num(1)

@@ -18,19 +18,16 @@ int hard_voxelize_forward_npu(const at::Tensor &points, at::Tensor &voxels,
                               const std::vector<float> coors_range,
                               const int max_points, const int max_voxels,
                               const int NDim = 3) {
-  at::Tensor voxel_num_tmp = OpPreparation::ApplyTensor(points, {1});
-  at::Tensor voxel_num = at_npu::native::NPUNativeFunctions::npu_dtype_cast(
-      voxel_num_tmp, at::kInt);
+  at::Tensor voxel_num_tmp = at::empty({1}, points.options());
+  at::Tensor voxel_num = voxel_num_tmp.to(at::kInt);
 
   at::Tensor voxel_size_cpu = at::from_blob(
       const_cast<float *>(voxel_size.data()), {3}, dtype(at::kFloat));
-  at::Tensor voxel_size_npu =
-      CalcuOpUtil::CopyTensorHostToDevice(voxel_size_cpu);
+  at::Tensor voxel_size_npu = voxel_size_cpu.to(points.device());
 
   at::Tensor coors_range_cpu = at::from_blob(
       const_cast<float *>(coors_range.data()), {6}, dtype(at::kFloat));
-  at::Tensor coors_range_npu =
-      CalcuOpUtil::CopyTensorHostToDevice(coors_range_cpu);
+  at::Tensor coors_range_npu = coors_range_cpu.to(points.device());
 
   int64_t max_points_ = (int64_t)max_points;
   int64_t max_voxels_ = (int64_t)max_voxels;

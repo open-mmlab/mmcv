@@ -734,7 +734,13 @@ torch::Tensor upfirdn2d_op(torch::Tensor x, torch::Tensor f, int upx, int upy,
 
   // Launch CUDA kernel.
   void *args[] = {&p};
+#ifdef MMCV_WITH_HIP
+  AT_CUDA_CHECK(hipLaunchKernel(spec.kernel, gridSize, blockSize, args, 0,
+                                at::cuda::getCurrentCUDAStream()));
+#else
   AT_CUDA_CHECK(cudaLaunchKernel(spec.kernel, gridSize, blockSize, args, 0,
                                  at::cuda::getCurrentCUDAStream()));
+#endif
+
   return y;
 }
