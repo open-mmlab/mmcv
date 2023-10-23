@@ -170,7 +170,7 @@ def test_three_interpolate_npu_dynamic_shape(dtype, device, shape):
 
     features = np.random.uniform(-10.0, 10.0,
                                  (bs, cs, ms)).astype(torch_type_trans(dtype))
-    idx = np.random.uniform(0, ms, size=(bs, ns, 3), dtype=np.int32)
+    idx = np.random.randint(0, ms, size=(bs, ns, 3), dtype=np.int32)
     weight = np.random.uniform(-10.0,
                                10.0 (bs, ns,
                                      3)).astype(torch_type_trans(dtype))
