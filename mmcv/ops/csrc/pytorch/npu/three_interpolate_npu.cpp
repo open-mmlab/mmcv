@@ -10,7 +10,7 @@ void three_interpolate_forward_npu(int b, int c, int m, int n,
   TORCH_CHECK((originDtype == at::kFloat || originDtype == at::kHalf),
               "three_interpolate_forward ascend only support fp32 and fp16.");
 
-  auto point_c_trans = pointsCast.transpose(1, 2);
+  auto point_c_trans = points.transpose(1, 2);
 
   OpCommand cmd;
   cmd.Name("ThreeInterpolate")
