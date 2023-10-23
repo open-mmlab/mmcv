@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import numpy as np
 import pytest
 import torch
-import numpy as np
 
 from mmcv.ops import three_interpolate
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
