@@ -7,18 +7,8 @@ void three_interpolate_forward_npu(int b, int c, int m, int n,
                                    const Tensor points, const Tensor idx,
                                    const Tensor weight, Tensor out) {
   auto originDtype = points.scalar_type();
-  at::Tensor pointsCast = points;
-  at::Tensor weightCast = weight;
-  at::Tensor outCast = out;
-
   TORCH_CHECK((originDtype == at::kFloat || originDtype == at::kHalf),
               "three_interpolate_forward ascend only support fp32 and fp16.");
-
-  if (originDtype == at::ScalarType::Half) {
-    pointsCast = points.to(at::kFloat);
-    weightCast = weight.to(at::kFloat);
-    outCast = out.to(at::kFloat);
-  }
 
   auto point_c_trans = pointsCast.transpose(1, 2);
 
@@ -26,11 +16,11 @@ void three_interpolate_forward_npu(int b, int c, int m, int n,
   cmd.Name("ThreeInterpolate")
       .Input(point_c_trans)
       .Input(idx)
-      .Input(weightCast)
-      .Output(outCast)
+      .Input(weight)
+      .Output(out)
       .Run();
 
-  auto output = outCast.view({b, n, c}).transpose(1, 2);
+  auto output = out.view({b, n, c}).transpose(1, 2);
   auto res = NpuUtils::format_contiguous(output);
   out.copy_(res);
 }
@@ -39,25 +29,15 @@ void three_interpolate_backward_npu(int b, int c, int n, int m,
                                     const Tensor grad_out, const Tensor idx,
                                     const Tensor weight, Tensor grad_points) {
   auto originDtype = grad_out.scalar_type();
-  at::Tensor gradOutCast = grad_out;
-  at::Tensor weightCast = weight;
-  at::Tensor gradPointsCast = grad_points;
-
   TORCH_CHECK((originDtype == at::kFloat || originDtype == at::kHalf),
               "three_interpolate_backward ascend only support fp32 and fp16.");
 
-  if (originDtype == at::ScalarType::Half) {
-    gradOutCast = grad_out.to(at::kFloat);
-    weightCast = weight.to(at::kFloat);
-    gradPointsCast = grad_points.to(at::kFloat);
-  }
-
   OpCommand cmd;
   cmd.Name("ThreeInterpolateBackward")
-      .Input(gradOutCast)
+      .Input(grad_out)
       .Input(idx)
-      .Input(weightCast)
-      .Output(gradPointsCast)
+      .Input(weight)
+      .Output(grad_points)
       .Attr("m", m)
       .Run();
 }

@@ -103,11 +103,7 @@ def three_interpolate_forward_gloden(features, idx, weight):
     ns = idx.shape[1]
 
     dtype = features.dtype
-    if dtype == np.float16:
-        features = features.astype(np.float32)
-        weight = weight.astype(np.float32)
-
-    output = np.zeros((bs, cs, ns), dtype=np.float)
+    output = np.zeros((bs, cs, ns), dtype=dtype)
     for b in range(bs):
         for c in range(cs):
             for n in range(ns):
@@ -123,11 +119,7 @@ def three_interpolate_backward_gloden(grad_output, idx, weight, features):
     ms = features.shape[2]
 
     dtype = features.dtype
-    if dtype == np.float16:
-        features = features.astype(np.float32)
-        weight = weight.astype(np.float32)
-
-    grad_point = np.zeros((bs, cs, ms), dtype=np.float)
+    grad_point = np.zeros((bs, cs, ms), dtype=dtype)
     for b in range(bs):
         for c in range(cs):
             for n in range(ns):
