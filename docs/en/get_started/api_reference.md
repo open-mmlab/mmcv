@@ -1,6 +1,6 @@
 # API reference table
 
-Due to the removal of the `mmcv.fileio`, `mmcv.runner`, `mmcv.parallel`, `mmcv.engine`, `mmcv.device` modules, and all classes and most of the functions in the `mmcv.utils` module during the upgrade from MMCV v1.x to MMCV v2.x, which were removed at PR [#2179](https://github.com/open-mmlab/mmcv/pull/2179)，PR [#2216](https://github.com/open-mmlab/mmcv/pull/2216)，PR [#2217](https://github.com/open-mmlab/mmcv/pull/2217)。Therefore, we provide the following api reference table to make it easier to quickly find the migrated interfaces.
+Due to the removal of the `mmcv.fileio`, `mmcv.runner`, `mmcv.parallel`, `mmcv.engine`, `mmcv.device` modules, and all classes and most of the functions in the `mmcv.utils` module during the upgrade from MMCV v1.x to MMCV v2.x, which were removed at PR [#2179](https://github.com/open-mmlab/mmcv/pull/2179), PR [#2216](https://github.com/open-mmlab/mmcv/pull/2216), PR [#2217](https://github.com/open-mmlab/mmcv/pull/2217). Therefore, we provide the following API reference table to make it easier to quickly find the migrated interfaces.
 
 ## Related issues, PRs and discussions
 
