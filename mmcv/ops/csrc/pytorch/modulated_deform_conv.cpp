@@ -5,9 +5,13 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+#include <torch/csrc/utils/pybind.h>
 
 #include "csrc_dipu/diopirt/diopirt_impl.h"
+#include "csrc_dipu/runtime/device/deviceapis.h"
+#include "csrc_dipu/utils/helpfunc.hpp"
 
+using dipu::VENDOR_TYPE;
 using dipu::diopi_helper::toDiopiScalar;
 using dipu::diopi_helper::toDiopiTensorHandle;
 #endif
@@ -273,11 +277,20 @@ void modulated_deform_conv_forward_diopi(
   auto output_p = toDiopiTensorHandle(output);
   auto columns_p = toDiopiTensorHandle(columns);
   if (reinterpret_cast<void*>(diopiModulatedDeformConvMmcv) != nullptr) {
-    auto ret = diopiModulatedDeformConvMmcv(
-        ch, output_p, columns_p, ones_p, input_p, weight_p, bias_p, offset_p,
-        mask_p, kernel_h, kernel_w, stride_h, stride_w, pad_h, pad_w,
-        dilation_h, dilation_w, group, deformable_group, with_bias);
-    if (ret == diopiSuccess) return;
+    if (strcmp(dipu::VendorTypeToStr(VENDOR_TYPE), "NPU") == 0) {
+      pybind11::gil_scoped_release no_gil;
+      auto ret = diopiModulatedDeformConvMmcv(
+          ch, output_p, columns_p, ones_p, input_p, weight_p, bias_p, offset_p,
+          mask_p, kernel_h, kernel_w, stride_h, stride_w, pad_h, pad_w,
+          dilation_h, dilation_w, group, deformable_group, with_bias);
+      if (ret == diopiSuccess) return;
+    } else {
+      auto ret = diopiModulatedDeformConvMmcv(
+          ch, output_p, columns_p, ones_p, input_p, weight_p, bias_p, offset_p,
+          mask_p, kernel_h, kernel_w, stride_h, stride_w, pad_h, pad_w,
+          dilation_h, dilation_w, group, deformable_group, with_bias);
+      if (ret == diopiSuccess) return;
+    }
   }
   LOG(WARNING) << "Fallback to cpu: mmcv ext op modulated_deform_conv_forward";
   auto input_cpu = input.cpu();
@@ -331,12 +344,24 @@ void modulated_deform_conv_backward_diopi(
 
   if (reinterpret_cast<void*>(diopiModulatedDeformConvBackwardMmcv) !=
       nullptr) {
-    auto ret = diopiModulatedDeformConvBackwardMmcv(
-        ch, grad_input_p, grad_weight_p, grad_bias_p, grad_offset_p,
-        grad_mask_p, input_p, weight_p, bias_p, ones_p, offset_p, mask_p,
-        columns_p, grad_output_p, kernel_h, kernel_w, stride_h, stride_w, pad_h,
-        pad_w, dilation_h, dilation_w, group, deformable_group, with_bias);
-    if (ret == diopiSuccess) return;
+    if (strcmp(dipu::VendorTypeToStr(VENDOR_TYPE), "NPU") == 0) {
+      pybind11::gil_scoped_release no_gil;
+      auto ret = diopiModulatedDeformConvBackwardMmcv(
+          ch, grad_input_p, grad_weight_p, grad_bias_p, grad_offset_p,
+          grad_mask_p, input_p, weight_p, bias_p, ones_p, offset_p, mask_p,
+          columns_p, grad_output_p, kernel_h, kernel_w, stride_h, stride_w,
+          pad_h, pad_w, dilation_h, dilation_w, group, deformable_group,
+          with_bias);
+      if (ret == diopiSuccess) return;
+    } else {
+      auto ret = diopiModulatedDeformConvBackwardMmcv(
+          ch, grad_input_p, grad_weight_p, grad_bias_p, grad_offset_p,
+          grad_mask_p, input_p, weight_p, bias_p, ones_p, offset_p, mask_p,
+          columns_p, grad_output_p, kernel_h, kernel_w, stride_h, stride_w,
+          pad_h, pad_w, dilation_h, dilation_w, group, deformable_group,
+          with_bias);
+      if (ret == diopiSuccess) return;
+    }
   }
   LOG(WARNING) << "Fallback to cpu: mmcv ext op modulated_deform_conv_forward";
   auto input_cpu = input.cpu();

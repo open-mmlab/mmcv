@@ -5,9 +5,13 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+#include <torch/csrc/utils/pybind.h>
 
 #include "csrc_dipu/diopirt/diopirt_impl.h"
+#include "csrc_dipu/runtime/device/deviceapis.h"
+#include "csrc_dipu/utils/helpfunc.hpp"
 
+using dipu::VENDOR_TYPE;
 using dipu::diopi_helper::toDiopiScalar;
 using dipu::diopi_helper::toDiopiTensorHandle;
 #endif
@@ -57,9 +61,16 @@ void sigmoid_focal_loss_forward_diopi(Tensor input, Tensor target,
   auto weight_p = toDiopiTensorHandle(weight);
   auto output_p = toDiopiTensorHandle(output);
   if (reinterpret_cast<void *>(diopiSigmoidFocalLossMmcv) != nullptr) {
-    auto ret = diopiSigmoidFocalLossMmcv(ch, output_p, input_p, target_p,
-                                         weight_p, gamma, alpha);
-    if (ret == diopiSuccess) return;
+    if (strcmp(dipu::VendorTypeToStr(VENDOR_TYPE), "NPU") == 0) {
+      pybind11::gil_scoped_release no_gil;
+      auto ret = diopiSigmoidFocalLossMmcv(ch, output_p, input_p, target_p,
+                                           weight_p, gamma, alpha);
+      if (ret == diopiSuccess) return;
+    } else {
+      auto ret = diopiSigmoidFocalLossMmcv(ch, output_p, input_p, target_p,
+                                           weight_p, gamma, alpha);
+      if (ret == diopiSuccess) return;
+    }
   }
   LOG(WARNING)
       << "Fallback to cpu: mmcv ext op sigmoid_focal_loss_forward_impl";
@@ -90,9 +101,16 @@ void sigmoid_focal_loss_backward_diopi(Tensor input, Tensor target,
   auto weight_p = toDiopiTensorHandle(weight);
   auto grad_input_p = toDiopiTensorHandle(grad_input);
   if (reinterpret_cast<void *>(diopiSigmoidFocalLossBackwardMmcv) != nullptr) {
-    auto ret = diopiSigmoidFocalLossBackwardMmcv(
-        ch, grad_input_p, input_p, target_p, weight_p, gamma, alpha);
-    if (ret == diopiSuccess) return;
+    if (strcmp(dipu::VendorTypeToStr(VENDOR_TYPE), "NPU") == 0) {
+      pybind11::gil_scoped_release no_gil;
+      auto ret = diopiSigmoidFocalLossBackwardMmcv(
+          ch, grad_input_p, input_p, target_p, weight_p, gamma, alpha);
+      if (ret == diopiSuccess) return;
+    } else {
+      auto ret = diopiSigmoidFocalLossBackwardMmcv(
+          ch, grad_input_p, input_p, target_p, weight_p, gamma, alpha);
+      if (ret == diopiSuccess) return;
+    }
   }
   LOG(WARNING)
       << "Fallback to cpu: mmcv ext op sigmoid_focal_loss_forward_impl";

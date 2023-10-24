@@ -249,10 +249,9 @@ def get_extensions():
             include_dirs.append(diopi_path + '/include')
             include_dirs.append(dipu_path + '/dist/include')
             include_dirs.append(vendor_include_dirs)
+            include_dirs.append(pytorch_dir + 'torch/include')
             if nccl_include_dirs:
                 include_dirs.append(nccl_include_dirs)
-            if pytorch_dir:
-                include_dirs.append(pytorch_dir + 'torch/include')
             library_dirs += [dipu_root]
             libraries += ['torch_dipu']
         elif is_rocm_pytorch or torch.cuda.is_available() or os.getenv(
