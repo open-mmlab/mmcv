@@ -32,14 +32,7 @@ void three_interpolate_backward_npu(int b, int c, int n, int m,
   TORCH_CHECK((originDtype == at::kFloat || originDtype == at::kHalf),
               "three_interpolate_backward ascend only support fp32 and fp16.");
 
-  OpCommand cmd;
-  cmd.Name("ThreeInterpolateBackward")
-      .Input(grad_out)
-      .Input(idx)
-      .Input(weight)
-      .Output(grad_points)
-      .Attr("m", m)
-      .Run();
+  EXEC_NPU_CMD(aclnnThreeInterpolateBackward, &grad_out, &idx, &weight, &grad_points, m);
 }
 
 void three_interpolate_forward_impl(int b, int c, int m, int n,
