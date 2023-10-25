@@ -9,7 +9,7 @@
 
   只有模块所在的文件被导入时，注册机制才会被触发，所以您需要在某处导入该文件，更多详情请查看 [KeyError: "MaskRCNN: 'RefineRoIHead is not in the models registry'"](https://github.com/open-mmlab/mmdetection/issues/5974)。
 
-- "No module named 'mmcv.ops'"; "No module named 'mmcv.\_ext'"
+- "No module named 'mmcv.ops'"; "No module named 'mmcv.\_ext'"; "ImportError: DLL load failed while importing \_ext"
 
   1. 使用 `pip uninstall mmcv` 卸载您环境中的 mmcv
   2. 参考 [installation instruction](https://mmcv.readthedocs.io/en/latest/get_started/installation.html) 或者 [Build MMCV from source](https://mmcv.readthedocs.io/en/latest/get_started/build.html) 安装 mmcv-full
@@ -89,3 +89,8 @@
 - "RuntimeError: Trying to backward through the graph a second time"
 
   不能同时设置 `GradientCumulativeOptimizerHook` 和 `OptimizerHook`，这会导致 `loss.backward()` 被调用两次，于是程序抛出 `RuntimeError`。我们只需设置其中的一个。更多细节见 [Trying to backward through the graph a second time](https://github.com/open-mmlab/mmcv/issues/1379)。
+
+- "RuntimeError: xxx: implementation for device cuda:0 not found."
+
+  这个错误是因为mmcv可能没有安装cuda-op支持。您可以卸载mmcv并使用以下命令进行安装`pip install mmcv==2.1.0 -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.1/index.html`。
+  

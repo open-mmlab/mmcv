@@ -10,7 +10,7 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
   The registry mechanism will be triggered only when the file of the module is imported.
   So you need to import that file somewhere. More details can be found at [KeyError: "MaskRCNN: 'RefineRoIHead is not in the models registry'"](https://github.com/open-mmlab/mmdetection/issues/5974).
 
-- "No module named 'mmcv.ops'"; "No module named 'mmcv.\_ext'"
+- "No module named 'mmcv.ops'"; "No module named 'mmcv.\_ext'"; "ImportError: DLL load failed while importing \_ext"
 
   1. Uninstall existing mmcv in the environment using `pip uninstall mmcv`
   2. Install mmcv-full following the [installation instruction](https://mmcv.readthedocs.io/en/latest/get_started/installation.html) or [Build MMCV from source](https://mmcv.readthedocs.io/en/latest/get_started/build.html)
@@ -91,3 +91,8 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
 - "RuntimeError: Trying to backward through the graph a second time"
 
   `GradientCumulativeOptimizerHook` and `OptimizerHook` are both set which causes the `loss.backward()` to be called twice so `RuntimeError` was raised. We can only use one of these. More datails at [Trying to backward through the graph a second time](https://github.com/open-mmlab/mmcv/issues/1379).
+
+- "RuntimeError: xxx: implementation for device cuda:0 not found."
+
+  This error indicates that maybe mmcv was not installed with cuda op support. You can uninstall and install with `pip install mmcv==2.1.0 -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.1/index.html`.
+  

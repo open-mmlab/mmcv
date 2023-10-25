@@ -10,7 +10,14 @@ import torch
 if torch.__version__ != 'parrots':
 
     def load_ext(name, funcs):
-        ext = importlib.import_module('mmcv.' + name)
+        try:
+            ext = importlib.import_module('mmcv.' + name)
+        except ImportError:
+            print("Check whether the CUDA/GCC runtimes are the same as those used for compiling mmcv")
+            print("For more information, see https://github.com/open-mmlab/mmcv/blob/main/docs/en/faq.md")
+        except ModuleNotFoundError:
+            print("try re-installing mmcv with specific version")
+            print("For more information, see https://github.com/open-mmlab/mmcv/blob/main/docs/en/faq.md")
         for fun in funcs:
             assert hasattr(ext, fun), f'{fun} miss in module {name}'
         return ext
