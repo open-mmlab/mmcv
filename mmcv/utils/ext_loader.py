@@ -10,47 +10,60 @@ import torch
 if torch.__version__ != 'parrots':
 
     class ext_ImportError(Exception):
+
         def __init__(self, arg):
             print(arg)
-            print("mmcv is installed incorrectly.")
-            print("1. Uninstall existing mmcv in the environment using `pip uninstall mmcv`")
-            print("2. Install mmcv-full following the https://mmcv.readthedocs.io/en/latest/get_started/installation.html or https://mmcv.readthedocs.io/en/latest/get_started/build.html")
-            print("For more information, see https://github.com/open-mmlab/mmcv/blob/main/docs/en/faq.md")
-    
+            print('mmcv is installed incorrectly.')
+            print('1. Uninstall existing mmcv')
+            print('2. Install mmcv-full')
+            print(
+                'For more information, see',
+                'https://github.com/open-mmlab/mmcv/blob/main/docs/en/faq.md')
+
     class undefine_symbol_Error(Exception):
+
         def __init__(self, arg):
             print(arg)
-            print("If those symbols are CUDA/C++ symbols (e.g., libcudart.so or GLIBCXX), check whether the CUDA/GCC runtimes are the same as those used for compiling mmcv")
-            print("If those symbols are Pytorch symbols (e.g., symbols containing caffe, aten, and TH), check whether the Pytorch version is the same as that used for compiling mmcv")
-            print("For more information, see https://github.com/open-mmlab/mmcv/blob/main/docs/en/faq.md")
+            print('For CUDA/C++ symbols, ',
+                  'check whether the CUDA/GCC runtimes are the same',
+                  'as those used for compiling mmcv')
+            print('For Pytorch symbols, ',
+                  'check whether the Pytorch version is the same',
+                  'as that used for compiling mmcv')
+            print(
+                'For more information, see',
+                'https://github.com/open-mmlab/mmcv/blob/main/docs/en/faq.md')
 
     class ext_not_found_Error(Exception):
+
         def __init__(self, arg):
             print(arg)
-            print("mmcv is installed incorrectly.")
-            print("1. Uninstall existing mmcv in the environment using `pip uninstall mmcv`")
-            print("2. Install mmcv-full following the https://mmcv.readthedocs.io/en/latest/get_started/installation.html or https://mmcv.readthedocs.io/en/latest/get_started/build.html")
-            print("For more information, see https://github.com/open-mmlab/mmcv/blob/main/docs/en/faq.md")
+            print('mmcv is installed incorrectly.')
+            print('1. Uninstall existing mmcv')
+            print('2. Install mmcv-full')
+            print(
+                'For more information, see',
+                'https://github.com/open-mmlab/mmcv/blob/main/docs/en/faq.md')
 
     def load_ext(name, funcs):
         import re
         try:
             ext = importlib.import_module('mmcv.' + name)
-        except Exception, e:
+        except Exception as e:
             exception_inf = str(e)
 
-            pattern = "DLL load failed while importing _ext"     
+            pattern = 'DLL load failed while importing _ext'
             if re.search(pattern, exception_inf, re.S):
                 raise ext_ImportError(exception_inf)
-            
-            pattern = "undefined symbol"
+
+            pattern = 'undefined symbol'
             if re.search(pattern, exception_inf, re.S):
                 raise undefine_symbol_Error(exception_inf)
 
             pattern = "No module named 'mmcv._ext'"
             if re.search(pattern, exception_inf, re.S):
                 raise ext_not_found_Error(exception_inf)
-        
+
         for fun in funcs:
             assert hasattr(ext, fun), f'{fun} miss in module {name}'
         return ext
