@@ -119,7 +119,7 @@ auto Dispatch(const R& registry, const char* name, Args&&... args) {
               " vs ", GetDeviceStr(device).c_str(), "\n")
   auto f_ptr = registry.Find(device.type());
   TORCH_CHECK(f_ptr != nullptr, name, ": implementation for device ",
-              GetDeviceStr(device).c_str(), " not found.\n", "For more information, see https://github.com/open-mmlab/mmcv/blob/main/docs/en/faq.md \n")
+              GetDeviceStr(device).c_str(), " not found.\n", "mmcv was not installed with cuda op support.\n", "For more information, see https://github.com/open-mmlab/mmcv/blob/main/docs/en/faq.md \n")
   return f_ptr(std::forward<Args>(args)...);
 }
 
