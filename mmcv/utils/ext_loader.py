@@ -8,9 +8,76 @@ from collections import namedtuple
 import torch
 
 if torch.__version__ != 'parrots':
+    """Three subclasses of ImportError are defined in order to help users solve
+    the following errors.
+
+    1. DLL load failed while importing _ext
+    https://github.com/open-mmlab/mmcv/issues/2937
+
+    2. undefined symbol
+    https://github.com/open-mmlab/mmcv/issues/2904
+
+    3. No module named 'mmcv._ext'
+    https://github.com/open-mmlab/mmcv/issues/2929
+    """
+
+    class ExtImportError(ImportError):
+
+        def __init__(self, arg):
+            print(arg)
+            print(
+                'mmcv is installed incorrectly.',
+                '1. Uninstall existing mmcv',
+                '2. Install mmcv-full',
+                'For more information, see',
+                'https://github.com/open-mmlab/mmcv/blob/main/docs/en/faq.md',
+                sep='\n')
+
+    class UndefineSymbolError(ImportError):
+
+        def __init__(self, arg):
+            print(arg)
+            print(
+                '1. For CUDA/C++ symbols, '
+                'check whether the CUDA/GCC runtimes are the same '
+                'as those used for compiling mmcv. ',
+                '2. For Pytorch symbols, '
+                'check whether the Pytorch version is the same '
+                'as that used for compiling mmcv.',
+                'For more information, see '
+                'https://github.com/open-mmlab/mmcv/blob/main/docs/en/faq.md',
+                sep='\n')
+
+    class ExtNotFoundError(ImportError):
+
+        def __init__(self, arg):
+            print(arg)
+            print(
+                'mmcv is installed incorrectly.',
+                '1. Uninstall existing mmcv',
+                '2. Install mmcv-full',
+                'For more information, see',
+                'https://github.com/open-mmlab/mmcv/blob/main/docs/en/faq.md',
+                sep='\n')
 
     def load_ext(name, funcs):
-        ext = importlib.import_module('mmcv.' + name)
+        try:
+            ext = importlib.import_module('mmcv.' + name)
+        except Exception as e:
+            exception_inf = str(e)
+
+            message_error = 'DLL load failed while importing _ext'
+            if message_error in exception_inf:
+                raise ExtImportError(exception_inf)
+
+            message_error = 'undefined symbol'
+            if message_error in exception_inf:
+                raise UndefineSymbolError(exception_inf)
+
+            message_error = "No module named 'mmcv._ext'"
+            if message_error in exception_inf:
+                raise ExtNotFoundError(exception_inf)
+
         for fun in funcs:
             assert hasattr(ext, fun), f'{fun} miss in module {name}'
         return ext
