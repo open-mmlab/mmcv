@@ -10,10 +10,7 @@ import torch
 if torch.__version__ != 'parrots':
 
     def load_ext(name, funcs):
-        try:
-            ext = importlib.import_module('mmcv.' + name)
-        except Exception:
-            raise RuntimeError
+        ext = importlib.import_module('mmcv.' + name)
         for fun in funcs:
             assert hasattr(ext, fun), f'{fun} miss in module {name}'
         return ext
