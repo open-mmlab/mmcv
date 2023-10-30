@@ -33,7 +33,7 @@ if torch.__version__ != 'parrots':
                 'https://github.com/open-mmlab/mmcv/blob/main/docs/en/faq.md',
                 sep='\n')
 
-    class UndefineSymbolError(ImportError):
+    class UndefinedSymbolError(ImportError):
 
         def __init__(self, arg):
             print(arg)
@@ -72,7 +72,7 @@ if torch.__version__ != 'parrots':
 
             message_error = 'undefined symbol'
             if message_error in exception_inf:
-                raise UndefineSymbolError(exception_inf)
+                raise UndefinedSymbolError(exception_inf)
 
             message_error = "No module named 'mmcv._ext'"
             if message_error in exception_inf:
