@@ -9,64 +9,8 @@ import torch
 
 if torch.__version__ != 'parrots':
 
-    class ExtImportError(Exception):
-
-        def __init__(self, arg):
-            print(arg)
-            print(
-                'mmcv is installed incorrectly.',
-                '1. Uninstall existing mmcv',
-                '2. Install mmcv-full',
-                'For more information, see',
-                'https://github.com/open-mmlab/mmcv/blob/main/docs/en/faq.md',
-                sep='\n')
-
-    class UndefineSymbolError(Exception):
-
-        def __init__(self, arg):
-            print(arg)
-            print(
-                '1. For CUDA/C++ symbols, '
-                'check whether the CUDA/GCC runtimes are the same '
-                'as those used for compiling mmcv. ',
-                '2. For Pytorch symbols, '
-                'check whether the Pytorch version is the same '
-                'as that used for compiling mmcv.',
-                'For more information, see '
-                'https://github.com/open-mmlab/mmcv/blob/main/docs/en/faq.md',
-                sep='\n')
-
-    class ExtNotFoundError(Exception):
-
-        def __init__(self, arg):
-            print(arg)
-            print(
-                'mmcv is installed incorrectly.',
-                '1. Uninstall existing mmcv',
-                '2. Install mmcv-full',
-                'For more information, see',
-                'https://github.com/open-mmlab/mmcv/blob/main/docs/en/faq.md',
-                sep='\n')
-
     def load_ext(name, funcs):
-        import re
-        try:
-            ext = importlib.import_module('mmcv.' + name)
-        except Exception as e:
-            exception_inf = str(e)
-
-            pattern = 'DLL load failed while importing _ext'
-            if re.search(pattern, exception_inf, re.S):
-                raise ExtImportError(exception_inf)
-
-            pattern = 'undefined symbol'
-            if re.search(pattern, exception_inf, re.S):
-                raise UndefineSymbolError(exception_inf)
-
-            pattern = "No module named 'mmcv._ext'"
-            if re.search(pattern, exception_inf, re.S):
-                raise ExtNotFoundError(exception_inf)
-
+        ext = importlib.import_module('mmcv.' + name)
         for fun in funcs:
             assert hasattr(ext, fun), f'{fun} miss in module {name}'
         return ext
