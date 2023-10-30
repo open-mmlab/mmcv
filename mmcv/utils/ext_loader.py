@@ -48,7 +48,7 @@ if torch.__version__ != 'parrots':
                 'https://github.com/open-mmlab/mmcv/blob/main/docs/en/faq.md',
                 sep='\n')
 
-    class ExtNotFoundError(ImportError):
+    class ExtNotFoundError(ModuleNotFoundError):
 
         def __init__(self, arg):
             print(arg)
