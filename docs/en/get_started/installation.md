@@ -25,7 +25,7 @@ If version information is output, then PyTorch is installed.
 
 ```bash
 pip install -U openmim
-mim install "mmcv>=2.0.0rc1"
+mim install mmcv
 ```
 
 If you find that the above installation command does not use a pre-built package ending with `.whl` but a source package ending with `.tar.gz`, you may not have a pre-build package corresponding to the PyTorch or CUDA or mmcv version, in which case you can [build mmcv from source](build.md).
@@ -35,7 +35,7 @@ If you find that the above installation command does not use a pre-built package
 
 Looking in links: https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html<br />
 Collecting mmcv<br />
-<b>Downloading https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/mmcv-2.0.0rc3-cp38-cp38-manylinux1_x86_64.whl</b>
+<b>Downloading https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/mmcv-2.0.0-cp38-cp38-manylinux1_x86_64.whl</b>
 
 </details>
 
@@ -43,15 +43,15 @@ Collecting mmcv<br />
 <summary>Installation log using source packages</summary>
 
 Looking in links: https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html<br />
-Collecting mmcv==2.0.0rc3<br />
-<b>Downloading mmcv-2.0.0rc3.tar.gz</b>
+Collecting mmcv==2.0.0<br />
+<b>Downloading mmcv-2.0.0.tar.gz</b>
 
 </details>
 
-To install a specific version of mmcv, for example, mmcv version 2.0.0rc3, you can use the following command
+To install a specific version of mmcv, for example, mmcv version 2.0.0, you can use the following command
 
 ```bash
-mim install mmcv==2.0.0rc3
+mim install mmcv==2.0.0
 ```
 
 :::{note}
@@ -62,12 +62,12 @@ you can first install it before installing MMCV to skip the installation of `ope
 Alternatively, if it takes too long to install a dependency library, you can specify the pypi source
 
 ```bash
-mim install "mmcv>=2.0.0rc3" -i https://pypi.tuna.tsinghua.edu.cn/simple
+mim install mmcv -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 :::
 
-You can run [check_installation.py](https://github.com/open-mmlab/mmcv/blob/2.x/.dev_scripts/check_installation.py) to check the installation of mmcv-full after running the installation commands.
+You can run [check_installation.py](https://github.com/open-mmlab/mmcv/blob/main/.dev_scripts/check_installation.py) to check the installation of mmcv-full after running the installation commands.
 
 #### Install with pip
 
@@ -81,70 +81,83 @@ Select the appropriate installation command depending on the type of system, CUD
 
 <html>
 <body>
-    <style>
-      select {
-          z-index: 1000;
-          position: absolute;
-          top: 10px;
-          width: 6.7rem;
-      }
-      #select-container {
-          position: relative;
-          height: 30px;
-      }
-      #select-cmd {
-          background-color: #f5f6f7;
-          font-size: 14px;
-          margin-top: 20px;
-      }
-      /* 让每一个都间隔1.3rem */
-      #select-os {
-          /* left: 1.375rem; */
-          left: 0;
-      }
-      #select-cuda {
-          /* left: 9.375rem;    9.375 = 1.375 + 6.7 + 1.3 */
-          left: 8rem;
-      }
-      #select-torch {
-          /* left: 17.375rem;    17.375 = 9.375 + 6.7 + 1.3 */
-          left: 16rem;
-      }
-      #select-mmcv {
-          /* left: 25.375rem;    25.375 = 17.375 + 6.7 + 1.3 */
-          left: 24rem;
-      }
-    </style>
-    <div id="select-container">
-        <select
+<style>
+    select {
+        /*z-index: 1000;*/
+        position: absolute;
+        top: 10px;
+        width: 6.7rem;
+    }
+    #select-container {
+        position: relative;
+        height: 30px;
+    }
+    #select-cmd {
+        background-color: #f5f6f7;
+        font-size: 14px;
+        margin-top: 20px;
+    }
+    /* 让每一个都间隔1.3rem */
+    #select-os {
+        /* left: 1.375rem; */
+        left: 0;
+    }
+    #select-cuda {
+        /* left: 9.375rem;    9.375 = 1.375 + 6.7 + 1.3 */
+        left: 8rem;
+    }
+    #select-torch {
+        /* left: 17.375rem;    17.375 = 9.375 + 6.7 + 1.3 */
+        left: 16rem;
+    }
+    #select-mmcv {
+        /* left: 25.375rem;    25.375 = 17.375 + 6.7 + 1.3 */
+        left: 24rem;
+    }
+</style>
+<div id="select-container">
+    <select
+            size="1"
             onmousedown="handleSelectMouseDown(this.id)"
-            onblur="handleSelectBlur(this.id)"
+            onclick="clickOutside(this, () => handleSelectBlur(this.id))"
             onchange="changeOS(this.value)"
             id="select-os">
-        </select>
-        <select
+    </select>
+    <select
+            size="1"
             onmousedown="handleSelectMouseDown(this.id)"
-            onblur="handleSelectBlur(this.id)"
+            onclick="clickOutside(this, () => handleSelectBlur(this.is))"
             onchange="changeCUDA(this.value)"
             id="select-cuda">
-        </select>
-        <select
+    </select>
+    <select
+            size="1"
             onmousedown="handleSelectMouseDown(this.id)"
-            onblur="handleSelectBlur(this.id)"
+            onclick="clickOutside(this, () => handleSelectBlur(this.is))"
             onchange="changeTorch(this.value)"
             id="select-torch">
-        </select>
-        <select
+    </select>
+    <select
+            size="1"
             onmousedown="handleSelectMouseDown(this.id)"
-            onblur="handleSelectBlur(this.id)"
+            onclick="clickOutside(this, () => handleSelectBlur(this.is))"
             onchange="changeMMCV(this.value)"
             id="select-mmcv">
-        </select>
-    </div>
-    <pre id="select-cmd"></pre>
+    </select>
+</div>
+<pre id="select-cmd"></pre>
 </body>
 <script>
+    // 各个select当前的值
     let osVal, cudaVal, torchVal, mmcvVal;
+    function clickOutside(targetDom, handler) {
+        const clickHandler = (e) => {
+            if (!targetDom || targetDom.contains(e.target)) return;
+            handler?.();
+            document.removeEventListener('click', clickHandler, false);
+        };
+        document.addEventListener('click', clickHandler, false);
+    }
     function changeMMCV(val) {
         mmcvVal = val;
         change("select-mmcv");
@@ -161,11 +174,12 @@ Select the appropriate installation command depending on the type of system, CUD
         osVal = val;
         change("select-os");
     }
+    // 控制size大小相关的几个方法
     function handleSelectMouseDown(id) {
         const dom = document.getElementById(id);
         if (!dom) return;
         const len = dom?.options?.length;
-        if (len >= 9) {
+        if (len >= 10) {
             dom.size = 10;
             dom.style.zIndex = 100;
         }
@@ -179,6 +193,7 @@ Select the appropriate installation command depending on the type of system, CUD
     function handleSelectBlur(id) {
         const dom = document.getElementById(id);
         if (!dom) {
+            // 如果没有指定特定的id，那就直接把所有的select都设置成size = 1
             handleSelectClick();
             return;
         }
@@ -199,10 +214,12 @@ Select the appropriate installation command depending on the type of system, CUD
         cmdString = cmdString.replace("{cu_version}", cudaVersion).replace("{mmcv_version}", mmcvVal).replace("{torch_version}", torchVersion);
         cmd.textContent = cmdString;
     }
+    // string数组去重
     function unique(arr) {
         if (!arr || !Array.isArray(arr)) return [];
         return [...new Set(arr)];
     }
+    // 根据string数组生成option的DocumentFragment
     function genOptionFragment(data, id) {
         const name = id.includes("-")? id.split("-")[1] : id;
         const fragment = new DocumentFragment();
@@ -213,23 +230,33 @@ Select the appropriate installation command depending on the type of system, CUD
                 text = `${option}`;
             }
             ele.textContent = text;
+            // 添加value属性，方便下拉框选择时直接读到数据
             ele.value = option;
+            // 添加点击事件监听
             ele.addEventListener('click', handleSelectClick);
             fragment.appendChild(ele);
         });
         return fragment;
     }
+    // 在dom树中找到id对应的dom（select元素），并将生成的options添加到元素内
     function findAndAppend(data, id) {
         const fragment = genOptionFragment(data, id);
         const dom = document.getElementById(id);
         if (dom) dom.replaceChildren(fragment);
     }
+    /**
+     * change方法的重点在于
+     * 1. 各个下拉框数据的联动
+     *      OS ==> cuda ==> torch ==> mmcv
+     * 2. 命令行的修改
+     */
     function change(id) {
         const order = ["select-mmcv", "select-torch", "select-cuda", "select-os"];
         const idx = order.indexOf(id);
         if (idx === -1) return;
         const versionDetail = version[osVal];
         if (idx >= 3) {
+            // 根据os修改cuda
             let cuda = [];
             versionDetail.forEach(v => {
                 cuda.push(v.cuda);
@@ -239,6 +266,7 @@ Select the appropriate installation command depending on the type of system, CUD
             findAndAppend(cuda, "select-cuda");
         }
         if (idx >= 2) {
+            // 根据cuda修改torch
             const torch = [];
             versionDetail.forEach(v => {
                 if (v.cuda === cudaVal) torch.push(v.torch);
@@ -247,6 +275,7 @@ Select the appropriate installation command depending on the type of system, CUD
             findAndAppend(torch, "select-torch");
         }
         if (idx >= 1) {
+            // 根据torch修改mmcv
             let mmcv = [];
             versionDetail.forEach(v => {
                 if (v.cuda === cudaVal && v.torch === torchVal) mmcv = v.mmcv;
@@ -256,21 +285,30 @@ Select the appropriate installation command depending on the type of system, CUD
         }
         changeCmd();
     }
+    // 初始化，处理version数据，并调用findAndAppend
     function init() {
-        document.addEventListener("click", handleSelectBlur);
+        // 增加一个全局的click事件监听，作为select onBlur事件失效的兜底
+        // document.addEventListener("click", handleSelectBlur);
         const version = window.version;
+        // OS
         const os = Object.keys(version);
         osVal = os[0];
         findAndAppend(os, "select-os");
         change("select-os");
         changeCmd();
     }
+    // 利用xhr获取本地version数据，如果作为html直接浏览的话需要使用本地服务器打开，否则会有跨域问题
     window.onload = function () {
         const url = "../_static/version.json"
+        // 申明一个XMLHttpRequest
         const request = new XMLHttpRequest();
+        // 设置请求方法与路径
         request.open("get", url);
+        // 不发送数据到服务器
         request.send(null);
+        //XHR对象获取到返回信息后执行
         request.onload = function () {
+            // 返回状态为200，即为数据获取成功
             if (request.status !== 200) return;
             const data = JSON.parse(request.responseText);
             window.version = data;
@@ -297,12 +335,12 @@ you can first install it before installing MMCV to skip the installation of `ope
 Alternatively, if it takes too long to install a dependency library, you can specify the pypi source
 
 ```bash
-mim install "mmcv>=2.0.0rc1" -i https://pypi.tuna.tsinghua.edu.cn/simple
+mim install mmcv -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 :::
 
-You can run [check_installation.py](https://github.com/open-mmlab/mmcv/blob/2.x/.dev_scripts/check_installation.py) to check the installation of mmcv after running the installation commands.
+You can run [check_installation.py](https://github.com/open-mmlab/mmcv/blob/main/.dev_scripts/check_installation.py) to check the installation of mmcv after running the installation commands.
 
 #### Using mmcv with Docker
 
@@ -316,13 +354,13 @@ docker build -t mmcv -f docker/release/Dockerfile .
 Or build with remote repository
 
 ```bash
-docker build -t mmcv https://github.com/open-mmlab/mmcv.git#2.x:docker/release
+docker build -t mmcv https://github.com/open-mmlab/mmcv.git#main:docker/release
 ```
 
 The [Dockerfile](release/Dockerfile) installs latest released version of mmcv-full by default, but you can specify mmcv versions to install expected versions.
 
 ```bash
-docker image build -t mmcv -f docker/release/Dockerfile --build-arg MMCV=2.0.0rc1 .
+docker image build -t mmcv -f docker/release/Dockerfile --build-arg MMCV=2.0.0 .
 ```
 
 If you also want to use other versions of PyTorch and CUDA, you can also pass them when building docker images.
@@ -334,7 +372,7 @@ docker build -t mmcv -f docker/release/Dockerfile \
     --build-arg PYTORCH=1.11.0 \
     --build-arg CUDA=11.3 \
     --build-arg CUDNN=8 \
-    --build-arg MMCV=2.0.0rc1 .
+    --build-arg MMCV=2.0.0 .
 ```
 
 More available versions of PyTorch and CUDA can be found at [dockerhub/pytorch](https://hub.docker.com/r/pytorch/pytorch/tags).

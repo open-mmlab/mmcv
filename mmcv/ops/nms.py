@@ -293,8 +293,9 @@ def batched_nms(boxes: Tensor,
                 max_coordinate + torch.tensor(1).to(boxes))
             boxes_for_nms = boxes + offsets[:, None]
 
-    nms_type = nms_cfg_.pop('type', 'nms')
-    nms_op = eval(nms_type)
+    nms_op = nms_cfg_.pop('type', 'nms')
+    if isinstance(nms_op, str):
+        nms_op = eval(nms_op)
 
     split_thr = nms_cfg_.pop('split_thr', 10000)
     # Won't split to multiple nms nodes when exporting to onnx
@@ -410,11 +411,12 @@ def nms_rotated(dets: Tensor,
         input_labels = scores.new_empty(0, dtype=torch.int)
     else:
         input_labels = labels
-    if dets.device.type == 'npu':
+    if dets.device.type in ('npu', 'mlu'):
         order = scores.new_empty(0, dtype=torch.long)
-        coefficient = 57.29578  # 180 / PI
-        for i in range(dets.size()[0]):
-            dets_cw[i][4] *= coefficient  # radians to angle
+        if dets.device.type == 'npu':
+            coefficient = 57.29578  # 180 / PI
+            for i in range(dets.size()[0]):
+                dets_cw[i][4] *= coefficient  # radians to angle
         keep_inds = ext_module.nms_rotated(dets_cw, scores, order, dets_cw,
                                            input_labels, iou_threshold,
                                            multi_label)

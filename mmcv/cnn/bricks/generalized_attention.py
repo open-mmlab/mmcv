@@ -371,7 +371,7 @@ class GeneralizedAttention(nn.Module):
                 contiguous().\
                 view(1, 1, h*w, h_kv*w_kv)
 
-            energy = energy.masked_fill_(cur_local_constraint_map,
+            energy = energy.masked_fill_(cur_local_constraint_map.bool(),
                                          float('-inf'))
 
         attention = F.softmax(energy, 3)

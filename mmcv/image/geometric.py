@@ -16,13 +16,13 @@ except ImportError:
 
 def _scale_size(
     size: Tuple[int, int],
-    scale: Union[float, int, tuple],
+    scale: Union[float, int, Tuple[float, float], Tuple[int, int]],
 ) -> Tuple[int, int]:
     """Rescale a size by a ratio.
 
     Args:
         size (tuple[int]): (w, h).
-        scale (float | tuple(float)): Scaling factor.
+        scale (float | int | tuple(float) | tuple(int)): Scaling factor.
 
     Returns:
         tuple[int]: scaled size.
@@ -128,7 +128,8 @@ def imresize_to_multiple(
     img: np.ndarray,
     divisor: Union[int, Tuple[int, int]],
     size: Union[int, Tuple[int, int], None] = None,
-    scale_factor: Union[float, Tuple[float, float], None] = None,
+    scale_factor: Union[float, int, Tuple[float, float], Tuple[int, int],
+                        None] = None,
     keep_ratio: bool = False,
     return_scale: bool = False,
     interpolation: str = 'bilinear',
@@ -145,9 +146,10 @@ def imresize_to_multiple(
             divisor. If divisor is a tuple, divisor should be
             (w_divisor, h_divisor).
         size (None | int | tuple[int]): Target size (w, h). Default: None.
-        scale_factor (None | float | tuple[float]): Multiplier for spatial
-            size. Should match input size if it is a tuple and the 2D style is
-            (w_scale_factor, h_scale_factor). Default: None.
+        scale_factor (None | float | int | tuple[float] | tuple[int]):
+            Multiplier for spatial size. Should match input size if it is a
+            tuple and the 2D style is (w_scale_factor, h_scale_factor).
+            Default: None.
         keep_ratio (bool): Whether to keep the aspect ratio when resizing the
             image. Default: False.
         return_scale (bool): Whether to return `w_scale` and `h_scale`.
@@ -215,16 +217,16 @@ def imresize_like(
 
 
 def rescale_size(old_size: tuple,
-                 scale: Union[float, int, tuple],
+                 scale: Union[float, int, Tuple[int, int]],
                  return_scale: bool = False) -> tuple:
     """Calculate the new size to be rescaled to.
 
     Args:
         old_size (tuple[int]): The old size (w, h) of image.
-        scale (float | tuple[int]): The scaling factor or maximum size.
-            If it is a float number, then the image will be rescaled by this
-            factor, else if it is a tuple of 2 integers, then the image will
-            be rescaled as large as possible within the scale.
+        scale (float | int | tuple[int]): The scaling factor or maximum size.
+            If it is a float number or an integer, then the image will be
+            rescaled by this factor, else if it is a tuple of 2 integers, then
+            the image will be rescaled as large as possible within the scale.
         return_scale (bool): Whether to return the scaling factor besides the
             rescaled image size.
 
@@ -255,7 +257,7 @@ def rescale_size(old_size: tuple,
 
 def imrescale(
     img: np.ndarray,
-    scale: Union[float, Tuple[int, int]],
+    scale: Union[float, int, Tuple[int, int]],
     return_scale: bool = False,
     interpolation: str = 'bilinear',
     backend: Optional[str] = None
@@ -264,10 +266,10 @@ def imrescale(
 
     Args:
         img (ndarray): The input image.
-        scale (float | tuple[int]): The scaling factor or maximum size.
-            If it is a float number, then the image will be rescaled by this
-            factor, else if it is a tuple of 2 integers, then the image will
-            be rescaled as large as possible within the scale.
+        scale (float | int | tuple[int]): The scaling factor or maximum size.
+            If it is a float number or an integer, then the image will be
+            rescaled by this factor, else if it is a tuple of 2 integers, then
+            the image will be rescaled as large as possible within the scale.
         return_scale (bool): Whether to return the scaling factor besides the
             rescaled image.
         interpolation (str): Same as :func:`resize`.

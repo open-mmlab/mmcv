@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import inspect
 from typing import Dict
 
 import torch
@@ -76,15 +77,18 @@ def build_upsample_layer(cfg: Dict, *args, **kwargs) -> nn.Module:
 
     layer_type = cfg_.pop('type')
 
+    if inspect.isclass(layer_type):
+        upsample = layer_type
     # Switch registry to the target scope. If `upsample` cannot be found
     # in the registry, fallback to search `upsample` in the
     # mmengine.MODELS.
-    with MODELS.switch_scope_and_registry(None) as registry:
-        upsample = registry.get(layer_type)
-    if upsample is None:
-        raise KeyError(f'Cannot find {upsample} in registry under scope '
-                       f'name {registry.scope}')
-    if upsample is nn.Upsample:
-        cfg_['mode'] = layer_type
+    else:
+        with MODELS.switch_scope_and_registry(None) as registry:
+            upsample = registry.get(layer_type)
+        if upsample is None:
+            raise KeyError(f'Cannot find {upsample} in registry under scope '
+                           f'name {registry.scope}')
+        if upsample is nn.Upsample:
+            cfg_['mode'] = layer_type
     layer = upsample(*args, **kwargs, **cfg_)
     return layer
