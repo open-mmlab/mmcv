@@ -155,8 +155,13 @@ class TestMdconv:
                 not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
         pytest.param(
             'mlu',
-            marks=pytest.mark.skipif(
-                not IS_MLU_AVAILABLE, reason='requires MLU support')),
+            marks=[
+                pytest.mark.skipif(
+                    not IS_MLU_AVAILABLE, reason='requires MLU support'),
+                pytest.mark.skipif(
+                    digit_version(TORCH_VERSION) == digit_version('1.13.1'),
+                    reason='using torch 1.13.x cause datatype assertion error')
+            ]),
     ])
     def test_mdconv_half(self, device):
         self._test_mdconv(torch.half, device=device)

@@ -13,13 +13,30 @@
 #include <ATen/ATen.h>
 #include <c10/core/ScalarType.h>
 
+#ifdef MMCV_WITH_TORCH113
+#include "aten/operators/cnnl/cnnl_kernel.h"
+#include "aten/operators/cnnl/internal/cnnl_internal.h"
+#include "aten/utils/cnnl_util.h"
+#include "framework/core/device.h"
+#include "framework/core/notifier.h"
+#include "framework/core/queue.h"
+#include "utils/assert_tensor.h"
+#include "utils/cndumper.h"
+#include "utils/cnlog.h"
+namespace torch_mlu::cnnl::ops {
+using torch_mlu::cnnl_contiguous;
+using torch_mlu::get_channels_last_memory_format;
+}  // namespace torch_mlu::cnnl::ops
+#else
 #include "aten.h"
+#endif
+
 #include "mlu_op.h"
 #include "pytorch_device_registry.hpp"
 
 #define MLUOP_MAJOR 0
-#define MLUOP_MINOR 8
-#define MLUOP_PATCHLEVEL 1
+#define MLUOP_MINOR 9
+#define MLUOP_PATCHLEVEL 0
 
 /*************************************************************************
  * This MACRO contains operations of simple tensor to mlu-tensor.

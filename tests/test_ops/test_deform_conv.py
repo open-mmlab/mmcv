@@ -242,8 +242,13 @@ class TestDeformconv:
         pytest.param(
             'mlu',
             1e-1,
-            marks=pytest.mark.skipif(
-                not IS_MLU_AVAILABLE, reason='requires MLU support')),
+            marks=[
+                pytest.mark.skipif(
+                    not IS_MLU_AVAILABLE, reason='requires MLU support'),
+                pytest.mark.skipif(
+                    digit_version(TORCH_VERSION) == digit_version('1.13.1'),
+                    reason='using torch 1.13.x cause datatype assertion error')
+            ]),
     ])
     def test_deformconv_half(self, device, threshold):
         self._test_deformconv(torch.half, device=device, threshold=threshold)

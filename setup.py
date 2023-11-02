@@ -340,6 +340,8 @@ def get_extensions():
                         exit()
 
             define_macros += [('MMCV_WITH_MLU', None)]
+            if '1.13' in torch.__version__:
+                define_macros += [('MMCV_WITH_TORCH113', None)]
             mlu_args = os.getenv('MMCV_MLU_ARGS', '-DNDEBUG ')
             mluops_includes = []
             mluops_includes.append('-I' +

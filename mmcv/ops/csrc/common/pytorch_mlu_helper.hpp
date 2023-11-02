@@ -13,7 +13,57 @@
 #define PYTORCH_MLU_HELPER_HPP_
 
 #ifdef MMCV_WITH_MLU
+#ifdef MMCV_WITH_TORCH113
+#include "aten/utils/cnnl_util.h"
+#include "aten/utils/types.h"
+#include "c10/core/ScalarTypeToTypeMeta.h"
+#include "framework/core/device.h"
+#include "framework/core/notifier.h"
+#include "framework/core/queue.h"
+#include "utils/assert_tensor.h"
+#include "utils/cndumper.h"
+#include "utils/cnlog.h"
+namespace torch_mlu {
+static cnrtDataType_t toCnrtDtype(const caffe2::TypeMeta& data_type) {
+  if (data_type.name() == std::string("float")) {
+    return CNRT_FLOAT32;
+  } else if (data_type.name() == std::string("double")) {
+    return CNRT_FLOAT64;
+  } else if (data_type.name() == std::string("c10::Half")) {
+    return CNRT_FLOAT16;
+  } else if (data_type.name() == std::string("int")) {
+    return CNRT_INT32;
+  } else if (data_type.name() == std::string("int8")) {
+    return CNRT_INT8;
+  } else if (data_type.name() == std::string("bool")) {
+    return CNRT_BOOL;
+  } else if (data_type.name() == std::string("long")) {
+    return CNRT_INT64;
+  } else if (data_type.name() == std::string("long int")) {
+    return CNRT_INT64;
+  } else if (data_type.name() == std::string("short")) {
+    return CNRT_INT16;
+  } else if (data_type.name() == std::string("short int")) {
+    return CNRT_INT16;
+  } else if (data_type.name() == std::string("unsigned char")) {
+    return CNRT_UINT8;
+  } else if (data_type.name() == std::string("signed char")) {
+    return CNRT_INT8;
+  } else {
+    std::string msg("to_cnrt_dtype: not supported for ");
+    msg = msg + data_type.name().data();
+    LOG(ERROR) << msg;
+    return CNRT_INVALID;
+  }
+}
+}  // namespace torch_mlu
+namespace torch_mlu::cnnl::ops {
+using torch_mlu::cnnl_contiguous;
+using torch_mlu::get_channels_last_memory_format;
+}  // namespace torch_mlu::cnnl::ops
+#else
 #include "aten.h"
+#endif  // MMCV_WITH_TORCH113
 
 #define NFU_ALIGN_SIZE 128
 
