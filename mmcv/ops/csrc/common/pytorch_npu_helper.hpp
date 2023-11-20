@@ -18,12 +18,12 @@
 #ifndef PYTORCH_NPU_HELPER_HPP_
 #define PYTORCH_NPU_HELPER_HPP_
 
-#include <torch_npu/csrc/aten/CustomFunctions.h>
 #include <torch_npu/csrc/framework/utils/CalcuOpUtil.h>
 #include <torch_npu/csrc/framework/utils/OpAdapter.h>
 
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"
+#include "pytorch_npu_util.hpp"
 
 #define NPU_NAME_SPACE at_npu::native
 
