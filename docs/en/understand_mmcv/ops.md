@@ -11,7 +11,7 @@ We implement common ops used in detection, segmentation, etc.
 | BorderAlign                  |     | √    |     |     |        |
 | BoxIouRotated                | √   | √    | √   |     | √      |
 | BoxIouQuadri                 | √   | √    |     |     |        |
-| CARAFE                       |     | √    | √   |     |        |
+| CARAFE                       |     | √    | √   |     | √      |
 | ChamferDistance              |     | √    |     |     |        |
 | CrissCrossAttention          |     | √    |     |     |        |
 | ContourExpand                | √   |      |     |     |        |
@@ -41,7 +41,7 @@ We implement common ops used in detection, segmentation, etc.
 | PointsInBoxes                | √   | √    |     |     |        |
 | PointsInPolygons             |     | √    |     |     | √      |
 | PSAMask                      | √   | √    | √   |     | √      |
-| RotatedFeatureAlign          | √   | √    | √   |     |        |
+| RotatedFeatureAlign          | √   | √    | √   |     | √      |
 | RoIPointPool3d               |     | √    | √   |     |        |
 | RoIPool                      |     | √    | √   |     | √      |
 | RoIAlignRotated              | √   | √    | √   |     |        |
