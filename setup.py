@@ -425,7 +425,16 @@ def get_extensions():
         elif (os.getenv('FORCE_NPU', '0') == '1'):
             print(f'Compiling {ext_name} only with CPU and NPU')
             try:
+                import imp
+
                 from torch_npu.utils.cpp_extension import NpuExtension
+                extra_compile_args['cxx'] += [
+                    '-D__FILENAME__=\"$$(notdir $$(abspath $$<))\"'
+                ]
+                extra_compile_args['cxx'] += [
+                    '-I' + imp.find_module('torch_npu')[1] +
+                    '/include/third_party/acl/inc'
+                ]
                 define_macros += [('MMCV_WITH_NPU', None)]
                 extension = NpuExtension
                 if parse_version(torch.__version__) <= parse_version('2.0.0'):
