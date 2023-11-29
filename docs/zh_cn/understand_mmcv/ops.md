@@ -22,8 +22,8 @@ MMCV 提供了检测、分割等任务中常用的算子
 | Deformable RoIPool           |     | √    | √   |     | √      |
 | DiffIoURotated               |     | √    | √   |     |        |
 | DynamicScatter               |     | √    | √   |     |        |
-| FurthestPointSample          |     | √    |     |     |        |
-| FurthestPointSampleWithDist  |     | √    |     |     |        |
+| FurthestPointSample          |     | √    |     |     | √      |
+| FurthestPointSampleWithDist  |     | √    |     |     | √      |
 | FusedBiasLeakyrelu           |     | √    |     |     | √      |
 | GatherPoints                 |     | √    |     |     | √      |
 | GroupPoints                  |     | √    |     |     |        |
