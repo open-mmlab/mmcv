@@ -4,7 +4,7 @@ import pytest
 import torch
 
 from mmcv.ops import boxes_iou3d, boxes_overlap_bev, nms3d, nms3d_normal
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
 
 
 @pytest.mark.parametrize('device', [
@@ -77,7 +77,11 @@ def test_boxes_iou3d(device):
     pytest.param(
         'mlu',
         marks=pytest.mark.skipif(
-            not IS_MLU_AVAILABLE, reason='requires MLU support'))
+            not IS_MLU_AVAILABLE, reason='requires MLU support')),
+    pytest.param(
+        'npu',
+        marks=pytest.mark.skipif(
+            not IS_NPU_AVAILABLE, reason='requires NPU support'))
 ])
 def test_nms3d(device):
     # test for 5 boxes
@@ -116,7 +120,11 @@ def test_nms3d(device):
     pytest.param(
         'cuda',
         marks=pytest.mark.skipif(
-            not IS_CUDA_AVAILABLE, reason='requires CUDA support'))
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    pytest.param(
+        'npu',
+        marks=pytest.mark.skipif(
+            not IS_NPU_AVAILABLE, reason='requires NPU support'))
 ])
 def test_nms3d_normal(device):
     # test for 5 boxes
