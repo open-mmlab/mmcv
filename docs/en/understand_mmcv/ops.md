@@ -6,13 +6,13 @@ We implement common ops used in detection, segmentation, etc.
 | ---------------------------- | --- | ---- | --- | --- | ------ |
 | ActiveRotatedFilter          | √   | √    |     |     | √      |
 | AssignScoreWithK             |     | √    |     |     |        |
-| BallQuery                    |     | √    | √   |     |        |
+| BallQuery                    |     | √    | √   |     | √      |
 | BBoxOverlaps                 |     | √    | √   | √   | √      |
 | BorderAlign                  |     | √    |     |     |        |
 | BoxIouRotated                | √   | √    | √   |     | √      |
 | BoxIouQuadri                 | √   | √    |     |     |        |
 | CARAFE                       |     | √    | √   |     |        |
-| ChamferDistance              |     | √    |     |     |        |
+| ChamferDistance              |     | √    |     |     | √      |
 | CrissCrossAttention          |     | √    |     |     |        |
 | ContourExpand                | √   |      |     |     |        |
 | ConvexIoU                    |     | √    |     |     |        |
@@ -41,10 +41,10 @@ We implement common ops used in detection, segmentation, etc.
 | PointsInBoxes                | √   | √    |     |     |        |
 | PointsInPolygons             |     | √    |     |     | √      |
 | PSAMask                      | √   | √    | √   |     | √      |
-| RotatedFeatureAlign          | √   | √    | √   |     |        |
+| RotatedFeatureAlign          | √   | √    | √   |     | √      |
 | RoIPointPool3d               |     | √    | √   |     |        |
 | RoIPool                      |     | √    | √   |     | √      |
-| RoIAlignRotated              | √   | √    | √   |     |        |
+| RoIAlignRotated              | √   | √    | √   |     | √      |
 | RiRoIAlignRotated            |     | √    |     |     |        |
 | RoIAlign                     | √   | √    | √   |     | √      |
 | RoIAwarePool3d               |     | √    | √   |     |        |

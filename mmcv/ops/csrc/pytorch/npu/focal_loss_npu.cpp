@@ -1,5 +1,4 @@
 #include "pytorch_npu_helper.hpp"
-
 using namespace NPU_NAME_SPACE;
 using namespace std;
 
@@ -100,7 +99,22 @@ void softmax_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
   c10::SmallVector<int64_t, 2> sizes = {n_batch, 1};
   at::IntArrayRef offset = at::IntArrayRef(offsets);
   at::IntArrayRef size = at::IntArrayRef(sizes);
-  at_npu::native::custom_ops::npu_slice_out(op_output, offset, size, output);
+  at::IntArrayRef size_array = at::IntArrayRef(sizes);
+  c10::SmallVector<int64_t, 8> offsetVec;
+  for (uint64_t i = 0; i < offset.size(); i++) {
+      offsetVec.emplace_back(offset[i]);
+  }
+  c10::SmallVector<int64_t, 8> sizeVec;
+  for (uint64_t i = 0; i < size_array.size(); i++) {
+      sizeVec.emplace_back(size_array[i]);
+  }
+  OpCommand cmd2;
+  cmd2.Name("Slice")
+      .Input(op_output)
+      .Input(offsetVec)
+      .Input(sizeVec)
+      .Output(output)
+      .Run();
 }
 
 void softmax_focal_loss_forward_impl(Tensor input, Tensor target, Tensor weight,
