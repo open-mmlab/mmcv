@@ -80,16 +80,14 @@ void ms_deform_attn_impl_backward(
     const Tensor &value, const Tensor &spatial_shapes,
     const Tensor &level_start_index, const Tensor &sampling_loc,
     const Tensor &attn_weight, const Tensor &grad_output, Tensor &grad_value,
-    Tensor &grad_sampling_loc, Tensor &grad_attn_weight,
-    const int im2col_step);
+    Tensor &grad_sampling_loc, Tensor &grad_attn_weight, const int im2col_step);
 
-void ms_deform_attn_backward_npu(const Tensor &value, const Tensor &spatial_shapes,
-                                const Tensor &level_start_index,
-                                const Tensor &sampling_loc,
-                                const Tensor &attn_weight,
-                                const Tensor &grad_output, Tensor &grad_value,
-                                Tensor &grad_sampling_loc,
-                                Tensor &grad_attn_weight, const int im2col_step) {
+void ms_deform_attn_backward_npu(
+    const Tensor &value, const Tensor &spatial_shapes,
+    const Tensor &level_start_index, const Tensor &sampling_loc,
+    const Tensor &attn_weight, const Tensor &grad_output, Tensor &grad_value,
+    Tensor &grad_sampling_loc, Tensor &grad_attn_weight,
+    const int im2col_step) {
   check_support(value, attn_weight);
   at::Tensor value_fp32 = value;
   at::Tensor spatial_shapes_int32 = spatial_shapes;
