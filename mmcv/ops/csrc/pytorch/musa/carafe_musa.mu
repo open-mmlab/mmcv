@@ -23,8 +23,8 @@ void CARAFEForwardMUSAKernelLauncher(const Tensor features, const Tensor masks,
   rmasks.resize_({batch_size, output_height, output_width, mask_channels});
 
   // one warp per pixel
-  at::musa::MUSAGuard device_guard(features.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(features.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       features.scalar_type(), "NCHW2NHWC_Feature", ([&] {
         const scalar_t *bottom_data = features.data_ptr<scalar_t>();
@@ -96,8 +96,8 @@ void CARAFEBackwardMUSAKernelLauncher(
   rbottom_grad_hs.resize_({batch_size, output_height, output_width, channels});
   rmask_grad.resize_({batch_size, output_height, output_width, mask_channels});
 
-  at::musa::MUSAGuard device_guard(top_grad.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(top_grad.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       top_grad.scalar_type(), "NCHW2NHWC_Top_Grad", ([&] {
         const scalar_t *bottom_data = top_grad.data_ptr<scalar_t>();

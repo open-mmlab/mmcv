@@ -11,8 +11,8 @@ void ChamferDistanceForwardMUSAKernelLauncher(
   int n = xyz1.size(1);
   int m = xyz2.size(1);
 
-  at::musa::MUSAGuard device_guard(xyz1.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(xyz1.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       xyz1.scalar_type(), "chamfer_distance_forward_musa_kernel", [&] {
         chamfer_distance_forward_musa_kernel<scalar_t>
@@ -39,8 +39,8 @@ void ChamferDistanceBackwardMUSAKernelLauncher(
   int n = xyz1.size(1);
   int m = xyz2.size(1);
 
-  at::musa::MUSAGuard device_guard(xyz1.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(xyz1.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       xyz1.scalar_type(), "chamfer_distance_backward_musa_kernel", [&] {
         chamfer_distance_backward_musa_kernel<scalar_t>

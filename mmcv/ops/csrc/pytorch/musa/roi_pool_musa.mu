@@ -10,8 +10,8 @@ void ROIPoolForwardMUSAKernelLauncher(Tensor input, Tensor rois, Tensor output,
   int height = input.size(2);
   int width = input.size(3);
 
-  at::musa::MUSAGuard device_guard(input.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(input.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       input.scalar_type(), "roi_pool_forward_musa_kernel", [&] {
         roi_pool_forward_musa_kernel<scalar_t>
@@ -34,8 +34,8 @@ void ROIPoolBackwardMUSAKernelLauncher(Tensor grad_output, Tensor rois,
   int height = grad_input.size(2);
   int width = grad_input.size(3);
 
-  at::musa::MUSAGuard device_guard(grad_output.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(grad_output.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       grad_output.scalar_type(), "roi_pool_backward_musa_kernel", [&] {
         roi_pool_backward_musa_kernel<scalar_t>

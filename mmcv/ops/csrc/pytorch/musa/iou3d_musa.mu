@@ -18,8 +18,8 @@ void IoU3DBoxesOverlapBevForwardMUSAKernelLauncher(const int num_a,
                                                    const int num_b,
                                                    const Tensor boxes_b,
                                                    Tensor ans_overlap) {
-  at::musa::MUSAGuard device_guard(boxes_a.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(boxes_a.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   // blockIdx.x(col), blockIdx.y(row)
   dim3 blocks(GET_BLOCKS(num_b, THREADS_PER_BLOCK_IOU3D),
@@ -37,8 +37,8 @@ void IoU3DNMS3DForwardMUSAKernelLauncher(const Tensor boxes, Tensor& keep,
                                          Tensor& keep_num,
                                          float nms_overlap_thresh) {
   using namespace at::indexing;
-  at::musa::MUSAGuard device_guard(boxes.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(boxes.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   int boxes_num = boxes.size(0);
 
@@ -56,7 +56,7 @@ void IoU3DNMS3DForwardMUSAKernelLauncher(const Tensor boxes, Tensor& keep,
       (unsigned long long*)mask.data_ptr<int64_t>());
 
   at::Tensor keep_t = at::zeros(
-      {boxes_num}, boxes.options().dtype(at::kBool).device(at::kMUSA));
+      {boxes_num}, boxes.options().dtype(at::kBool).device(::at::musa::kMUSA));
   gather_keep_from_mask<<<1, min(col_blocks, THREADS_PER_BLOCK),
                           col_blocks * sizeof(unsigned long long), stream>>>(
       keep_t.data_ptr<bool>(), (unsigned long long*)mask.data_ptr<int64_t>(),
@@ -72,8 +72,8 @@ void IoU3DNMS3DNormalForwardMUSAKernelLauncher(const Tensor boxes, Tensor& keep,
                                                Tensor& keep_num,
                                                float nms_overlap_thresh) {
   using namespace at::indexing;
-  at::musa::MUSAGuard device_guard(boxes.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(boxes.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   int boxes_num = boxes.size(0);
 
@@ -91,7 +91,7 @@ void IoU3DNMS3DNormalForwardMUSAKernelLauncher(const Tensor boxes, Tensor& keep,
       (unsigned long long*)mask.data_ptr<int64_t>());
 
   at::Tensor keep_t = at::zeros(
-      {boxes_num}, boxes.options().dtype(at::kBool).device(at::kMUSA));
+      {boxes_num}, boxes.options().dtype(at::kBool).device(::at::musa::kMUSA));
   gather_keep_from_mask<<<1, min(col_blocks, THREADS_PER_BLOCK),
                           col_blocks * sizeof(unsigned long long), stream>>>(
       keep_t.data_ptr<bool>(), (unsigned long long*)mask.data_ptr<int64_t>(),

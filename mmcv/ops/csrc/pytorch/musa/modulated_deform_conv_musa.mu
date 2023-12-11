@@ -22,7 +22,7 @@ void modulated_deformable_im2col_musa(
 
         modulated_deformable_im2col_gpu_kernel<<<
             GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0,
-            at::musa::getCurrentMUSAStream()>>>(
+            c10::musa::getCurrentMUSAStream()>>>(
             num_kernels, data_im_, data_offset_, data_mask_, height_im,
             width_im, kernel_h, kernel_w, pad_h, pad_w, stride_h, stride_w,
             dilation_h, dilation_w, channel_per_deformable_group, batch_size,
@@ -51,7 +51,7 @@ void modulated_deformable_col2im_musa(
 
         modulated_deformable_col2im_gpu_kernel<<<
             GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0,
-            at::musa::getCurrentMUSAStream()>>>(
+            c10::musa::getCurrentMUSAStream()>>>(
             num_kernels, data_col_, data_offset_, data_mask_, channels,
             height_im, width_im, kernel_h, kernel_w, pad_h, pad_w, stride_h,
             stride_w, dilation_h, dilation_w, channel_per_deformable_group,
@@ -84,7 +84,7 @@ void modulated_deformable_col2im_coord_musa(
 
         modulated_deformable_col2im_coord_gpu_kernel<<<
             GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0,
-            at::musa::getCurrentMUSAStream()>>>(
+            c10::musa::getCurrentMUSAStream()>>>(
             num_kernels, data_col_, data_im_, data_offset_, data_mask_,
             channels, height_im, width_im, kernel_h, kernel_w, pad_h, pad_w,
             stride_h, stride_w, dilation_h, dilation_w,

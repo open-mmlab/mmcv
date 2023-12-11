@@ -22,8 +22,8 @@ void BorderAlignForwardMUSAKernelLauncher(const Tensor &input,
   // shape [N, channels, box_size, 4] for output
   int nthreads = batch_size * channels * box_size;
 
-  at::musa::MUSAGuard device_guard(input.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(input.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   dim3 block(128, 4);
   AT_DISPATCH_FLOATING_TYPES(
       input.scalar_type(), "border_align_forward_musa_kernel", [&] {
@@ -51,8 +51,8 @@ void BorderAlignBackwardMUSAKernelLauncher(const Tensor &grad_output,
   int box_size = boxes.size(1);
   int nthreads = batch_size * channels * box_size;
 
-  at::musa::MUSAGuard device_guard(grad_output.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(grad_output.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   dim3 block(128, 4);
   AT_DISPATCH_FLOATING_TYPES(
       grad_output.scalar_type(), "border_align_backward_musa_kernel", [&] {

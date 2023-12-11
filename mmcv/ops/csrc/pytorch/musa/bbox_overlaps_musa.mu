@@ -22,8 +22,8 @@ void BBoxOverlapsMUSAKernelLauncher(const Tensor bboxes1, const Tensor bboxes2,
   int num_bbox1 = bboxes1.size(0);
   int num_bbox2 = bboxes2.size(0);
 
-  at::musa::MUSAGuard device_guard(bboxes1.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(bboxes1.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       bboxes1.scalar_type(), "bbox_overlaps_musa_kernel", ([&] {
         bbox_overlaps_musa_kernel<scalar_t>

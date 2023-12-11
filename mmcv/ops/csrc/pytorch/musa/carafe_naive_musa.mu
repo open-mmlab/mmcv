@@ -12,8 +12,8 @@ void CARAFENAIVEForwardMUSAKernelLauncher(const Tensor features,
   int height = output.size(2);
   int width = output.size(3);
 
-  at::musa::MUSAGuard device_guard(features.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(features.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       features.scalar_type(), "CARAFENAIVEForward", ([&] {
         carafe_naive_forward_musa_kernel<scalar_t>
@@ -35,8 +35,8 @@ void CARAFENAIVEBackwardMUSAKernelLauncher(
   int height = top_grad.size(2);
   int width = top_grad.size(3);
 
-  at::musa::MUSAGuard device_guard(top_grad.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(top_grad.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       top_grad.scalar_type(), "CARAFENAIVEBackward", ([&] {
         carafe_naive_backward_musa_kernel<scalar_t>

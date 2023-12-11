@@ -13,8 +13,8 @@ int HardVoxelizeForwardMUSAKernelLauncher(
   // current version tooks about 0.04s for one frame on cpu
   // check device
 
-  at::musa::MUSAGuard device_guard(points.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(points.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   const int num_points = points.size(0);
   const int num_features = points.size(1);
@@ -150,8 +150,8 @@ int NondeterministicHardVoxelizeForwardMUSAKernelLauncher(
     at::Tensor &num_points_per_voxel, const std::vector<float> voxel_size,
     const std::vector<float> coors_range, const int max_points,
     const int max_voxels, const int NDim = 3) {
-  at::musa::MUSAGuard device_guard(points.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(points.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   const int num_points = points.size(0);
   const int num_features = points.size(1);
@@ -250,8 +250,8 @@ void DynamicVoxelizeForwardMUSAKernelLauncher(
   // current version tooks about 0.04s for one frame on cpu
   // check device
 
-  at::musa::MUSAGuard device_guard(points.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(points.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   const int num_points = points.size(0);
   const int num_features = points.size(1);

@@ -10,8 +10,8 @@ void AssignScoreWithKForwardMUSAKernelLauncher(
     int B, int N0, int N1, int M, int K, int O, int aggregate,
     const Tensor& points, const Tensor& centers, const Tensor& scores,
     const Tensor& knn_idx, Tensor& output) {
-  at::musa::MUSAGuard device_guard(points.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(points.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   dim3 blocks(GET_BLOCKS(B * O * N1 * K, THREADS_PER_BLOCK));
   dim3 threads(THREADS_PER_BLOCK);
@@ -33,8 +33,8 @@ void AssignScoreWithKBackwardMUSAKernelLauncher(
     const Tensor& grad_out, const Tensor& points, const Tensor& centers,
     const Tensor& scores, const Tensor& knn_idx, Tensor& grad_points,
     Tensor& grad_centers, Tensor& grad_scores) {
-  at::musa::MUSAGuard device_guard(grad_out.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(grad_out.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   dim3 blocks1(GET_BLOCKS(B * M * O, THREADS_PER_BLOCK));
   dim3 threads1(THREADS_PER_BLOCK);

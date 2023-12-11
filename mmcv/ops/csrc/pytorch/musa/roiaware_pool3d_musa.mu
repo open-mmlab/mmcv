@@ -20,8 +20,8 @@ void RoiawarePool3dForwardMUSAKernelLauncher(
   // pooled_features: (N, out_x, out_y, out_z, C) params pool_method: 0:
   // max_pool 1: avg_pool
 
-  at::musa::MUSAGuard device_guard(pts_feature.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(pts_feature.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   Tensor pts_mask =
       -at::ones({boxes_num, pts_num}, pts_feature.options().dtype(at::kInt));
@@ -90,8 +90,8 @@ void RoiawarePool3dBackwardMUSAKernelLauncher(
   // params grad_in: (npoints, C), return value
   // params pool_method: 0: max_pool, 1: avg_pool
 
-  at::musa::MUSAGuard device_guard(grad_out.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(grad_out.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   dim3 blocks(GET_BLOCKS(out_x * out_y * out_z, THREADS_PER_BLOCK), channels,
               boxes_num);

@@ -16,8 +16,8 @@ void StackBallQueryForwardMUSAKernelLauncher(float max_radius, int nsample,
                                              const Tensor xyz,
                                              const Tensor xyz_batch_cnt,
                                              Tensor idx) {
-  at::musa::MUSAGuard device_guard(new_xyz.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(new_xyz.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   //   const float *new_xyz_ptr = new_xyz.data_ptr<float>();
   //   const float *xyz_ptr = xyz.data_ptr<float>();

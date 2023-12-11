@@ -1884,20 +1884,20 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
   }
 #ifdef MMCV_WITH_HIP
   AT_MUSA_CHECK(hipLaunchKernel(spec.setup, 1, 1024, args, 0,
-                                at::musa::getCurrentMUSAStream()));
+                                c10::musa::getCurrentMUSAStream()));
 #else
   // Launch filter setup kernel.
   AT_MUSA_CHECK(musaLaunchKernel(spec.setup, 1, 1024, args, 0,
-                                 at::musa::getCurrentMUSAStream()));
+                                 c10::musa::getCurrentMUSAStream()));
 #endif
 
   // Copy kernels to constant memory.
   if (writeSigns && !readSigns)
-    AT_MUSA_CHECK((copy_filters(at::musa::getCurrentMUSAStream())));
+    AT_MUSA_CHECK((copy_filters(c10::musa::getCurrentMUSAStream())));
   else if (!writeSigns && readSigns)
-    AT_MUSA_CHECK((copy_filters(at::musa::getCurrentMUSAStream())));
+    AT_MUSA_CHECK((copy_filters(c10::musa::getCurrentMUSAStream())));
   else if (!writeSigns && !readSigns)
-    AT_MUSA_CHECK((copy_filters(at::musa::getCurrentMUSAStream())));
+    AT_MUSA_CHECK((copy_filters(c10::musa::getCurrentMUSAStream())));
 
   // Set cache and shared memory configurations for main kernel.
   AT_MUSA_CHECK(musaFuncSetCacheConfig(spec.exec, musaFuncCachePreferShared));
@@ -1924,11 +1924,11 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
 #ifdef MMCV_WITH_HIP
     AT_MUSA_CHECK(hipLaunchKernel(spec.exec, dim3(gx, gy, subGz), bx, args,
                                   spec.dynamicSharedKB << 10,
-                                  at::musa::getCurrentMUSAStream()));
+                                  c10::musa::getCurrentMUSAStream()));
 #else
     AT_MUSA_CHECK(musaLaunchKernel(spec.exec, dim3(gx, gy, subGz), bx, args,
                                    spec.dynamicSharedKB << 10,
-                                   at::musa::getCurrentMUSAStream()));
+                                   c10::musa::getCurrentMUSAStream()));
 #endif
   }
 
@@ -1942,7 +1942,7 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op_impl(
     int sx, int sy, float gain, float slope, float clamp, bool flip_filters,
     bool writeSigns);
 
-REGISTER_DEVICE_IMPL(filtered_lrelu_op_impl, PrivateUse1, filtered_lrelu_op);
+REGISTER_DEVICE_IMPL(filtered_lrelu_op_impl, MUSA, filtered_lrelu_op);
 
 #else
 
@@ -2046,10 +2046,10 @@ torch::Tensor filtered_lrelu_act_op(torch::Tensor x, torch::Tensor si, int sx,
   // Launch.
 #ifdef MMCV_WITH_HIP
   AT_MUSA_CHECK(hipLaunchKernel(func, dim3(gx, gy, gz), bx, args, 0,
-                                at::musa::getCurrentMUSAStream()));
+                                c10::musa::getCurrentMUSAStream()));
 #else
   AT_MUSA_CHECK(musaLaunchKernel(func, dim3(gx, gy, gz), bx, args, 0,
-                                 at::musa::getCurrentMUSAStream()));
+                                 c10::musa::getCurrentMUSAStream()));
 #endif
 
   return so;

@@ -18,8 +18,8 @@ void BallQueryForwardMUSAKernelLauncher(int b, int n, int m, float min_radius,
   // output:
   //      idx: (B, M, nsample)
 
-  at::musa::MUSAGuard device_guard(new_xyz.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(new_xyz.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   // blockIdx.x(col), blockIdx.y(row)
   dim3 blocks(GET_BLOCKS(m, THREADS_PER_BLOCK), b);

@@ -12,8 +12,8 @@ void box_iou_quadri_musa(const Tensor boxes1, const Tensor boxes2, Tensor ious,
   int num_boxes1 = boxes1.size(0);
   int num_boxes2 = boxes2.size(0);
 
-  at::musa::MUSAGuard device_guard(boxes1.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(boxes1.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   box_iou_quadri_musa_kernel<scalar_t>
       <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
           num_boxes1, num_boxes2, boxes1.data_ptr<scalar_t>(),

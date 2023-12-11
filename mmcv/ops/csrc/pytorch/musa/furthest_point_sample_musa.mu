@@ -21,7 +21,7 @@ void FurthestPointSamplingForwardMUSAKernelLauncher(int b, int n, int m,
   // output:
   //      idx: (B, M)
 
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   unsigned int n_threads = opt_n_threads(n);
 
@@ -85,7 +85,7 @@ void FurthestPointSamplingWithDistForwardMUSAKernelLauncher(
   // output:
   //      idx: (B, M)
 
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   unsigned int n_threads = opt_n_threads(n);
 

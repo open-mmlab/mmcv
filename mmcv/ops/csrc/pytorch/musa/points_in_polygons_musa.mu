@@ -12,8 +12,8 @@ void PointsInPolygonsForwardMUSAKernelLauncher(const at::Tensor points,
                                                const int rows, const int cols,
                                                at::Tensor output) {
   const int output_size = rows * cols;
-  at::musa::MUSAGuard device_guard(points.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(points.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       points.scalar_type(), "points_in_polygons_forward_musa_kernel", ([&] {
         const scalar_t *vertex1 = points.data_ptr<scalar_t>();

@@ -10,8 +10,8 @@ void RiROIAlignRotatedForwardMUSAKernelLauncher(
     at::Tensor output) {
   const int output_size =
       num_rois * pooled_height * pooled_width * channels * num_orientations;
-  at::musa::MUSAGuard device_guard(features.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(features.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       features.scalar_type(), "riroi_align_rotated_forward_musa_kernel", ([&] {
         const scalar_t *bottom_data = features.data_ptr<scalar_t>();
@@ -36,8 +36,8 @@ void RiROIAlignRotatedBackwardMUSAKernelLauncher(
     at::Tensor bottom_grad) {
   const int output_size =
       num_rois * pooled_height * pooled_width * channels * num_orientations;
-  at::musa::MUSAGuard device_guard(top_grad.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(top_grad.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       top_grad.scalar_type(), "riroi_align_rotated_backward_musa_kernel", ([&] {
         const scalar_t *top_diff = top_grad.data_ptr<scalar_t>();

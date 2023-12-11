@@ -13,7 +13,7 @@ torch::Tensor FusedIndiceConvBatchnormMUSAKernelLauncher(
     torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
     torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
     int64_t _inverse, int64_t _subM) {
-  at::musa::MUSAGuard device_guard(features.device());
+  c10::musa::MUSAGuard device_guard(features.device());
   bool subM = _subM != 0;
   bool inverse = _inverse != 0;
   auto device = features.device().type();

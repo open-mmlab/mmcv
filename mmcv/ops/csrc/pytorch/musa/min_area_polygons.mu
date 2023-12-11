@@ -8,8 +8,8 @@ void MinAreaPolygonsMUSAKernelLauncher(const Tensor pointsets,
                                        Tensor polygons) {
   int num_pointsets = pointsets.size(0);
   const int output_size = polygons.numel();
-  at::musa::MUSAGuard device_guard(pointsets.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(pointsets.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       pointsets.scalar_type(), "min_area_polygons_musa_kernel", ([&] {
         min_area_polygons_musa_kernel<scalar_t>

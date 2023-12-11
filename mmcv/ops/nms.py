@@ -489,3 +489,5 @@ def nms_quadri(dets: Tensor,
     dets = torch.cat((dets[keep_inds], scores[keep_inds].reshape(-1, 1)),
                      dim=1)
     return dets, keep_inds
+
+

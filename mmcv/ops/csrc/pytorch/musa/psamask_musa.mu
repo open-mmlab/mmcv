@@ -14,7 +14,7 @@ void PSAMaskForwardMUSAKernelLauncher(const int psa_type, const Tensor input,
                                       const int half_h_mask,
                                       const int half_w_mask) {
   int nthreads = num_ * h_feature * w_feature;
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   if (psa_type == 0)
     AT_DISPATCH_FLOATING_TYPES(
         input.scalar_type(), "psamask_collect_forward_musa", [&] {
@@ -39,7 +39,7 @@ void PSAMaskBackwardMUSAKernelLauncher(
     const int num_, const int h_feature, const int w_feature, const int h_mask,
     const int w_mask, const int half_h_mask, const int half_w_mask) {
   int nthreads = num_ * h_feature * w_feature;
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   if (psa_type == 0)
     AT_DISPATCH_FLOATING_TYPES(
         grad_input.scalar_type(), "psamask_collect_backward_musa", [&] {

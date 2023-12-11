@@ -15,8 +15,8 @@ void KNNForwardMUSAKernelLauncher(int b, int n, int m, int nsample,
   // param xyz: (B, n, 3)
   // param idx: (B, m, nsample)
 
-  at::musa::MUSAGuard device_guard(new_xyz.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(new_xyz.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   // blockIdx.x(col), blockIdx.y(row)
   dim3 blocks(GET_BLOCKS(m, THREADS_PER_BLOCK), b);

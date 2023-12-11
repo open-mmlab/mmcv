@@ -10,7 +10,7 @@ Tensor nms_rotated_musa(const Tensor dets, const Tensor scores,
   // using scalar_t = float;
   AT_ASSERTM(dets.is_privateuseone(), "dets must be a MUSA tensor");
   AT_ASSERTM(scores.is_privateuseone(), "scores must be a MUSA tensor");
-  at::musa::MUSAGuard device_guard(dets.device());
+  c10::musa::MUSAGuard device_guard(dets.device());
 
   int dets_num = dets.size(0);
 
@@ -21,7 +21,7 @@ Tensor nms_rotated_musa(const Tensor dets, const Tensor scores,
 
   dim3 blocks(col_blocks, col_blocks);
   dim3 threads(threadsPerBlock);
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   AT_DISPATCH_FLOATING_TYPES(
       dets_sorted.scalar_type(), "nms_rotated_kernel_musa", [&] {

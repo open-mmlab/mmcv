@@ -8,8 +8,8 @@
 at::Tensor DiffIoURotatedSortVerticesMUSAKernelLauncher(at::Tensor vertices,
                                                         at::Tensor mask,
                                                         at::Tensor num_valid) {
-  at::musa::MUSAGuard device_guard(vertices.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(vertices.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   CHECK_CONTIGUOUS(vertices);
   CHECK_CONTIGUOUS(mask);

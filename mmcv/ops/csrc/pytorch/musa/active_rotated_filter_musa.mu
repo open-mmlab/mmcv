@@ -16,8 +16,8 @@ void ActiveRotatedFilterForwardMUSAKernelLauncher(const Tensor input,
   int nEntry = num_orientations * kH * kW;
   int output_size = input.numel();
 
-  at::musa::MUSAGuard device_guard(input.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(input.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       input.scalar_type(), "active_rotated_filter_forward_musa_kernel", [&] {
         active_rotated_filter_forward_musa_kernel<scalar_t>
@@ -42,8 +42,8 @@ void ActiveRotatedFilterBackwardMUSAKernelLauncher(const Tensor grad_out,
   int nEntry = num_orientations * kH * kW;
   int output_size = grad_in.numel();
 
-  at::musa::MUSAGuard device_guard(indices.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(indices.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       grad_out.scalar_type(), "active_rotated_filter_backward_musa_kernel",
       [&] {

@@ -39,8 +39,8 @@ std::vector<at::Tensor> DynamicPointToVoxelForwardMUSAKernelLauncher(
   auto reduced_feats =
       at::empty({out_coors.size(0), num_feats}, feats.options());
 
-  at::musa::MUSAGuard device_guard(feats.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(feats.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   AT_DISPATCH_FLOATING_TYPES(
       feats.scalar_type(), "feats_reduce_kernel", ([&] {
@@ -78,8 +78,8 @@ void DynamicPointToVoxelBackwardMUSAKernelLauncher(
   // copy voxel grad to points
 
   if (num_input == 0 || num_reduced == 0) return;
-  at::musa::MUSAGuard device_guard(feats.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(feats.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   if (reduce_type == reduce_t::MEAN || reduce_type == reduce_t::SUM) {
     AT_DISPATCH_FLOATING_TYPES(

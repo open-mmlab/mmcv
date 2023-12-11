@@ -17,8 +17,8 @@ void ThreeNNForwardMUSAKernelLauncher(int b, int n, int m, const Tensor unknown,
   //      dist2: (B, N, 3)
   //      idx: (B, N, 3)
 
-  at::musa::MUSAGuard device_guard(unknown.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(unknown.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   // blockIdx.x(col), blockIdx.y(row)
   dim3 blocks(GET_BLOCKS(n, THREADS_PER_BLOCK), b);

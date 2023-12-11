@@ -12,8 +12,8 @@ void GatherPointsForwardMUSAKernelLauncher(int b, int c, int n, int npoints,
   // output:
   //      out: (B, C, npoints)
 
-  at::musa::MUSAGuard device_guard(points.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(points.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   // blockIdx.x(col), blockIdx.y(row)
   dim3 blocks(GET_BLOCKS(npoints, THREADS_PER_BLOCK), c, b);
@@ -39,8 +39,8 @@ void GatherPointsBackwardMUSAKernelLauncher(int b, int c, int n, int npoints,
   // output:
   //      grad_points: (B, C, N)
 
-  at::musa::MUSAGuard device_guard(grad_out.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(grad_out.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   // blockIdx.x(col), blockIdx.y(row)
   dim3 blocks(GET_BLOCKS(npoints, THREADS_PER_BLOCK), c, b);

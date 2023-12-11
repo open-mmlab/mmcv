@@ -9,8 +9,8 @@ void RotatedFeatureAlignForwardMUSAKernelLauncher(const Tensor features,
                                                   const float spatial_scale,
                                                   const int points,
                                                   Tensor output) {
-  at::musa::MUSAGuard device_guard(features.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(features.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   const int output_size = features.numel();
   AT_DISPATCH_FLOATING_TYPES(
       features.scalar_type(), "rotated_feature_align_forward_musa_kernel",
@@ -33,8 +33,8 @@ void RotatedFeatureAlignBackwardMUSAKernelLauncher(const Tensor top_grad,
                                                    const float spatial_scale,
                                                    const int points,
                                                    Tensor bottom_grad) {
-  at::musa::MUSAGuard device_guard(top_grad.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(top_grad.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   const int output_size = top_grad.numel();
   AT_DISPATCH_FLOATING_TYPES(
       top_grad.scalar_type(), "rotated_feature_align_backward_musa_kernel",

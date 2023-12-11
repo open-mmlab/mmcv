@@ -14,8 +14,8 @@ void TINShiftForwardMUSAKernelLauncher(Tensor input, Tensor shift,
   int group_channel = channels / group_size;
   int num_kernels = batch_size * hw_size * channels;
 
-  at::musa::MUSAGuard device_guard(input.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(input.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       input.scalar_type(), "tin_shift_forward_musa_kernel", [&] {
         tin_shift_forward_musa_kernel<scalar_t>
@@ -39,8 +39,8 @@ void TINShiftBackwardMUSAKernelLauncher(Tensor grad_output, Tensor shift,
   int group_channel = channels / group_size;
   int num_kernels = batch_size * hw_size * channels;
 
-  at::musa::MUSAGuard device_guard(grad_output.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(grad_output.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       grad_output.scalar_type(), "tin_shift_backward_musa_kernel", [&] {
         tin_shift_backward_musa_kernel<scalar_t>

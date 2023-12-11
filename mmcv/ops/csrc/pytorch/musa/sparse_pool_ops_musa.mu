@@ -12,7 +12,7 @@ torch::Tensor IndiceMaxpoolForwardMUSAKernelLauncher(torch::Tensor features,
                                                      torch::Tensor indicePairs,
                                                      torch::Tensor indiceNum,
                                                      int64_t numAct) {
-  at::musa::MUSAGuard device_guard(features.device());
+  c10::musa::MUSAGuard device_guard(features.device());
   auto device = features.device().type();
   auto kernelVolume = indicePairs.size(0);
   auto numInPlanes = features.size(1);
@@ -51,7 +51,7 @@ torch::Tensor IndiceMaxpoolBackwardMUSAKernelLauncher(torch::Tensor features,
                                                       torch::Tensor outGrad,
                                                       torch::Tensor indicePairs,
                                                       torch::Tensor indiceNum) {
-  at::musa::MUSAGuard device_guard(features.device());
+  c10::musa::MUSAGuard device_guard(features.device());
   auto device = features.device().type();
   auto numInPlanes = features.size(1);
   auto indicePairNumCpu = indiceNum.to({torch::kCPU});

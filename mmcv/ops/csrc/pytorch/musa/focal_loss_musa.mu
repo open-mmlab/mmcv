@@ -11,8 +11,8 @@ void SigmoidFocalLossForwardMUSAKernelLauncher(Tensor input, Tensor target,
   int num_classes = input.size(1);
   AT_ASSERTM(target.max().item<int64_t>() <= (int64_t)num_classes,
              "target label should smaller or equal than num classes");
-  at::musa::MUSAGuard device_guard(input.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(input.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       input.scalar_type(), "sigmoid_focal_loss_forward_musa_kernel", [&] {
         sigmoid_focal_loss_forward_musa_kernel<scalar_t>
@@ -33,8 +33,8 @@ void SigmoidFocalLossBackwardMUSAKernelLauncher(Tensor input, Tensor target,
   int output_size = grad_input.numel();
   int num_classes = input.size(1);
 
-  at::musa::MUSAGuard device_guard(grad_input.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(grad_input.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       input.scalar_type(), "sigmoid_focal_loss_backward_musa_kernel", [&] {
         sigmoid_focal_loss_backward_musa_kernel<scalar_t>
@@ -56,8 +56,8 @@ void SoftmaxFocalLossForwardMUSAKernelLauncher(Tensor softmax, Tensor target,
 
   AT_ASSERTM(target.max().item<int64_t>() <= (int64_t)num_classes,
              "target label should smaller or equal than num classes");
-  at::musa::MUSAGuard device_guard(softmax.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(softmax.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       softmax.scalar_type(), "softmax_focal_loss_forward_musa_kernel", [&] {
         softmax_focal_loss_forward_musa_kernel<scalar_t>
@@ -78,8 +78,8 @@ void SoftmaxFocalLossBackwardMUSAKernelLauncher(Tensor softmax, Tensor target,
   int num_classes = softmax.size(1);
 
   int output_size = buff.numel();
-  at::musa::MUSAGuard device_guard(grad_input.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(grad_input.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       grad_input.scalar_type(),
       "softmax_focal_loss_backward_musa1_"

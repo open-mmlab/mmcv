@@ -19,8 +19,8 @@ void ThreeInterpolateForwardMUSAKernelLauncher(int b, int c, int m, int n,
   // output:
   //      out: (B, C, N)
 
-  at::musa::MUSAGuard device_guard(points.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(points.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   // blockIdx.x(col), blockIdx.y(row)
   dim3 blocks(GET_BLOCKS(n, THREADS_PER_BLOCK), c, b);
@@ -47,8 +47,8 @@ void ThreeInterpolateBackwardMUSAKernelLauncher(int b, int c, int n, int m,
   // output:
   //      grad_points: (B, C, M)
 
-  at::musa::MUSAGuard device_guard(grad_out.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(grad_out.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   // blockIdx.x(col), blockIdx.y(row)
   dim3 blocks(GET_BLOCKS(n, THREADS_PER_BLOCK), c, b);

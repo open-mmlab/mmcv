@@ -27,7 +27,7 @@ void deformable_im2col_musa(Tensor data_im, Tensor data_offset,
 
         deformable_im2col_gpu_kernel<<<GET_BLOCKS(num_kernels),
                                        THREADS_PER_BLOCK, 0,
-                                       at::musa::getCurrentMUSAStream()>>>(
+                                       c10::musa::getCurrentMUSAStream()>>>(
             num_kernels, data_im_, data_offset_, height, width, ksize_h,
             ksize_w, pad_h, pad_w, stride_h, stride_w, dilation_h, dilation_w,
             channel_per_deformable_group, parallel_imgs, channels,
@@ -61,7 +61,7 @@ void deformable_col2im_musa(Tensor data_col, Tensor data_offset,
 
         deformable_col2im_gpu_kernel<<<GET_BLOCKS(num_kernels),
                                        THREADS_PER_BLOCK, 0,
-                                       at::musa::getCurrentMUSAStream()>>>(
+                                       c10::musa::getCurrentMUSAStream()>>>(
             num_kernels, data_col_, data_offset_, channels, height, width,
             ksize_h, ksize_w, pad_h, pad_w, stride_h, stride_w, dilation_h,
             dilation_w, channel_per_deformable_group, parallel_imgs,
@@ -94,7 +94,7 @@ void deformable_col2im_coord_musa(
 
         deformable_col2im_coord_gpu_kernel<<<
             GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0,
-            at::musa::getCurrentMUSAStream()>>>(
+            c10::musa::getCurrentMUSAStream()>>>(
             num_kernels, data_col_, data_im_, data_offset_, channels, height,
             width, ksize_h, ksize_w, pad_h, pad_w, stride_h, stride_w,
             dilation_h, dilation_w, channel_per_deformable_group, parallel_imgs,

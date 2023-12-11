@@ -18,8 +18,8 @@ void PointsInBoxesPartForwardMUSAKernelLauncher(int batch_size, int boxes_num,
   // y, z] in LiDAR coordinate params boxes_idx_of_points: (B, npoints), default
   // -1
 
-  at::musa::MUSAGuard device_guard(boxes.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(boxes.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   dim3 blocks(GET_BLOCKS(pts_num, THREADS_PER_BLOCK), batch_size);
   dim3 threads(THREADS_PER_BLOCK);
@@ -44,8 +44,8 @@ void PointsInBoxesAllForwardMUSAKernelLauncher(int batch_size, int boxes_num,
   // [x, y, z] in LiDAR coordinate params boxes_idx_of_points: (B, npoints),
   // default -1
 
-  at::musa::MUSAGuard device_guard(boxes.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(boxes.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   dim3 blocks(GET_BLOCKS(pts_num, THREADS_PER_BLOCK), batch_size);
   dim3 threads(THREADS_PER_BLOCK);

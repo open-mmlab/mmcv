@@ -27,7 +27,7 @@ void CorrelationForwardMUSAKernelLauncher(Tensor input1, Tensor input2,
   const dim3 threads(WARP_SIZE, 4, 4);
   const dim3 blocks(batch_size, (oH + 3) >> 2, (oW + 3) >> 2);
 
-  at::musa::MUSAGuard device_guard(input1.device());
+  c10::musa::MUSAGuard device_guard(input1.device());
 
   AT_DISPATCH_FLOATING_TYPES(
       input1.scalar_type(), "correlation_forward_musa", ([&] {
@@ -39,7 +39,7 @@ void CorrelationForwardMUSAKernelLauncher(Tensor input1, Tensor input2,
             output.packed_accessor32<scalar_t, 5, RestrictPtrTraits>();
 
         correlation_forward_musa_kernel<scalar_t>
-            <<<blocks, threads, 0, at::musa::getCurrentMUSAStream()>>>(
+            <<<blocks, threads, 0, c10::musa::getCurrentMUSAStream()>>>(
                 trInput1_acc, trInput2_acc, output_acc, kH, kW, patchH, patchW,
                 padH, padW, dilationH, dilationW, dilation_patchH,
                 dilation_patchW, dH, dW, oH, oW);
@@ -61,7 +61,7 @@ void CorrelationBackwardMUSAKernelLauncher(
   const dim3 blocks(batch_size, iH, iW);
   const dim3 threads(THREADS_PER_BLOCK);
 
-  at::musa::MUSAGuard device_guard(input1.device());
+  c10::musa::MUSAGuard device_guard(input1.device());
 
   AT_DISPATCH_FLOATING_TYPES(
       input1.scalar_type(), "correlation_backward_musa", ([&] {
@@ -79,14 +79,14 @@ void CorrelationBackwardMUSAKernelLauncher(
 
         correlation_backward_musa_kernel_input1<scalar_t>
             <<<blocks, threads, grad_cache_size,
-               at::musa::getCurrentMUSAStream()>>>(
+               c10::musa::getCurrentMUSAStream()>>>(
                 grad_output_acc, input2_acc, grad_input1_acc, kH, kW, patchH,
                 patchW, padH, padW, dilationH, dilationW, dilation_patchH,
                 dilation_patchW, dH, dW);
 
         correlation_backward_musa_kernel_input2<scalar_t>
             <<<blocks, threads, grad_cache_size,
-               at::musa::getCurrentMUSAStream()>>>(
+               c10::musa::getCurrentMUSAStream()>>>(
                 grad_output_acc, input1_acc, grad_input2_acc, kH, kW, patchH,
                 patchW, padH, padW, dilationH, dilationW, dilation_patchH,
                 dilation_patchW, dH, dW);

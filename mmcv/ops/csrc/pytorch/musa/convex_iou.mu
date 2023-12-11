@@ -10,8 +10,8 @@ void ConvexIoUMUSAKernelLauncher(const Tensor pointsets, const Tensor polygons,
   int num_pointsets = pointsets.size(0);
   int num_polygons = polygons.size(0);
 
-  at::musa::MUSAGuard device_guard(pointsets.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(pointsets.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       pointsets.scalar_type(), "convex_iou_musa_kernel", ([&] {
         convex_iou_musa_kernel<scalar_t>
@@ -28,8 +28,8 @@ void ConvexGIoUMUSAKernelLauncher(const Tensor pointsets, const Tensor polygons,
   int num_pointsets = pointsets.size(0);
   int num_polygons = polygons.size(0);
 
-  at::musa::MUSAGuard device_guard(pointsets.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(pointsets.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       pointsets.scalar_type(), "convex_giou_musa_kernel", ([&] {
         convex_giou_musa_kernel<scalar_t>

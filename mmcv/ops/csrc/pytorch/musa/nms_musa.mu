@@ -4,7 +4,7 @@
 
 Tensor NMSMUSAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
                              int offset) {
-  at::musa::MUSAGuard device_guard(boxes.device());
+  c10::musa::MUSAGuard device_guard(boxes.device());
 
   if (boxes.numel() == 0) {
     return at::empty({0}, boxes.options().dtype(at::kLong));
@@ -19,14 +19,14 @@ Tensor NMSMUSAKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
       at::empty({boxes_num, col_blocks}, boxes.options().dtype(at::kLong));
   dim3 blocks(col_blocks_alloc, col_blocks_alloc);
   dim3 threads(threadsPerBlock);
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   nms_musa<<<blocks, threads, 0, stream>>>(
       boxes_num, iou_threshold, offset, boxes_sorted.data_ptr<float>(),
       (unsigned long long*)mask.data_ptr<int64_t>());
 
   // Filter the boxes which should be kept.
   at::Tensor keep_t = at::zeros(
-      {boxes_num}, boxes.options().dtype(at::kBool).device(at::kMUSA));
+      {boxes_num}, boxes.options().dtype(at::kBool).device(::at::musa::kMUSA));
   gather_keep_from_mask<<<1, min(col_blocks, THREADS_PER_BLOCK),
                           col_blocks * sizeof(unsigned long long), stream>>>(
       keep_t.data_ptr<bool>(), (unsigned long long*)mask.data_ptr<int64_t>(),

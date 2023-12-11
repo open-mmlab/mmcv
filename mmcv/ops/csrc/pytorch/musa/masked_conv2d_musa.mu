@@ -14,8 +14,8 @@ void MaskedIm2colForwardMUSAKernelLauncher(const Tensor bottom_data,
   int mask_cnt = mask_h_idx.size(0);
   int output_size = mask_cnt * channels;
 
-  at::musa::MUSAGuard device_guard(bottom_data.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(bottom_data.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       bottom_data.scalar_type(), "MaskedIm2colLaucherForward", ([&] {
         const scalar_t *bottom_data_ = bottom_data.data_ptr<scalar_t>();
@@ -36,8 +36,8 @@ void MaskedCol2imForwardMUSAKernelLauncher(
   int mask_cnt = mask_h_idx.size(0);
   int output_size = mask_cnt * channels;
 
-  at::musa::MUSAGuard device_guard(bottom_data.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(bottom_data.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       bottom_data.scalar_type(), "MaskedCol2imLaucherForward", ([&] {
         const scalar_t *bottom_data_ = bottom_data.data_ptr<scalar_t>();

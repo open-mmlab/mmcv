@@ -20,8 +20,8 @@ void RoIPointPool3dForwardMUSAKernelLauncher(
   Tensor pts_assign = at::empty({batch_size, pts_num, boxes_num},
                                 boxes3d.options().dtype(at::kInt));
 
-  at::musa::MUSAGuard device_guard(xyz.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(xyz.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   // blockIdx.x(col), blockIdx.y(row)
   dim3 blocks(GET_BLOCKS(pts_num, THREADS_PER_BLOCK), boxes_num, batch_size);

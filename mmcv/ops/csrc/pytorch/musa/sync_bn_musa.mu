@@ -7,8 +7,8 @@ void SyncBNForwardMeanMUSAKernelLauncher(const Tensor input, Tensor mean) {
   int channels = input.size(1);
   int spatial = input.size(2);
 
-  at::musa::MUSAGuard device_guard(input.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(input.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       input.scalar_type(), "sync_bn_forward_mean_musa_kernel", [&] {
         sync_bn_forward_mean_musa_kernel<scalar_t>
@@ -25,8 +25,8 @@ void SyncBNForwardVarMUSAKernelLauncher(const Tensor input, const Tensor mean,
   int channels = input.size(1);
   int spatial = input.size(2);
 
-  at::musa::MUSAGuard device_guard(input.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(input.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       input.scalar_type(), "sync_bn_forward_mean_musa_kernel", [&] {
         sync_bn_forward_var_musa_kernel<scalar_t>
@@ -46,8 +46,8 @@ void SyncBNForwardOutputMUSAKernelLauncher(
   int channels = input.size(1);
   int spatial = input.size(2);
 
-  at::musa::MUSAGuard device_guard(input.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(input.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       input.scalar_type(), "sync_bn_forward_mean_musa_kernel", [&] {
         sync_bn_forward_output_musa_kernel<scalar_t>
@@ -70,8 +70,8 @@ void SyncBNBackwardParamMUSAKernelLauncher(const Tensor grad_output,
   int channels = grad_output.size(1);
   int spatial = grad_output.size(2);
 
-  at::musa::MUSAGuard device_guard(grad_output.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(grad_output.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       grad_output.scalar_type(), "sync_bn_backward_param_musa_kernel", [&] {
         sync_bn_backward_param_musa_kernel<scalar_t>
@@ -94,8 +94,8 @@ void SyncBNBackwardDataMUSAKernelLauncher(const Tensor grad_output,
   int channels = grad_input.size(1);
   int spatial = grad_input.size(2);
 
-  at::musa::MUSAGuard device_guard(grad_input.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(grad_input.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   AT_DISPATCH_FLOATING_TYPES(
       grad_output.scalar_type(), "sync_bn_backward_data_musa_kernel", [&] {
         sync_bn_backward_data_musa_kernel<scalar_t>

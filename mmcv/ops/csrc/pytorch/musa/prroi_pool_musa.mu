@@ -10,8 +10,8 @@ void PrROIPoolForwardMUSAKernelLauncher(Tensor input, Tensor rois,
   int height = input.size(2);
   int width = input.size(3);
 
-  at::musa::MUSAGuard device_guard(input.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(input.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   prroi_pool_forward_musa_kernel<float>
       <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
           output_size, input.data_ptr<float>(), rois.data_ptr<float>(),
@@ -30,8 +30,8 @@ void PrROIPoolBackwardMUSAKernelLauncher(Tensor grad_output, Tensor rois,
   int height = grad_input.size(2);
   int width = grad_input.size(3);
 
-  at::musa::MUSAGuard device_guard(grad_output.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(grad_output.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   prroi_pool_backward_musa_kernel<float>
       <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
           output_size, grad_output.data_ptr<float>(), rois.data_ptr<float>(),
@@ -52,8 +52,8 @@ void PrROIPoolCoorBackwardMUSAKernelLauncher(Tensor output, Tensor grad_output,
   int height = input.size(2);
   int width = input.size(3);
 
-  at::musa::MUSAGuard device_guard(grad_output.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(grad_output.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
   prroi_pool_coor_backward_musa_kernel<float>
       <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
           output_size, output.data_ptr<float>(), grad_output.data_ptr<float>(),

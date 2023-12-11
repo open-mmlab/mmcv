@@ -291,10 +291,10 @@ torch::Tensor bias_act_op(const torch::Tensor &x, const torch::Tensor &b,
   void *args[] = {&p};
 #ifdef MMCV_WITH_HIP
   AT_MUSA_CHECK(hipLaunchKernel(kernel, gridSize, blockSize, args, 0,
-                                at::musa::getCurrentMUSAStream()));
+                                c10::musa::getCurrentMUSAStream()));
 #else
   AT_MUSA_CHECK(musaLaunchKernel(kernel, gridSize, blockSize, args, 0,
-                                 at::musa::getCurrentMUSAStream()));
+                                 c10::musa::getCurrentMUSAStream()));
 #endif
 
   return y;

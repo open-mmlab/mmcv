@@ -15,8 +15,8 @@ void StackGroupPointsForwardMUSAKernelLauncher(
   // idx: (B, npoints, nsample)
   // output:
   //      out: (B, C, npoints, nsample)
-  at::musa::MUSAGuard device_guard(features_tensor.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(features_tensor.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   dim3 blocks(DIVUP(m * c * nsample, THREADS_PER_BLOCK));
   dim3 threads(THREADS_PER_BLOCK);
@@ -40,8 +40,8 @@ void StackGroupPointsBackwardMUSAKernelLauncher(
     int b, int c, int m, int n, int nsample, const Tensor grad_out_tensor,
     const Tensor idx_tensor, const Tensor idx_batch_cnt_tensor,
     const Tensor features_batch_cnt_tensor, Tensor grad_features_tensor) {
-  at::musa::MUSAGuard device_guard(grad_features_tensor.device());
-  musaStream_t stream = at::musa::getCurrentMUSAStream();
+  c10::musa::MUSAGuard device_guard(grad_features_tensor.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
 
   dim3 blocks(DIVUP(m * c * nsample, THREADS_PER_BLOCK));
   dim3 threads(THREADS_PER_BLOCK);

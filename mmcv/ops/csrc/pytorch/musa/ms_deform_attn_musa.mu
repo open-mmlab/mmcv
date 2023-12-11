@@ -258,7 +258,7 @@ at::Tensor ms_deform_attn_musa_forward(const at::Tensor &value,
     AT_DISPATCH_FLOATING_TYPES(
         value.scalar_type(), "ms_deform_attn_forward_musa", ([&] {
           ms_deformable_im2col_musa(
-              at::musa::getCurrentMUSAStream(),
+              c10::musa::getCurrentMUSAStream(),
               value.data_ptr<scalar_t>() + n * im2col_step_ * per_value_size,
               spatial_shapes.data_ptr<int64_t>(),
               level_start_index.data_ptr<int64_t>(),
@@ -329,7 +329,7 @@ void ms_deform_attn_musa_backward(
     AT_DISPATCH_FLOATING_TYPES(
         value.scalar_type(), "ms_deform_attn_backward_musa", ([&] {
           ms_deformable_col2im_musa(
-              at::musa::getCurrentMUSAStream(),
+              c10::musa::getCurrentMUSAStream(),
               grad_output_g.data_ptr<scalar_t>(),
               value.data_ptr<scalar_t>() + n * im2col_step_ * per_value_size,
               spatial_shapes.data_ptr<int64_t>(),

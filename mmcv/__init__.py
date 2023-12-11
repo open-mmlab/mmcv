@@ -11,3 +11,5 @@ from .visualization import *
 # without PyTorch.
 # - op
 # - utils
+import torch
+import torch_musa
