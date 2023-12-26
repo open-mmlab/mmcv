@@ -2,10 +2,9 @@
 import numpy as np
 import pytest
 import torch
-from mmengine.utils import digit_version
 
 from mmcv.utils import (IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MPS_AVAILABLE,
-                        IS_NPU_AVAILABLE)
+                        IS_NPU_AVAILABLE, digit_version)
 
 
 class TestBBox:
