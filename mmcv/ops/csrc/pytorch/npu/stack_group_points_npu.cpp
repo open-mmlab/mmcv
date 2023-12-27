@@ -3,7 +3,7 @@
 using namespace NPU_NAME_SPACE;
 using namespace std;
 
-void stacK_group_points_forward_npu(int b, int c, int n, int nsample,
+void stack_group_points_forward_npu(int b, int c, int n, int nsample,
                                     const Tensor features_tensor,
                                     const Tensor features_batch_cnt_tensor,
                                     const Tensor idx_tensor,
