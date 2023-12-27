@@ -1,3 +1,5 @@
+#include "pytorch_npu_helper.hpp"
+
 using namespace NPU_NAME_SPACE;
 using namespace std;
 
