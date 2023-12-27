@@ -14,4 +14,3 @@ void stack_group_points_forward_impl(int b, int c, int n, int nsample, const Ten
                               const Tensor idx_batch_cnt_tensor, Tensor out_tensor);
 
 REGISTER_NPU_IMPL(stack_group_points_forward_impl, stack_group_points_forward_npu);
-
