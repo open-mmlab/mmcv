@@ -44,7 +44,7 @@ void roi_align_backward_npu(Tensor grad_output, Tensor rois, Tensor argmax_y,
   auto shape = grad_input.sizes();
   c10::SmallVector<int64_t, SIZE> xdiff_shape;
   for (uint64_t i = 0; i < shape.size(); i++) {
-      xdiff_shape.emplace_back(shape[i]);
+    xdiff_shape.emplace_back(shape[i]);
   }
   OpCommand cmd;
   cmd.Name("ROIAlignGrad")

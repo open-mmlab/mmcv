@@ -17,7 +17,7 @@ Tensor fused_bias_leakyrelu_npu(const Tensor &input, const Tensor &bias,
     int input_length = input_size.size();
     c10::SmallVector<int64_t, SIZE> input_size_tmp;
     for (uint64_t i = 0; i < input_size.size(); i++) {
-        input_size_tmp.emplace_back(input_size[i]);
+      input_size_tmp.emplace_back(input_size[i]);
     }
     if (input_length > 1) {
       for (int i = 0; i < input_length; i++) {

@@ -204,9 +204,8 @@ inline c10::Scalar ConvertTensorToScalar(const at::Tensor &tensor) {
 inline at::Tensor CopyTensorHostToDevice(const at::Tensor &cpu_tensor) {
   at::Tensor cpuPinMemTensor = cpu_tensor.pin_memory();
   int deviceIndex = 0;
-  return cpuPinMemTensor.to(
-      c10::Device(DEVICE_TYPE, deviceIndex),
-      cpuPinMemTensor.scalar_type(), true, true);
+  return cpuPinMemTensor.to(c10::Device(DEVICE_TYPE, deviceIndex),
+                            cpuPinMemTensor.scalar_type(), true, true);
 }
 
 inline at::Tensor CopyScalarToDevice(const c10::Scalar &cpu_scalar,
@@ -260,16 +259,18 @@ inline aclTensor *ConvertType(const at::Tensor &at_tensor) {
   if (at_tensor.unsafeGetTensorImpl()->is_wrapped_number()) {
     c10::Scalar expScalar = ConvertTensorToScalar(at_tensor);
     at::Tensor aclInput = CopyScalarToDevice(expScalar, scalar_data_type);
-    return aclCreateTensor(
-        aclInput.sizes().data(), aclInput.sizes().size(), acl_data_type,
-        aclInput.strides().data(), aclInput.storage_offset(), format,
-        storageDims.data(), storageDims.size(), const_cast<void*>(aclInput.storage().data()));
+    return aclCreateTensor(aclInput.sizes().data(), aclInput.sizes().size(),
+                           acl_data_type, aclInput.strides().data(),
+                           aclInput.storage_offset(), format,
+                           storageDims.data(), storageDims.size(),
+                           const_cast<void *>(aclInput.storage().data()));
   }
 
   auto acl_tensor = aclCreateTensor(
       at_tensor.sizes().data(), at_tensor.sizes().size(), acl_data_type,
       at_tensor.strides().data(), at_tensor.storage_offset(), format,
-      storageDims.data(), storageDims.size(), const_cast<void*>(at_tensor.storage().data()));
+      storageDims.data(), storageDims.size(),
+      const_cast<void *>(at_tensor.storage().data()));
   return acl_tensor;
 }
 
@@ -554,7 +555,7 @@ typedef void (*ReleaseHugeMem)(void *, bool);
           at::TensorOptions(torch_npu::utils::get_npu_device_type());         \
       auto workspace_tensor =                                                 \
           at::empty({workspace_size}, options.dtype(kByte));                  \
-      workspace_addr = const_cast<void*>(workspace_tensor.storage().data());  \
+      workspace_addr = const_cast<void *>(workspace_tensor.storage().data()); \
     }                                                                         \
     auto acl_call = [converted_params, workspace_addr, workspace_size,        \
                      acl_stream, executor]() -> int {                         \

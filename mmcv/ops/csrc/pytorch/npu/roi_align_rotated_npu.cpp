@@ -35,7 +35,7 @@ void roi_align_rotated_backward_npu(Tensor top_grad, Tensor rois,
   c10::SmallVector<int64_t, SIZE> y_grad_shape;
   auto shape = bottom_grad.sizes();
   for (uint64_t i = 0; i < shape.size(); i++) {
-      y_grad_shape.emplace_back(shape[i]);
+    y_grad_shape.emplace_back(shape[i]);
   }
   OpCommand cmd;
   cmd.Name("RoiAlignRotatedGrad")

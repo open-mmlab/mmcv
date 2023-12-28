@@ -1,6 +1,6 @@
 #include "pytorch_npu_helper.hpp"
-#include "torch_npu/csrc/framework/utils/OpAdapter.h"
 #include "torch_npu/csrc/aten/NPUNativeFunctions.h"
+#include "torch_npu/csrc/framework/utils/OpAdapter.h"
 
 using namespace NPU_NAME_SPACE;
 using namespace std;
