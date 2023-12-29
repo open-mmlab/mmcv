@@ -29,7 +29,7 @@ void chamfer_distance_backward_npu(Tensor xyz1, Tensor xyz2, Tensor idx1,
 }
 
 void chamfer_distance_forward_impl(Tensor XYZ1, Tensor XYZ2, Tensor dist1,
-                                    Tensor dist2, Tensor idx1, Tensor idx2);
+                                   Tensor dist2, Tensor idx1, Tensor idx2);
 REGISTER_NPU_IMPL(chamfer_distance_forward_impl, chamfer_distance_forward_npu);
 
 void chamfer_distance_backward_impl(Tensor xyz1, Tensor xyz2, Tensor idx1,

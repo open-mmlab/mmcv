@@ -15,7 +15,7 @@ void ball_query_forward_npu(int b, int n, int m, float min_radius,
   at::Tensor xyz_transpose = xyz.transpose(1, 2);
 
   // transpose idx from [B, M, nsample] to [M, B, nsample]
-  at::Tensor idx_transpose = NpuUtils::format_contiguous(idx.transpose(0, 1));
+  at::Tensor idx_transpose = idx.transpose(0, 1).contiguous();
 
   OpCommand cmd;
   cmd.Name("BallQuery")
@@ -27,7 +27,7 @@ void ball_query_forward_npu(int b, int n, int m, float min_radius,
       .Attr("sample_num", nsample_i64)
       .Run();
 
-  idx_transpose = NpuUtils::format_contiguous(idx_transpose.transpose(0, 1));
+  idx_transpose = idx_transpose.transpose(0, 1).contiguous();
   idx.copy_(idx_transpose);
 }
 
