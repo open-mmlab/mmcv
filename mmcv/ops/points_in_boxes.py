@@ -1,6 +1,6 @@
 import torch
 from torch import Tensor
-
+from mmengine.device import is_musa_available, is_cuda_available
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', [
@@ -10,7 +10,7 @@ ext_module = ext_loader.load_ext('_ext', [
 
 
 def points_in_boxes_part(points: Tensor, boxes: Tensor) -> Tensor:
-    """Find the box in which each point is (CUDA).
+    """Find the box in which each point is (CUDA/MUSA).
 
     Args:
         points (torch.Tensor): [B, M, 3], [x, y, z] in LiDAR/DEPTH coordinate.
@@ -38,7 +38,7 @@ def points_in_boxes_part(points: Tensor, boxes: Tensor) -> Tensor:
 
     # If manually put the tensor 'points' or 'boxes' on a device
     # which is not the current device, some temporary variables
-    # will be created on the current device in the cuda op,
+    # will be created on the current device in the cuda/musa op,
     # and the output will be incorrect.
     # Therefore, we force the current device to be the same
     # as the device of the tensors if it was not.
@@ -47,8 +47,12 @@ def points_in_boxes_part(points: Tensor, boxes: Tensor) -> Tensor:
     points_device = points.get_device()
     assert points_device == boxes.get_device(), \
         'Points and boxes should be put on the same device'
-    if torch.cuda.current_device() != points_device:
-        torch.cuda.set_device(points_device)
+    if is_cuda_available:
+        if torch.cuda.current_device() != points_device:
+            torch.cuda.set_device(points_device)
+    if is_musa_available:
+        if torch.musa.current_device() != points_device:
+            torch.musa.set_device(points_device)
 
     ext_module.points_in_boxes_part_forward(boxes.contiguous(),
                                             points.contiguous(),
@@ -96,7 +100,7 @@ def points_in_boxes_cpu(points: Tensor, boxes: Tensor) -> Tensor:
 
 
 def points_in_boxes_all(points: Tensor, boxes: Tensor) -> Tensor:
-    """Find all boxes in which each point is (CUDA).
+    """Find all boxes in which each point is (CUDAMUSA).
 
     Args:
         points (torch.Tensor): [B, M, 3], [x, y, z] in LiDAR/DEPTH coordinate
@@ -127,8 +131,12 @@ def points_in_boxes_all(points: Tensor, boxes: Tensor) -> Tensor:
     points_device = points.get_device()
     assert points_device == boxes.get_device(), \
         'Points and boxes should be put on the same device'
-    if torch.cuda.current_device() != points_device:
-        torch.cuda.set_device(points_device)
+    if is_cuda_available:
+        if torch.cuda.current_device() != points_device:
+            torch.cuda.set_device(points_device)
+    if is_musa_available:
+        if torch.musa.current_device() != points_device:
+            torch.musa.set_device(points_device)
 
     ext_module.points_in_boxes_all_forward(boxes.contiguous(),
                                            points.contiguous(),

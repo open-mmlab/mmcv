@@ -2,7 +2,7 @@ import torch
 from torch.autograd import Function
 
 from ..utils import ext_loader
-
+from mmengine.device import is_musa_available,is_cuda_available
 ext_module = ext_loader.load_ext('_ext', [
     'furthest_point_sampling_forward',
     'furthest_point_sampling_with_dist_forward'
@@ -27,9 +27,12 @@ class FurthestPointSampling(Function):
         assert points_xyz.is_contiguous()
 
         B, N = points_xyz.size()[:2]
-        output = torch.cuda.IntTensor(B, num_points)
-        temp = torch.cuda.FloatTensor(B, N).fill_(1e10)
-
+        if is_cuda_available:
+            output = torch.cuda.IntTensor(B, num_points)
+            temp = torch.cuda.FloatTensor(B, N).fill_(1e10)
+        elif is_musa_available:
+            output = torch.musa.IntTensor(B, num_points)
+            temp = torch.musa.FloatTensor(B, N).fill_(1e10)
         ext_module.furthest_point_sampling_forward(
             points_xyz,
             temp,

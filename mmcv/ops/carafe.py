@@ -65,7 +65,7 @@ class CARAFENaiveFunction(Function):
     def backward(
             ctx,
             grad_output: Tensor) -> Tuple[Tensor, Tensor, None, None, None]:
-        assert grad_output.is_cuda
+        assert grad_output.is_cuda or grad_output.is_musa
 
         features, masks = ctx.saved_tensors
         kernel_size = ctx.kernel_size

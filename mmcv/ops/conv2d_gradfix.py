@@ -17,6 +17,7 @@ from typing import Dict, Optional, Tuple, Union
 import torch
 from mmengine.utils import digit_version
 from mmengine.utils.dl_utils.parrots_wrapper import is_rocm_pytorch
+from mmengine.device import is_musa_available,is_cuda_available
 
 enabled = True
 weight_gradients_disabled = False
@@ -95,6 +96,8 @@ def conv_transpose2d(input: torch.Tensor,
 
 def _should_use_custom_op(input):
     assert isinstance(input, torch.Tensor)
+    if enabled and is_musa_available:
+        return True
     if (not enabled) or (not torch.backends.cudnn.enabled):
         return False
     if input.device.type != 'cuda':
@@ -177,7 +180,7 @@ def _conv2d_gradfix(
             ctx.input_shape = input.shape
 
             # Simple 1x1 convolution => cuBLAS (only on Volta, not on Ampere).
-            if weight_shape[2:] == stride == dilation == (
+            if is_cuda_available and weight_shape[2:] == stride == dilation == (
                     1, 1) and padding == (
                         0, 0) and torch.cuda.get_device_capability(
                             input.device) < (8, 0):

@@ -2,14 +2,14 @@ from typing import Optional
 
 import torch
 from torch.autograd import Function
-
+from mmengine.device import is_musa_available, is_cuda_available
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', ['knn_forward'])
 
 
 class KNN(Function):
-    r"""KNN (CUDA) based on heap data structure.
+    r"""KNN (CUDA/MUSA) based on heap data structure.
 
     Modified from `PAConv <https://github.com/CVMI-Lab/PAConv/tree/main/
     scene_seg/lib/pointops/src/knnquery_heap>`_.
@@ -55,9 +55,12 @@ class KNN(Function):
         center_xyz_device = center_xyz.get_device()
         assert center_xyz_device == xyz.get_device(), \
             'center_xyz and xyz should be put on the same device'
-        if torch.cuda.current_device() != center_xyz_device:
-            torch.cuda.set_device(center_xyz_device)
-
+        if is_cuda_available:
+            if torch.cuda.current_device() != center_xyz_device:
+                torch.cuda.set_device(center_xyz_device)
+        if is_musa_available:
+            if torch.musa.current_device() != center_xyz_device:
+                torch.musa.set_device(center_xyz_device)            
         B, npoint, _ = center_xyz.shape
         N = xyz.shape[1]
 
