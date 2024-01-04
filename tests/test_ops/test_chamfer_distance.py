@@ -7,10 +7,10 @@ from mmcv.ops import chamfer_distance
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
 
 
-def chamfer_distance_forward_gloden(xyz1, xyz2, dtype):
+def chamfer_distance_forward_groundtruth(xyz1, xyz2, dtype):
     bs, ns, ss = xyz1.shape
-    dist1 = np.zeros((bs, ns)).astype(torch_type_trans(dtype))
-    dist2 = np.zeros((bs, ns)).astype(torch_type_trans(dtype))
+    dist1 = np.zeros((bs, ns)).astype(torch_to_np_type(dtype))
+    dist2 = np.zeros((bs, ns)).astype(torch_to_np_type(dtype))
     idx1 = np.zeros((bs, ns)).astype('int32')
     idx2 = np.zeros((bs, ns)).astype('int32')
     for b1 in range(bs):
@@ -36,7 +36,7 @@ def chamfer_distance_forward_gloden(xyz1, xyz2, dtype):
     return [dist1, dist2, idx1, idx2]
 
 
-def torch_type_trans(dtype):
+def torch_to_np_type(dtype):
     if dtype == torch.half:
         return np.float16
     elif dtype == torch.float32:
@@ -59,12 +59,12 @@ def test_chamfer_distance_npu_dynamic_shape(dtype, device, shape):
     bs = shape[0]
     ns = shape[1]
     xyz1 = np.random.uniform(-10.0, 10.0,
-                             (bs, ns, 2)).astype(torch_type_trans(dtype))
+                             (bs, ns, 2)).astype(torch_to_np_type(dtype))
     xyz2 = np.random.uniform(-10.0, 10.0,
-                             (bs, ns, 2)).astype(torch_type_trans(dtype))
+                             (bs, ns, 2)).astype(torch_to_np_type(dtype))
     xyz1_npu = torch.tensor(xyz1, dtype=dtype).to(device)
     xyz2_npu = torch.tensor(xyz2, dtype=dtype).to(device)
-    expected_output = chamfer_distance_forward_gloden(xyz1, xyz2, dtype)
+    expected_output = chamfer_distance_forward_groundtruth(xyz1, xyz2, dtype)
     output = chamfer_distance(xyz1_npu, xyz2_npu)
     assert np.allclose(output[0].cpu().numpy(), expected_output[0], 1e-3, 1e-4)
     assert np.allclose(output[1].cpu().numpy(), expected_output[1], 1e-3, 1e-4)
