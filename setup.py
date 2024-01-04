@@ -405,7 +405,7 @@ def get_extensions():
                 ]
                 extra_compile_args['cxx'] += [
                     '-I' + importlib.util.find_spec(
-                        'torch_npu').submodule_search_location[0] +
+                        'torch_npu').submodule_search_locations[0] +
                     '/include/third_party/acl/inc'
                 ]
                 define_macros += [('MMCV_WITH_NPU', None)]
