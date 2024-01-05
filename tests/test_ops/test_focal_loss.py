@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
 
 _USING_PARROTS = True
 try:
@@ -40,7 +40,7 @@ sigmoid_outputs = [(0.13562961, [[-0.00657264, 0.11185755],
 class Testfocalloss:
 
     def _test_softmax(self, dtype=torch.float):
-        if not torch.cuda.is_available():
+        if not (torch.cuda.is_available() or IS_MUSA_AVAILABLE) :
             return
         from mmcv.ops import softmax_focal_loss
         alpha = 0.25
@@ -50,10 +50,15 @@ class Testfocalloss:
             np_y = np.array(case[1])
             np_x_grad = np.array(output[1])
 
-            x = torch.from_numpy(np_x).cuda().type(dtype)
-            x.requires_grad_()
-            y = torch.from_numpy(np_y).cuda().long()
-
+            if IS_CUDA_AVAILABLE:
+                x = torch.from_numpy(np_x).cuda().type(dtype)
+                x.requires_grad_()
+                y = torch.from_numpy(np_y).cuda().long()
+            elif IS_MUSA_AVAILABLE:
+                x = torch.from_numpy(np_x).musa().type(dtype)
+                x.requires_grad_()
+                y = torch.from_numpy(np_y).musa().long()      
+            
             loss = softmax_focal_loss(x, y, gamma, alpha, None, 'mean')
             loss.backward()
 
@@ -80,7 +85,7 @@ class Testfocalloss:
             assert np.allclose(x.grad.data.cpu(), np_x_grad, 1e-2)
 
     def _test_grad_softmax(self, dtype=torch.float):
-        if not torch.cuda.is_available():
+        if not (torch.cuda.is_available() or IS_MUSA_AVAILABLE):
             return
         from mmcv.ops import SoftmaxFocalLoss
         alpha = 0.25
@@ -89,10 +94,14 @@ class Testfocalloss:
             np_x = np.array(case[0])
             np_y = np.array(case[1])
 
-            x = torch.from_numpy(np_x).cuda().type(dtype)
-            x.requires_grad_()
-            y = torch.from_numpy(np_y).cuda().long()
-
+            if IS_CUDA_AVAILABLE:
+                x = torch.from_numpy(np_x).cuda().type(dtype)
+                x.requires_grad_()
+                y = torch.from_numpy(np_y).cuda().long()
+            elif IS_MUSA_AVAILABLE:
+                x = torch.from_numpy(np_x).musa().type(dtype)
+                x.requires_grad_()
+                y = torch.from_numpy(np_y).musa().long()
             floss = SoftmaxFocalLoss(gamma, alpha)
             if _USING_PARROTS:
                 # gradcheck(floss, (x, y),
@@ -102,7 +111,7 @@ class Testfocalloss:
                 gradcheck(floss, (x, y), eps=1e-2, atol=1e-2)
 
     def _test_grad_sigmoid(self, dtype=torch.float):
-        if not torch.cuda.is_available():
+        if not (torch.cuda.is_available() or IS_MUSA_AVAILABLE):
             return
         from mmcv.ops import SigmoidFocalLoss
         alpha = 0.25
@@ -111,10 +120,14 @@ class Testfocalloss:
             np_x = np.array(case[0])
             np_y = np.array(case[1])
 
-            x = torch.from_numpy(np_x).cuda().type(dtype)
-            x.requires_grad_()
-            y = torch.from_numpy(np_y).cuda().long()
-
+            if IS_CUDA_AVAILABLE:
+                x = torch.from_numpy(np_x).cuda().type(dtype)
+                x.requires_grad_()
+                y = torch.from_numpy(np_y).cuda().long()
+            elif IS_MUSA_AVAILABLE:
+                x = torch.from_numpy(np_x).musa().type(dtype)
+                x.requires_grad_()
+                y = torch.from_numpy(np_y).musa().long()
             floss = SigmoidFocalLoss(gamma, alpha)
             if _USING_PARROTS:
                 # gradcheck(floss, (x, y),
@@ -127,6 +140,9 @@ class Testfocalloss:
         self._test_softmax(dtype=torch.float)
 
     def test_softmax_half(self):
+        #TODO@haowen.han@Mmthreads.com:not supported by musa yet!
+        if IS_MUSA_AVAILABLE:
+            return
         self._test_softmax(dtype=torch.half)
 
     @pytest.mark.parametrize('device', [
@@ -141,7 +157,11 @@ class Testfocalloss:
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
-                not IS_MLU_AVAILABLE, reason='requires MLU support'))
+                not IS_MLU_AVAILABLE, reason='requires MLU support')),
+        pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
     ])
     def test_sigmoid_float(self, device):
         self._test_sigmoid(device=device, dtype=torch.float)
@@ -158,9 +178,16 @@ class Testfocalloss:
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
-                not IS_MLU_AVAILABLE, reason='requires MLU support'))
+                not IS_MLU_AVAILABLE, reason='requires MLU support')),
+        pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
     ])
     def test_sigmoid_half(self, device):
+        #TODO@haowen.han@mthreads.com:not supported by musa yet!
+        if IS_MUSA_AVAILABLE:
+            return
         self._test_sigmoid(device, dtype=torch.half)
 
     def test_grad_softmax_float(self):

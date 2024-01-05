@@ -3,7 +3,7 @@ import pytest
 import torch
 
 from mmcv.ops import gather_points
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
 
 
 class TestGatherPoints:
@@ -16,7 +16,11 @@ class TestGatherPoints:
         pytest.param(
             'npu',
             marks=pytest.mark.skipif(
-                not IS_NPU_AVAILABLE, reason='requires NPU support'))
+                not IS_NPU_AVAILABLE, reason='requires NPU support')),
+        pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_NPU_AVAILABLE, reason='requires MUSA support'))
     ])
     def test_gather_points_all_close(self, device):
         features = torch.tensor(

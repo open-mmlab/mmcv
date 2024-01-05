@@ -1,18 +1,32 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
-
+from mmengine.device import is_musa_available
 from mmcv.ops import grouping_operation
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available(), reason='requires CUDA support')
-@pytest.mark.parametrize('dtype', [torch.half, torch.float, torch.double])
+    not (torch.cuda.is_available() or is_musa_available), reason='requires CUDA/MUSA support')
+@pytest.mark.parametrize('dtype', [
+    pytest.param(
+        torch.half,
+        marks=pytest.mark.skipif(
+            is_musa_available, reason='TODO haowen.han@mthreads.com: not supported yet')),
+    torch.float, 
+    pytest.param(
+        torch.double,
+        marks=pytest.mark.skipif(
+            is_musa_available, reason='TODO haowen.han@mthreads.com: not supported yet'))
+])
 def test_grouping_points(dtype):
+    if torch.cuda.is_available():
+        device = 'cuda'
+    elif is_musa_available:
+        device = 'musa'
     idx = torch.tensor([[[0, 0, 0], [3, 3, 3], [8, 8, 8], [0, 0, 0], [0, 0, 0],
                          [0, 0, 0]],
                         [[0, 0, 0], [6, 6, 6], [9, 9, 9], [0, 0, 0], [0, 0, 0],
-                         [0, 0, 0]]]).int().cuda()
+                         [0, 0, 0]]]).int().to(device)
     features = torch.tensor([[[
         0.5798, -0.7981, -0.9280, -1.3311, 1.3687, 0.9277, -0.4164, -1.8274,
         0.9268, 0.8414
@@ -37,7 +51,7 @@ def test_grouping_points(dtype):
                                   -0.6646, -0.6870, -0.1125, -0.2224, -0.3445,
                                   -1.4049, 0.4990, -0.7037, -0.9924, 0.0386
                               ]]],
-                            dtype=dtype).cuda()
+                            dtype=dtype).to(device)
 
     output = grouping_operation(features, idx)
     expected_output = torch.tensor(
@@ -59,17 +73,31 @@ def test_grouping_points(dtype):
           [[-0.6646, -0.6646, -0.6646], [0.4990, 0.4990, 0.4990],
            [0.0386, 0.0386, 0.0386], [-0.6646, -0.6646, -0.6646],
            [-0.6646, -0.6646, -0.6646], [-0.6646, -0.6646, -0.6646]]]],
-        dtype=dtype).cuda()
+        dtype=dtype).to(device)
     assert torch.allclose(output, expected_output)
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available(), reason='requires CUDA support')
-@pytest.mark.parametrize('dtype', [torch.half, torch.float, torch.double])
+    not (torch.cuda.is_available() or is_musa_available), reason='requires CUDA/MUSA support')
+@pytest.mark.parametrize('dtype', [
+    pytest.param(
+        torch.half,
+        marks=pytest.mark.skipif(
+            is_musa_available, reason='TODO haowen.han@mthreads.com: not supported yet')),
+    torch.float, 
+    pytest.param(
+        torch.double,
+        marks=pytest.mark.skipif(
+            is_musa_available, reason='TODO haowen.han@mthreads.com: not supported yet'))
+])
 def test_stack_grouping_points(dtype):
+    if torch.cuda.is_available():
+        device = 'cuda'
+    elif is_musa_available:
+        device = 'musa'
     idx = torch.tensor([[0, 0, 0], [3, 3, 3], [8, 8, 8], [1, 1, 1], [0, 0, 0],
                         [2, 2, 2], [0, 0, 0], [6, 6, 6], [9, 9, 9], [0, 0, 0],
-                        [1, 1, 1], [0, 0, 0]]).int().cuda()
+                        [1, 1, 1], [0, 0, 0]]).int().to(device)
     features = torch.tensor([[
         0.5798, -0.7981, -0.9280, -1.3311, 1.3687, 0.9277, -0.4164, -1.8274,
         0.9268, 0.8414
@@ -94,9 +122,9 @@ def test_stack_grouping_points(dtype):
                                  -0.6646, -0.6870, -0.1125, -0.2224, -0.3445,
                                  -1.4049, 0.4990, -0.7037, -0.9924, 0.0386
                              ]],
-                            dtype=dtype).cuda()
-    features_batch_cnt = torch.tensor([3, 3]).int().cuda()
-    indices_batch_cnt = torch.tensor([6, 6]).int().cuda()
+                            dtype=dtype).to(device)
+    features_batch_cnt = torch.tensor([3, 3]).int().to(device)
+    indices_batch_cnt = torch.tensor([6, 6]).int().to(device)
     output = grouping_operation(features, idx, features_batch_cnt,
                                 indices_batch_cnt)
     expected_output = torch.tensor(
@@ -160,5 +188,5 @@ def test_stack_grouping_points(dtype):
           [-0.3190, -0.3190, -0.3190], [0.7798, 0.7798, 0.7798],
           [-0.3693, -0.3693, -0.3693], [-0.9457, -0.9457, -0.9457],
           [-0.2942, -0.2942, -0.2942], [-1.8527, -1.8527, -1.8527]]],
-        dtype=dtype).cuda()
+        dtype=dtype).to(device)
     assert torch.allclose(output, expected_output)

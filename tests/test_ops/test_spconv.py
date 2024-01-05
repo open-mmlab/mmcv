@@ -10,7 +10,7 @@ from mmcv.ops import (SparseConvTensor, SparseInverseConv3d, SparseSequential,
 if torch.__version__ == 'parrots':
     pytest.skip('not supported in parrots now', allow_module_level=True)
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE
 
 
 def make_sparse_convmodule(in_channels,
@@ -86,10 +86,18 @@ def make_sparse_convmodule(in_channels,
     pytest.param(
         'mlu',
         marks=pytest.mark.skipif(
-            not IS_MLU_AVAILABLE, reason='requires MLU support'))
+            not IS_MLU_AVAILABLE, reason='requires MLU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
 def test_make_sparse_convmodule(device):
-    torch.cuda.empty_cache()
+    if IS_CUDA_AVAILABLE:
+        torch.cuda.empty_cache()
+    elif IS_MUSA_AVAILABLE:
+        torch.musa.empty_cache()
+
     voxel_features = torch.tensor([[6.56126, 0.9648336, -1.7339306, 0.315],
                                    [6.8162713, -2.480431, -1.3616394, 0.36],
                                    [11.643568, -4.744306, -1.3580885, 0.16],

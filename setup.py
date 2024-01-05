@@ -269,7 +269,7 @@ def get_extensions():
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/pytorch'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
-        elif os.getenv('FORCE_MUSA', '0') == '1':
+        elif hasattr(torch, 'musa') or os.getenv('FORCE_MUSA', '0') == '1':
             define_macros += [('MMCV_WITH_MUSA', None)]
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \

@@ -4,7 +4,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
 
 
 class Loss(nn.Module):
@@ -32,7 +32,11 @@ class TestPSAMask:
         pytest.param(
             'npu',
             marks=pytest.mark.skipif(
-                not IS_NPU_AVAILABLE, reason='requires NPU support'))
+                not IS_NPU_AVAILABLE, reason='requires NPU support')),
+        pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
     ])
     def test_psa_mask_collect(self, device):
         from mmcv.ops import PSAMask
@@ -84,7 +88,11 @@ class TestPSAMask:
         pytest.param(
             'npu',
             marks=pytest.mark.skipif(
-                not IS_NPU_AVAILABLE, reason='requires NPU support'))
+                not IS_NPU_AVAILABLE, reason='requires NPU support')),
+        pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
     ])
     def test_psa_mask_distribute(self, device):
         from mmcv.ops import PSAMask

@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
 
 _USING_PARROTS = True
 try:
@@ -35,7 +35,7 @@ outputs = [([[[[1., 2.], [3., 4.]]]], [[[[1., 1.], [1., 1.]]]]),
 class TestRoiPool:
 
     def test_roipool_gradcheck(self):
-        if not torch.cuda.is_available():
+        if not (torch.cuda.is_available() or IS_MUSA_AVAILABLE):
             return
         from mmcv.ops import RoIPool
         pool_h = 2
@@ -46,15 +46,24 @@ class TestRoiPool:
             np_input = np.array(case[0])
             np_rois = np.array(case[1])
 
-            x = torch.tensor(np_input, device='cuda', requires_grad=True)
-            rois = torch.tensor(np_rois, device='cuda')
-
+            if torch.cuda.is_available():
+                x = torch.tensor(np_input, device='cuda', requires_grad=True)
+                rois = torch.tensor(np_rois, device='cuda')
+            elif IS_MUSA_AVAILABLE:
+                x = torch.tensor(np_input, device='musa', requires_grad=True)
+                rois = torch.tensor(np_rois, device='musa')
+                
             froipool = RoIPool((pool_h, pool_w), spatial_scale)
 
             if _USING_PARROTS:
                 pass
                 # gradcheck(froipool, (x, rois), no_grads=[rois])
             else:
+                #TODO:not only support float haowen.han@mthreads.com
+                if IS_MUSA_AVAILABLE:
+                    froipool=froipool.float()
+                    x=x.float()
+                    rois=rois.float()
                 gradcheck(froipool, (x, rois), eps=1e-2, atol=1e-2)
 
     def _test_roipool_allclose(self, device, dtype=torch.float):
@@ -89,7 +98,11 @@ class TestRoiPool:
         pytest.param(
             'npu',
             marks=pytest.mark.skipif(
-                not IS_NPU_AVAILABLE, reason='requires NPU support'))
+                not IS_NPU_AVAILABLE, reason='requires NPU support')),
+        pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_NPU_AVAILABLE, reason='requires MUSA support'))
     ])
     @pytest.mark.parametrize('dtype', [
         torch.float,

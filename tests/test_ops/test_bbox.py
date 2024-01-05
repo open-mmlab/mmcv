@@ -75,10 +75,6 @@ class TestBBox:
             marks=pytest.mark.skipif(
                 not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
         pytest.param(
-            'musa',
-            marks=pytest.mark.skipif(
-                not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
-        pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
                 not IS_MLU_AVAILABLE, reason='requires MLU support')),

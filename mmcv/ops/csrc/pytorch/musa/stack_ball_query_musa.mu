@@ -31,7 +31,7 @@ void StackBallQueryForwardMUSAKernelLauncher(float max_radius, int nsample,
   // blockIdx.x(col), blockIdx.y(row)
   dim3 blocks(DIVUP(M, THREADS_PER_BLOCK));
   dim3 threads(THREADS_PER_BLOCK);
-
+  
   AT_DISPATCH_FLOATING_TYPES(
       new_xyz.scalar_type(), "stack_ball_query_forward_musa_kernel", [&] {
         stack_ball_query_forward_musa_kernel<scalar_t>

@@ -2,13 +2,17 @@
 import numpy as np
 import pytest
 import torch
-
+from mmengine.device import is_musa_available
 from mmcv.ops import points_in_polygons
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available(), reason='requires CUDA support')
+    not (torch.cuda.is_available() or is_musa_available), reason='requires CUDA/MUSA support')
 def test_points_in_polygons():
+    if torch.cuda.is_available():
+        device = 'cuda'
+    elif is_musa_available:
+        device = 'musa'
     points = np.array([[300., 300.], [400., 400.], [100., 100], [300, 250],
                        [100, 0]])
     polygons = np.array([[200., 200., 400., 400., 500., 200., 400., 100.],
@@ -16,8 +20,8 @@ def test_points_in_polygons():
                          [300., 300., 600., 700., 700., 700., 700., 100.]])
     expected_output = np.array([[0., 0., 0.], [0., 0., 1.], [0., 0., 0.],
                                 [1., 0., 0.], [0., 0., 0.]])
-    points = torch.from_numpy(points).cuda().float()
-    polygons = torch.from_numpy(polygons).cuda().float()
-    expected_output = torch.from_numpy(expected_output).cuda().float()
+    points = torch.from_numpy(points).to(device).float()
+    polygons = torch.from_numpy(polygons).to(device).float()
+    expected_output = torch.from_numpy(expected_output).to(device).float()
     assert torch.allclose(
         points_in_polygons(points, polygons), expected_output, 1e-3)

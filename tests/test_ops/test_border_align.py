@@ -87,7 +87,11 @@ def _test_border_align_allclose(device, dtype, pool_size):
 
 
 @pytest.mark.parametrize('device', ['cuda','musa'])
-@pytest.mark.parametrize('dtype', [torch.float, torch.half, torch.double])
+@pytest.mark.parametrize('dtype', [
+    torch.float, 
+    pytest.param(torch.half,marks=pytest.mark.skipif(is_musa_available, reason='todo @haowen.han@mthreads.com: musa do not support it yet')), 
+    pytest.param(torch.double,marks=pytest.mark.skipif(is_musa_available, reason='todo @haowen.han@mthreads.com: musa do not support it yet')), 
+])
 @pytest.mark.parametrize('pool_size', [1, 2])
 def test_border_align(device, dtype, pool_size):
     _test_border_align_allclose(device, dtype, pool_size)

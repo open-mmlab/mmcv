@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 import torch
-
+from mmengine.device import is_musa_available
 from mmcv.ops import RiRoIAlignRotated
 
 if torch.__version__ == 'parrots':
@@ -54,11 +54,15 @@ clockwise = False
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available(), reason='requires CUDA support')
+    not (torch.cuda.is_available() or is_musa_available) , reason='requires CUDA/MUSA support')
 def test_roialign_rotated_gradcheck():
+    if torch.cuda.is_available():
+        device = 'cuda'
+    elif is_musa_available:
+        device = 'musa'
     x = torch.tensor(
-        np_feature, dtype=torch.float, device='cuda', requires_grad=True)
-    rois = torch.tensor(np_rois, dtype=torch.float, device='cuda')
+        np_feature, dtype=torch.float, device=device, requires_grad=True)
+    rois = torch.tensor(np_rois, dtype=torch.float, device=device)
     froipool = RiRoIAlignRotated((pool_h, pool_w), spatial_scale, num_samples,
                                  num_orientations, clockwise)
     if _USING_PARROTS:
@@ -69,11 +73,15 @@ def test_roialign_rotated_gradcheck():
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available(), reason='requires CUDA support')
+    not (torch.cuda.is_available() or is_musa_available), reason='requires CUDA/MUSA support')
 def test_roialign_rotated_allclose():
+    if torch.cuda.is_available():
+        device = 'cuda'
+    elif is_musa_available:
+        device = 'musa'
     x = torch.tensor(
-        np_feature, dtype=torch.float, device='cuda', requires_grad=True)
-    rois = torch.tensor(np_rois, dtype=torch.float, device='cuda')
+        np_feature, dtype=torch.float, device=device, requires_grad=True)
+    rois = torch.tensor(np_rois, dtype=torch.float, device=device)
     froipool = RiRoIAlignRotated((pool_h, pool_w), spatial_scale, num_samples,
                                  num_orientations, clockwise)
     output = froipool(x, rois)

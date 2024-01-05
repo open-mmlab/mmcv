@@ -180,7 +180,7 @@ def _conv2d_gradfix(
             ctx.input_shape = input.shape
 
             # Simple 1x1 convolution => cuBLAS (only on Volta, not on Ampere).
-            if is_cuda_available and weight_shape[2:] == stride == dilation == (
+            if is_cuda_available() and weight_shape[2:] == stride == dilation == (
                     1, 1) and padding == (
                         0, 0) and torch.cuda.get_device_capability(
                             input.device) < (8, 0):

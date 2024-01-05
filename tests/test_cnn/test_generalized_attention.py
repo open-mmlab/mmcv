@@ -74,14 +74,16 @@ def test_context_block():
         gen_attention_block.cuda().type(torch.half)
         out = gen_attention_block(imgs)
         assert out.shape == imgs.shape
-    elif is_musa_available:
-        imgs = torch.randn(2, 16, 20, 20).musa().to(torch.half)
-        gen_attention_block = GeneralizedAttention(
-            16,
-            spatial_range=-1,
-            num_heads=8,
-            attention_type='1111',
-            kv_stride=2)
-        gen_attention_block.musa().type(torch.half)
-        out = gen_attention_block(imgs)
-        assert out.shape == imgs.shape
+
+    # @TODO by haowen.han@mthreads.com: mudnn do not support yet
+    # elif is_musa_available:
+    #     imgs = torch.randn(2, 16, 20, 20).musa().to(torch.half)
+    #     gen_attention_block = GeneralizedAttention(
+    #         16,
+    #         spatial_range=-1,
+    #         num_heads=8,
+    #         attention_type='1111',
+    #         kv_stride=2)
+    #     gen_attention_block.musa().type(torch.half)
+    #     out = gen_attention_block(imgs)
+    #     assert out.shape == imgs.shape

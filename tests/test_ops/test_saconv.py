@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 import torch.nn as nn
-
+from mmengine.device import is_musa_available
 from mmcv.ops import SAConv2d
 
 
@@ -24,12 +24,13 @@ def test_sacconv():
 
     # test with deform
     deform_saconv = SAConv2d(3, 5, kernel_size=3, padding=1, use_deform=True)
-    if torch.cuda.is_available():
-        x = torch.rand(1, 3, 256, 256).cuda()
+    if torch.cuda.is_available() or is_musa_available:
+        device = 'cuda' if torch.cuda.is_available() else "musa"
+        x = torch.rand(1, 3, 256, 256).to(device)
         deform_saconv = SAConv2d(
-            3, 5, kernel_size=3, padding=1, use_deform=True).cuda()
-        deform_sac_out = deform_saconv(x).cuda()
-        refer_conv = nn.Conv2d(3, 5, kernel_size=3, padding=1).cuda()
+            3, 5, kernel_size=3, padding=1, use_deform=True).to(device)
+        deform_sac_out = deform_saconv(x).to(device)
+        refer_conv = nn.Conv2d(3, 5, kernel_size=3, padding=1).to(device)
         refer_out = refer_conv(x)
         assert deform_sac_out.shape == refer_out.shape
     else:

@@ -575,13 +575,13 @@ def test_basetransformerlayer():
         ),
     )
     baselayers = ModuleList([copy.deepcopy(baselayer) for _ in range(2)])
-    if is_cuda_available:
+    if is_cuda_available():
         baselayers.to('cuda')
         x = torch.rand(2, 10, 256).cuda()
         for m in baselayers:
             x = m(x)
             assert x.shape == torch.Size([2, 10, 256])
-    elif is_musa_available:
+    elif is_musa_available():
         baselayers.to('musa')
         x = torch.rand(2, 10, 256).musa()
         for m in baselayers:

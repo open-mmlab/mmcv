@@ -47,12 +47,12 @@ class SyncBatchNormFunction(Function):
         self.group = group
         self.group_size = group_size
         self.stats_mode = stats_mode
-        if is_cuda_available:
+        if is_cuda_available():
             assert isinstance(
                     input, (torch.HalfTensor, torch.FloatTensor,
                             torch.cuda.HalfTensor, torch.cuda.FloatTensor)), \
                f'only support Half or Float Tensor, but {input.type()}'
-        elif is_musa_available:
+        elif is_musa_available():
             assert isinstance(
                     input, (torch.HalfTensor, torch.FloatTensor,
                             torch.musa.HalfTensor, torch.musa.FloatTensor)), \

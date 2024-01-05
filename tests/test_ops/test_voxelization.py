@@ -4,7 +4,7 @@ import pytest
 import torch
 
 from mmcv.ops import Voxelization
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
 
 
 def _get_voxel_points_indices(points, coors, voxel):
@@ -17,7 +17,11 @@ def _get_voxel_points_indices(points, coors, voxel):
     pytest.param(
         'cuda:0',
         marks=pytest.mark.skipif(
-            not IS_CUDA_AVAILABLE, reason='requires CUDA support'))
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    pytest.param(
+        'musa:0',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
 def test_voxelization(device_type):
     voxel_size = [0.5, 0.5, 0.5]
@@ -63,8 +67,12 @@ def test_voxelization(device_type):
         assert num_points_current_voxel == expected_num_points_per_voxel[i]
 
 
-@pytest.mark.skipif(not IS_CUDA_AVAILABLE, reason='requires CUDA support')
+@pytest.mark.skipif(not (IS_CUDA_AVAILABLE or IS_MUSA_AVAILABLE), reason='requires CUDA/MUSA support')
 def test_voxelization_nondeterministic():
+    #TODO:aten::unique_dim is not supported by musa yet! haowen.han@mthreads.com
+    if IS_MUSA_AVAILABLE:
+        return 
+    device = 'musa' if IS_MUSA_AVAILABLE else 'cuda'
     voxel_size = [0.5, 0.5, 0.5]
     point_cloud_range = [0, -40, -3, 70.4, 40, 1]
 
@@ -87,7 +95,7 @@ def test_voxelization_nondeterministic():
         deterministic=False)
 
     # test hard_voxelization (non-deterministic version) on gpu
-    points = torch.tensor(points).contiguous().to(device='cuda:0')
+    points = torch.tensor(points).contiguous().to(device=device)
     voxels, coors, num_points_per_voxel = hard_voxelization.forward(points)
     coors = coors.cpu().detach().numpy().tolist()
     voxels = voxels.cpu().detach().numpy().tolist()
@@ -123,7 +131,7 @@ def test_voxelization_nondeterministic():
 
     # test hard_voxelization (non-deterministic version) on gpu
     # with all input point in range
-    points = torch.tensor(points).contiguous().to(device='cuda:0')[:max_voxels]
+    points = torch.tensor(points).contiguous().to(device=device)[:max_voxels]
     coors_all = dynamic_voxelization.forward(points)
     valid_mask = coors_all.ge(0).all(-1)
     points = points[valid_mask]
@@ -151,7 +159,11 @@ def test_voxelization_nondeterministic():
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
-                not IS_MLU_AVAILABLE, reason='requires MLU support'))
+                not IS_MLU_AVAILABLE, reason='requires MLU support')),
+        pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
     ])
 def test_voxelization_mlu(device_type):
     voxel_size = [0.5, 0.5, 0.5]
@@ -186,7 +198,11 @@ def test_voxelization_mlu(device_type):
     pytest.param(
         'npu',
         marks=pytest.mark.skipif(
-            not IS_NPU_AVAILABLE, reason='requires NPU support'))
+            not IS_NPU_AVAILABLE, reason='requires NPU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
 def test_voxelization_npu(device_type):
     voxel_size = [0.5, 0.5, 0.5]

@@ -7,7 +7,7 @@ import torch
 from mmengine.utils import digit_version
 from mmengine.utils.dl_utils import TORCH_VERSION
 
-from mmcv.utils import IS_CUDA_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MUSA_AVAILABLE
 
 try:
     # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast
@@ -41,8 +41,8 @@ dcn_offset_b_grad = [
 
 class TestMdconv:
 
-    def _test_mdconv(self, dtype=torch.float, device='cuda'):
-        if not torch.cuda.is_available() and device == 'cuda':
+    def _test_mdconv(self, device, dtype=torch.float):
+        if (not torch.cuda.is_available() and device == 'cuda') and (not IS_MUSA_AVAILABLE and device == 'musa'):
             pytest.skip('test requires GPU')
         from mmcv.ops import ModulatedDeformConv2dPack
         input = torch.tensor(input_t, dtype=dtype, device=device)
@@ -59,7 +59,8 @@ class TestMdconv:
 
         if device == 'cuda':
             dcn.cuda()
-
+        elif device == 'musa':
+            dcn.musa()
         dcn.weight.data.fill_(1.)
         dcn.type(dtype)
         output = dcn(input)
@@ -85,10 +86,14 @@ class TestMdconv:
         Args:
             input_dtype: torch.float or torch.half.
         """
-        if not torch.cuda.is_available():
+        if not (torch.cuda.is_available() or IS_MUSA_AVAILABLE):
             return
+        if torch.cuda.is_available():
+            device = 'cuda'
+        elif IS_MUSA_AVAILABLE:
+            device = 'musa'
         from mmcv.ops import ModulatedDeformConv2dPack
-        input = torch.tensor(input_t).cuda().type(input_dtype)
+        input = torch.tensor(input_t).to(device).type(input_dtype)
         input.requires_grad = True
 
         dcn = ModulatedDeformConv2dPack(
@@ -98,7 +103,7 @@ class TestMdconv:
             stride=1,
             padding=1,
             deform_groups=1,
-            bias=False).cuda()
+            bias=False).to(device)
         dcn.weight.data.fill_(1.)
         output = dcn(input)
         output.sum().backward()
@@ -119,6 +124,10 @@ class TestMdconv:
             'cuda',
             marks=pytest.mark.skipif(
                 not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
     ])
     def test_mdconv_float(self, device):
         self._test_mdconv(dtype=torch.float, device=device)
@@ -129,16 +138,27 @@ class TestMdconv:
             'cuda',
             marks=pytest.mark.skipif(
                 not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
     ])
     def test_mdconv_double(self, device):
+        #TODO haowen.han@mthreads.com:not supported by musa yet!
+        if IS_MUSA_AVAILABLE:
+            return
         self._test_mdconv(dtype=torch.double, device=device)
 
     def test_mdconv_half(self):
+        #TODO: haowen.han@mthreads.com not supported yet!
+        if IS_MUSA_AVAILABLE:
+            return
         self._test_mdconv(torch.half)
         # test amp when torch version >= '1.6.0', the type of
         # input data for mdconv might be torch.float or torch.half
         if (TORCH_VERSION != 'parrots'
                 and digit_version(TORCH_VERSION) >= digit_version('1.6.0')):
-            with autocast(enabled=True):
-                self._test_amp_mdconv(torch.float)
-                self._test_amp_mdconv(torch.half)
+            if IS_CUDA_AVAILABLE:
+                with autocast(enabled=True):
+                    self._test_amp_mdconv(torch.float)
+                    self._test_amp_mdconv(torch.half)

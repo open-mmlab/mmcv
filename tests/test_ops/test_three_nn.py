@@ -3,7 +3,7 @@ import pytest
 import torch
 
 from mmcv.ops import three_nn
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE
 
 known = [[[-1.8373, 3.5605, -0.7867], [0.7615, 2.9420, 0.2314],
           [-0.6503, 3.6637, -1.0622], [-1.8373, 3.5605, -0.7867],
@@ -48,7 +48,11 @@ expected_idx = [[[0, 3, 4], [1, 2, 0], [2, 0, 3], [0, 3, 4], [2, 1, 0],
     pytest.param(
         'mlu',
         marks=pytest.mark.skipif(
-            not IS_MLU_AVAILABLE, reason='requires MLU support'))
+            not IS_MLU_AVAILABLE, reason='requires MLU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
 @pytest.mark.parametrize('dtype,rtol', [(torch.float, 1e-8),
                                         (torch.half, 1e-3)])

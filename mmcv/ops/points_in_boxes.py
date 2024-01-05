@@ -47,10 +47,10 @@ def points_in_boxes_part(points: Tensor, boxes: Tensor) -> Tensor:
     points_device = points.get_device()
     assert points_device == boxes.get_device(), \
         'Points and boxes should be put on the same device'
-    if is_cuda_available:
+    if is_cuda_available():
         if torch.cuda.current_device() != points_device:
             torch.cuda.set_device(points_device)
-    if is_musa_available:
+    if is_musa_available():
         if torch.musa.current_device() != points_device:
             torch.musa.set_device(points_device)
 
@@ -131,10 +131,10 @@ def points_in_boxes_all(points: Tensor, boxes: Tensor) -> Tensor:
     points_device = points.get_device()
     assert points_device == boxes.get_device(), \
         'Points and boxes should be put on the same device'
-    if is_cuda_available:
+    if is_cuda_available():
         if torch.cuda.current_device() != points_device:
             torch.cuda.set_device(points_device)
-    if is_musa_available:
+    if is_musa_available():
         if torch.musa.current_device() != points_device:
             torch.musa.set_device(points_device)
 

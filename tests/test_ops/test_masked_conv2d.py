@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE
 
 
 class TestMaskedConv2d:
@@ -16,7 +16,11 @@ class TestMaskedConv2d:
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
-                not IS_MLU_AVAILABLE, reason='requires MLU support'))
+                not IS_MLU_AVAILABLE, reason='requires MLU support')),
+        pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
     ])
     def test_masked_conv2d_all_close(self, device):
         from mmcv.ops import MaskedConv2d

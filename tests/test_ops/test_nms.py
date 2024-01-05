@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE
 
 
 class Testnms:
@@ -14,6 +14,10 @@ class Testnms:
             'cuda',
             marks=pytest.mark.skipif(
                 not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
@@ -40,7 +44,7 @@ class Testnms:
         assert np.allclose(inds.cpu().numpy(), np_inds)  # test gpu
 
     def test_softnms_allclose(self):
-        if not torch.cuda.is_available():
+        if not (torch.cuda.is_available() or IS_MUSA_AVAILABLE):
             return
         from mmcv.ops import soft_nms
         np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
@@ -95,8 +99,12 @@ class Testnms:
             assert np.allclose(inds.cpu().numpy(), np_output[m]['inds'])
 
         if torch.__version__ != 'parrots':
-            boxes = boxes.cuda()
-            scores = scores.cuda()
+            if IS_CUDA_AVAILABLE:
+                boxes = boxes.cuda()
+                scores = scores.cuda()
+            elif IS_MUSA_AVAILABLE:
+                boxes = boxes.musa()
+                scores = scores.musa()          
             for iou, sig, mscore, m in configs:
                 dets, inds = soft_nms(
                     boxes,
@@ -109,7 +117,7 @@ class Testnms:
                 assert np.allclose(inds.cpu().numpy(), np_output[m]['inds'])
 
     def test_nms_match(self):
-        if not torch.cuda.is_available():
+        if not (torch.cuda.is_available() or IS_MUSA_AVAILABLE):
             return
         from mmcv.ops import nms, nms_match
         iou_thr = 0.6

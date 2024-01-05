@@ -7,7 +7,7 @@ import pytest
 import torch
 import torch.distributed as dist
 import torch.nn as nn
-
+from mmengine.device import is_musa_available, is_cuda_available
 if platform.system() == 'Windows':
     import regex as re
 else:
@@ -28,10 +28,14 @@ class TestSyncBN:
         os.environ['MASTER_PORT'] = '12341'
         os.environ['WORLD_SIZE'] = str(world_size)
         os.environ['RANK'] = str(rank)
-
-        dist.init_process_group('nccl')
-        torch.cuda.set_device(local_rank)
-
+        
+        if is_cuda_available():
+            dist.init_process_group('nccl')
+            torch.cuda.set_device(local_rank)
+        elif is_musa_available():
+            dist.init_process_group('mccl')
+            torch.musa.set_device(local_rank)
+        
     def _test_syncbn_train(self, size=1, half=False):
 
         if 'SLURM_NTASKS' not in os.environ or int(
@@ -49,10 +53,14 @@ class TestSyncBN:
         rank = dist.get_rank()
 
         torch.manual_seed(9)
-        torch.cuda.manual_seed(9)
-
-        self.x = torch.rand(16, 3, 2, 3).cuda()
-        self.y_bp = torch.rand(16, 3, 2, 3).cuda()
+        if is_cuda_available():
+            torch.cuda.manual_seed(9)
+            device = 'cuda'
+        elif is_musa_available():
+            torch.musa.manual_seed(9)
+            device = 'musa'
+        self.x = torch.rand(16, 3, 2, 3).to(device)
+        self.y_bp = torch.rand(16, 3, 2, 3).to(device)
 
         if half:
             self.x = self.x.half()
@@ -60,7 +68,11 @@ class TestSyncBN:
         dist.broadcast(self.x, src=0)
         dist.broadcast(self.y_bp, src=0)
 
-        torch.cuda.synchronize()
+        if is_cuda_available():
+            torch.cuda.synchronize()
+        elif is_musa_available():
+            torch.musa.synchronize()
+                 
         if size == 1:
             groups = [None, None, None, None]
             groups[0] = dist.new_group([0])
@@ -75,13 +87,13 @@ class TestSyncBN:
             group = groups[rank]
         elif size == 4:
             group = dist.group.WORLD
-        syncbn = SyncBatchNorm(3, group=group).cuda()
+        syncbn = SyncBatchNorm(3, group=group).to(device)
         syncbn.weight.data[0] = 0.2
         syncbn.weight.data[1] = 0.5
         syncbn.weight.data[2] = 0.7
         syncbn.train()
 
-        bn = nn.BatchNorm2d(3).cuda()
+        bn = nn.BatchNorm2d(3).to(device)
         bn.weight.data[0] = 0.2
         bn.weight.data[1] = 0.5
         bn.weight.data[2] = 0.7
@@ -160,10 +172,14 @@ class TestSyncBN:
         rank = dist.get_rank()
 
         torch.manual_seed(9)
-        torch.cuda.manual_seed(9)
-
-        self.x = torch.rand(0, 3, 2, 3).cuda()
-        self.y_bp = torch.rand(0, 3, 2, 3).cuda()
+        if is_cuda_available():
+            torch.cuda.manual_seed(9)
+            device = 'cuda'
+        elif is_musa_available():
+            torch.musa.manual_seed(9)
+            device = 'musa'
+        self.x = torch.rand(0, 3, 2, 3).to(device)
+        self.y_bp = torch.rand(0, 3, 2, 3).to(device)
 
         if half:
             self.x = self.x.half()
@@ -171,7 +187,11 @@ class TestSyncBN:
         dist.broadcast(self.x, src=0)
         dist.broadcast(self.y_bp, src=0)
 
-        torch.cuda.synchronize()
+        if is_cuda_available():
+            torch.cuda.synchronize()
+        elif is_musa_available():
+            torch.musa.synchronize()
+        
         if size == 1:
             groups = [None, None, None, None]
             groups[0] = dist.new_group([0])
@@ -187,13 +207,13 @@ class TestSyncBN:
         elif size == 4:
             group = dist.group.WORLD
 
-        syncbn = SyncBatchNorm(3, group=group, stats_mode='N').cuda()
+        syncbn = SyncBatchNorm(3, group=group, stats_mode='N').to(device)
         syncbn.weight.data[0] = 0.2
         syncbn.weight.data[1] = 0.5
         syncbn.weight.data[2] = 0.7
         syncbn.train()
 
-        bn = nn.BatchNorm2d(3).cuda()
+        bn = nn.BatchNorm2d(3).to(device)
         bn.weight.data[0] = 0.2
         bn.weight.data[1] = 0.5
         bn.weight.data[2] = 0.7

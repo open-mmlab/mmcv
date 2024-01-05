@@ -27,10 +27,10 @@ class FurthestPointSampling(Function):
         assert points_xyz.is_contiguous()
 
         B, N = points_xyz.size()[:2]
-        if is_cuda_available:
+        if is_cuda_available():
             output = torch.cuda.IntTensor(B, num_points)
             temp = torch.cuda.FloatTensor(B, N).fill_(1e10)
-        elif is_musa_available:
+        elif is_musa_available():
             output = torch.musa.IntTensor(B, num_points)
             temp = torch.musa.FloatTensor(B, N).fill_(1e10)
         ext_module.furthest_point_sampling_forward(
