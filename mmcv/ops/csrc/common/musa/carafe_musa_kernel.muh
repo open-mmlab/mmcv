@@ -91,71 +91,71 @@ __global__ void BatchTranspose2DMUSAKernel(const int N, const int H,
     }
   }
 }
-template <typename scalar_t>
-__global__ void CARAFEForward(
-    const int num_kernels, const scalar_t *__restrict__ bottom_data,
-    const scalar_t *__restrict__ bottom_masks, const int kernel_size,
-    const int group_size, const int scale_factor, const int channels,
-    const int down_height, const int down_width, const int height,
-    const int width, const int mask_channels, scalar_t *__restrict__ top_data) {
-#if MAXIMIZE_KERNEL_SIZE
-  __shared__ float shared_mask[MAX_SHARED_SCALAR_T * 2];
-#else
-  __shared__ scalar_t shared_mask[MAX_SHARED_SCALAR_T];
-#endif
+// template <typename scalar_t>
+// __global__ void CARAFEForward(
+//     const int num_kernels, const scalar_t *__restrict__ bottom_data,
+//     const scalar_t *__restrict__ bottom_masks, const int kernel_size,
+//     const int group_size, const int scale_factor, const int channels,
+//     const int down_height, const int down_width, const int height,
+//     const int width, const int mask_channels, scalar_t *__restrict__ top_data) {
+// #if MAXIMIZE_KERNEL_SIZE
+//   __shared__ float shared_mask[MAX_SHARED_SCALAR_T * 2];
+// #else
+//   __shared__ scalar_t shared_mask[MAX_SHARED_SCALAR_T];
+// #endif
 
-  int index = threadIdx.x + blockIdx.x * blockDim.x;
-  if (index > num_kernels - 1) {
-    return;
-  }
-  const int pixel_id = threadIdx.x / THREADS_PER_PIXEL;
-  const int split_id = threadIdx.x % THREADS_PER_PIXEL;
-  index = index / THREADS_PER_PIXEL;
-  const int pw = index % width;
-  const int ph = (index / width) % height;
-  const int n = index / width / height;
+//   int index = threadIdx.x + blockIdx.x * blockDim.x;
+//   if (index > num_kernels - 1) {
+//     return;
+//   }
+//   const int pixel_id = threadIdx.x / THREADS_PER_PIXEL;
+//   const int split_id = threadIdx.x % THREADS_PER_PIXEL;
+//   index = index / THREADS_PER_PIXEL;
+//   const int pw = index % width;
+//   const int ph = (index / width) % height;
+//   const int n = index / width / height;
 
-  const int down_pw = pw / scale_factor;
-  const int down_ph = ph / scale_factor;
+//   const int down_pw = pw / scale_factor;
+//   const int down_ph = ph / scale_factor;
 
-  const int start_w = down_pw - (kernel_size - 1) / 2;
-  const int end_w = down_pw + (kernel_size - 1) / 2 + 1;
-  const int start_h = down_ph - (kernel_size - 1) / 2;
-  const int end_h = down_ph + (kernel_size - 1) / 2 + 1;
-  for (int c = split_id; c < mask_channels; c += THREADS_PER_PIXEL) {
-    int mask_index = Loc2Index(n, ph, pw, c, height, width, mask_channels);
-    shared_mask[c * WARP_SIZE + pixel_id] = bottom_masks[mask_index];
-  }
-  __syncthreads();
+//   const int start_w = down_pw - (kernel_size - 1) / 2;
+//   const int end_w = down_pw + (kernel_size - 1) / 2 + 1;
+//   const int start_h = down_ph - (kernel_size - 1) / 2;
+//   const int end_h = down_ph + (kernel_size - 1) / 2 + 1;
+//   for (int c = split_id; c < mask_channels; c += THREADS_PER_PIXEL) {
+//     int mask_index = Loc2Index(n, ph, pw, c, height, width, mask_channels);
+//     shared_mask[c * WARP_SIZE + pixel_id] = bottom_masks[mask_index];
+//   }
+//   __syncthreads();
 
-  const int channels_per_group = ceilf(channels / (float)group_size);
-#pragma unroll
-  for (int c = split_id; c < channels; c += THREADS_PER_PIXEL) {
-    int mask_group = c / channels_per_group;
-    scalar_t output_val = 0;
-#pragma unroll
-    for (int iy = start_h; iy < end_h; iy++) {
-#pragma unroll
-      for (int ix = start_w; ix < end_w; ix++) {
-        if (iy < 0 || iy > down_height - 1 || ix < 0 || ix > down_width - 1) {
-          continue;
-        }
-        int mask_iy = iy - down_ph + (kernel_size - 1) / 2;
-        int mask_ix = ix - down_pw + (kernel_size - 1) / 2;
-        int mask_c =
-            (mask_group * kernel_size + mask_iy) * kernel_size + mask_ix;
-        int feat_index =
-            Loc2Index(n, iy, ix, c, down_height, down_width, channels);
+//   const int channels_per_group = ceilf(channels / (float)group_size);
+// #pragma unroll
+//   for (int c = split_id; c < channels; c += THREADS_PER_PIXEL) {
+//     int mask_group = c / channels_per_group;
+//     scalar_t output_val = 0;
+// #pragma unroll
+//     for (int iy = start_h; iy < end_h; iy++) {
+// #pragma unroll
+//       for (int ix = start_w; ix < end_w; ix++) {
+//         if (iy < 0 || iy > down_height - 1 || ix < 0 || ix > down_width - 1) {
+//           continue;
+//         }
+//         int mask_iy = iy - down_ph + (kernel_size - 1) / 2;
+//         int mask_ix = ix - down_pw + (kernel_size - 1) / 2;
+//         int mask_c =
+//             (mask_group * kernel_size + mask_iy) * kernel_size + mask_ix;
+//         int feat_index =
+//             Loc2Index(n, iy, ix, c, down_height, down_width, channels);
 
-        output_val += bottom_data[feat_index] *
-                      shared_mask[mask_c * WARP_SIZE + pixel_id];
-      }
-    }
+//         output_val += bottom_data[feat_index] *
+//                       shared_mask[mask_c * WARP_SIZE + pixel_id];
+//       }
+//     }
 
-    int top_index = Loc2Index(n, ph, pw, c, height, width, channels);
-    top_data[top_index] = output_val;
-  }
-}
+//     int top_index = Loc2Index(n, ph, pw, c, height, width, channels);
+//     top_data[top_index] = output_val;
+//   }
+// }
 
 // template <typename scalar_t>
 // __global__ void CARAFEBackward_Feature(

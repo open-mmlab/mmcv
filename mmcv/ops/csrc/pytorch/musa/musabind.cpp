@@ -157,12 +157,12 @@ void box_iou_quadri_impl(const Tensor boxes1, const Tensor boxes2, Tensor ious,
                          const int mode_flag, const bool aligned);
 REGISTER_DEVICE_IMPL(box_iou_quadri_impl, MUSA, box_iou_quadri_musa);
 
-void CARAFEForwardMUSAKernelLauncher(const Tensor features, const Tensor masks,
-                                     Tensor rfeatures, Tensor routput,
-                                     Tensor rmasks, Tensor output,
-                                     const int kernel_size,
-                                     const int group_size,
-                                     const int scale_factor);
+// void CARAFEForwardMUSAKernelLauncher(const Tensor features, const Tensor masks,
+//                                      Tensor rfeatures, Tensor routput,
+//                                      Tensor rmasks, Tensor output,
+//                                      const int kernel_size,
+//                                      const int group_size,
+//                                      const int scale_factor);
 
 // void CARAFEBackwardMUSAKernelLauncher(
 //     const Tensor top_grad, const Tensor rfeatures, const Tensor masks,
@@ -170,13 +170,13 @@ void CARAFEForwardMUSAKernelLauncher(const Tensor features, const Tensor masks,
 //     Tensor rmask_grad, Tensor bottom_grad, Tensor mask_grad,
 //     const int kernel_size, const int group_size, const int scale_factor);
 
-void carafe_forward_musa(Tensor features, Tensor masks, Tensor rfeatures,
-                         Tensor routput, Tensor rmasks, Tensor output,
-                         int kernel_size, int group_size, int scale_factor) {
-  CARAFEForwardMUSAKernelLauncher(features, masks, rfeatures, routput, rmasks,
-                                  output, kernel_size, group_size,
-                                  scale_factor);
-}
+// void carafe_forward_musa(Tensor features, Tensor masks, Tensor rfeatures,
+//                          Tensor routput, Tensor rmasks, Tensor output,
+//                          int kernel_size, int group_size, int scale_factor) {
+//   CARAFEForwardMUSAKernelLauncher(features, masks, rfeatures, routput, rmasks,
+//                                   output, kernel_size, group_size,
+//                                   scale_factor);
+// }
 
 // void carafe_backward_musa(Tensor top_grad, Tensor rfeatures, Tensor masks,
 //                           Tensor rtop_grad, Tensor rbottom_grad_hs,
@@ -199,7 +199,7 @@ void carafe_backward_impl(Tensor top_grad, Tensor rfeatures, Tensor masks,
                           Tensor bottom_grad, Tensor mask_grad, int kernel_size,
                           int group_size, int scale_factor);
 
-REGISTER_DEVICE_IMPL(carafe_forward_impl, MUSA, carafe_forward_musa);
+// REGISTER_DEVICE_IMPL(carafe_forward_impl, MUSA, carafe_forward_musa);
 // REGISTER_DEVICE_IMPL(carafe_backward_impl, MUSA, carafe_backward_musa);
 
 void CARAFENAIVEForwardMUSAKernelLauncher(const Tensor features,
