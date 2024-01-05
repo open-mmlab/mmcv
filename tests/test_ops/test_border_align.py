@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
-
+from mmengine.device import is_musa_available
 import numpy as np
 import pytest
 import torch
@@ -49,7 +49,9 @@ input_grad_dict = {
 
 
 def _test_border_align_allclose(device, dtype, pool_size):
-    if not torch.cuda.is_available() and device == 'cuda':
+    if not is_musa_available and device=='musa':
+        pytest.skip('test requires GPU')
+    elif not torch.cuda.is_available() and device == 'cuda':
         pytest.skip('test requires GPU')
     try:
         from mmcv.ops import BorderAlign, border_align
@@ -84,7 +86,7 @@ def _test_border_align_allclose(device, dtype, pool_size):
         input.grad.data.type(dtype).cpu().numpy(), np_grad, atol=1e-5)
 
 
-@pytest.mark.parametrize('device', ['cuda'])
+@pytest.mark.parametrize('device', ['cuda','musa'])
 @pytest.mark.parametrize('dtype', [torch.float, torch.half, torch.double])
 @pytest.mark.parametrize('pool_size', [1, 2])
 def test_border_align(device, dtype, pool_size):

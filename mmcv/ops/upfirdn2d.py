@@ -116,6 +116,13 @@ def upfirdn2d(input: torch.Tensor,
             padding=padding,
             flip_filter=flip_filter,
             gain=gain).apply(input, filter)
+    elif use_custom_op and input.device.type == 'musa':
+        return _upfirdn2d_musa(
+            up=up,
+            down=down,
+            padding=padding,
+            flip_filter=flip_filter,
+            gain=gain).apply(input, filter)
     return _upfirdn2d_ref(
         input,
         filter,
@@ -301,6 +308,102 @@ def _upfirdn2d_cuda(up: int = 1,
     # Add to cache.
     _upfirdn2d_cuda_cache[key] = Upfirdn2dCuda
     return Upfirdn2dCuda
+
+
+_upfirdn2d_musa_cache: Dict = dict()
+
+
+def _upfirdn2d_musa(up: int = 1,
+                    down: int = 1,
+                    padding: Union[int, List[int]] = 0,
+                    flip_filter: bool = False,
+                    gain: Union[float, int] = 1):
+    """Fast MUSA implementation of `upfirdn2d()` using custom ops.
+
+    Args:
+        up (int): Integer upsampling factor. Can be a single int or a
+            list/tuple `[x, y]`. Defaults to 1.
+        down (int): Integer downsampling factor. Can be a single int
+            or a list/tuple `[x, y]`. Defaults to 1.
+        padding (int | tuple[int]): Padding with respect to the upsampled
+            image. Can be a single number or a list/tuple `[x, y]` or
+            `[x_before, x_after, y_before, y_after]`. Defaults to 0.
+        flip_filter (bool): False = convolution, True = correlation.
+            Defaults to False.
+        gain (int): Overall scaling factor for signal magnitude.
+            Defaults to 1.
+
+    Returns:
+        torch.Tensor: Tensor of the shape `[batch_size, num_channels,
+        out_height, out_width]`
+    """
+    # Parse arguments.
+    upx, upy = _parse_scaling(up)
+    downx, downy = _parse_scaling(down)
+    padx0, padx1, pady0, pady1 = _parse_padding(padding)
+
+    # Lookup from cache.
+    key = (upx, upy, downx, downy, padx0, padx1, pady0, pady1, flip_filter,
+           gain)
+    if key in _upfirdn2d_musa_cache:
+        return _upfirdn2d_musa_cache[key]
+
+    # Forward op.
+    class Upfirdn2dMusa(torch.autograd.Function):
+
+        @staticmethod
+        def forward(ctx, x, f):  # pylint: disable=arguments-differ
+            assert isinstance(x, torch.Tensor) and x.ndim == 4
+            if f is None:
+                f = torch.ones([1, 1], dtype=torch.float32, device=x.device)
+            if f.ndim == 1 and f.shape[0] == 1:
+                f = f.square().unsqueeze(
+                    0)  # Convert separable-1 into full-1x1.
+            assert isinstance(f, torch.Tensor) and f.ndim in [1, 2]
+            y = x
+            if f.ndim == 2:
+                y = ext_module.upfirdn2d(y, f, upx, upy, downx, downy, padx0,
+                                         padx1, pady0, pady1, flip_filter,
+                                         gain)
+            else:
+                y = ext_module.upfirdn2d(y, f.unsqueeze(0), upx, 1, downx, 1,
+                                         padx0, padx1, 0, 0, flip_filter, 1.0)
+                y = ext_module.upfirdn2d(y, f.unsqueeze(1), 1, upy, 1, downy,
+                                         0, 0, pady0, pady1, flip_filter, gain)
+            ctx.save_for_backward(f)
+            ctx.x_shape = x.shape
+            return y
+
+        @staticmethod
+        def backward(ctx, dy):  # pylint: disable=arguments-differ
+            f, = ctx.saved_tensors
+            _, _, ih, iw = ctx.x_shape
+            _, _, oh, ow = dy.shape
+            fw, fh = _get_filter_size(f)
+            p = [
+                fw - padx0 - 1,
+                iw * upx - ow * downx + padx0 - upx + 1,
+                fh - pady0 - 1,
+                ih * upy - oh * downy + pady0 - upy + 1,
+            ]
+            dx = None
+            df = None
+
+            if ctx.needs_input_grad[0]:
+                dx = _upfirdn2d_musa(
+                    up=down,
+                    down=up,
+                    padding=p,
+                    flip_filter=(not flip_filter),
+                    gain=gain).apply(dy, f)
+
+            assert not ctx.needs_input_grad[1]
+            return dx, df
+
+    # Add to cache.
+    _upfirdn2d_musa_cache[key] = Upfirdn2dMusa
+    return Upfirdn2dMusa
+
 
 
 def filter2d(input: torch.Tensor,

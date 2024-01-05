@@ -1,6 +1,6 @@
 import torch
 from torch import Tensor
-
+from mmengine.device import is_musa_available, is_cuda_available
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', ['points_in_polygons_forward'])
@@ -31,8 +31,12 @@ def points_in_polygons(points: Tensor, polygons: Tensor) -> Tensor:
     assert polygons.shape[1] == 8, \
         'polygons dimension should be 8, ' \
         f'but got unexpected shape {polygons.shape[1]}'
-    output = torch.full([points.shape[0], polygons.shape[0]],
-                        0.).cuda().float()
+    if is_cuda_available:
+        output = torch.full([points.shape[0], polygons.shape[0]],
+                            0.).cuda().float()
+    elif is_musa_available:
+        output = torch.full([points.shape[0], polygons.shape[0]],
+                            0.).musa().float()
     ext_module.points_in_polygons_forward(points.contiguous(),
                                           polygons.contiguous(), output)
     return output

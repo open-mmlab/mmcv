@@ -4,7 +4,7 @@ import copy
 import pytest
 import torch
 from mmengine.model import ModuleList
-
+from mmengine.device import is_musa_available, is_cuda_available
 from mmcv.cnn.bricks.drop import DropPath
 from mmcv.cnn.bricks.transformer import (FFN, AdaptivePadding,
                                          BaseTransformerLayer,
@@ -560,8 +560,8 @@ def test_ffn():
     assert torch.allclose(ffn(input_tensor).sum(), ffn(input_tensor_nbc).sum())
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason='Cuda not available')
-def test_basetransformerlayer_cuda():
+@pytest.mark.skipif((not torch.cuda.is_available()) and (not is_musa_available), reason='Cuda/Musa not available')
+def test_basetransformerlayer():
     # To test if the BaseTransformerLayer's behaviour remains
     # consistent after being deepcopied
     operation_order = ('self_attn', 'ffn')
@@ -575,12 +575,18 @@ def test_basetransformerlayer_cuda():
         ),
     )
     baselayers = ModuleList([copy.deepcopy(baselayer) for _ in range(2)])
-    baselayers.to('cuda')
-    x = torch.rand(2, 10, 256).cuda()
-    for m in baselayers:
-        x = m(x)
-        assert x.shape == torch.Size([2, 10, 256])
-
+    if is_cuda_available:
+        baselayers.to('cuda')
+        x = torch.rand(2, 10, 256).cuda()
+        for m in baselayers:
+            x = m(x)
+            assert x.shape == torch.Size([2, 10, 256])
+    elif is_musa_available:
+        baselayers.to('musa')
+        x = torch.rand(2, 10, 256).musa()
+        for m in baselayers:
+            x = m(x)
+            assert x.shape == torch.Size([2, 10, 256])
 
 @pytest.mark.parametrize('embed_dims', [False, 256])
 def test_basetransformerlayer(embed_dims):

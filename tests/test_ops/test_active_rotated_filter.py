@@ -4,7 +4,7 @@ import pytest
 import torch
 
 from mmcv.ops import active_rotated_filter
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
 
 np_feature = np.array([[[[[-1.4934e-01, 1.1341e+00, -1.6241e-01],
                           [-1.0986e+00, -1.1463e+00, -1.3176e+00],
@@ -250,7 +250,11 @@ expected_grad = np.array([[[[[8., 8., 8.], [8., 8., 8.], [8., 8., 8.]]]],
     pytest.param(
         'npu',
         marks=pytest.mark.skipif(
-            not IS_NPU_AVAILABLE, reason='requires NPU support'))
+            not IS_NPU_AVAILABLE, reason='requires NPU support')),
+      pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
 def test_active_rotated_filter(device):
     feature = torch.tensor(

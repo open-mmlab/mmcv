@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
-
+from mmengine.device import is_musa_available
 from mmcv.ops import bias_act
 from mmcv.ops.bias_act import EasyDict
 
@@ -131,12 +131,93 @@ class TestBiasAct:
         assert out1.max() <= 0.5
         assert out2.max() <= 0.5
 
-    def test_easy_dict(self):
+    @pytest.mark.skipif(not is_musa_available, reason='requires musa')
+    def test_bias_act_musa(self):
+        if _USING_PARROTS:
+            gradcheck(
+                bias_act, (self.input_tensor.musa(), self.bias.musa()),
+                delta=1e-4,
+                pt_atol=1e-3)
+        else:
+            gradcheck(
+                bias_act, (self.input_tensor.musa(), self.bias.musa()),
+                eps=1e-4,
+                atol=1e-3)
+
+            gradgradcheck(
+                bias_act, (self.input_tensor.musa(), self.bias.musa()),
+                eps=1e-4,
+                atol=1e-3)
+
+        out = bias_act(self.input_tensor.musa(), self.bias.musa())
+        assert out.shape == (1, 3)
+
+        # test with different dim
+        input_tensor = torch.randn((1, 1, 3), requires_grad=True).musa()
+        bias = torch.randn(3, requires_grad=True).musa()
+        out = bias_act(input_tensor, bias, dim=2)
+        assert out.shape == (1, 1, 3)
+
+        # test with different act
+        out = bias_act(self.input_tensor.musa(), self.bias.musa(), act='relu')
+        assert out.shape == (1, 3)
+
+        out = bias_act(self.input_tensor.musa(), self.bias.musa(), act='lrelu')
+        assert out.shape == (1, 3)
+        out = bias_act(self.input_tensor.musa(), self.bias.musa(), act='tanh')
+        assert out.shape == (1, 3)
+        out = bias_act(
+            self.input_tensor.musa(), self.bias.musa(), act='sigmoid')
+        assert out.shape == (1, 3)
+        out = bias_act(self.input_tensor.musa(), self.bias.musa(), act='elu')
+        assert out.shape == (1, 3)
+        out = bias_act(self.input_tensor.musa(), self.bias.musa(), act='selu')
+        assert out.shape == (1, 3)
+        out = bias_act(
+            self.input_tensor.musa(), self.bias.musa(), act='softplus')
+        assert out.shape == (1, 3)
+        out = bias_act(self.input_tensor.musa(), self.bias.musa(), act='swish')
+        assert out.shape == (1, 3)
+
+        # test with different alpha
+        out = bias_act(
+            self.input_tensor.musa(), self.bias.musa(), act='lrelu', alpha=0.1)
+        assert out.shape == (1, 3)
+
+        # test with different gain
+        out1 = bias_act(
+            self.input_tensor.musa(), self.bias.musa(), act='lrelu', gain=0.2)
+        out2 = bias_act(
+            self.input_tensor.musa(), self.bias.musa(), act='lrelu', gain=0.1)
+        assert torch.allclose(out1, out2 * 2)
+
+        # test with different clamp
+        out1 = bias_act(
+            self.input_tensor.musa(), self.bias.musa(), act='lrelu', clamp=0.5)
+        out2 = bias_act(
+            self.input_tensor.musa(), self.bias.musa(), act='lrelu', clamp=0.2)
+        assert out1.max() <= 0.5
+        assert out2.max() <= 0.5
+
+
+    def test_easy_dict_cuda(self):
         easy_dict = EasyDict(
             func=lambda x, **_: x,
             def_alpha=0,
             def_gain=1,
             cuda_idx=1,
+            ref='',
+            has_2nd_grad=False)
+        _ = easy_dict.def_alpha
+        easy_dict.def_alpha = 1
+        del easy_dict.def_alpha
+
+    def test_easy_dict_musa(self):
+        easy_dict = EasyDict(
+            func=lambda x, **_: x,
+            def_alpha=0,
+            def_gain=1,
+            musa_idx=1,
             ref='',
             has_2nd_grad=False)
         _ = easy_dict.def_alpha

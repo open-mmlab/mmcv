@@ -3,6 +3,7 @@
 
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"
+#include <iostream>
 
 void ball_query_forward_impl(int b, int n, int m, float min_radius,
                              float max_radius, int nsample,
@@ -15,6 +16,7 @@ void ball_query_forward_impl(int b, int n, int m, float min_radius,
 void ball_query_forward(Tensor new_xyz_tensor, Tensor xyz_tensor,
                         Tensor idx_tensor, int b, int n, int m,
                         float min_radius, float max_radius, int nsample) {
+    std::cout<<"ball_query_forward"<<std::endl;
   ball_query_forward_impl(b, n, m, min_radius, max_radius, nsample,
                           new_xyz_tensor, xyz_tensor, idx_tensor);
 }
