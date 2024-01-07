@@ -41,8 +41,11 @@ void roi_align_backward_npu(Tensor grad_output, Tensor rois, Tensor argmax_y,
     LOG(WARNING) << "The [aligned] attr in roi_align_grad op is false";
     roi_end_mode = 0;
   }
-  c10::SmallVector<int64_t, SIZE> xdiff_shape =
-      array_to_small_vector(grad_input.sizes());
+  auto shape = grad_input.sizes();
+  c10::SmallVector<int64_t, SIZE> xdiff_shape;
+  for (uint64_t i = 0; i < shape.size(); i++) {
+    xdiff_shape.emplace_back(shape[i]);
+  }
   OpCommand cmd;
   cmd.Name("ROIAlignGrad")
       .Input(grad_output)

@@ -20,7 +20,7 @@ void group_points_forward_npu(int b, int c, int n, int npoints, int nsample,
   indices = indices.view({-1});
 
   at::Tensor trans_features = points.transpose(1, 2);
-  at::Tensor features = NpuUtils::format_contiguous(trans_features);
+  at::Tensor features = trans_features.contiguous();
   features = features.view({b * n, c});
 
   OpCommand cmd;
@@ -34,7 +34,7 @@ void group_points_forward_npu(int b, int c, int n, int npoints, int nsample,
 
   at::Tensor output =
       out.view({b, npoints, nsample, c}).transpose(1, 3).transpose(2, 3);
-  at::Tensor res = NpuUtils::format_contiguous(output);
+  at::Tensor res = output.contiguous();
   out.copy_(res);
 }
 
