@@ -19,8 +19,8 @@
 #define MMCV_OPS_CSRC_COMMON_PYTORCH_NPU_UTIL_HPP_
 
 #include <ATen/Tensor.h>
-#include <acl/acl_base.h>
-#include <acl/acl_rt.h>
+#include </usr/local/Ascend/ascend-toolkit/latest/runtime/include/acl/acl_base.h>
+#include </usr/local/Ascend/ascend-toolkit/latest/runtime/include/acl/acl_rt.h>
 #include <c10/util/Exception.h>
 #include <dlfcn.h>
 #include <torch_npu/csrc/framework/utils/CalcuOpUtil.h>
