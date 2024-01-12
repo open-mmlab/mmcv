@@ -1,5 +1,4 @@
 #include "pytorch_npu_helper.hpp"
-
 using namespace NPU_NAME_SPACE;
 using namespace std;
 
@@ -12,15 +11,13 @@ void sigmoid_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
     target_y = at::mul(target_y, -1.0);
     target_y = at::add(target_y, 1.0);
   } else {
-    target_y = at_npu::native::NPUNativeFunctions::one_hot(target, n_class);
+    target_y = at::one_hot(target, n_class);
   }
-  target_y =
-      at_npu::native::NPUNativeFunctions::npu_dtype_cast(target_y, at::kInt);
+  target_y = target_y.to(at::kInt);
   int64_t weight_size = weight.size(0);
   at::Tensor weight_y = at::ones_like(input);
   if (weight_size > 0) {
-    weight_y = at_npu::native::NPUNativeFunctions::npu_broadcast(weight,
-                                                                 input.sizes());
+    weight_y = at::broadcast_to(weight, input.sizes());
   }
   OpCommand cmd;
   string reduction = "none";
@@ -46,18 +43,16 @@ void sigmoid_focal_loss_backward_npu(Tensor input, Tensor target, Tensor weight,
   if (n_class == 1) {
     target_y = at::reshape(target, input.sizes());
   } else {
-    target_y = at_npu::native::NPUNativeFunctions::one_hot(target, n_class);
+    target_y = at::one_hot(target, n_class);
     target_y = at::mul(target_y, -1.0);
     target_y = at::add(target_y, 1.0);
   }
-  target_y =
-      at_npu::native::NPUNativeFunctions::npu_dtype_cast(target_y, at::kInt);
+  target_y = target_y.to(at::kInt);
   at::Tensor grad_up = at::ones_like(input);
   int64_t weight_size = weight.size(0);
   at::Tensor weight_y = at::ones_like(input);
   if (weight_size > 0) {
-    weight_y = at_npu::native::NPUNativeFunctions::npu_broadcast(weight,
-                                                                 input.sizes());
+    weight_y = at::broadcast_to(weight, input.sizes());
   }
   OpCommand cmd;
   string reduction = "none";
@@ -80,15 +75,12 @@ void sigmoid_focal_loss_backward_impl(Tensor input, Tensor target,
 void softmax_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
                                     Tensor output, float gamma, float alpha) {
   int64_t n_class = input.size(1);
-  at::Tensor target_y =
-      at_npu::native::NPUNativeFunctions::one_hot(target, n_class);
-  target_y =
-      at_npu::native::NPUNativeFunctions::npu_dtype_cast(target_y, at::kInt);
+  at::Tensor target_y = at::one_hot(target, n_class);
+  target_y = target_y.to(at::kInt);
   int64_t weight_size = weight.size(0);
   at::Tensor weight_y = at::ones_like(input);
   if (weight_size > 0) {
-    weight_y = at_npu::native::NPUNativeFunctions::npu_broadcast(weight,
-                                                                 input.sizes());
+    weight_y = at::broadcast_to(weight, input.sizes());
   }
   at::Tensor op_output = at::ones_like(input);
   OpCommand cmd;
@@ -107,8 +99,22 @@ void softmax_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
   c10::SmallVector<int64_t, 2> sizes = {n_batch, 1};
   at::IntArrayRef offset = at::IntArrayRef(offsets);
   at::IntArrayRef size = at::IntArrayRef(sizes);
-  at_npu::native::NPUNativeFunctions::npu_slice_out(op_output, offset, size,
-                                                    output);
+  at::IntArrayRef size_array = at::IntArrayRef(sizes);
+  c10::SmallVector<int64_t, 8> offsetVec;
+  for (uint64_t i = 0; i < offset.size(); i++) {
+    offsetVec.emplace_back(offset[i]);
+  }
+  c10::SmallVector<int64_t, 8> sizeVec;
+  for (uint64_t i = 0; i < size_array.size(); i++) {
+    sizeVec.emplace_back(size_array[i]);
+  }
+  OpCommand cmd2;
+  cmd2.Name("Slice")
+      .Input(op_output)
+      .Input(offsetVec)
+      .Input(sizeVec)
+      .Output(output)
+      .Run();
 }
 
 void softmax_focal_loss_forward_impl(Tensor input, Tensor target, Tensor weight,
@@ -119,16 +125,13 @@ void softmax_focal_loss_backward_npu(Tensor input, Tensor target, Tensor weight,
                                      Tensor buff, Tensor grad_input,
                                      float gamma, float alpha) {
   int64_t n_class = input.size(1);
-  at::Tensor target_y =
-      at_npu::native::NPUNativeFunctions::one_hot(target, n_class);
-  target_y =
-      at_npu::native::NPUNativeFunctions::npu_dtype_cast(target_y, at::kInt);
+  at::Tensor target_y = at::one_hot(target, n_class);
+  target_y = target_y.to(at::kInt);
   at::Tensor grad_up = at::ones_like(input);
   int64_t weight_size = weight.size(0);
   at::Tensor weight_y = at::ones_like(input);
   if (weight_size > 0) {
-    weight_y = at_npu::native::NPUNativeFunctions::npu_broadcast(weight,
-                                                                 input.sizes());
+    weight_y = at::broadcast_to(weight, input.sizes());
   }
   OpCommand cmd;
   string reduction = "none";

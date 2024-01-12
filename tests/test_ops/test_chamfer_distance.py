@@ -1,110 +1,76 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import numpy as np
 import pytest
 import torch
 from mmengine.device import is_musa_available
 from mmcv.ops import chamfer_distance
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
 
 
-@pytest.mark.skipif(
-    not torch.cuda.is_available(), reason='requires CUDA support')
-def test_chamfer_distance():
-    pointset1 = torch.tensor(
-        [[[1.3, 9.39], [2.3, 9.39], [2.3, 10.39], [1.3, 10.39]],
-         [[1.0, 9.39], [3.0, 9.39], [3.0, 10.39], [1.0, 10.39]],
-         [[1.6, 9.99], [2.3, 9.99], [2.3, 10.39], [1.6, 10.39]]],
-        device='cuda',
-        requires_grad=True)
-
-    pointset2 = torch.tensor(
-        [[[1.0, 9.39], [3.0, 9.39], [3.0, 10.39], [1.0, 10.39]],
-         [[1.3, 9.39], [2.3, 9.39], [2.3, 10.39], [1.3, 10.39]],
-         [[1.0, 9.39], [3.0, 9.39], [3.0, 10.39], [1.0, 10.39]]],
-        device='cuda',
-        requires_grad=True)
-
-    expected_dist1 = torch.tensor(
-        [[0.0900, 0.4900, 0.4900, 0.0900], [0.0900, 0.4900, 0.4900, 0.0900],
-         [0.5200, 0.6500, 0.4900, 0.3600]],
-        device='cuda')
-    expected_dist2 = torch.tensor(
-        [[0.0900, 0.4900, 0.4900, 0.0900], [0.0900, 0.4900, 0.4900, 0.0900],
-         [0.7200, 0.8500, 0.4900, 0.3600]],
-        device='cuda')
-
-    expected_pointset1_grad = torch.tensor(
-        [[[0.6000, 0.0000], [-1.4000, 0.0000], [-1.4000, 0.0000],
-          [0.6000, 0.0000]],
-         [[-0.6000, 0.0000], [1.4000, 0.0000], [1.4000, 0.0000],
-          [-0.6000, 0.0000]],
-         [[1.2000, -0.8000], [-1.4000, -0.8000], [-1.4000, 0.0000],
-          [1.2000, 0.0000]]],
-        device='cuda')
-
-    expected_pointset2_grad = torch.tensor(
-        [[[-0.6000, 0.0000], [1.4000, 0.0000], [1.4000, 0.0000],
-          [-0.6000, 0.0000]],
-         [[0.6000, 0.0000], [-1.4000, 0.0000], [-1.4000, 0.0000],
-          [0.6000, 0.0000]],
-         [[0.0000, 0.0000], [0.0000, 0.0000], [2.8000, 0.8000],
-          [-2.4000, 0.8000]]],
-        device='cuda')
-
-    dist1, dist2, idx1, idx2 = chamfer_distance(pointset1, pointset2)
-    dist1.backward(torch.ones_like(dist1))
-    assert torch.allclose(dist1, expected_dist1, 1e-2)
-    assert torch.allclose(dist2, expected_dist2, 1e-2)
-    assert torch.allclose(pointset1.grad.data, expected_pointset1_grad, 1e-2)
-    assert torch.allclose(pointset2.grad.data, expected_pointset2_grad, 1e-2)
+def chamfer_distance_forward_groundtruth(xyz1, xyz2, dtype):
+    bs, ns, ss = xyz1.shape
+    dist1 = np.zeros((bs, ns)).astype(torch_to_np_type(dtype))
+    dist2 = np.zeros((bs, ns)).astype(torch_to_np_type(dtype))
+    idx1 = np.zeros((bs, ns)).astype('int32')
+    idx2 = np.zeros((bs, ns)).astype('int32')
+    for b1 in range(bs):
+        for n1 in range(ns):
+            x1, y1 = xyz1[b1][n1]
+            dist1[b1][n1] = 10000000
+            for n2 in range(ns):
+                x2, y2 = xyz2[b1][n2]
+                dst = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)
+                if dist1[b1][n1] > dst:
+                    dist1[b1][n1] = dst
+                    idx1[b1][n1] = n2
+    for b1 in range(bs):
+        for n1 in range(ns):
+            x1, y1 = xyz2[b1][n1]
+            dist2[b1][n1] = 10000000
+            for n2 in range(ns):
+                x2, y2 = xyz1[b1][n2]
+                dst = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)
+                if dist2[b1][n1] > dst:
+                    dist2[b1][n1] = dst
+                    idx2[b1][n1] = n2
+    return [dist1, dist2, idx1, idx2]
 
 
-# TODO@haowen.han@mthreads.com: do not support yet
-# @pytest.mark.skipif(
-#     not is_musa_available, reason='requires MUSA support')
-# def test_chamfer_distance():
-#     pointset1 = torch.tensor(
-#         [[[1.3, 9.39], [2.3, 9.39], [2.3, 10.39], [1.3, 10.39]],
-#          [[1.0, 9.39], [3.0, 9.39], [3.0, 10.39], [1.0, 10.39]],
-#          [[1.6, 9.99], [2.3, 9.99], [2.3, 10.39], [1.6, 10.39]]],
-#         device='musa',
-#         requires_grad=True)
+def torch_to_np_type(dtype):
+    if dtype == torch.half:
+        return np.float16
+    elif dtype == torch.float32:
+        return np.float32
 
-#     pointset2 = torch.tensor(
-#         [[[1.0, 9.39], [3.0, 9.39], [3.0, 10.39], [1.0, 10.39]],
-#          [[1.3, 9.39], [2.3, 9.39], [2.3, 10.39], [1.3, 10.39]],
-#          [[1.0, 9.39], [3.0, 9.39], [3.0, 10.39], [1.0, 10.39]]],
-#         device='musa',
-#         requires_grad=True)
+@pytest.mark.parametrize('device', [
+    pytest.param(
+        'cuda',
+        marks=pytest.mark.skipif(
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    pytest.param(
+        'npu',
+        marks=pytest.mark.skipif(
+            not IS_NPU_AVAILABLE, reason='requires NPU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
+])
+@pytest.mark.parametrize('dtype', [torch.half, torch.float32])
+@pytest.mark.parametrize('shape', [(2, 600, 2), (2, 600, 2)])
+def test_chamfer_distance_npu_dynamic_shape(dtype, device, shape):
+    bs = shape[0]
+    ns = shape[1]
+    xyz1 = np.random.uniform(-10.0, 10.0,
+                             (bs, ns, 2)).astype(torch_to_np_type(dtype))
+    xyz2 = np.random.uniform(-10.0, 10.0,
+                             (bs, ns, 2)).astype(torch_to_np_type(dtype))
+    xyz1_npu = torch.tensor(xyz1, dtype=dtype).to(device)
+    xyz2_npu = torch.tensor(xyz2, dtype=dtype).to(device)
+    expected_output = chamfer_distance_forward_groundtruth(xyz1, xyz2, dtype)
+    output = chamfer_distance(xyz1_npu, xyz2_npu)
+    assert np.allclose(output[0].cpu().numpy(), expected_output[0], 1e-3, 1e-4)
+    assert np.allclose(output[1].cpu().numpy(), expected_output[1], 1e-3, 1e-4)
+    assert np.allclose(output[2].cpu().numpy(), expected_output[2], 1e-3, 1e-4)
+    assert np.allclose(output[3].cpu().numpy(), expected_output[3], 1e-3, 1e-4)
 
-#     expected_dist1 = torch.tensor(
-#         [[0.0900, 0.4900, 0.4900, 0.0900], [0.0900, 0.4900, 0.4900, 0.0900],
-#          [0.5200, 0.6500, 0.4900, 0.3600]],
-#         device='musa')
-#     expected_dist2 = torch.tensor(
-#         [[0.0900, 0.4900, 0.4900, 0.0900], [0.0900, 0.4900, 0.4900, 0.0900],
-#          [0.7200, 0.8500, 0.4900, 0.3600]],
-#         device='musa')
-
-#     expected_pointset1_grad = torch.tensor(
-#         [[[0.6000, 0.0000], [-1.4000, 0.0000], [-1.4000, 0.0000],
-#           [0.6000, 0.0000]],
-#          [[-0.6000, 0.0000], [1.4000, 0.0000], [1.4000, 0.0000],
-#           [-0.6000, 0.0000]],
-#          [[1.2000, -0.8000], [-1.4000, -0.8000], [-1.4000, 0.0000],
-#           [1.2000, 0.0000]]],
-#         device='musa')
-
-#     expected_pointset2_grad = torch.tensor(
-#         [[[-0.6000, 0.0000], [1.4000, 0.0000], [1.4000, 0.0000],
-#           [-0.6000, 0.0000]],
-#          [[0.6000, 0.0000], [-1.4000, 0.0000], [-1.4000, 0.0000],
-#           [0.6000, 0.0000]],
-#          [[0.0000, 0.0000], [0.0000, 0.0000], [2.8000, 0.8000],
-#           [-2.4000, 0.8000]]],
-#         device='musa')
-
-#     dist1, dist2, idx1, idx2 = chamfer_distance(pointset1, pointset2)
-#     dist1.backward(torch.ones_like(dist1))
-#     assert torch.allclose(dist1, expected_dist1, 1e-2)
-#     assert torch.allclose(dist2, expected_dist2, 1e-2)
-#     assert torch.allclose(pointset1.grad.data, expected_pointset1_grad, 1e-2)
-#     assert torch.allclose(pointset2.grad.data, expected_pointset2_grad, 1e-2)

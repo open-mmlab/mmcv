@@ -3,26 +3,24 @@ import pytest
 import torch
 from mmengine.device import is_musa_available
 from mmcv.ops import grouping_operation
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
 
-
-@pytest.mark.skipif(
-    not (torch.cuda.is_available() or is_musa_available), reason='requires CUDA/MUSA support')
-@pytest.mark.parametrize('dtype', [
+@pytest.mark.parametrize('device', [
     pytest.param(
-        torch.half,
+        'cuda',
         marks=pytest.mark.skipif(
-            is_musa_available, reason='TODO haowen.han@mthreads.com: not supported yet')),
-    torch.float, 
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
     pytest.param(
-        torch.double,
+        'npu',
         marks=pytest.mark.skipif(
-            is_musa_available, reason='TODO haowen.han@mthreads.com: not supported yet'))
+            not IS_NPU_AVAILABLE, reason='requires NPU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
-def test_grouping_points(dtype):
-    if torch.cuda.is_available():
-        device = 'cuda'
-    elif is_musa_available:
-        device = 'musa'
+@pytest.mark.parametrize('dtype', [torch.half, torch.float, torch.double])
+def test_grouping_points(dtype, device):
     idx = torch.tensor([[[0, 0, 0], [3, 3, 3], [8, 8, 8], [0, 0, 0], [0, 0, 0],
                          [0, 0, 0]],
                         [[0, 0, 0], [6, 6, 6], [9, 9, 9], [0, 0, 0], [0, 0, 0],

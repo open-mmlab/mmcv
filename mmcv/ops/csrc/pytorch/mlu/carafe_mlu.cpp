@@ -71,15 +71,15 @@ void CARAFEForwardMLUKernelLauncher(const Tensor input, const Tensor mask,
   // set op descriptor
   auto handle = mluOpGetCurrentHandle();
   mluOpCarafeDescriptor_t carafe_desc;
-  mluOpCreateCarafeDescriptor(&carafe_desc);
-  mluOpSetCarafeDescriptor(carafe_desc, input.dim(), kernel_size, group_size,
-                           scale_factor);
+  TORCH_MLUOP_CHECK(mluOpCreateCarafeDescriptor(&carafe_desc));
+  TORCH_MLUOP_CHECK(mluOpSetCarafeDescriptor(
+      carafe_desc, input.dim(), kernel_size, group_size, scale_factor));
   // launch kernel
-  mluOpCarafeForward(handle, carafe_desc, input_desc.desc(), input_ptr,
-                     mask_desc.desc(), mask_ptr, output_desc.desc(),
-                     output_ptr);
+  TORCH_MLUOP_CHECK(mluOpCarafeForward(handle, carafe_desc, input_desc.desc(),
+                                       input_ptr, mask_desc.desc(), mask_ptr,
+                                       output_desc.desc(), output_ptr));
   // destroy op descriptor
-  mluOpDestroyCarafeDescriptor(carafe_desc);
+  TORCH_MLUOP_CHECK(mluOpDestroyCarafeDescriptor(carafe_desc));
 
   // copy output from NHWC back into NCHW
   rinput.copy_(rinput_);
@@ -159,16 +159,17 @@ void CARAFEBackwardMLUKernelLauncher(
   // set op descriptor
   auto handle = mluOpGetCurrentHandle();
   mluOpCarafeDescriptor_t carafe_desc;
-  mluOpCreateCarafeDescriptor(&carafe_desc);
-  mluOpSetCarafeDescriptor(carafe_desc, grad_output.dim(), kernel_size,
-                           group_size, scale_factor);
+  TORCH_MLUOP_CHECK(mluOpCreateCarafeDescriptor(&carafe_desc));
+  TORCH_MLUOP_CHECK(mluOpSetCarafeDescriptor(
+      carafe_desc, grad_output.dim(), kernel_size, group_size, scale_factor));
   // launch kernel
-  mluOpCarafeBackward(handle, carafe_desc, input_desc.desc(), input_ptr,
-                      mask_desc.desc(), mask_ptr, grad_output_desc.desc(),
-                      grad_output_ptr, grad_input_desc.desc(), grad_input_ptr,
-                      grad_mask_desc.desc(), grad_mask_ptr);
+  TORCH_MLUOP_CHECK(mluOpCarafeBackward(
+      handle, carafe_desc, input_desc.desc(), input_ptr, mask_desc.desc(),
+      mask_ptr, grad_output_desc.desc(), grad_output_ptr,
+      grad_input_desc.desc(), grad_input_ptr, grad_mask_desc.desc(),
+      grad_mask_ptr));
   // destroy op descriptor
-  mluOpDestroyCarafeDescriptor(carafe_desc);
+  TORCH_MLUOP_CHECK(mluOpDestroyCarafeDescriptor(carafe_desc));
 
   // copy output from NHWC back into NCHW
   grad_input.copy_(rgrad_input_);

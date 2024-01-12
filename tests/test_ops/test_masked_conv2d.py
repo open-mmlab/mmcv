@@ -5,6 +5,10 @@ import torch
 
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE
 
+if IS_MLU_AVAILABLE:
+    torch.backends.cnnl.allow_tf32 = False
+    torch.backends.mlu.matmul.allow_tf32 = False
+
 
 class TestMaskedConv2d:
 

@@ -53,23 +53,23 @@ int HardVoxelizeForwardMLUKernelLauncher(
 
   size_t workspace_size;
   auto handle = mluOpGetCurrentHandle();
-  mluOpGetVoxelizationWorkspaceSize(
+  TORCH_MLUOP_CHECK(mluOpGetVoxelizationWorkspaceSize(
       handle, points_desc.desc(), voxel_size_tensor_desc.desc(),
       coors_range_tensor_desc.desc(), max_points, max_voxels, NDim, true,
       voxels_desc.desc(), coors_desc.desc(), num_points_per_voxel_desc.desc(),
-      voxel_num_tensor_desc.desc(), &workspace_size);
+      voxel_num_tensor_desc.desc(), &workspace_size));
   auto workspace_tensor =
       at::empty(workspace_size, points.options().dtype(at::kByte));
   INITIAL_MLU_PARAM_WITH_TENSOR(workspace_tensor);
 
-  mluOpVoxelization(handle, points_desc.desc(), points_ptr,
-                    voxel_size_tensor_desc.desc(), voxel_size_tensor_ptr,
-                    coors_range_tensor_desc.desc(), coors_range_tensor_ptr,
-                    max_points, max_voxels, NDim, true, workspace_tensor_ptr,
-                    workspace_size, voxels_desc.desc(), voxels_ptr,
-                    coors_desc.desc(), coors_ptr,
-                    num_points_per_voxel_desc.desc(), num_points_per_voxel_ptr,
-                    voxel_num_tensor_desc.desc(), voxel_num_tensor_ptr);
+  TORCH_MLUOP_CHECK(mluOpVoxelization(
+      handle, points_desc.desc(), points_ptr, voxel_size_tensor_desc.desc(),
+      voxel_size_tensor_ptr, coors_range_tensor_desc.desc(),
+      coors_range_tensor_ptr, max_points, max_voxels, NDim, true,
+      workspace_tensor_ptr, workspace_size, voxels_desc.desc(), voxels_ptr,
+      coors_desc.desc(), coors_ptr, num_points_per_voxel_desc.desc(),
+      num_points_per_voxel_ptr, voxel_num_tensor_desc.desc(),
+      voxel_num_tensor_ptr));
   auto voxel_num_cpu = voxel_num_tensor.to(at::kCPU);
   int voxel_num_int = voxel_num_cpu.data_ptr<int>()[0];
   return voxel_num_int;

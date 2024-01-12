@@ -40,9 +40,9 @@ void RotatedFeatureAlignForwardMLUKernelLauncher(const Tensor features,
 
   // get compute handle
   auto handle = mluOpGetCurrentHandle();
-  mluOpRotatedFeatureAlignForward(
+  TORCH_MLUOP_CHECK(mluOpRotatedFeatureAlignForward(
       handle, features_desc.desc(), features_ptr, best_bboxes_desc.desc(),
-      best_bboxes_ptr, spatial_scale, points, output_desc.desc(), output_ptr);
+      best_bboxes_ptr, spatial_scale, points, output_desc.desc(), output_ptr));
 
   output.copy_(output_contiguous);
 }
@@ -76,10 +76,10 @@ void RotatedFeatureAlignBackwardMLUKernelLauncher(const Tensor top_grad,
 
   // get compute handle
   auto handle = mluOpGetCurrentHandle();
-  mluOpRotatedFeatureAlignBackward(handle, top_grad_desc.desc(), top_grad_ptr,
-                                   best_bboxes_desc.desc(), best_bboxes_ptr,
-                                   spatial_scale, points,
-                                   bottom_grad_desc.desc(), bottom_grad_ptr);
+  TORCH_MLUOP_CHECK(mluOpRotatedFeatureAlignBackward(
+      handle, top_grad_desc.desc(), top_grad_ptr, best_bboxes_desc.desc(),
+      best_bboxes_ptr, spatial_scale, points, bottom_grad_desc.desc(),
+      bottom_grad_ptr));
   bottom_grad.copy_(bottom_grad_);
 }
 

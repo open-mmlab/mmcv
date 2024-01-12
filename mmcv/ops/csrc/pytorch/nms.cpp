@@ -5,9 +5,14 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+#include <torch/csrc/utils/pybind.h>
 
+#include "csrc_dipu/base/basedef.h"
 #include "csrc_dipu/diopirt/diopirt_impl.h"
+#include "csrc_dipu/runtime/device/deviceapis.h"
+#include "csrc_dipu/utils/helpfunc.hpp"
 
+using dipu::VENDOR_TYPE;
 using dipu::diopi_helper::toDiopiScalar;
 using dipu::diopi_helper::toDiopiTensorHandle;
 #endif
@@ -42,12 +47,23 @@ Tensor nms_diopi(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
   auto outp = toDiopiTensorHandle(out);
   diopiTensorHandle_t* outhandle = &outp;
   auto scores_p = toDiopiTensorHandle(scores);
-  if (reinterpret_cast<void*>(diopiNmsMmcv) != nullptr) {
-    auto ret =
-        diopiNmsMmcv(ch, outhandle, boxes_p, scores_p, iou_threshold, offset);
-    if (ret == diopiSuccess) {
-      auto tensorhandle = reinterpret_cast<Tensor*>(*outhandle);
-      return *tensorhandle;
+  bool is_mock_cuda = boxes.device().type() == dipu::DIPU_DEVICE_TYPE;
+  if (is_mock_cuda && reinterpret_cast<void*>(diopiNmsMmcv) != nullptr) {
+    if (strcmp(dipu::VendorTypeToStr(VENDOR_TYPE), "NPU") == 0) {
+      pybind11::gil_scoped_release no_gil;
+      auto ret =
+          diopiNmsMmcv(ch, outhandle, boxes_p, scores_p, iou_threshold, offset);
+      if (ret == diopiSuccess) {
+        auto tensorhandle = reinterpret_cast<Tensor*>(*outhandle);
+        return *tensorhandle;
+      }
+    } else {
+      auto ret =
+          diopiNmsMmcv(ch, outhandle, boxes_p, scores_p, iou_threshold, offset);
+      if (ret == diopiSuccess) {
+        auto tensorhandle = reinterpret_cast<Tensor*>(*outhandle);
+        return *tensorhandle;
+      }
     }
   }
   LOG(WARNING) << "Fallback to cpu: mmcv ext op nms";

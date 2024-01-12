@@ -10,36 +10,11 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *************************************************************************/
 
-#include "pytorch_device_registry.hpp"
-#include "pytorch_mlu_helper.hpp"
+#include "mlu_common_helper.h"
 
-void KernelBBoxOverlaps(cnrtDim3_t k_dim, cnrtFunctionType_t k_type,
-                        cnrtQueue_t queue, const cnrtDataType_t d_type,
-                        const void *bbox1, const void *bbox2, void *ious,
-                        const int32_t num_bbox1, const int32_t num_bbox2,
-                        const int32_t mode, const bool aligned,
-                        const int32_t offset);
-
-static void policyFunc(cnrtDim3_t *k_dim, cnrtFunctionType_t *k_type,
-                       const int32_t batch_num_all) {
-  auto union_num = torch_mlu::getDeviceAttr(cnrtAttrClusterCount);
-  auto core_dim = torch_mlu::getDeviceAttr(cnrtAttrMcorePerCluster);
-  auto core_num = union_num * core_dim;
-
-  // Union1 policyFunc
-  *k_type = CNRT_FUNC_TYPE_UNION1;
-  k_dim->x = core_dim;
-  auto need_core_num = PAD_UP(batch_num_all, core_dim);
-  k_dim->y =
-      (need_core_num < core_num) ? (need_core_num / core_dim) : union_num;
-  k_dim->z = 1;
-
-  return;
-}
-
-void BBoxOverlapsMLUKernelLauncher(const Tensor bboxes1, const Tensor bboxes2,
-                                   Tensor ious, const int32_t mode,
-                                   const bool aligned, const int32_t offset) {
+void bbox_overlaps_mlu(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
+                       const int32_t mode, const bool aligned,
+                       const int32_t offset) {
   // check dtype
   TORCH_CHECK(
       bboxes1.scalar_type() == at::kFloat || bboxes1.scalar_type() == at::kHalf,
@@ -63,38 +38,19 @@ void BBoxOverlapsMLUKernelLauncher(const Tensor bboxes1, const Tensor bboxes2,
     return;
   }
 
-  // calculate task dimension
-  cnrtDim3_t k_dim;
-  cnrtFunctionType_t k_type;
-  policyFunc(&k_dim, &k_type, batch_num_all);
+  INITIAL_MLU_PARAM_WITH_TENSOR(bboxes1);
+  INITIAL_MLU_PARAM_WITH_TENSOR(bboxes2);
+  INITIAL_MLU_PARAM_WITH_TENSOR(ious);
 
-  // get compute queue
-  cnrtQueue_t queue = torch_mlu::getCurQueue();
+  // get compute handle
+  auto handle = mluOpGetCurrentHandle();
 
-  // get dtype of input
-  cnrtDataType_t d_type = torch_mlu::toCnrtDtype(bboxes1.dtype());
-
-  // get ptr of tensors
-  auto bboxes1_impl = torch_mlu::getMluTensorImpl(bboxes1);
-  auto bboxes1_ptr = bboxes1_impl->cnnlMalloc();
-  auto bboxes2_impl = torch_mlu::getMluTensorImpl(bboxes2);
-  auto bboxes2_ptr = bboxes2_impl->cnnlMalloc();
-  auto ious_impl = torch_mlu::getMluTensorImpl(ious);
-  auto ious_ptr = ious_impl->cnnlMalloc();
-
-  // launch kernel
-  CNLOG(INFO) << "Launch Kernel MLUUnion1BboxOverlapsKernel";
-  CNLOG(INFO) << "kDim :[ " << k_dim.x << ", " << k_dim.y << ", " << k_dim.z
-              << " ]";
-  KernelBBoxOverlaps(k_dim, k_type, queue, d_type, bboxes1_ptr, bboxes2_ptr,
-                     ious_ptr, rows, cols, mode, aligned, offset);
-}
-
-void bbox_overlaps_mlu(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
-                       const int mode, const bool aligned, const int offset) {
-  BBoxOverlapsMLUKernelLauncher(bboxes1, bboxes2, ious, mode, aligned, offset);
+  TORCH_MLUOP_CHECK(mluOpBboxOverlaps(
+      handle, mode, aligned, offset, bboxes1_desc.desc(), bboxes1_ptr,
+      bboxes2_desc.desc(), bboxes2_ptr, ious_desc.desc(), ious_ptr));
 }
 
 void bbox_overlaps_impl(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
                         const int mode, const bool aligned, const int offset);
+
 REGISTER_DEVICE_IMPL(bbox_overlaps_impl, MLU, bbox_overlaps_mlu);

@@ -50,10 +50,10 @@ void DeformRoIPoolForwardMLUKernelLauncher(Tensor input, Tensor rois,
 
   // get compute handle
   auto handle = mluOpGetCurrentHandle();
-  mluOpDeformRoiPoolForward(
+  TORCH_MLUOP_CHECK(mluOpDeformRoiPoolForward(
       handle, input_desc.desc(), input_ptr, rois_desc.desc(), rois_ptr,
       offset_real_desc, offset_ptr, pooled_height, pooled_width, spatial_scale,
-      sampling_ratio, gamma, output_desc.desc(), output_ptr);
+      sampling_ratio, gamma, output_desc.desc(), output_ptr));
 
   output.copy_(output_contiguous);
 }
@@ -113,12 +113,12 @@ void DeformRoIPoolBackwardMLUKernelLauncher(
 
   // get compute handle
   auto handle = mluOpGetCurrentHandle();
-  mluOpDeformRoiPoolBackward(
+  TORCH_MLUOP_CHECK(mluOpDeformRoiPoolBackward(
       handle, grad_output_desc.desc(), grad_output_ptr, input_desc.desc(),
       input_ptr, rois_desc.desc(), rois_ptr, offset_real_desc, offset_ptr,
       pooled_height, pooled_width, spatial_scale, sampling_ratio, gamma,
       grad_input_desc.desc(), grad_input_ptr, grad_offset_real_desc,
-      grad_offset_ptr);
+      grad_offset_ptr));
   grad_input.copy_(grad_input_);
 }
 

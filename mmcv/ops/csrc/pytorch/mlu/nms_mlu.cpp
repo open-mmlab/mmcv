@@ -34,8 +34,8 @@ Tensor NMSMLUKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
   // workspace
   size_t workspace_size = 0;
   auto handle = mluOpGetCurrentHandle();
-  mluOpGetNmsWorkspaceSize(handle, boxes_desc.desc(), scores_desc.desc(),
-                           &workspace_size);
+  TORCH_MLUOP_CHECK(mluOpGetNmsWorkspaceSize(
+      handle, boxes_desc.desc(), scores_desc.desc(), &workspace_size));
   auto workspace = at::empty(workspace_size, boxes.options().dtype(at::kByte));
 
   // get compute queue
@@ -62,16 +62,17 @@ Tensor NMSMLUKernelLauncher(Tensor boxes, Tensor scores, float iou_threshold,
   const bool pad_to_max_output_size = false;
   const int max_output_size = max_output_boxes;
 
-  mluOpCreateNmsDescriptor(&nms_desc);
-  mluOpSetNmsDescriptor(nms_desc, box_mode, output_mode, algo, method_mode,
-                        iou_threshold, soft_nms_sigma, max_output_size,
-                        confidence_threshold, (float)offset, input_layout,
-                        pad_to_max_output_size);
+  TORCH_MLUOP_CHECK(mluOpCreateNmsDescriptor(&nms_desc));
+  TORCH_MLUOP_CHECK(mluOpSetNmsDescriptor(
+      nms_desc, box_mode, output_mode, algo, method_mode, iou_threshold,
+      soft_nms_sigma, max_output_size, confidence_threshold, (float)offset,
+      input_layout, pad_to_max_output_size));
 
-  mluOpNms(handle, nms_desc, boxes_desc.desc(), boxes_ptr, scores_desc.desc(),
-           scores_ptr, workspace_ptr, workspace_size, output_desc.desc(),
-           output_ptr, output_size_ptr);
-  mluOpDestroyNmsDescriptor(nms_desc);
+  TORCH_MLUOP_CHECK(mluOpNms(handle, nms_desc, boxes_desc.desc(), boxes_ptr,
+                             scores_desc.desc(), scores_ptr, workspace_ptr,
+                             workspace_size, output_desc.desc(), output_ptr,
+                             output_size_ptr));
+  TORCH_MLUOP_CHECK(mluOpDestroyNmsDescriptor(nms_desc));
   int output_num = *static_cast<int *>(output_size.cpu().data_ptr());
   auto ret = output.to(boxes.options().dtype(at::kLong));
   return ret.slice(0, 0, output_num);

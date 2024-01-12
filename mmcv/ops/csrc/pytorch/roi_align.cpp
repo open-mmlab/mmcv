@@ -5,9 +5,14 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+#include <torch/csrc/utils/pybind.h>
 
+#include "csrc_dipu/base/basedef.h"
 #include "csrc_dipu/diopirt/diopirt_impl.h"
+#include "csrc_dipu/runtime/device/deviceapis.h"
+#include "csrc_dipu/utils/helpfunc.hpp"
 
+using dipu::VENDOR_TYPE;
 using dipu::diopi_helper::toDiopiScalar;
 using dipu::diopi_helper::toDiopiTensorHandle;
 #endif
@@ -53,11 +58,20 @@ void roi_align_forward_diopi(Tensor input, Tensor rois, Tensor output,
   auto out_p = toDiopiTensorHandle(output);
   auto argmax_y_p = toDiopiTensorHandle(argmax_y);
   auto argmax_x_p = toDiopiTensorHandle(argmax_x);
-  if (reinterpret_cast<void*>(diopiRoiAlignMmcv) != nullptr) {
-    auto ret = diopiRoiAlignMmcv(
-        ch, out_p, argmax_y_p, argmax_x_p, input_p, rois_p, aligned_height,
-        aligned_width, sampling_ratio, pool_mode, spatial_scale, aligned);
-    if (ret == diopiSuccess) return;
+  bool is_mock_cuda = input.device().type() == dipu::DIPU_DEVICE_TYPE;
+  if (is_mock_cuda && reinterpret_cast<void *>(diopiRoiAlignMmcv) != nullptr) {
+    if (strcmp(dipu::VendorTypeToStr(VENDOR_TYPE), "NPU") == 0) {
+      pybind11::gil_scoped_release no_gil;
+      auto ret = diopiRoiAlignMmcv(
+          ch, out_p, argmax_y_p, argmax_x_p, input_p, rois_p, aligned_height,
+          aligned_width, sampling_ratio, pool_mode, spatial_scale, aligned);
+      if (ret == diopiSuccess) return;
+    } else {
+      auto ret = diopiRoiAlignMmcv(
+          ch, out_p, argmax_y_p, argmax_x_p, input_p, rois_p, aligned_height,
+          aligned_width, sampling_ratio, pool_mode, spatial_scale, aligned);
+      if (ret == diopiSuccess) return;
+    }
   }
   LOG(WARNING) << "Fallback to cpu: mmcv ext op roi_align_forward";
   auto input_cpu = input.cpu();
@@ -91,12 +105,23 @@ void roi_align_backward_diopi(Tensor grad_output, Tensor rois, Tensor argmax_y,
   auto grad_input_ = toDiopiTensorHandle(grad_input);
   diopiContext ctx(dipu::getCurrentDIPUStream().rawstream());
   diopiContextHandle_t ch = &ctx;
-  if (reinterpret_cast<void*>(diopiRoiAlignBackwardMmcv) != nullptr) {
-    auto ret = diopiRoiAlignBackwardMmcv(ch, grad_input_, grad_output_, rois_,
-                                         argmax_y_, argmax_x_, aligned_height,
-                                         aligned_width, sampling_ratio,
-                                         pool_mode, spatial_scale, aligned);
-    if (ret == diopiSuccess) return;
+  bool is_mock_cuda = grad_output.device().type() == dipu::DIPU_DEVICE_TYPE;
+  if (is_mock_cuda &&
+      reinterpret_cast<void *>(diopiRoiAlignBackwardMmcv) != nullptr) {
+    if (strcmp(dipu::VendorTypeToStr(VENDOR_TYPE), "NPU") == 0) {
+      pybind11::gil_scoped_release no_gil;
+      auto ret = diopiRoiAlignBackwardMmcv(ch, grad_input_, grad_output_, rois_,
+                                           argmax_y_, argmax_x_, aligned_height,
+                                           aligned_width, sampling_ratio,
+                                           pool_mode, spatial_scale, aligned);
+      if (ret == diopiSuccess) return;
+    } else {
+      auto ret = diopiRoiAlignBackwardMmcv(ch, grad_input_, grad_output_, rois_,
+                                           argmax_y_, argmax_x_, aligned_height,
+                                           aligned_width, sampling_ratio,
+                                           pool_mode, spatial_scale, aligned);
+      if (ret == diopiSuccess) return;
+    }
   }
   LOG(WARNING) << "Fallback to cpu: mmcv ext op roi_align_backward";
   auto grad_output_cpu = grad_output.cpu();

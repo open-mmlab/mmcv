@@ -3,26 +3,31 @@ import pytest
 import torch
 from mmengine.device import is_musa_available
 from mmcv.ops import three_interpolate
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
 
-
-@pytest.mark.skipif(
-    not (torch.cuda.is_available() or is_musa_available), reason='requires CUDA/MUSA support')
 @pytest.mark.parametrize('dtype', [
-    pytest.param(
-        torch.half,
-        marks=pytest.mark.skipif(
-            is_musa_available, reason='TODO haowen.han@mthreads.com: not supported yet')),
-    torch.float, 
+    torch.half, torch.float,
     pytest.param(
         torch.double,
         marks=pytest.mark.skipif(
-            is_musa_available, reason='TODO haowen.han@mthreads.com: not supported yet'))
+            IS_NPU_AVAILABLE,
+            reason='NPU does not support for 64-bit floating point'))
 ])
-def test_three_interpolate(dtype):
-    if torch.cuda.is_available():
-        device = 'cuda'
-    elif is_musa_available:
-        device = 'musa'
+@pytest.mark.parametrize('device', [
+    pytest.param(
+        'cuda',
+        marks=pytest.mark.skipif(
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    pytest.param(
+        'npu',
+        marks=pytest.mark.skipif(
+            not IS_NPU_AVAILABLE, reason='requires NPU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
+])
+def test_three_interpolate(dtype, device):
     features = torch.tensor(
         [[[2.4350, 4.7516, 4.4995, 2.4350, 2.4350, 2.4350],
           [3.1236, 2.6278, 3.0447, 3.1236, 3.1236, 3.1236],
@@ -34,12 +39,13 @@ def test_three_interpolate(dtype):
           [0.0000, 0.2744, 2.0842, 0.0000, 0.0000, 0.0000],
           [0.3414, 1.5063, 1.6209, 0.3414, 0.3414, 0.3414],
           [0.5814, 0.0103, 0.0000, 0.5814, 0.5814, 0.5814]]],
-        dtype=dtype).to(device)
+        dtype=dtype,
+        device=device)
 
-    idx = torch.tensor([[[0, 1, 2], [2, 3, 4], [2, 3, 4], [0, 1, 2], [0, 1, 2],
-                         [0, 1, 3]],
-                        [[0, 2, 3], [1, 3, 4], [2, 1, 4], [0, 2, 4], [0, 2, 4],
-                         [0, 1, 2]]]).int().to(device)
+    idx = torch.tensor(
+        [[[0, 1, 2], [2, 3, 4], [2, 3, 4], [0, 1, 2], [0, 1, 2], [0, 1, 3]],
+         [[0, 2, 3], [1, 3, 4], [2, 1, 4], [0, 2, 4], [0, 2, 4], [0, 1, 2]]],
+        device=device).int()
 
     weight = torch.tensor([[[3.3333e-01, 3.3333e-01, 3.3333e-01],
                             [1.0000e+00, 5.8155e-08, 2.2373e-08],
@@ -53,7 +59,8 @@ def test_three_interpolate(dtype):
                             [3.3333e-01, 3.3333e-01, 3.3333e-01],
                             [3.3333e-01, 3.3333e-01, 3.3333e-01],
                             [3.3333e-01, 3.3333e-01, 3.3333e-01]]],
-                          dtype=dtype).to(device)
+                          dtype=dtype,
+                          device=device)
 
     output = three_interpolate(features, idx, weight)
     expected_output = torch.tensor([[[
@@ -87,6 +94,6 @@ def test_three_interpolate(dtype):
                                          3.8760e-01, 1.0300e-02, 8.3569e-09,
                                          3.8760e-01, 3.8760e-01, 1.9723e-01
                                      ]]],
-                                   dtype=dtype).to(device)
-
+                                   dtype=dtype,
+                                   device=device)
     assert torch.allclose(output, expected_output, 1e-3, 1e-4)

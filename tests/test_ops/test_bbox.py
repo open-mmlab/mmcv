@@ -2,6 +2,7 @@
 import numpy as np
 import pytest
 import torch
+from mmengine.utils import digit_version
 
 from mmcv.utils import (IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MPS_AVAILABLE, IS_MUSA_AVAILABLE,
                         IS_NPU_AVAILABLE)
@@ -60,7 +61,9 @@ class TestBBox:
         pytest.param(
             'mps',
             marks=pytest.mark.skipif(
-                not IS_MPS_AVAILABLE, reason='requires MPS support')),
+                not IS_MPS_AVAILABLE
+                or digit_version(torch.__version__) >= digit_version('2.1.0'),
+                reason='requires MPS support')),
         pytest.param(
             'npu',
             marks=pytest.mark.skipif(

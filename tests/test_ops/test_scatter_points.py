@@ -4,17 +4,26 @@ import torch
 from torch.autograd import gradcheck
 
 from mmcv.ops import DynamicScatter
-from mmengine.device import is_musa_available
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE
+
 if torch.__version__ == 'parrots':
     pytest.skip('not supported in parrots now', allow_module_level=True)
 
-
-@pytest.mark.skipif(
-    not (torch.cuda.is_available() or is_musa_available), reason='requires CUDA/MUSA support')
-def test_dynamic_scatter():
-    #TODO 'aten::unique_dim' is not supported by musa yet. haowen.han@mthreads.com
-    if is_musa_available:
-        return
+@pytest.mark.parametrize('device', [
+    pytest.param(
+        'cuda',
+        marks=pytest.mark.skipif(
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    pytest.param(
+        'mlu',
+        marks=pytest.mark.skipif(
+            not IS_MLU_AVAILABLE, reason='requires MLU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
+])
+def test_dynamic_scatter(device):
     dsmean = DynamicScatter([0.32, 0.32, 6],
                             [-74.88, -74.88, -2, 74.88, 74.88, 4], True)
     dsmax = DynamicScatter([0.32, 0.32, 6],
@@ -132,5 +141,7 @@ def test_dynamic_scatter():
     coors = torch.randint(
         low=-1, high=3, size=(100, 3), dtype=torch.int32, device=device)
     feats.requires_grad_()
-    gradcheck(dsmean, (feats, coors), eps=1e-2, atol=1e-2, rtol=1e-5)
+    # TODO(Cambricon): mlu only support max reduce in current version.
+    if not IS_MLU_AVAILABLE:
+        gradcheck(dsmean, (feats, coors), eps=1e-2, atol=1e-2, rtol=1e-5)
     gradcheck(dsmax, (feats, coors), eps=1e-2, atol=1e-2, rtol=1e-5)

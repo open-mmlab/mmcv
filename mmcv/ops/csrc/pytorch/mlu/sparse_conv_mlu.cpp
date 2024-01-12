@@ -86,31 +86,31 @@ std::vector<torch::Tensor> GetIndicePairsForwardMLUKernelLauncher(
     mluOpDataType_t dtype = MLUOP_DTYPE_INT32;
     std::vector<int> dims;
     dims = {numAct, coorDim + 1};
-    mluOpSetTensorDescriptor(indices_desc.desc(), layout, dtype, dims.size(),
-                             dims.data());
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        indices_desc.desc(), layout, dtype, dims.size(), dims.data()));
     dims = {kernelVolume, 2, numAct};
-    mluOpSetTensorDescriptor(indicePairs_desc.desc(), layout, dtype,
-                             dims.size(), dims.data());
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        indicePairs_desc.desc(), layout, dtype, dims.size(), dims.data()));
     dims = {kernelVolume};
-    mluOpSetTensorDescriptor(indiceNum_desc.desc(), layout, dtype, dims.size(),
-                             dims.data());
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        indiceNum_desc.desc(), layout, dtype, dims.size(), dims.data()));
     dims = {out_size, coorDim + 1};
-    mluOpSetTensorDescriptor(out_indices_desc.desc(), layout, dtype,
-                             dims.size(), dims.data());
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        out_indices_desc.desc(), layout, dtype, dims.size(), dims.data()));
   }
 
   mluOpSparseConvolutionDescriptor_t sparse_conv_desc;
-  mluOpCreateSparseConvolutionDescriptor(&sparse_conv_desc);
-  mluOpSetSparseConvolutionDescriptor(
+  TORCH_MLUOP_CHECK(mluOpCreateSparseConvolutionDescriptor(&sparse_conv_desc));
+  TORCH_MLUOP_CHECK(mluOpSetSparseConvolutionDescriptor(
       sparse_conv_desc, NDim + 2, batch, padding32.data(), stride32.data(),
       dilation32.data(), input_space.data(), filter_space.data(),
-      output_space.data(), sub_m, transpose, 0);
+      output_space.data(), sub_m, transpose, 0));
 
   auto handle = mluOpGetCurrentHandle();
   size_t workspace_size = 0;
-  mluOpGetIndicePairsWorkspaceSize(
+  TORCH_MLUOP_CHECK(mluOpGetIndicePairsWorkspaceSize(
       handle, sparse_conv_desc, indices_desc.desc(), indicePairs_desc.desc(),
-      out_indices_desc.desc(), indiceNum_desc.desc(), &workspace_size);
+      out_indices_desc.desc(), indiceNum_desc.desc(), &workspace_size));
   auto indice_workspace_size =
       at::empty(workspace_size, indices.options().dtype(at::kByte));
 
@@ -127,14 +127,15 @@ std::vector<torch::Tensor> GetIndicePairsForwardMLUKernelLauncher(
   auto indiceNum_ptr = indiceNum_impl->cnnlMalloc();
   auto indice_workspace_ptr = indice_workspace_impl->cnnlMalloc();
 
-  mluOpGetIndicePairs(handle, sparse_conv_desc, indices_desc.desc(),
-                      indices_ptr, indice_workspace_ptr, workspace_size,
-                      indicePairs_desc.desc(), indicePairs_ptr,
-                      out_indices_desc.desc(), out_indices_ptr,
-                      indiceNum_desc.desc(), indiceNum_ptr);
+  TORCH_MLUOP_CHECK(mluOpGetIndicePairs(
+      handle, sparse_conv_desc, indices_desc.desc(), indices_ptr,
+      indice_workspace_ptr, workspace_size, indicePairs_desc.desc(),
+      indicePairs_ptr, out_indices_desc.desc(), out_indices_ptr,
+      indiceNum_desc.desc(), indiceNum_ptr));
   int num_act_out = 0;
-  mluOpGetSparseConvolutionNumActOut(sparse_conv_desc, &num_act_out);
-  mluOpDestroySparseConvolutionDescriptor(sparse_conv_desc);
+  TORCH_MLUOP_CHECK(
+      mluOpGetSparseConvolutionNumActOut(sparse_conv_desc, &num_act_out));
+  TORCH_MLUOP_CHECK(mluOpDestroySparseConvolutionDescriptor(sparse_conv_desc));
   if (!sub_m) {
     return {out_indices.slice(0, 0, num_act_out), indicePairs, indiceNum};
   } else {
@@ -179,33 +180,36 @@ torch::Tensor IndiceConvForwardMLUKernelLauncher(
     int dims[8];
 
     // features_desc
-    mluOpGetTensorDescriptor(features_desc.desc(), &layout, &dtype, &dim, dims);
-    mluOpSetTensorDescriptor(features_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype,
-                             dim, dims);
+    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(features_desc.desc(), &layout,
+                                               &dtype, &dim, dims));
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        features_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims));
 
     // filters_desc
-    mluOpGetTensorDescriptor(filters_desc.desc(), &layout, &dtype, &dim, dims);
-    mluOpSetTensorDescriptor(filters_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype,
-                             dim, dims);
+    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(filters_desc.desc(), &layout,
+                                               &dtype, &dim, dims));
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        filters_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims));
 
     // indice_pairs_desc
-    mluOpGetTensorDescriptor(indice_pairs_desc.desc(), &layout, &dtype, &dim,
-                             dims);
-    mluOpSetTensorDescriptor(indice_pairs_desc.desc(), MLUOP_LAYOUT_ARRAY,
-                             dtype, dim, dims);
+    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(indice_pairs_desc.desc(),
+                                               &layout, &dtype, &dim, dims));
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        indice_pairs_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims));
 
     // output_desc
-    mluOpGetTensorDescriptor(output_desc.desc(), &layout, &dtype, &dim, dims);
-    mluOpSetTensorDescriptor(output_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim,
-                             dims);
+    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(output_desc.desc(), &layout,
+                                               &dtype, &dim, dims));
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        output_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims));
   }
 
   auto handle = mluOpGetCurrentHandle();
   size_t workspace_size = 0;
-  mluOpGetIndiceConvolutionForwardWorkspaceSize(
+  TORCH_MLUOP_CHECK(mluOpGetIndiceConvolutionForwardWorkspaceSize(
       handle, features_desc.desc(), filters_desc.desc(),
       indice_pairs_desc.desc(), output_desc.desc(), indice_num, numActOut,
-      _inverse, _subM, &workspace_size);
+      _inverse, _subM, &workspace_size));
 
   auto workspace =
       at::empty(workspace_size, features.options().dtype(at::kByte));
@@ -223,11 +227,11 @@ torch::Tensor IndiceConvForwardMLUKernelLauncher(
   //  outputs
   auto output_impl = torch_mlu::getMluTensorImpl(output);
   auto output_ptr = output_impl->cnnlMalloc();
-  mluOpIndiceConvolutionForward(
+  TORCH_MLUOP_CHECK(mluOpIndiceConvolutionForward(
       handle, features_desc.desc(), features_ptr, filters_desc.desc(),
       filters_ptr, indice_pairs_desc.desc(), indice_pairs_ptr, indice_num,
       numActOut, _inverse, _subM, workspace_ptr, workspace_size,
-      output_desc.desc(), output_ptr);
+      output_desc.desc(), output_ptr));
 
   return output;
 }
@@ -290,37 +294,39 @@ std::vector<torch::Tensor> IndiceConvBackwardMLUKernelLauncher(
     int dims[8];
 
     // features_desc
-    mluOpGetTensorDescriptor(features_desc.desc(), &layout, &dtype, &dim, dims);
-    mluOpSetTensorDescriptor(features_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype,
-                             dim, dims);
+    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(features_desc.desc(), &layout,
+                                               &dtype, &dim, dims));
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        features_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims));
 
     // filters_desc
-    mluOpGetTensorDescriptor(filters_desc.desc(), &layout, &dtype, &dim, dims);
+    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(filters_desc.desc(), &layout,
+                                               &dtype, &dim, dims));
     if (dim == 4) {
-      mluOpSetTensorDescriptor(filters_desc.desc(), MLUOP_LAYOUT_HWCN, dtype,
-                               dim, dims);
+      TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+          filters_desc.desc(), MLUOP_LAYOUT_HWCN, dtype, dim, dims));
     } else {
-      mluOpSetTensorDescriptor(filters_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype,
-                               dim, dims);
+      TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+          filters_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims));
     }
 
     // output_grad_desc
-    mluOpGetTensorDescriptor(output_grad_desc.desc(), &layout, &dtype, &dim,
-                             dims);
-    mluOpSetTensorDescriptor(output_grad_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype,
-                             dim, dims);
+    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(output_grad_desc.desc(), &layout,
+                                               &dtype, &dim, dims));
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        output_grad_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims));
 
     // indice_pairs_desc
-    mluOpGetTensorDescriptor(indice_pairs_desc.desc(), &layout, &dtype, &dim,
-                             dims);
-    mluOpSetTensorDescriptor(indice_pairs_desc.desc(), MLUOP_LAYOUT_ARRAY,
-                             dtype, dim, dims);
+    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(indice_pairs_desc.desc(),
+                                               &layout, &dtype, &dim, dims));
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        indice_pairs_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims));
 
     // input_grad_desc
-    mluOpGetTensorDescriptor(input_grad_desc.desc(), &layout, &dtype, &dim,
-                             dims);
-    mluOpSetTensorDescriptor(input_grad_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype,
-                             dim, dims);
+    TORCH_MLUOP_CHECK(mluOpGetTensorDescriptor(input_grad_desc.desc(), &layout,
+                                               &dtype, &dim, dims));
+    TORCH_MLUOP_CHECK(mluOpSetTensorDescriptor(
+        input_grad_desc.desc(), MLUOP_LAYOUT_ARRAY, dtype, dim, dims));
   }
 
   auto handle = mluOpGetCurrentHandle();
@@ -331,10 +337,10 @@ std::vector<torch::Tensor> IndiceConvBackwardMLUKernelLauncher(
       &data_workspace_size);
 
   size_t filters_workspace_size = 0;
-  mluOpGetIndiceConvolutionBackwardFilterWorkspaceSize(
+  TORCH_MLUOP_CHECK(mluOpGetIndiceConvolutionBackwardFilterWorkspaceSize(
       handle, features_desc.desc(), output_grad_desc.desc(),
       indice_pairs_desc.desc(), filters_grad_desc.desc(), indice_num, _inverse,
-      _subM, &filters_workspace_size);
+      _subM, &filters_workspace_size));
 
   auto indice_convbpdata_workspace =
       at::empty(data_workspace_size, features.options().dtype(at::kByte));
@@ -365,17 +371,17 @@ std::vector<torch::Tensor> IndiceConvBackwardMLUKernelLauncher(
   auto filters_grad_impl = torch_mlu::getMluTensorImpl(filters_grad);
   auto filters_grad_ptr = filters_grad_impl->cnnlMalloc();
 
-  mluOpIndiceConvolutionBackwardData(
+  TORCH_MLUOP_CHECK(mluOpIndiceConvolutionBackwardData(
       handle, output_grad_desc.desc(), output_grad_ptr, filters_desc.desc(),
       filters_ptr, indice_pairs_desc.desc(), indice_pairs_ptr, indice_num,
       _inverse, _subM, indice_convbpdata_workspace_ptr, data_workspace_size,
-      input_grad_desc.desc(), input_grad_ptr);
+      input_grad_desc.desc(), input_grad_ptr));
 
-  mluOpIndiceConvolutionBackwardFilter(
+  TORCH_MLUOP_CHECK(mluOpIndiceConvolutionBackwardFilter(
       handle, features_desc.desc(), features_ptr, output_grad_desc.desc(),
       output_grad_ptr, indice_pairs_desc.desc(), indice_pairs_ptr, indice_num,
       _inverse, _subM, indice_convbpfilter_workspace_ptr,
-      filters_workspace_size, filters_grad_desc.desc(), filters_grad_ptr);
+      filters_workspace_size, filters_grad_desc.desc(), filters_grad_ptr));
 
   std::vector<torch::Tensor> result;
   result.push_back(input_grad);

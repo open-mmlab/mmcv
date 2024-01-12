@@ -205,13 +205,15 @@ def get_extensions():
         extra_compile_args = {'cxx': []}
 
         if platform.system() != 'Windows':
-            extra_compile_args['cxx'] = ['-std=c++14']
+            if parse_version(torch.__version__) <= parse_version('1.12.1'):
+                extra_compile_args['cxx'] = ['-std=c++14']
+            else:
+                extra_compile_args['cxx'] = ['-std=c++17']
         else:
-            # TODO: In Windows, C++17 is chosen to compile extensions in
-            # PyTorch2.0 , but a compile error will be reported.
-            # As a temporary solution, force the use of C++14.
-            if parse_version(torch.__version__) >= parse_version('2.0.0'):
+            if parse_version(torch.__version__) <= parse_version('1.12.1'):
                 extra_compile_args['cxx'] = ['/std:c++14']
+            else:
+                extra_compile_args['cxx'] = ['/std:c++17']
 
         include_dirs = []
         library_dirs = []
@@ -246,10 +248,12 @@ def get_extensions():
             dipu_path = os.getenv('DIPU_PATH')
             vendor_include_dirs = os.getenv('VENDOR_INCLUDE_DIRS')
             nccl_include_dirs = os.getenv('NCCL_INCLUDE_DIRS')
+            pytorch_dir = os.getenv('PYTORCH_DIR')
             include_dirs.append(dipu_root)
             include_dirs.append(diopi_path + '/include')
             include_dirs.append(dipu_path + '/dist/include')
             include_dirs.append(vendor_include_dirs)
+            include_dirs.append(pytorch_dir + 'torch/include')
             if nccl_include_dirs:
                 include_dirs.append(nccl_include_dirs)
             library_dirs += [dipu_root]
@@ -397,18 +401,34 @@ def get_extensions():
             extra_compile_args['cxx'] += ['-ObjC++']
             # src
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
-                glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
-                glob.glob('./mmcv/ops/csrc/common/mps/*.mm') + \
-                glob.glob('./mmcv/ops/csrc/pytorch/mps/*.mm')
+                glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp')
+            # TODO: support mps ops on torch>=2.1.0
+            if parse_version(torch.__version__) < parse_version('2.1.0'):
+                op_files += glob.glob('./mmcv/ops/csrc/common/mps/*.mm') + \
+                    glob.glob('./mmcv/ops/csrc/pytorch/mps/*.mm')
             extension = CppExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/mps'))
         elif (os.getenv('FORCE_NPU', '0') == '1'):
             print(f'Compiling {ext_name} only with CPU and NPU')
             try:
+                import importlib
+
                 from torch_npu.utils.cpp_extension import NpuExtension
+                extra_compile_args['cxx'] += [
+                    '-D__FILENAME__=\"$$(notdir $$(abspath $$<))\"'
+                ]
+                extra_compile_args['cxx'] += [
+                    '-I' + importlib.util.find_spec(
+                        'torch_npu').submodule_search_locations[0] +
+                    '/include/third_party/acl/inc'
+                ]
                 define_macros += [('MMCV_WITH_NPU', None)]
                 extension = NpuExtension
+                if parse_version(torch.__version__) < parse_version('2.1.0'):
+                    define_macros += [('MMCV_WITH_XLA', None)]
+                if parse_version(torch.__version__) >= parse_version('2.1.0'):
+                    define_macros += [('MMCV_WITH_KPRIVATE', None)]
             except Exception:
                 raise ImportError('can not find any torch_npu')
             # src
@@ -433,7 +453,10 @@ def get_extensions():
         # to compile those cpp files, so there is no need to add the
         # argument
         if 'nvcc' in extra_compile_args and platform.system() != 'Windows':
-            extra_compile_args['nvcc'] += ['-std=c++14']
+            if parse_version(torch.__version__) <= parse_version('1.12.1'):
+                extra_compile_args['nvcc'] += ['-std=c++14']
+            else:
+                extra_compile_args['nvcc'] += ['-std=c++17']
 
         ext_ops = extension(
             name=ext_name,

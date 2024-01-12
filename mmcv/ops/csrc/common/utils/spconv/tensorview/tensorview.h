@@ -330,8 +330,9 @@ struct ShapeBase : public SimpleVector<int, MaxDim> {
   TV_HOST_DEVICE_INLINE ShapeBase(std::initializer_list<int> shape)
       : SimpleVector<int, MaxDim>(shape) {}
 
-  template <typename scalar_t, template <class...> class Container>
-  ShapeBase(Container<scalar_t> shape) : SimpleVector<int, MaxDim>(shape) {}
+  // TODO: find out why this template can no be used on windows
+  // template <typename scalar_t, template <class...> class Container>
+  // ShapeBase(Container<scalar_t> shape) : SimpleVector<int, MaxDim>(shape) {}
   TV_HOST_DEVICE_INLINE ShapeBase(const ShapeBase<MaxDim> &shape)
       : SimpleVector<int, MaxDim>(shape) {}
   ShapeBase(const std::vector<int> &arr) : SimpleVector<int, MaxDim>(arr) {}

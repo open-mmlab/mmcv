@@ -5,9 +5,13 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 #include <diopi/functions_mmcv.h>
+#include <torch/csrc/utils/pybind.h>
 
 #include "csrc_dipu/diopirt/diopirt_impl.h"
+#include "csrc_dipu/runtime/device/deviceapis.h"
+#include "csrc_dipu/utils/helpfunc.hpp"
 
+using dipu::VENDOR_TYPE;
 using dipu::diopi_helper::toDiopiScalar;
 using dipu::diopi_helper::toDiopiTensorHandle;
 #endif
@@ -84,11 +88,20 @@ void hard_voxelize_forward_diopi(const at::Tensor &points,
   auto num_points_per_voxel_p = toDiopiTensorHandle(num_points_per_voxel);
   auto voxel_num_p = toDiopiTensorHandle(voxel_num);
   if (reinterpret_cast<void *>(diopiHardVoxelizeMmcv) != nullptr) {
-    auto ret = diopiHardVoxelizeMmcv(
-        ch, voxels_p, coors_p, num_points_per_voxel_p, voxel_num_p, points_p,
-        voxel_size_p, coors_range_p, max_points, max_voxels, NDim,
-        deterministic);
-    if (ret == diopiSuccess) return;
+    if (strcmp(dipu::VendorTypeToStr(VENDOR_TYPE), "NPU") == 0) {
+      pybind11::gil_scoped_release no_gil;
+      auto ret = diopiHardVoxelizeMmcv(
+          ch, voxels_p, coors_p, num_points_per_voxel_p, voxel_num_p, points_p,
+          voxel_size_p, coors_range_p, max_points, max_voxels, NDim,
+          deterministic);
+      if (ret == diopiSuccess) return;
+    } else {
+      auto ret = diopiHardVoxelizeMmcv(
+          ch, voxels_p, coors_p, num_points_per_voxel_p, voxel_num_p, points_p,
+          voxel_size_p, coors_range_p, max_points, max_voxels, NDim,
+          deterministic);
+      if (ret == diopiSuccess) return;
+    }
   }
   LOG(WARNING) << "Fallback to cpu: mmcv ext op hard_voxelize_forward";
   auto points_cpu = points.cpu();
@@ -146,9 +159,16 @@ void dynamic_voxelize_forward_diopi(const at::Tensor &points,
   auto coors_range_p = toDiopiTensorHandle(coors_range);
   auto coors_p = toDiopiTensorHandle(coors);
   if (reinterpret_cast<void *>(diopiDynamicVoxelizeMmcv) != nullptr) {
-    auto ret = diopiDynamicVoxelizeMmcv(ch, coors_p, points_p, voxel_size_p,
-                                        coors_range_p, NDim);
-    if (ret == diopiSuccess) return;
+    if (strcmp(dipu::VendorTypeToStr(VENDOR_TYPE), "NPU") == 0) {
+      pybind11::gil_scoped_release no_gil;
+      auto ret = diopiDynamicVoxelizeMmcv(ch, coors_p, points_p, voxel_size_p,
+                                          coors_range_p, NDim);
+      if (ret == diopiSuccess) return;
+    } else {
+      auto ret = diopiDynamicVoxelizeMmcv(ch, coors_p, points_p, voxel_size_p,
+                                          coors_range_p, NDim);
+      if (ret == diopiSuccess) return;
+    }
   }
   LOG(WARNING) << "Fallback to cpu: mmcv ext op dynamic_voxelize_forward";
   auto points_cpu = points.cpu();

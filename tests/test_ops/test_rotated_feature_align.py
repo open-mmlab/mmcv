@@ -3,7 +3,8 @@ import pytest
 import torch
 
 from mmcv.ops import rotated_feature_align
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
+
 
 
 @pytest.mark.skipif(
@@ -17,6 +18,10 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE
         'mlu',
         marks=pytest.mark.skipif(
             not IS_MLU_AVAILABLE, reason='requires MLU support')),
+    pytest.param(
+        'npu',
+        marks=pytest.mark.skipif(
+            not IS_NPU_AVAILABLE, reason='requires NPU support')),
     pytest.param(
         'cpu',
         marks=pytest.mark.skipif(

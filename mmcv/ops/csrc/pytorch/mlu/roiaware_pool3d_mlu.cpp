@@ -44,9 +44,9 @@ void RoiawarePool3dForwardMLUKernelLauncher(
 
   // allocate extra space for workspace
   size_t workspace_size = 0;
-  mluOpGetRoiawarePool3dForwardWorkspaceSize(
+  TORCH_MLUOP_CHECK(mluOpGetRoiawarePool3dForwardWorkspaceSize(
       handle, rois_desc.desc(), pts_desc.desc(), pts_feature_desc.desc(),
-      &workspace_size);
+      &workspace_size));
 
   auto workspace = at::empty(workspace_size, rois.options().dtype(at::kByte));
   auto workspace_impl = torch_mlu::getMluTensorImpl(workspace);
@@ -69,13 +69,13 @@ void RoiawarePool3dForwardMLUKernelLauncher(
   auto pooled_features_ptr = pooled_features_impl->cnnlMalloc();
 
   CNLOG(INFO) << "Call mluOpRoiawarePool3dForward().";
-  mluOpRoiawarePool3dForward(
+  TORCH_MLUOP_CHECK(mluOpRoiawarePool3dForward(
       handle, pool_method, boxes_num, pts_num, channels, rois_desc.desc(),
       rois_ptr, pts_desc.desc(), pts_ptr, pts_feature_desc.desc(),
       pts_feature_ptr, workspace_ptr, workspace_size, max_pts_each_voxel, out_x,
       out_y, out_z, argmax_desc.desc(), argmax_ptr,
       pts_idx_of_voxels_desc.desc(), pts_idx_of_voxels_ptr,
-      pooled_features_desc.desc(), pooled_features_ptr);
+      pooled_features_desc.desc(), pooled_features_ptr));
 }
 
 void roiaware_pool3d_forward_mlu(int boxes_num, int pts_num, int channels,
@@ -135,11 +135,11 @@ void RoiawarePool3dBackwardMLUKernelLauncher(
   auto grad_in_ptr = grad_in_impl->cnnlMalloc();
 
   CNLOG(INFO) << "Call mluOpRoiawarePool3dBackward().";
-  mluOpRoiawarePool3dBackward(
+  TORCH_MLUOP_CHECK(mluOpRoiawarePool3dBackward(
       handle, pool_method, boxes_num, out_x, out_y, out_z, channels,
       max_pts_each_voxel, pts_idx_of_voxels_desc.desc(), pts_idx_of_voxels_ptr,
       argmax_desc.desc(), argmax_ptr, grad_out_desc.desc(), grad_out_ptr,
-      grad_in_desc.desc(), grad_in_ptr);
+      grad_in_desc.desc(), grad_in_ptr));
 }
 
 void roiaware_pool3d_backward_mlu(int boxes_num, int out_x, int out_y,

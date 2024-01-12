@@ -16,7 +16,9 @@ Tensor fused_bias_leakyrelu_npu(const Tensor &input, const Tensor &bias,
     auto input_size = input.sizes();
     int input_length = input_size.size();
     c10::SmallVector<int64_t, SIZE> input_size_tmp;
-    input_size_tmp = array_to_small_vector(input_size);
+    for (uint64_t i = 0; i < input_size.size(); i++) {
+      input_size_tmp.emplace_back(input_size[i]);
+    }
     if (input_length > 1) {
       for (int i = 0; i < input_length; i++) {
         if (i != 1) {
@@ -25,8 +27,9 @@ Tensor fused_bias_leakyrelu_npu(const Tensor &input, const Tensor &bias,
       }
     }
     at::Tensor bias_tmp = at::reshape(bias, input_size_tmp);
-    at::Tensor bias_ = at_npu::native::NPUNativeFunctions::npu_broadcast(
-        bias_tmp, input.sizes());
+    // at::Tensor bias_ = at_npu::native::NPUNativeFunctions::npu_broadcast(
+    //     bias_tmp, input.sizes());
+    at::Tensor bias_ = at::broadcast_to(bias_tmp, input.sizes());
     OpCommand cmd;
     cmd.Name("FusedBiasLeakyRelu")
         .Input(input)

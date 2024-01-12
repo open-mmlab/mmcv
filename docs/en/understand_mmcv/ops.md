@@ -6,22 +6,22 @@ We implement common ops used in detection, segmentation, etc.
 | ---------------------------- | --- | ---- | --- | --- | ------ |
 | ActiveRotatedFilter          | √   | √    |     |     | √      |
 | AssignScoreWithK             |     | √    |     |     |        |
-| BallQuery                    |     | √    | √   |     |        |
+| BallQuery                    |     | √    | √   |     | √      |
 | BBoxOverlaps                 |     | √    | √   | √   | √      |
 | BorderAlign                  |     | √    |     |     |        |
-| BoxIouRotated                | √   | √    | √   |     |        |
+| BoxIouRotated                | √   | √    | √   |     | √      |
 | BoxIouQuadri                 | √   | √    |     |     |        |
 | CARAFE                       |     | √    | √   |     |        |
-| ChamferDistance              |     | √    |     |     |        |
+| ChamferDistance              |     | √    |     |     | √      |
 | CrissCrossAttention          |     | √    |     |     |        |
 | ContourExpand                | √   |      |     |     |        |
 | ConvexIoU                    |     | √    |     |     |        |
 | CornerPool                   |     | √    |     |     |        |
 | Correlation                  |     | √    |     |     |        |
-| Deformable Convolution v1/v2 | √   | √    |     |     | √      |
+| Deformable Convolution v1/v2 | √   | √    | √   |     | √      |
 | Deformable RoIPool           |     | √    | √   |     | √      |
-| DiffIoURotated               |     | √    |     |     |        |
-| DynamicScatter               |     | √    |     |     |        |
+| DiffIoURotated               |     | √    | √   |     |        |
+| DynamicScatter               |     | √    | √   |     |        |
 | FurthestPointSample          |     | √    |     |     |        |
 | FurthestPointSampleWithDist  |     | √    |     |     |        |
 | FusedBiasLeakyrelu           |     | √    |     |     | √      |
@@ -32,19 +32,19 @@ We implement common ops used in detection, segmentation, etc.
 | MaskedConv                   |     | √    | √   |     | √      |
 | MergeCells                   |     | √    |     |     |        |
 | MinAreaPolygon               |     | √    |     |     |        |
-| ModulatedDeformConv2d        | √   | √    |     |     | √      |
+| ModulatedDeformConv2d        | √   | √    | √   |     | √      |
 | MultiScaleDeformableAttn     |     | √    | √   |     |        |
 | NMS                          | √   | √    | √   |     | √      |
 | NMSRotated                   | √   | √    | √   |     | √      |
 | NMSQuadri                    | √   | √    |     |     |        |
 | PixelGroup                   | √   |      |     |     |        |
 | PointsInBoxes                | √   | √    |     |     |        |
-| PointsInPolygons             |     | √    |     |     |        |
+| PointsInPolygons             |     | √    |     |     | √      |
 | PSAMask                      | √   | √    | √   |     | √      |
-| RotatedFeatureAlign          | √   | √    | √   |     |        |
+| RotatedFeatureAlign          | √   | √    | √   |     | √      |
 | RoIPointPool3d               |     | √    | √   |     |        |
 | RoIPool                      |     | √    | √   |     | √      |
-| RoIAlignRotated              | √   | √    | √   |     |        |
+| RoIAlignRotated              | √   | √    | √   |     | √      |
 | RiRoIAlignRotated            |     | √    |     |     |        |
 | RoIAlign                     | √   | √    | √   |     | √      |
 | RoIAwarePool3d               |     | √    | √   |     |        |
