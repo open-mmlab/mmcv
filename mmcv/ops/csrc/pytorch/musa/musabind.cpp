@@ -1473,6 +1473,7 @@ void tin_shift_backward_impl(Tensor grad_output, Tensor shift,
 REGISTER_DEVICE_IMPL(tin_shift_forward_impl, MUSA, tin_shift_forward_musa);
 REGISTER_DEVICE_IMPL(tin_shift_backward_impl, MUSA, tin_shift_backward_musa);
 
+#if ((!defined(__MUSA_ARCH__)) || (defined(__MUSA_ARCH__))&&(__MUSA_ARCH__ > 210))
 torch::Tensor upfirdn2d_op(torch::Tensor input, torch::Tensor filter, int upx,
                            int upy, int downx, int downy, int padx0, int padx1,
                            int pady0, int pady1, bool flip, float gain);
@@ -1482,6 +1483,7 @@ torch::Tensor upfirdn2d_op_impl(torch::Tensor input, torch::Tensor filter,
                                 int padx0, int padx1, int pady0, int pady1,
                                 bool flip, float gain);
 REGISTER_DEVICE_IMPL(upfirdn2d_op_impl, MUSA, upfirdn2d_op);
+#endif
 
 int HardVoxelizeForwardMUSAKernelLauncher(
     const at::Tensor &points, at::Tensor &voxels, at::Tensor &coors,
