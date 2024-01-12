@@ -2,79 +2,79 @@
 #include "carafe_musa_kernel.muh"
 #include "pytorch_musa_helper.hpp"
 
-// void CARAFEForwardMUSAKernelLauncher(const Tensor features, const Tensor masks,
-//                                      Tensor rfeatures, Tensor routput,
-//                                      Tensor rmasks, Tensor output,
-//                                      const int kernel_size,
-//                                      const int group_size,
-//                                      const int scale_factor) {
-//   const int batch_size = output.size(0);
-//   const int channels = output.size(1);
-//   const int output_height = output.size(2);
-//   const int output_width = output.size(3);
+void CARAFEForwardMUSAKernelLauncher(const Tensor features, const Tensor masks,
+                                     Tensor rfeatures, Tensor routput,
+                                     Tensor rmasks, Tensor output,
+                                     const int kernel_size,
+                                     const int group_size,
+                                     const int scale_factor) {
+  const int batch_size = output.size(0);
+  const int channels = output.size(1);
+  const int output_height = output.size(2);
+  const int output_width = output.size(3);
 
-//   const int input_height = features.size(2);
-//   const int input_width = features.size(3);
+  const int input_height = features.size(2);
+  const int input_width = features.size(3);
 
-//   const int mask_channels = masks.size(1);
+  const int mask_channels = masks.size(1);
 
-//   rfeatures.resize_({batch_size, input_height, input_width, channels});
-//   routput.resize_({batch_size, output_height, output_width, channels});
-//   rmasks.resize_({batch_size, output_height, output_width, mask_channels});
+  rfeatures.resize_({batch_size, input_height, input_width, channels});
+  routput.resize_({batch_size, output_height, output_width, channels});
+  rmasks.resize_({batch_size, output_height, output_width, mask_channels});
 
-//   // one warp per pixel
-//   c10::musa::MUSAGuard device_guard(features.device());
-//   musaStream_t stream = c10::musa::getCurrentMUSAStream();
-//   AT_DISPATCH_FLOATING_TYPES(
-//       features.scalar_type(), "NCHW2NHWC_Feature", ([&] {
-//         const scalar_t *bottom_data = features.data_ptr<scalar_t>();
-//         scalar_t *top_data = rfeatures.data_ptr<scalar_t>();
-//         const int dh = divideUP(channels, kTileDim);
-//         const int dw = divideUP(input_height * input_width, kTileDim);
-//         BatchTranspose2DMUSAKernel<scalar_t>
-//             <<<batch_size * dh * dw, dim3(kTileDim, kBlockRows), 0, stream>>>(
-//                 batch_size, channels, input_height * input_width, dh, dw,
-//                 bottom_data, top_data);
-//       }));
-//   AT_DISPATCH_FLOATING_TYPES(
-//       features.scalar_type(), "NCHW2NHWC_Masks", ([&] {
-//         const scalar_t *bottom_data = masks.data_ptr<scalar_t>();
-//         scalar_t *top_data = rmasks.data_ptr<scalar_t>();
-//         const int dh = divideUP(mask_channels, kTileDim);
-//         const int dw = divideUP(output_height * output_width, kTileDim);
-//         BatchTranspose2DMUSAKernel<scalar_t>
-//             <<<batch_size * dh * dw, dim3(kTileDim, kBlockRows), 0, stream>>>(
-//                 batch_size, mask_channels, output_height * output_width, dh, dw,
-//                 bottom_data, top_data);
-//       }));
-//   AT_DISPATCH_FLOATING_TYPES(
-//       features.scalar_type(), "CARAFELaucherForward", ([&] {
-//         const int num_kernels =
-//             batch_size * output_height * output_width * THREADS_PER_PIXEL;
-//         const scalar_t *bottom_data = rfeatures.data_ptr<scalar_t>();
-//         const scalar_t *bottom_masks = rmasks.data_ptr<scalar_t>();
-//         scalar_t *top_data = routput.data_ptr<scalar_t>();
+  // one warp per pixel
+  c10::musa::MUSAGuard device_guard(features.device());
+  musaStream_t stream = c10::musa::getCurrentMUSAStream();
+  AT_DISPATCH_FLOATING_TYPES(
+      features.scalar_type(), "NCHW2NHWC_Feature", ([&] {
+        const scalar_t *bottom_data = features.data_ptr<scalar_t>();
+        scalar_t *top_data = rfeatures.data_ptr<scalar_t>();
+        const int dh = divideUP(channels, kTileDim);
+        const int dw = divideUP(input_height * input_width, kTileDim);
+        BatchTranspose2DMUSAKernel<scalar_t>
+            <<<batch_size * dh * dw, dim3(kTileDim, kBlockRows), 0, stream>>>(
+                batch_size, channels, input_height * input_width, dh, dw,
+                bottom_data, top_data);
+      }));
+  AT_DISPATCH_FLOATING_TYPES(
+      features.scalar_type(), "NCHW2NHWC_Masks", ([&] {
+        const scalar_t *bottom_data = masks.data_ptr<scalar_t>();
+        scalar_t *top_data = rmasks.data_ptr<scalar_t>();
+        const int dh = divideUP(mask_channels, kTileDim);
+        const int dw = divideUP(output_height * output_width, kTileDim);
+        BatchTranspose2DMUSAKernel<scalar_t>
+            <<<batch_size * dh * dw, dim3(kTileDim, kBlockRows), 0, stream>>>(
+                batch_size, mask_channels, output_height * output_width, dh, dw,
+                bottom_data, top_data);
+      }));
+  AT_DISPATCH_FLOATING_TYPES(
+      features.scalar_type(), "CARAFELaucherForward", ([&] {
+        const int num_kernels =
+            batch_size * output_height * output_width * THREADS_PER_PIXEL;
+        const scalar_t *bottom_data = rfeatures.data_ptr<scalar_t>();
+        const scalar_t *bottom_masks = rmasks.data_ptr<scalar_t>();
+        scalar_t *top_data = routput.data_ptr<scalar_t>();
 
-//         CARAFEForward<scalar_t><<<divideUP(num_kernels, THREADS_PER_BLOCK),
-//                                   THREADS_PER_BLOCK, 0, stream>>>(
-//             num_kernels, bottom_data, bottom_masks, kernel_size, group_size,
-//             scale_factor, channels, input_height, input_width, output_height,
-//             output_width, mask_channels, top_data);
-//       }));
-//   AT_DISPATCH_FLOATING_TYPES(
-//       features.scalar_type(), "NHWC2NCHW", ([&] {
-//         const scalar_t *bottom_data = routput.data_ptr<scalar_t>();
-//         scalar_t *top_data = output.data_ptr<scalar_t>();
-//         const int dh = divideUP(output_height * output_width, kTileDim);
-//         const int dw = divideUP(channels, kTileDim);
-//         BatchTranspose2DMUSAKernel<scalar_t>
-//             <<<batch_size * dh * dw, dim3(kTileDim, kBlockRows), 0, stream>>>(
-//                 batch_size, output_height * output_width, channels, dh, dw,
-//                 bottom_data, top_data);
-//       }));
+        CARAFEForward<scalar_t><<<divideUP(num_kernels, THREADS_PER_BLOCK),
+                                  THREADS_PER_BLOCK, 0, stream>>>(
+            num_kernels, bottom_data, bottom_masks, kernel_size, group_size,
+            scale_factor, channels, input_height, input_width, output_height,
+            output_width, mask_channels, top_data);
+      }));
+  AT_DISPATCH_FLOATING_TYPES(
+      features.scalar_type(), "NHWC2NCHW", ([&] {
+        const scalar_t *bottom_data = routput.data_ptr<scalar_t>();
+        scalar_t *top_data = output.data_ptr<scalar_t>();
+        const int dh = divideUP(output_height * output_width, kTileDim);
+        const int dw = divideUP(channels, kTileDim);
+        BatchTranspose2DMUSAKernel<scalar_t>
+            <<<batch_size * dh * dw, dim3(kTileDim, kBlockRows), 0, stream>>>(
+                batch_size, output_height * output_width, channels, dh, dw,
+                bottom_data, top_data);
+      }));
 
-//   AT_MUSA_CHECK(musaGetLastError());
-// }
+  AT_MUSA_CHECK(musaGetLastError());
+}
 
 // void CARAFEBackwardMUSAKernelLauncher(
 //     const Tensor top_grad, const Tensor rfeatures, const Tensor masks,
