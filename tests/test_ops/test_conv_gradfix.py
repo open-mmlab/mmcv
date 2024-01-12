@@ -2,8 +2,9 @@
 import pytest
 import torch
 import torch.nn as nn
-from torch.autograd import gradcheck, gradgradcheck
 from mmengine.device import is_musa_available
+from torch.autograd import gradcheck, gradgradcheck
+
 from mmcv.ops import conv2d, conv_transpose2d
 
 
@@ -23,7 +24,7 @@ class TestCond2d:
         gradcheck(conv2d, (x, weight, None, 1, 1), eps=1e-2, atol=0.1)
         gradgradcheck(conv2d, (x, weight, None, 1, 1), eps=1e-2, atol=0.1)
 
-    @pytest.mark.skipif(not is_musa_available, reason='requires musa')
+    @pytest.mark.skipif(not is_musa_available(), reason='requires musa')
     def test_conv2d_musa(self):
         x = self.input.musa()
         weight = self.weight.musa()
@@ -31,8 +32,6 @@ class TestCond2d:
         assert res.shape == (1, 1, 32, 32)
         gradcheck(conv2d, (x, weight, None, 1, 1), eps=1e-2, atol=0.1)
         gradgradcheck(conv2d, (x, weight, None, 1, 1), eps=1e-2, atol=0.1)
-    
-
 
 
 class TestCond2dTansposed:
@@ -53,7 +52,7 @@ class TestCond2dTansposed:
         gradgradcheck(
             conv_transpose2d, (x, weight, None, 1, 1), eps=1e-2, atol=1e-2)
 
-    @pytest.mark.skipif(not is_musa_available, reason='requires musa')
+    @pytest.mark.skipif(not is_musa_available(), reason='requires musa')
     def test_conv2d_transposed_musa(self):
         x = self.input.musa()
         weight = self.weight.musa()

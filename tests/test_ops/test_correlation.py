@@ -2,6 +2,7 @@
 import pytest
 import torch
 from mmengine.device import is_cuda_available, is_musa_available
+
 from mmcv.ops import Correlation
 
 _input1 = [[[[1., 2., 3.], [0., 1., 2.], [3., 5., 2.]]]]
@@ -28,7 +29,7 @@ class TestCorrelation:
             input2 = torch.tensor(_input2, dtype=dtype).cuda()
         elif is_musa_available():
             input1 = torch.tensor(_input1, dtype=dtype).musa()
-            input2 = torch.tensor(_input2, dtype=dtype).musa()   
+            input2 = torch.tensor(_input2, dtype=dtype).musa()
         input1.requires_grad = True
         input2.requires_grad = True
         out = layer(input1, input2)
@@ -38,7 +39,7 @@ class TestCorrelation:
         # so we need to make a comparison for musa tensor
         # rather than cpu tensor
         if is_cuda_available():
-            gt_out = torch.tensor(_gt_out, dtype=dtype).cuda()      
+            gt_out = torch.tensor(_gt_out, dtype=dtype).cuda()
         elif is_musa_available():
             gt_out = torch.tensor(_gt_out, dtype=dtype).musa()
         assert_equal_tensor(out, gt_out)
@@ -53,9 +54,9 @@ class TestCorrelation:
         self._test_correlation(torch.half)
 
     @pytest.mark.skipif(
-        not is_musa_available, reason='requires MUSA support')
+        not is_musa_available(), reason='requires MUSA support')
     def test_correlation_musa(self):
         self._test_correlation(torch.float)
-        #@TODO haowen.han@mthreads.com:musa not support yet
+        # @TODO haowen.han@mthreads.com:musa not support yet
         # self._test_correlation(torch.double)
         # self._test_correlation(torch.half)

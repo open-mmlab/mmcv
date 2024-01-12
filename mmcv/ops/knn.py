@@ -1,8 +1,9 @@
 from typing import Optional
 
 import torch
+from mmengine.device import is_cuda_available, is_musa_available
 from torch.autograd import Function
-from mmengine.device import is_musa_available, is_cuda_available
+
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', ['knn_forward'])
@@ -60,7 +61,7 @@ class KNN(Function):
                 torch.cuda.set_device(center_xyz_device)
         if is_musa_available():
             if torch.musa.current_device() != center_xyz_device:
-                torch.musa.set_device(center_xyz_device)            
+                torch.musa.set_device(center_xyz_device)
         B, npoint, _ = center_xyz.shape
         N = xyz.shape[1]
 

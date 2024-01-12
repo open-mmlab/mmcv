@@ -2,9 +2,9 @@
 import numpy as np
 import pytest
 import torch
-from mmengine.device import is_musa_available
+
 from mmcv.ops import chamfer_distance
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MUSA_AVAILABLE, IS_NPU_AVAILABLE
 
 
 def chamfer_distance_forward_groundtruth(xyz1, xyz2, dtype):
@@ -42,6 +42,7 @@ def torch_to_np_type(dtype):
     elif dtype == torch.float32:
         return np.float32
 
+
 @pytest.mark.parametrize('device', [
     pytest.param(
         'cuda',
@@ -59,6 +60,10 @@ def torch_to_np_type(dtype):
 @pytest.mark.parametrize('dtype', [torch.half, torch.float32])
 @pytest.mark.parametrize('shape', [(2, 600, 2), (2, 600, 2)])
 def test_chamfer_distance_npu_dynamic_shape(dtype, device, shape):
+    if device == 'musa':
+        from torch_musa.testing import get_musa_arch
+        if get_musa_arch() <= 21:
+            return
     bs = shape[0]
     ns = shape[1]
     xyz1 = np.random.uniform(-10.0, 10.0,
@@ -73,4 +78,3 @@ def test_chamfer_distance_npu_dynamic_shape(dtype, device, shape):
     assert np.allclose(output[1].cpu().numpy(), expected_output[1], 1e-3, 1e-4)
     assert np.allclose(output[2].cpu().numpy(), expected_output[2], 1e-3, 1e-4)
     assert np.allclose(output[3].cpu().numpy(), expected_output[3], 1e-3, 1e-4)
-

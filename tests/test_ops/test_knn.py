@@ -2,15 +2,17 @@
 import pytest
 import torch
 from mmengine.device import is_musa_available
+
 from mmcv.ops import knn
 
 
 @pytest.mark.skipif(
-    not (torch.cuda.is_available() or is_musa_available), reason='requires CUDA/MUSA support')
+    not (torch.cuda.is_available() or is_musa_available()),
+    reason='requires CUDA/MUSA support')
 def test_knn():
     if torch.cuda.is_available():
         device = 'cuda'
-    elif is_musa_available:
+    elif is_musa_available():
         device = 'musa'
     new_xyz = torch.tensor([[[-0.0740, 1.3147, -1.3625],
                              [-2.2769, 2.7817, -0.2334],

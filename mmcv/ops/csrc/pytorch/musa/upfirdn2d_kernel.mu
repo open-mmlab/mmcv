@@ -9,7 +9,7 @@
 #include <torch/types.h>
 
 #include "pytorch_musa_helper.hpp"
-#if MUSA_ARCH > 210
+#if MUSA_ARCH > 21
 struct upfirdn2d_kernel_params {
   const void *x;
   const float *f;
@@ -745,5 +745,5 @@ torch::Tensor upfirdn2d_op(torch::Tensor x, torch::Tensor f, int upx, int upy,
   return y;
 }
 #else
-#warning "upfirdn2d is supported when MUSA_ARCH > 210"
+#warning "upfirdn2d is supported when MUSA_ARCH > 21"
 #endif  //MUSA_ARCH

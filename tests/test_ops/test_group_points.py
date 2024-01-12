@@ -2,8 +2,10 @@
 import pytest
 import torch
 from mmengine.device import is_musa_available
+
 from mmcv.ops import grouping_operation
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MUSA_AVAILABLE, IS_NPU_AVAILABLE
+
 
 @pytest.mark.parametrize('device', [
     pytest.param(
@@ -19,7 +21,19 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
         marks=pytest.mark.skipif(
             not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
-@pytest.mark.parametrize('dtype', [torch.half, torch.float, torch.double])
+@pytest.mark.parametrize('dtype', [
+    pytest.param(
+        torch.half,
+        marks=pytest.mark.skipif(
+            IS_MUSA_AVAILABLE,
+            reason='TODO haowen.han@mthreads.com: not supported yet')),
+    torch.float,
+    pytest.param(
+        torch.double,
+        marks=pytest.mark.skipif(
+            IS_MUSA_AVAILABLE,
+            reason='TODO haowen.han@mthreads.com: not supported yet')),
+])
 def test_grouping_points(dtype, device):
     idx = torch.tensor([[[0, 0, 0], [3, 3, 3], [8, 8, 8], [0, 0, 0], [0, 0, 0],
                          [0, 0, 0]],
@@ -76,22 +90,25 @@ def test_grouping_points(dtype, device):
 
 
 @pytest.mark.skipif(
-    not (torch.cuda.is_available() or is_musa_available), reason='requires CUDA/MUSA support')
+    not (torch.cuda.is_available() or is_musa_available()),
+    reason='requires CUDA/MUSA support')
 @pytest.mark.parametrize('dtype', [
     pytest.param(
         torch.half,
         marks=pytest.mark.skipif(
-            is_musa_available, reason='TODO haowen.han@mthreads.com: not supported yet')),
-    torch.float, 
+            is_musa_available(),
+            reason='TODO haowen.han@mthreads.com: not supported yet')),
+    torch.float,
     pytest.param(
         torch.double,
         marks=pytest.mark.skipif(
-            is_musa_available, reason='TODO haowen.han@mthreads.com: not supported yet'))
+            is_musa_available(),
+            reason='TODO haowen.han@mthreads.com: not supported yet'))
 ])
 def test_stack_grouping_points(dtype):
     if torch.cuda.is_available():
         device = 'cuda'
-    elif is_musa_available:
+    elif is_musa_available():
         device = 'musa'
     idx = torch.tensor([[0, 0, 0], [3, 3, 3], [8, 8, 8], [1, 1, 1], [0, 0, 0],
                         [2, 2, 2], [0, 0, 0], [6, 6, 6], [9, 9, 9], [0, 0, 0],

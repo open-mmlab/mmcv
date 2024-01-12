@@ -91,7 +91,7 @@ __global__ void BatchTranspose2DMUSAKernel(const int N, const int H,
     }
   }
 }
-#if MUSA_ARCH > 210
+#if MUSA_ARCH > 21
 
 template <typename scalar_t>
 __global__ void CARAFEForward(

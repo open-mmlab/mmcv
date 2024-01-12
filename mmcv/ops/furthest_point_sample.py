@@ -1,8 +1,9 @@
 import torch
+from mmengine.device import is_cuda_available, is_musa_available
 from torch.autograd import Function
 
 from ..utils import ext_loader
-from mmengine.device import is_musa_available,is_cuda_available
+
 ext_module = ext_loader.load_ext('_ext', [
     'furthest_point_sampling_forward',
     'furthest_point_sampling_with_dist_forward'

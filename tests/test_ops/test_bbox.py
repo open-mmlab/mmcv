@@ -4,8 +4,8 @@ import pytest
 import torch
 from mmengine.utils import digit_version
 
-from mmcv.utils import (IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MPS_AVAILABLE, IS_MUSA_AVAILABLE,
-                        IS_NPU_AVAILABLE)
+from mmcv.utils import (IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MPS_AVAILABLE,
+                        IS_MUSA_AVAILABLE, IS_NPU_AVAILABLE)
 
 
 class TestBBox:

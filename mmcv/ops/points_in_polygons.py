@@ -1,6 +1,6 @@
 import torch
 from torch import Tensor
-from mmengine.device import is_musa_available, is_cuda_available
+
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext('_ext', ['points_in_polygons_forward'])

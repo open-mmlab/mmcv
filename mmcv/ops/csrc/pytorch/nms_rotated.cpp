@@ -35,7 +35,7 @@ Tensor nms_rotated_mlu(const Tensor dets, const Tensor scores,
 Tensor nms_rotated(const Tensor dets, const Tensor scores, const Tensor order,
                    const Tensor dets_sorted, const Tensor labels,
                    const float iou_threshold, const int multi_label) {
-    
+
   std::cout<<"nms_rotated"<<std::endl;
   std::cout<<dets<<std::endl;
   std::cout<<dets.device()<<std::endl;

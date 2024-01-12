@@ -3,7 +3,8 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
+from mmcv.utils import (IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE,
+                        IS_NPU_AVAILABLE)
 
 _USING_PARROTS = True
 try:
@@ -40,7 +41,7 @@ sigmoid_outputs = [(0.13562961, [[-0.00657264, 0.11185755],
 class Testfocalloss:
 
     def _test_softmax(self, dtype=torch.float):
-        if not (torch.cuda.is_available() or IS_MUSA_AVAILABLE) :
+        if not (torch.cuda.is_available() or IS_MUSA_AVAILABLE):
             return
         from mmcv.ops import softmax_focal_loss
         alpha = 0.25
@@ -57,8 +58,8 @@ class Testfocalloss:
             elif IS_MUSA_AVAILABLE:
                 x = torch.from_numpy(np_x).musa().type(dtype)
                 x.requires_grad_()
-                y = torch.from_numpy(np_y).musa().long()      
-            
+                y = torch.from_numpy(np_y).musa().long()
+
             loss = softmax_focal_loss(x, y, gamma, alpha, None, 'mean')
             loss.backward()
 
@@ -140,7 +141,7 @@ class Testfocalloss:
         self._test_softmax(dtype=torch.float)
 
     def test_softmax_half(self):
-        #TODO@haowen.han@Mmthreads.com:not supported by musa yet!
+        # TODO@haowen.han@Mmthreads.com:not supported by musa yet!
         if IS_MUSA_AVAILABLE:
             return
         self._test_softmax(dtype=torch.half)
@@ -185,7 +186,7 @@ class Testfocalloss:
                 not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
     ])
     def test_sigmoid_half(self, device):
-        #TODO@haowen.han@mthreads.com:not supported by musa yet!
+        # TODO@haowen.han@mthreads.com:not supported by musa yet!
         if IS_MUSA_AVAILABLE:
             return
         self._test_sigmoid(device, dtype=torch.half)

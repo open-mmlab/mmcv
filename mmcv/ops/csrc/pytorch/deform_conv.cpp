@@ -153,7 +153,7 @@ void deform_conv_forward(Tensor input, Tensor weight, Tensor offset,
 #else
     AT_ERROR("DeformConv is not compiled with GPU support");
 #endif
-  } 
+  }
 #ifndef MMCV_WITH_MUSA
 else {
     CHECK_CPU_INPUT(input);

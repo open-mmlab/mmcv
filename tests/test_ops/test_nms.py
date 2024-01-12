@@ -104,7 +104,7 @@ class Testnms:
                 scores = scores.cuda()
             elif IS_MUSA_AVAILABLE:
                 boxes = boxes.musa()
-                scores = scores.musa()          
+                scores = scores.musa()
             for iou, sig, mscore, m in configs:
                 dets, inds = soft_nms(
                     boxes,

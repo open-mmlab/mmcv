@@ -136,7 +136,7 @@ def test_forward_equal_with_pytorch_double():
         assert torch.allclose(output_cuda, output_pytorch)
         max_abs_err = (output_cuda - output_pytorch).abs().max()
         max_rel_err = ((output_cuda - output_pytorch).abs() /
-                    output_pytorch.abs()).max()
+                       output_pytorch.abs()).max()
     elif IS_MUSA_AVAILABLE:
         output_musa = MultiScaleDeformableAttnFunction.apply(
             value.musa().double(), shapes.musa(), level_start_index.musa(),
@@ -145,7 +145,7 @@ def test_forward_equal_with_pytorch_double():
         assert torch.allclose(output_musa, output_pytorch)
         max_abs_err = (output_musa - output_pytorch).abs().max()
         max_rel_err = ((output_musa - output_pytorch).abs() /
-                    output_pytorch.abs()).max()    
+                       output_pytorch.abs()).max()
     assert max_abs_err < 1e-18
     assert max_rel_err < 1e-15
 
@@ -272,7 +272,8 @@ def test_forward_equal_with_autocast():
         torch.half,
         marks=pytest.mark.skipif(
             IS_MUSA_AVAILABLE,
-            reason='TODO@haowen.han@mthreads.com:It is not supported yet by musa')),
+            reason='TODO@haowen.han@mthreads.com:It is not supported by musa')
+    ),
 ])
 @pytest.mark.parametrize('channels', [
     4,

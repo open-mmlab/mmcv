@@ -4,7 +4,8 @@ import pytest
 import torch
 
 from mmcv.ops import Voxelization
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
+from mmcv.utils import (IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE,
+                        IS_NPU_AVAILABLE)
 
 
 def _get_voxel_points_indices(points, coors, voxel):
@@ -67,11 +68,14 @@ def test_voxelization(device_type):
         assert num_points_current_voxel == expected_num_points_per_voxel[i]
 
 
-@pytest.mark.skipif(not (IS_CUDA_AVAILABLE or IS_MUSA_AVAILABLE), reason='requires CUDA/MUSA support')
+@pytest.mark.skipif(
+    not (IS_CUDA_AVAILABLE or IS_MUSA_AVAILABLE),
+    reason='requires CUDA/MUSA support')
 def test_voxelization_nondeterministic():
-    #TODO:aten::unique_dim is not supported by musa yet! haowen.han@mthreads.com
+    # TODO:aten::unique_dim is not supported by musa yet!
+    # haowen.han@mthreads.com
     if IS_MUSA_AVAILABLE:
-        return 
+        return
     device = 'musa' if IS_MUSA_AVAILABLE else 'cuda'
     voxel_size = [0.5, 0.5, 0.5]
     point_cloud_range = [0, -40, -3, 70.4, 40, 1]

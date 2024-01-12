@@ -3,7 +3,7 @@ import pytest
 import torch
 
 from mmcv.ops import gather_points
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
 
 
 class TestGatherPoints:

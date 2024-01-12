@@ -1,9 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
-from mmengine.device import is_musa_available
+
 import numpy as np
 import pytest
 import torch
+from mmengine.device import is_musa_available
 
 # [1,4c,h,w]
 input_arr = [[[[1., 2., 3., 4.], [5., 6., 7., 8.], [9., 10., 11., 12.]],
@@ -49,7 +50,7 @@ input_grad_dict = {
 
 
 def _test_border_align_allclose(device, dtype, pool_size):
-    if not is_musa_available and device=='musa':
+    if not is_musa_available() and device == 'musa':
         pytest.skip('test requires GPU')
     elif not torch.cuda.is_available() and device == 'cuda':
         pytest.skip('test requires GPU')
@@ -86,11 +87,21 @@ def _test_border_align_allclose(device, dtype, pool_size):
         input.grad.data.type(dtype).cpu().numpy(), np_grad, atol=1e-5)
 
 
-@pytest.mark.parametrize('device', ['cuda','musa'])
+@pytest.mark.parametrize('device', ['cuda', 'musa'])
 @pytest.mark.parametrize('dtype', [
-    torch.float, 
-    pytest.param(torch.half,marks=pytest.mark.skipif(is_musa_available, reason='todo @haowen.han@mthreads.com: musa do not support it yet')), 
-    pytest.param(torch.double,marks=pytest.mark.skipif(is_musa_available, reason='todo @haowen.han@mthreads.com: musa do not support it yet')), 
+    torch.float,
+    pytest.param(
+        torch.half,
+        marks=pytest.mark.skipif(
+            is_musa_available(),
+            reason='todo @haowen.han@mthreads.com: musa do not support it yet')
+    ),
+    pytest.param(
+        torch.double,
+        marks=pytest.mark.skipif(
+            is_musa_available(),
+            reason='todo @haowen.han@mthreads.com: musa do not support it yet')
+    ),
 ])
 @pytest.mark.parametrize('pool_size', [1, 2])
 def test_border_align(device, dtype, pool_size):

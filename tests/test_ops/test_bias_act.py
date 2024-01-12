@@ -2,6 +2,7 @@
 import pytest
 import torch
 from mmengine.device import is_musa_available
+
 from mmcv.ops import bias_act
 from mmcv.ops.bias_act import EasyDict
 
@@ -131,7 +132,7 @@ class TestBiasAct:
         assert out1.max() <= 0.5
         assert out2.max() <= 0.5
 
-    @pytest.mark.skipif(not is_musa_available, reason='requires musa')
+    @pytest.mark.skipif(not is_musa_available(), reason='requires musa')
     def test_bias_act_musa(self):
         if _USING_PARROTS:
             gradcheck(
@@ -198,7 +199,6 @@ class TestBiasAct:
             self.input_tensor.musa(), self.bias.musa(), act='lrelu', clamp=0.2)
         assert out1.max() <= 0.5
         assert out2.max() <= 0.5
-
 
     def test_easy_dict_cuda(self):
         easy_dict = EasyDict(

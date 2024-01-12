@@ -7,7 +7,8 @@ import pytest
 import torch
 import torch.distributed as dist
 import torch.nn as nn
-from mmengine.device import is_musa_available, is_cuda_available
+from mmengine.device import is_cuda_available, is_musa_available
+
 if platform.system() == 'Windows':
     import regex as re
 else:
@@ -28,14 +29,14 @@ class TestSyncBN:
         os.environ['MASTER_PORT'] = '12341'
         os.environ['WORLD_SIZE'] = str(world_size)
         os.environ['RANK'] = str(rank)
-        
+
         if is_cuda_available():
             dist.init_process_group('nccl')
             torch.cuda.set_device(local_rank)
         elif is_musa_available():
             dist.init_process_group('mccl')
             torch.musa.set_device(local_rank)
-        
+
     def _test_syncbn_train(self, size=1, half=False):
 
         if 'SLURM_NTASKS' not in os.environ or int(
@@ -72,7 +73,7 @@ class TestSyncBN:
             torch.cuda.synchronize()
         elif is_musa_available():
             torch.musa.synchronize()
-                 
+
         if size == 1:
             groups = [None, None, None, None]
             groups[0] = dist.new_group([0])
@@ -191,7 +192,7 @@ class TestSyncBN:
             torch.cuda.synchronize()
         elif is_musa_available():
             torch.musa.synchronize()
-        
+
         if size == 1:
             groups = [None, None, None, None]
             groups[0] = dist.new_group([0])

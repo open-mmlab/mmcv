@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
-from mmengine.device import is_musa_available
+
 from mmcv.cnn.bricks import GeneralizedAttention
 
 
@@ -76,7 +76,7 @@ def test_context_block():
         assert out.shape == imgs.shape
 
     # @TODO by haowen.han@mthreads.com: mudnn do not support yet
-    # elif is_musa_available:
+    # elif is_musa_available():
     #     imgs = torch.randn(2, 16, 20, 20).musa().to(torch.half)
     #     gen_attention_block = GeneralizedAttention(
     #         16,

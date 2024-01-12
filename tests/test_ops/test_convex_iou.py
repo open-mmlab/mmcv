@@ -3,6 +3,7 @@ import numpy as np
 import pytest
 import torch
 from mmengine.device import is_musa_available
+
 from mmcv.ops import convex_giou, convex_iou
 
 np_pointsets = np.asarray([[
@@ -56,8 +57,7 @@ def test_convex_giou():
     assert torch.allclose(grad, expected_grad, atol=1e-3)
 
 
-@pytest.mark.skipif(
-    not is_musa_available, reason='requires MUSA support')
+@pytest.mark.skipif(not is_musa_available(), reason='requires MUSA support')
 def test_convex_iou_musa():
     pointsets = torch.from_numpy(np_pointsets).musa().float()
     polygons = torch.from_numpy(np_polygons).musa().float()
@@ -66,8 +66,7 @@ def test_convex_iou_musa():
         convex_iou(pointsets, polygons), expected_iou, atol=1e-3)
 
 
-@pytest.mark.skipif(
-    not is_musa_available, reason='requires MUSA support')
+@pytest.mark.skipif(not is_musa_available(), reason='requires MUSA support')
 def test_convex_giou_musa():
     pointsets = torch.from_numpy(np_pointsets).musa().float()
     polygons = torch.from_numpy(np_polygons).musa().float()

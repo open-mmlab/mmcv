@@ -9,15 +9,17 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE
 
 
 @pytest.mark.parametrize('dtype', [
-    torch.float, 
+    torch.float,
     pytest.param(
         torch.half,
         marks=pytest.mark.skipif(
-            IS_MUSA_AVAILABLE, reason='TODO:MUSA does not support for half haowen.han@mthreads.com')),
+            IS_MUSA_AVAILABLE,
+            reason='TODO:MUSA does not support half haowen.han@mthreads.com')),
     pytest.param(
         torch.double,
         marks=pytest.mark.skipif(
-            IS_MLU_AVAILABLE or IS_MUSA_AVAILABLE, reason='TODO:MLU/MUSA does not support for double'))
+            IS_MLU_AVAILABLE or IS_MUSA_AVAILABLE,
+            reason='TODO:MLU/MUSA does not support for double'))
 ])
 @pytest.mark.parametrize('device', [
     pytest.param(
@@ -65,7 +67,8 @@ def test_RoIAwarePool3d(device, dtype):
 
 
 @pytest.mark.skipif(
-    not (torch.cuda.is_available() or IS_MUSA_AVAILABLE), reason='requires MUSA support')
+    not (torch.cuda.is_available() or IS_MUSA_AVAILABLE),
+    reason='requires MUSA support')
 def test_points_in_boxes_part():
     if torch.cuda.is_available():
         device = 'cuda'
@@ -74,8 +77,8 @@ def test_points_in_boxes_part():
     boxes = torch.tensor(
         [[[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 0.3]],
          [[-10.0, 23.0, 16.0, 10, 20, 20, 0.5]]],
-        dtype=torch.float32).to(device
-        )  # boxes (b, t, 7) with bottom center in lidar coordinate
+        dtype=torch.float32).to(
+            device)  # boxes (b, t, 7) with bottom center in lidar coordinate
     pts = torch.tensor(
         [[[1, 2, 3.3], [1.2, 2.5, 3.0], [0.8, 2.1, 3.5], [1.6, 2.6, 3.6],
           [0.8, 1.2, 3.9], [-9.2, 21.0, 18.2], [3.8, 7.9, 6.3],
@@ -138,7 +141,8 @@ def test_points_in_boxes_cpu():
 
 
 @pytest.mark.skipif(
-    not (torch.cuda.is_available() or IS_MUSA_AVAILABLE), reason='requires CUDA/MUSA support')
+    not (torch.cuda.is_available() or IS_MUSA_AVAILABLE),
+    reason='requires CUDA/MUSA support')
 def test_points_in_boxes_all():
     if torch.cuda.is_available():
         device = 'cuda'
@@ -147,15 +151,15 @@ def test_points_in_boxes_all():
     boxes = torch.tensor(
         [[[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 0.3],
           [-10.0, 23.0, 16.0, 10, 20, 20, 0.5]]],
-        dtype=torch.float32).to(device
-        )  # boxes (m, 7) with bottom center in lidar coordinate
-    pts = torch.tensor(
-        [[[1, 2, 3.3], [1.2, 2.5, 3.0], [0.8, 2.1, 3.5], [1.6, 2.6, 3.6],
-          [0.8, 1.2, 3.9], [-9.2, 21.0, 18.2], [3.8, 7.9, 6.3],
-          [4.7, 3.5, -12.2], [3.8, 7.6, -2], [-10.6, -12.9, -20], [
-              -16, -18, 9
-          ], [-21.3, -52, -5], [0, 0, 0], [6, 7, 8], [-2, -3, -4]]],
-        dtype=torch.float32).to(device)  # points (n, 3) in lidar coordinate
+        dtype=torch.float32).to(
+            device)  # boxes (m, 7) with bottom center in lidar coordinate
+    pts = torch.tensor([[[1, 2, 3.3], [1.2, 2.5, 3.0], [0.8, 2.1, 3.5],
+                         [1.6, 2.6, 3.6], [0.8, 1.2, 3.9], [-9.2, 21.0, 18.2],
+                         [3.8, 7.9, 6.3], [4.7, 3.5, -12.2], [3.8, 7.6, -2],
+                         [-10.6, -12.9, -20], [-16, -18, 9], [-21.3, -52, -5],
+                         [0, 0, 0], [6, 7, 8], [-2, -3, -4]]],
+                       dtype=torch.float32).to(
+                           device)  # points (n, 3) in lidar coordinate
 
     point_indices = points_in_boxes_all(points=pts, boxes=boxes)
     expected_point_indices = torch.tensor(

@@ -3,7 +3,8 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
+from mmcv.utils import (IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE,
+                        IS_NPU_AVAILABLE)
 
 
 class TestNmsRotated:
@@ -152,6 +153,5 @@ class TestNmsRotated:
 
 
 if __name__ == '__main__':
-    a= TestNmsRotated()
-    a.test_nms_rotated("musa")
-    
+    a = TestNmsRotated()
+    a.test_nms_rotated('musa')

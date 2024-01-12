@@ -405,7 +405,6 @@ def _upfirdn2d_musa(up: int = 1,
     return Upfirdn2dMusa
 
 
-
 def filter2d(input: torch.Tensor,
              filter: torch.Tensor,
              padding: Union[int, List[int]] = 0,

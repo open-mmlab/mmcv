@@ -33,8 +33,8 @@ outputs = ([[[[1., 1.75, 3.5, 5.25], [2.5, 3.25, 5., 6.75],
 ])
 @pytest.mark.parametrize('dtype', [torch.float, torch.double, torch.half])
 def test_bezieralign(device, dtype):
-    #@haowen.han@mthreads.com TODO:do not support half yet
-    if device == 'musa' and (dtype ==torch.half or dtype ==torch.double):
+    # @haowen.han@mthreads.com TODO:do not support half yet
+    if device == 'musa' and (dtype == torch.half or dtype == torch.double):
         return
     try:
         from mmcv.ops import bezier_align

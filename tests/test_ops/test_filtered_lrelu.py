@@ -1,9 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
+from mmengine.device import is_musa_available
 from mmengine.utils import digit_version
 from mmengine.utils.dl_utils.parrots_wrapper import is_rocm_pytorch
-from mmengine.device import is_musa_available
+
 from mmcv.ops import filtered_lrelu
 
 
@@ -223,9 +224,8 @@ class TestFilteredLrelu:
             self.input_tensor.cuda(), bias=self.bias.cuda(), flip_filter=True)
         assert out.shape == (1, 3, 16, 16)
 
-
-
-    @pytest.mark.skipif(is_musa_available,
+    @pytest.mark.skipif(
+        is_musa_available(),
         reason='TODO haowen.han@mthreads.com: not supported yet')
     def test_filtered_lrelu_musa(self):
         out = filtered_lrelu(self.input_tensor.musa(), bias=self.bias.musa())

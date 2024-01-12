@@ -2,7 +2,7 @@
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MUSA_AVAILABLE, IS_NPU_AVAILABLE
 
 _USING_PARROTS = True
 try:
@@ -16,7 +16,8 @@ class TestFusedBiasLeakyReLU:
 
     @classmethod
     def setup_class(cls):
-        if not IS_CUDA_AVAILABLE and not IS_NPU_AVAILABLE and not IS_MUSA_AVAILABLE:
+        if (not IS_CUDA_AVAILABLE and not IS_NPU_AVAILABLE
+                and not IS_MUSA_AVAILABLE):
             return
         if IS_CUDA_AVAILABLE:
             cls.input_tensor = torch.randn((2, 2, 2, 2),
@@ -30,7 +31,6 @@ class TestFusedBiasLeakyReLU:
             cls.input_tensor = torch.randn((2, 2, 2, 2),
                                            requires_grad=True).musa()
             cls.bias = torch.zeros(2, requires_grad=True).musa()
-
 
     @pytest.mark.parametrize('device', [
         pytest.param(

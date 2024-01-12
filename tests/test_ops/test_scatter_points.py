@@ -4,32 +4,35 @@ import torch
 from torch.autograd import gradcheck
 
 from mmcv.ops import DynamicScatter
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
 if torch.__version__ == 'parrots':
     pytest.skip('not supported in parrots now', allow_module_level=True)
 
-@pytest.mark.parametrize('device', [
-    pytest.param(
-        'cuda',
-        marks=pytest.mark.skipif(
-            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
-    pytest.param(
-        'mlu',
-        marks=pytest.mark.skipif(
-            not IS_MLU_AVAILABLE, reason='requires MLU support')),
-    pytest.param(
-        'musa',
-        marks=pytest.mark.skipif(
-            not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
-])
+
+@pytest.mark.parametrize(
+    'device',
+    [
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'mlu',
+            marks=pytest.mark.skipif(
+                not IS_MLU_AVAILABLE, reason='requires MLU support')),
+        # TODO haowen.han@mthreads.com:aten::unique_dim is not
+        # supported by musa!
+        # pytest.param(
+        #     'musa',
+        #     marks=pytest.mark.skipif(
+        #         not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
+    ])
 def test_dynamic_scatter(device):
     dsmean = DynamicScatter([0.32, 0.32, 6],
                             [-74.88, -74.88, -2, 74.88, 74.88, 4], True)
     dsmax = DynamicScatter([0.32, 0.32, 6],
                            [-74.88, -74.88, -2, 74.88, 74.88, 4], False)
-
-    device= 'cuda' if torch.cuda.is_available() else 'musa'
     # test empty input
     empty_feats = torch.empty(size=(0, 3), dtype=torch.float32, device=device)
     empty_coors = torch.empty(size=(0, 3), dtype=torch.int32, device=device)

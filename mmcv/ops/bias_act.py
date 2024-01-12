@@ -114,8 +114,6 @@ activation_funcs = {
         has_2nd_grad=True),
 }
 
-
-
 activation_funcs_musa = {
     'linear':
     EasyDict(
@@ -244,11 +242,11 @@ def bias_act(input: torch.Tensor,
         return _bias_act_cuda(
             dim=dim, act=act, alpha=alpha, gain=gain,
             clamp=clamp).apply(input, bias)
-    if  use_custom_op and input.is_musa:
+    if use_custom_op and input.is_musa:
         return _bias_act_musa(
             dim=dim, act=act, alpha=alpha, gain=gain,
             clamp=clamp).apply(input, bias)
-    
+
     return _bias_act_ref(
         input=input,
         bias=bias,
@@ -457,7 +455,6 @@ def _bias_act_cuda(dim: int = 1,
     return BiasActCuda
 
 
-
 _bias_act_musa_cache: Dict = dict()
 
 
@@ -474,13 +471,13 @@ def _bias_act_musa(dim: int = 1,
             Defaults to 1.
         act (str): Name of the activation function to evaluate, or `"linear"`
             to disable. Can be e.g. "relu", "lrelu", "tanh", "sigmoid",
-            "swish", etc. See `activation_funcs_musa` for a full list. `None` is not
-            allowed. Defaults to `linear`.
+            "swish", etc. See `activation_funcs_musa` for a full list. `None`
+            is not allowed. Defaults to `linear`.
         alpha (float | int): Shape parameter for the activation
             function, or `None` to use the default. Defaults to None.
         gain (float): Scaling factor for the output tensor, or `None`
-            to use default. See `activation_funcs_musa` for the default scaling of
-            each activation function. If unsure, consider specifying 1.
+            to use default. See `activation_funcs_musa` for the default scaling
+            of each activation function. If unsure, consider specifying 1.
             Defaults to None.
         clamp (float): Clamp the output values to `[-clamp, +clamp]`,
             or `None` to disable the clamping (default). Defaults to None.

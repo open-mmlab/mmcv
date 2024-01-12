@@ -1,16 +1,21 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
-from mmengine.device import is_musa_available
+
 from mmcv.ops import three_interpolate
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MUSA_AVAILABLE, IS_NPU_AVAILABLE
+
 
 @pytest.mark.parametrize('dtype', [
-    torch.half, torch.float,
+    pytest.param(
+        torch.half,
+        marks=pytest.mark.skipif(
+            IS_MUSA_AVAILABLE, reason='MUSA does not support for half yet!')),
+    torch.float,
     pytest.param(
         torch.double,
         marks=pytest.mark.skipif(
-            IS_NPU_AVAILABLE,
+            IS_NPU_AVAILABLE or IS_MUSA_AVAILABLE,
             reason='NPU does not support for 64-bit floating point'))
 ])
 @pytest.mark.parametrize('device', [

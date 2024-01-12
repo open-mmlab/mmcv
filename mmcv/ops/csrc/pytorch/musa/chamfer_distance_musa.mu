@@ -3,7 +3,7 @@
 // https://github.com/chrdiller/pyTorchChamferDistance/blob/master/chamfer_distance/chamfer_distance.cpp
 #include "chamfer_distance_musa_kernel.muh"
 #include "pytorch_musa_helper.hpp"
-#if MUSA_ARCH > 210
+#if MUSA_ARCH > 21
 void ChamferDistanceForwardMUSAKernelLauncher(
     const Tensor xyz1, const Tensor xyz2, const Tensor dist1,
     const Tensor dist2, const Tensor idx1, const Tensor idx2) {
@@ -62,5 +62,5 @@ void ChamferDistanceBackwardMUSAKernelLauncher(
   AT_MUSA_CHECK(musaGetLastError());
 }
 #else
-#warning "chamfer_distance is supported when MUSA_ARCH > 210"
+#warning "chamfer_distance is supported when MUSA_ARCH > 21"
 #endif  //MUSA_ARCH

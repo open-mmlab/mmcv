@@ -22,11 +22,12 @@ try:
 except ModuleNotFoundError:
     cmd_class = {}
     print('Skip building ext ops due to the absence of torch.')
-    
+
 try:
     from torch_musa.utils.musa_extension import MUSAExtension
 except ModuleNotFoundError:
     pass
+
 
 def choose_requirement(primary, secondary):
     """If some version of primary requirement installed, return primary, else
@@ -274,7 +275,10 @@ def get_extensions():
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
         elif hasattr(torch, 'musa') or os.getenv('FORCE_MUSA', '0') == '1':
-            define_macros += [('MMCV_WITH_MUSA', None),('MUSA_ARCH', '210')]
+            from torch_musa.testing import get_musa_arch
+            define_macros += [('MMCV_WITH_MUSA', None),
+                              ('MUSA_ARCH', str(get_musa_arch()))]
+            os.environ['MUSA_ARCH'] = str(get_musa_arch())
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/musa/*.mu') + \
@@ -283,7 +287,7 @@ def get_extensions():
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/musa'))
             extension = MUSAExtension
-            
+
         elif (hasattr(torch, 'is_mlu_available') and
                 torch.is_mlu_available()) or \
                 os.getenv('FORCE_MLU', '0') == '1':

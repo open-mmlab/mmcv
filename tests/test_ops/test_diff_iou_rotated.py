@@ -3,6 +3,7 @@ import numpy as np
 import pytest
 import torch
 from mmengine.device import is_musa_available
+
 from mmcv.ops import diff_iou_rotated_2d, diff_iou_rotated_3d
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
@@ -67,11 +68,11 @@ def test_diff_iou_rotated_3d(device):
     np_expect_ious = np.asarray([[1., .5, .7071, 1 / 15, .0]])
     ious = diff_iou_rotated_3d(boxes1, boxes2)
     assert np.allclose(ious.cpu().numpy(), np_expect_ious, atol=1e-4)
-    
-    
-    
+
+
 @pytest.mark.skipif(
-    is_musa_available, reason='TODO haowen.han@mthreads.com there are some bugs!')
+    is_musa_available(),
+    reason='TODO haowen.han@mthreads.com there are some bugs!')
 def test_diff_iou_rotated_2d_musa():
     np_boxes1 = np.asarray([[[0.5, 0.5, 1., 1., .0], [0.5, 0.5, 1., 1., .0],
                              [0.5, 0.5, 1., 1., .0], [0.5, 0.5, 1., 1., .0],
@@ -92,7 +93,8 @@ def test_diff_iou_rotated_2d_musa():
 
 
 @pytest.mark.skipif(
-    is_musa_available, reason='TODO haowen.han@mthreads.com there are some bugs!')
+    is_musa_available(),
+    reason='TODO haowen.han@mthreads.com there are some bugs!')
 def test_diff_iou_rotated_3d_musa():
     np_boxes1 = np.asarray(
         [[[.5, .5, .5, 1., 1., 1., .0], [.5, .5, .5, 1., 1., 1., .0],

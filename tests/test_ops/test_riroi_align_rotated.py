@@ -3,6 +3,7 @@ import numpy as np
 import pytest
 import torch
 from mmengine.device import is_musa_available
+
 from mmcv.ops import RiRoIAlignRotated
 
 if torch.__version__ == 'parrots':
@@ -54,11 +55,12 @@ clockwise = False
 
 
 @pytest.mark.skipif(
-    not (torch.cuda.is_available() or is_musa_available) , reason='requires CUDA/MUSA support')
+    not (torch.cuda.is_available() or is_musa_available()),
+    reason='requires CUDA/MUSA support')
 def test_roialign_rotated_gradcheck():
     if torch.cuda.is_available():
         device = 'cuda'
-    elif is_musa_available:
+    elif is_musa_available():
         device = 'musa'
     x = torch.tensor(
         np_feature, dtype=torch.float, device=device, requires_grad=True)
@@ -73,11 +75,12 @@ def test_roialign_rotated_gradcheck():
 
 
 @pytest.mark.skipif(
-    not (torch.cuda.is_available() or is_musa_available), reason='requires CUDA/MUSA support')
+    not (torch.cuda.is_available() or is_musa_available()),
+    reason='requires CUDA/MUSA support')
 def test_roialign_rotated_allclose():
     if torch.cuda.is_available():
         device = 'cuda'
-    elif is_musa_available:
+    elif is_musa_available():
         device = 'musa'
     x = torch.tensor(
         np_feature, dtype=torch.float, device=device, requires_grad=True)

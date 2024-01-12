@@ -3,8 +3,9 @@ import copy
 
 import pytest
 import torch
+from mmengine.device import is_cuda_available, is_musa_available
 from mmengine.model import ModuleList
-from mmengine.device import is_musa_available, is_cuda_available
+
 from mmcv.cnn.bricks.drop import DropPath
 from mmcv.cnn.bricks.transformer import (FFN, AdaptivePadding,
                                          BaseTransformerLayer,
@@ -560,7 +561,9 @@ def test_ffn():
     assert torch.allclose(ffn(input_tensor).sum(), ffn(input_tensor_nbc).sum())
 
 
-@pytest.mark.skipif((not torch.cuda.is_available()) and (not is_musa_available), reason='Cuda/Musa not available')
+@pytest.mark.skipif(
+    (not torch.cuda.is_available()) and (not is_musa_available()),
+    reason='Cuda/Musa not available')
 def test_basetransformerlayer():
     # To test if the BaseTransformerLayer's behaviour remains
     # consistent after being deepcopied
@@ -587,55 +590,6 @@ def test_basetransformerlayer():
         for m in baselayers:
             x = m(x)
             assert x.shape == torch.Size([2, 10, 256])
-
-@pytest.mark.parametrize('embed_dims', [False, 256])
-def test_basetransformerlayer(embed_dims):
-    attn_cfgs = dict(type='MultiheadAttention', embed_dims=256, num_heads=8),
-    if embed_dims:
-        ffn_cfgs = dict(
-            type='FFN',
-            embed_dims=embed_dims,
-            feedforward_channels=1024,
-            num_fcs=2,
-            ffn_drop=0.,
-            act_cfg=dict(type='ReLU', inplace=True),
-        )
-    else:
-        ffn_cfgs = dict(
-            type='FFN',
-            feedforward_channels=1024,
-            num_fcs=2,
-            ffn_drop=0.,
-            act_cfg=dict(type='ReLU', inplace=True),
-        )
-
-    feedforward_channels = 2048
-    ffn_dropout = 0.1
-    operation_order = ('self_attn', 'norm', 'ffn', 'norm')
-
-    # test deprecated_args
-    baselayer = BaseTransformerLayer(
-        attn_cfgs=attn_cfgs,
-        ffn_cfgs=ffn_cfgs,
-        feedforward_channels=feedforward_channels,
-        ffn_dropout=ffn_dropout,
-        operation_order=operation_order)
-    assert baselayer.batch_first is False
-    assert baselayer.ffns[0].feedforward_channels == feedforward_channels
-
-    attn_cfgs = dict(type='MultiheadAttention', num_heads=8, embed_dims=256),
-    feedforward_channels = 2048
-    ffn_dropout = 0.1
-    operation_order = ('self_attn', 'norm', 'ffn', 'norm')
-    baselayer = BaseTransformerLayer(
-        attn_cfgs=attn_cfgs,
-        feedforward_channels=feedforward_channels,
-        ffn_dropout=ffn_dropout,
-        operation_order=operation_order,
-        batch_first=True)
-    assert baselayer.attentions[0].batch_first
-    in_tensor = torch.rand(2, 10, 256)
-    baselayer(in_tensor)
 
 
 def test_transformerlayersequence():

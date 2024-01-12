@@ -424,8 +424,6 @@ def _filtered_lrelu_cuda(up: int = 1,
     return FilteredLReluCuda
 
 
-
-
 _filtered_lrelu_musa_cache: Dict = dict()
 
 

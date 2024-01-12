@@ -5,7 +5,8 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
+from mmcv.utils import (IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE,
+                        IS_NPU_AVAILABLE)
 
 _USING_PARROTS = True
 try:
@@ -152,10 +153,6 @@ class TestDeformRoIPool:
         self._test_deform_roi_pool_allclose(device, dtype)
 
 
-
-
-
-
 class TestDeformRoIPool_MUSA:
 
     def test_deform_roi_pool_gradcheck(self):
@@ -249,10 +246,6 @@ class TestDeformRoIPool_MUSA:
             marks=pytest.mark.skipif(
                 not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
     ])
-    @pytest.mark.parametrize('dtype', [
-        torch.float,
-        torch.double,
-        torch.half
-    ])
+    @pytest.mark.parametrize('dtype', [torch.float, torch.double, torch.half])
     def test_deform_roi_pool_allclose(self, device, dtype):
         self._test_deform_roi_pool_allclose(device, dtype)

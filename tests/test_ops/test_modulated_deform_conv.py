@@ -9,7 +9,6 @@ from mmengine.utils.dl_utils import TORCH_VERSION
 
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE
 
-
 try:
     # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast
     # would be imported and used; we should test if our modules support it.
@@ -43,7 +42,8 @@ dcn_offset_b_grad = [
 class TestMdconv:
 
     def _test_mdconv(self, device, dtype=torch.float):
-        if (not torch.cuda.is_available() and device == 'cuda') and (not IS_MUSA_AVAILABLE and device == 'musa'):
+        if (not torch.cuda.is_available() and device
+                == 'cuda') and (not IS_MUSA_AVAILABLE and device == 'musa'):
             pytest.skip('test requires GPU')
         if device == 'mlu':
             from mmcv.ops import \
@@ -155,7 +155,7 @@ class TestMdconv:
                 not IS_MLU_AVAILABLE, reason='requires MLU support')),
     ])
     def test_mdconv_double(self, device):
-        #TODO haowen.han@mthreads.com:not supported by musa yet!
+        # TODO haowen.han@mthreads.com:not supported by musa yet!
         if IS_MUSA_AVAILABLE:
             return
         self._test_mdconv(dtype=torch.double, device=device)

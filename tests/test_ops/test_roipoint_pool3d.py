@@ -25,11 +25,14 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE
     pytest.param(
         torch.half,
         marks=pytest.mark.skipif(
-            IS_MUSA_AVAILABLE, reason='TODO haowen.han@mthreads.com: not supported yet')),
+            IS_MUSA_AVAILABLE,
+            reason='TODO haowen.han@mthreads.com: not supported yet')),
     pytest.param(
         torch.double,
         marks=pytest.mark.skipif(
-            IS_MLU_AVAILABLE or IS_MUSA_AVAILABLE, reason='MLU does not support for double/TODO haowen.han@mthreads.com:MUSA not support it!'))
+            IS_MLU_AVAILABLE or IS_MUSA_AVAILABLE,
+            reason='MLU does not support for double'
+            'TODO haowen.han@mthreads.com:MUSA not support it!'))
 ])
 def test_roipoint(device, dtype):
     points = torch.tensor(

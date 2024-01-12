@@ -5,7 +5,8 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
+from mmcv.utils import (IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE,
+                        IS_NPU_AVAILABLE)
 
 _USING_PARROTS = True
 try:
@@ -52,18 +53,18 @@ class TestRoiPool:
             elif IS_MUSA_AVAILABLE:
                 x = torch.tensor(np_input, device='musa', requires_grad=True)
                 rois = torch.tensor(np_rois, device='musa')
-                
+
             froipool = RoIPool((pool_h, pool_w), spatial_scale)
 
             if _USING_PARROTS:
                 pass
                 # gradcheck(froipool, (x, rois), no_grads=[rois])
             else:
-                #TODO:not only support float haowen.han@mthreads.com
+                # TODO:not only support float haowen.han@mthreads.com
                 if IS_MUSA_AVAILABLE:
-                    froipool=froipool.float()
-                    x=x.float()
-                    rois=rois.float()
+                    froipool = froipool.float()
+                    x = x.float()
+                    rois = rois.float()
                 gradcheck(froipool, (x, rois), eps=1e-2, atol=1e-2)
 
     def _test_roipool_allclose(self, device, dtype=torch.float):
