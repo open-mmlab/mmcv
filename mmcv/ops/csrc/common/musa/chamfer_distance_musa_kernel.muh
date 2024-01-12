@@ -7,6 +7,7 @@
 #include "pytorch_musa_helper.hpp"
 #define MAX_SHARED_SCALAR_T 6144  // 49152 / 8 = 6144
 
+#if __MUSA_ARCH__ > 210
 template <typename scalar_t>
 __global__ void chamfer_distance_forward_musa_kernel(int b, int n,
                                                      const scalar_t* xyz, int m,
@@ -93,4 +94,8 @@ __global__ void chamfer_distance_backward_musa_kernel(
     }
   }
 }
+#else
+#warning "chamfer_distance is supported when __MUSA_ARCH__ > 210"
+#endif  //__MUSA_ARCH__
+
 #endif  // CHAMFER_DISTANCE_MUSA_KERNEL_MUH

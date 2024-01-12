@@ -1805,20 +1805,25 @@ Tensor diff_iou_rotated_sort_vertices_forward_impl(Tensor vertices, Tensor mask,
 REGISTER_DEVICE_IMPL(diff_iou_rotated_sort_vertices_forward_impl, MUSA,
                      diff_iou_rotated_sort_vertices_forward_musa);
 
+#if ((!defined(__MUSA_ARCH__)) || (defined(__MUSA_ARCH__))&&(__MUSA_ARCH__ > 210))
 void ChamferDistanceForwardMUSAKernelLauncher(
     const Tensor xyz1, const Tensor xyz2, const Tensor dist1,
     const Tensor dist2, const Tensor idx1, const Tensor idx2);
+#endif
 
 void ChamferDistanceBackwardMUSAKernelLauncher(
     const Tensor xyz1, const Tensor xyz2, Tensor idx1, Tensor idx2,
     Tensor grad_dist1, Tensor grad_dist2, Tensor grad_xyz1, Tensor grad_xyz2);
 
+#if ((!defined(__MUSA_ARCH__)) || (defined(__MUSA_ARCH__))&&(__MUSA_ARCH__ > 210))
 void chamfer_distance_forward_musa(const Tensor xyz1, const Tensor xyz2,
                                    const Tensor dist1, const Tensor dist2,
                                    const Tensor idx1, const Tensor idx2) {
   ChamferDistanceForwardMUSAKernelLauncher(xyz1, xyz2, dist1, dist2, idx1,
                                            idx2);
 };
+#endif
+
 
 void chamfer_distance_backward_musa(const Tensor xyz1, const Tensor xyz2,
                                     Tensor idx1, Tensor idx2, Tensor graddist1,
