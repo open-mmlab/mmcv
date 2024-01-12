@@ -2,7 +2,7 @@
 #include "carafe_musa_kernel.muh"
 #include "pytorch_musa_helper.hpp"
 
-#if __MUSA_ARCH__ > 210
+#if MUSA_ARCH > 210
 void CARAFEForwardMUSAKernelLauncher(const Tensor features, const Tensor masks,
                                      Tensor rfeatures, Tensor routput,
                                      Tensor rmasks, Tensor output,
@@ -179,5 +179,5 @@ void CARAFEBackwardMUSAKernelLauncher(
 
   AT_MUSA_CHECK(musaGetLastError());
 }
-#endif //__MUSA_ARCH__
+#endif //MUSA_ARCH
 

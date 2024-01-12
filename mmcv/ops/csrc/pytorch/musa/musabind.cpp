@@ -158,7 +158,7 @@ void box_iou_quadri_impl(const Tensor boxes1, const Tensor boxes2, Tensor ious,
 REGISTER_DEVICE_IMPL(box_iou_quadri_impl, MUSA, box_iou_quadri_musa);
 
 
-#if ((!defined(__MUSA_ARCH__)) || (defined(__MUSA_ARCH__))&&(__MUSA_ARCH__ > 210))
+#if ((!defined(MUSA_ARCH)) || (defined(MUSA_ARCH))&&(MUSA_ARCH > 210))
 
 void CARAFEForwardMUSAKernelLauncher(const Tensor features, const Tensor masks,
                                      Tensor rfeatures, Tensor routput,
@@ -1473,7 +1473,7 @@ void tin_shift_backward_impl(Tensor grad_output, Tensor shift,
 REGISTER_DEVICE_IMPL(tin_shift_forward_impl, MUSA, tin_shift_forward_musa);
 REGISTER_DEVICE_IMPL(tin_shift_backward_impl, MUSA, tin_shift_backward_musa);
 
-#if ((!defined(__MUSA_ARCH__)) || (defined(__MUSA_ARCH__))&&(__MUSA_ARCH__ > 210))
+#if ((!defined(MUSA_ARCH)) || (defined(MUSA_ARCH))&&(MUSA_ARCH > 210))
 torch::Tensor upfirdn2d_op(torch::Tensor input, torch::Tensor filter, int upx,
                            int upy, int downx, int downy, int padx0, int padx1,
                            int pady0, int pady1, bool flip, float gain);
@@ -1811,7 +1811,7 @@ Tensor diff_iou_rotated_sort_vertices_forward_impl(Tensor vertices, Tensor mask,
 REGISTER_DEVICE_IMPL(diff_iou_rotated_sort_vertices_forward_impl, MUSA,
                      diff_iou_rotated_sort_vertices_forward_musa);
 
-#if ((!defined(__MUSA_ARCH__)) || (defined(__MUSA_ARCH__))&&(__MUSA_ARCH__ > 210))
+#if ((!defined(MUSA_ARCH)) || (defined(MUSA_ARCH))&&(MUSA_ARCH > 210))
 void ChamferDistanceForwardMUSAKernelLauncher(
     const Tensor xyz1, const Tensor xyz2, const Tensor dist1,
     const Tensor dist2, const Tensor idx1, const Tensor idx2);
@@ -1821,14 +1821,14 @@ void ChamferDistanceBackwardMUSAKernelLauncher(
     const Tensor xyz1, const Tensor xyz2, Tensor idx1, Tensor idx2,
     Tensor grad_dist1, Tensor grad_dist2, Tensor grad_xyz1, Tensor grad_xyz2);
 
-#if ((!defined(__MUSA_ARCH__)) || (defined(__MUSA_ARCH__))&&(__MUSA_ARCH__ > 210))
+#if ((!defined(MUSA_ARCH)) || (defined(MUSA_ARCH))&&(MUSA_ARCH > 210))
 void chamfer_distance_forward_musa(const Tensor xyz1, const Tensor xyz2,
                                    const Tensor dist1, const Tensor dist2,
                                    const Tensor idx1, const Tensor idx2) {
   ChamferDistanceForwardMUSAKernelLauncher(xyz1, xyz2, dist1, dist2, idx1,
                                            idx2);
 };
-#endif
+
 
 
 void chamfer_distance_backward_musa(const Tensor xyz1, const Tensor xyz2,
@@ -1852,6 +1852,7 @@ REGISTER_DEVICE_IMPL(chamfer_distance_forward_impl, MUSA,
                      chamfer_distance_forward_musa);
 REGISTER_DEVICE_IMPL(chamfer_distance_backward_impl, MUSA,
                      chamfer_distance_backward_musa);
+#endif
 
 void PrROIPoolForwardMUSAKernelLauncher(Tensor input, Tensor rois,
                                         Tensor output, int pooled_height,

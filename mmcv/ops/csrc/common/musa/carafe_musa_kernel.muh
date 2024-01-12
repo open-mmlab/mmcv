@@ -91,7 +91,7 @@ __global__ void BatchTranspose2DMUSAKernel(const int N, const int H,
     }
   }
 }
-#if __MUSA_ARCH__ > 210
+#if MUSA_ARCH > 210
 
 template <typename scalar_t>
 __global__ void CARAFEForward(
@@ -233,7 +233,7 @@ __global__ void CARAFEBackward_Feature(
     bottom_diff[top_index] = output_val;
   }
 }
-#endif //__MUSA_ARCH__
+#endif //MUSA_ARCH
 
 template <typename scalar_t>
 __global__ void FeatureSum(const int num_kernels,
