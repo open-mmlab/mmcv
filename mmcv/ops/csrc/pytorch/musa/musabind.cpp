@@ -157,6 +157,9 @@ void box_iou_quadri_impl(const Tensor boxes1, const Tensor boxes2, Tensor ious,
                          const int mode_flag, const bool aligned);
 REGISTER_DEVICE_IMPL(box_iou_quadri_impl, MUSA, box_iou_quadri_musa);
 
+
+#if ((!defined(__MUSA_ARCH__)) || (defined(__MUSA_ARCH__))&&(__MUSA_ARCH__ > 210))
+
 void CARAFEForwardMUSAKernelLauncher(const Tensor features, const Tensor masks,
                                      Tensor rfeatures, Tensor routput,
                                      Tensor rmasks, Tensor output,
@@ -201,6 +204,7 @@ void carafe_backward_impl(Tensor top_grad, Tensor rfeatures, Tensor masks,
 
 REGISTER_DEVICE_IMPL(carafe_forward_impl, MUSA, carafe_forward_musa);
 REGISTER_DEVICE_IMPL(carafe_backward_impl, MUSA, carafe_backward_musa);
+#endif
 
 void CARAFENAIVEForwardMUSAKernelLauncher(const Tensor features,
                                           const Tensor masks, Tensor output,
