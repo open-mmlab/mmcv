@@ -22,6 +22,9 @@ using namespace at;
 #define CHECK_MLU_INPUT(x) \
   CHECK_MLU(x);            \
   CHECK_CONTIGUOUS(x)
+#define CHECK_MUSA_INPUT(x) \
+  CHECK_MUSA(x);            \
+  CHECK_CONTIGUOUS(x)
 #define CHECK_CPU_INPUT(x) \
   CHECK_CPU(x);            \
   CHECK_CONTIGUOUS(x)

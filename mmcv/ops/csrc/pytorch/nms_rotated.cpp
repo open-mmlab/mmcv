@@ -36,18 +36,12 @@ Tensor nms_rotated(const Tensor dets, const Tensor scores, const Tensor order,
                    const Tensor dets_sorted, const Tensor labels,
                    const float iou_threshold, const int multi_label) {
 
-  std::cout<<"nms_rotated"<<std::endl;
-  std::cout<<dets<<std::endl;
-  std::cout<<dets.device()<<std::endl;
-  std::cout<<dets.is_cuda()<<std::endl;
-  std::cout<<dets.is_privateuseone()<<std::endl;
   assert(dets.is_cuda() == scores.is_cuda());
   if (dets.device().is_cuda()) {
 #ifdef MMCV_WITH_CUDA
     return nms_rotated_cuda(dets, scores, order, dets_sorted.contiguous(),
                             iou_threshold, multi_label);
 #else
-  std::cout<<"nms_rotated in cuda"<<std::endl;
     AT_ERROR("Not compiled with GPU support");
 #endif
 #ifdef MMCV_WITH_XLA
@@ -64,7 +58,6 @@ Tensor nms_rotated(const Tensor dets, const Tensor scores, const Tensor order,
 #endif
 #ifdef MMCV_WITH_MUSA
   } else if (dets.device().type() == ::at::kPrivateUse1) {
-     std::cout<<"privateuse1"<<std::endl;
     return nms_rotated_musa(dets, scores, order, dets_sorted.contiguous(),
                             iou_threshold, multi_label);
 #endif

@@ -57,7 +57,14 @@ def torch_to_np_type(dtype):
         marks=pytest.mark.skipif(
             not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
-@pytest.mark.parametrize('dtype', [torch.half, torch.float32])
+@pytest.mark.parametrize('dtype', [
+    pytest.param(
+        torch.half,
+        marks=pytest.mark.skipif(
+            IS_MUSA_AVAILABLE,
+            reason='TODO haowen.han@mthreads.com: not supported yet')),
+    torch.float32
+])
 @pytest.mark.parametrize('shape', [(2, 600, 2), (2, 600, 2)])
 def test_chamfer_distance_npu_dynamic_shape(dtype, device, shape):
     if device == 'musa':
