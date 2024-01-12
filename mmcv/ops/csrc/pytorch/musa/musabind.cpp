@@ -164,11 +164,11 @@ void CARAFEForwardMUSAKernelLauncher(const Tensor features, const Tensor masks,
                                      const int group_size,
                                      const int scale_factor);
 
-// void CARAFEBackwardMUSAKernelLauncher(
-//     const Tensor top_grad, const Tensor rfeatures, const Tensor masks,
-//     Tensor rtop_grad, Tensor rbottom_grad_hs, Tensor rbottom_grad,
-//     Tensor rmask_grad, Tensor bottom_grad, Tensor mask_grad,
-//     const int kernel_size, const int group_size, const int scale_factor);
+void CARAFEBackwardMUSAKernelLauncher(
+    const Tensor top_grad, const Tensor rfeatures, const Tensor masks,
+    Tensor rtop_grad, Tensor rbottom_grad_hs, Tensor rbottom_grad,
+    Tensor rmask_grad, Tensor bottom_grad, Tensor mask_grad,
+    const int kernel_size, const int group_size, const int scale_factor);
 
 void carafe_forward_musa(Tensor features, Tensor masks, Tensor rfeatures,
                          Tensor routput, Tensor rmasks, Tensor output,
@@ -178,16 +178,16 @@ void carafe_forward_musa(Tensor features, Tensor masks, Tensor rfeatures,
                                   scale_factor);
 }
 
-// void carafe_backward_musa(Tensor top_grad, Tensor rfeatures, Tensor masks,
-//                           Tensor rtop_grad, Tensor rbottom_grad_hs,
-//                           Tensor rbottom_grad, Tensor rmask_grad,
-//                           Tensor bottom_grad, Tensor mask_grad, int kernel_size,
-//                           int group_size, int scale_factor) {
-//   CARAFEBackwardMUSAKernelLauncher(top_grad, rfeatures, masks, rtop_grad,
-//                                    rbottom_grad_hs, rbottom_grad, rmask_grad,
-//                                    bottom_grad, mask_grad, kernel_size,
-//                                    group_size, scale_factor);
-// }
+void carafe_backward_musa(Tensor top_grad, Tensor rfeatures, Tensor masks,
+                          Tensor rtop_grad, Tensor rbottom_grad_hs,
+                          Tensor rbottom_grad, Tensor rmask_grad,
+                          Tensor bottom_grad, Tensor mask_grad, int kernel_size,
+                          int group_size, int scale_factor) {
+  CARAFEBackwardMUSAKernelLauncher(top_grad, rfeatures, masks, rtop_grad,
+                                   rbottom_grad_hs, rbottom_grad, rmask_grad,
+                                   bottom_grad, mask_grad, kernel_size,
+                                   group_size, scale_factor);
+}
 
 void carafe_forward_impl(Tensor features, Tensor masks, Tensor rfeatures,
                          Tensor routput, Tensor rmasks, Tensor output,
@@ -200,7 +200,7 @@ void carafe_backward_impl(Tensor top_grad, Tensor rfeatures, Tensor masks,
                           int group_size, int scale_factor);
 
 REGISTER_DEVICE_IMPL(carafe_forward_impl, MUSA, carafe_forward_musa);
-// REGISTER_DEVICE_IMPL(carafe_backward_impl, MUSA, carafe_backward_musa);
+REGISTER_DEVICE_IMPL(carafe_backward_impl, MUSA, carafe_backward_musa);
 
 void CARAFENAIVEForwardMUSAKernelLauncher(const Tensor features,
                                           const Tensor masks, Tensor output,
