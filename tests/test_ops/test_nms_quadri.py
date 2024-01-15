@@ -3,23 +3,26 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MUSA_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE
 
 
 class TestNMSQuadri:
 
-    @pytest.mark.parametrize('device', [
-        'cpu',
-        pytest.param(
-            'cuda',
-            marks=pytest.mark.skipif(
-                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
-        pytest.param(
-            'musa',
-            marks=pytest.mark.skipif(
-                IS_MUSA_AVAILABLE,
-                reason='TODO haowen.han@mthreads.com:not supported yet!')),
-    ])
+    @pytest.mark.parametrize(
+        'device',
+        [
+            'cpu',
+            pytest.param(
+                'cuda',
+                marks=pytest.mark.skipif(
+                    not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+            pytest.param(
+                'musa',
+                marks=pytest.mark.skipif(
+                    True,
+                    # not IS_MUSA_AVAILABLE,
+                    reason='TODO haowen.han@mthreads.com:not supported yet!')),
+        ])
     def test_ml_nms_quadri(self, device):
         from mmcv.ops import nms_quadri
         np_boxes = np.array([[1.0, 1.0, 3.0, 4.0, 4.0, 4.0, 4.0, 1.0, 0.7],
@@ -43,17 +46,13 @@ class TestNMSQuadri:
         assert np.allclose(dets.cpu().numpy()[:, :8], np_expect_dets)
         assert np.allclose(keep_inds.cpu().numpy(), np_expect_keep_inds)
 
+    # TODO:haowen.han@mthreads.com musa not supported yet!
     @pytest.mark.parametrize('device', [
         'cpu',
         pytest.param(
             'cuda',
             marks=pytest.mark.skipif(
-                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
-        pytest.param(
-            'musa',
-            marks=pytest.mark.skipif(
-                IS_MUSA_AVAILABLE,
-                reason='TODO Not supported yet haowen.han@mthreads.com')),
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support'))
     ])
     def test_nms_quadri(self, device):
         from mmcv.ops import nms_quadri
@@ -75,17 +74,13 @@ class TestNMSQuadri:
         assert np.allclose(dets.cpu().numpy()[:, :8], np_expect_dets)
         assert np.allclose(keep_inds.cpu().numpy(), np_expect_keep_inds)
 
+    # TODO:haowen.han@mthreads.com musa not supported yet!
     @pytest.mark.parametrize('device', [
         'cpu',
         pytest.param(
             'cuda',
             marks=pytest.mark.skipif(
-                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
-        pytest.param(
-            'musa',
-            marks=pytest.mark.skipif(
-                IS_MUSA_AVAILABLE,
-                reason='TODO Not supported yet haowen.han@mthreads.com')),
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support'))
     ])
     def test_batched_nms(self, device):
         # test batched_nms with nms_quadri

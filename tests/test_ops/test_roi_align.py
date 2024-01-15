@@ -125,17 +125,13 @@ def test_roialign_float(device, dtype):
     _test_roialign_allclose(device=device, dtype=dtype)
 
 
+# TODO:haowen.han@mthreads.com musa not supported yet!
 @pytest.mark.parametrize('device', [
     'cpu',
     pytest.param(
         'cuda',
         marks=pytest.mark.skipif(
-            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
-    pytest.param(
-        'musa',
-        marks=pytest.mark.skipif(
-            IS_MUSA_AVAILABLE,
-            reason='TODO:haowen.han@mthreads.com not supported yet!')),
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support'))
 ])
 def test_roialign_float64(device):
     _test_roialign_allclose(device=device, dtype=torch.double)

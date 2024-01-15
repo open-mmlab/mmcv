@@ -86,11 +86,7 @@ def make_sparse_convmodule(in_channels,
     pytest.param(
         'mlu',
         marks=pytest.mark.skipif(
-            not IS_MLU_AVAILABLE, reason='requires MLU support')),
-    pytest.param(
-        'musa',
-        marks=pytest.mark.skipif(
-            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
+            not IS_MLU_AVAILABLE, reason='requires MLU support'))
 ])
 def test_make_sparse_convmodule(device):
     if IS_CUDA_AVAILABLE:

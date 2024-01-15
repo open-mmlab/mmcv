@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
-from mmengine.device import is_musa_available
 from mmengine.utils import digit_version
 from mmengine.utils.dl_utils.parrots_wrapper import is_rocm_pytorch
 
@@ -225,7 +224,8 @@ class TestFilteredLrelu:
         assert out.shape == (1, 3, 16, 16)
 
     @pytest.mark.skipif(
-        is_musa_available(),
+        True,
+        # not is_musa_available(),
         reason='TODO haowen.han@mthreads.com: not supported yet')
     def test_filtered_lrelu_musa(self):
         out = filtered_lrelu(self.input_tensor.musa(), bias=self.bias.musa())

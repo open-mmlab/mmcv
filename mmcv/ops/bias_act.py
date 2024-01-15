@@ -242,11 +242,13 @@ def bias_act(input: torch.Tensor,
         return _bias_act_cuda(
             dim=dim, act=act, alpha=alpha, gain=gain,
             clamp=clamp).apply(input, bias)
-    if use_custom_op and input.is_musa:
-        return _bias_act_musa(
-            dim=dim, act=act, alpha=alpha, gain=gain,
-            clamp=clamp).apply(input, bias)
-
+    try:
+        if use_custom_op and input.is_musa:
+            return _bias_act_musa(
+                dim=dim, act=act, alpha=alpha, gain=gain,
+                clamp=clamp).apply(input, bias)
+    except AttributeError:
+        pass
     return _bias_act_ref(
         input=input,
         bias=bias,
