@@ -17,14 +17,15 @@ try:
         EXT_TYPE = 'pytorch'
     else:
         from torch.utils.cpp_extension import BuildExtension
-        EXT_TYPE = 'pytorch'
+        EXT_TYPE = 'pytorch'            
     cmd_class = {'build_ext': BuildExtension}
 except ModuleNotFoundError:
     cmd_class = {}
     print('Skip building ext ops due to the absence of torch.')
 
 try:
-    from torch_musa.utils.musa_extension import MUSAExtension
+    from torch_musa.utils.musa_extension import MUSAExtension,BuildExtension
+    cmd_class = {'build_ext': BuildExtension}
 except ModuleNotFoundError:
     pass
 
