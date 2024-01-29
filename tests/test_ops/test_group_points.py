@@ -84,7 +84,7 @@ def test_grouping_points(dtype, device):
 ])
 @pytest.mark.parametrize('dtype', [torch.half, torch.float, torch.double])
 def test_stack_grouping_points(dtype, device):
-    if device == 'npu' and dtype == 'torch.double':
+    if device == 'npu' and dtype == torch.double:
         return
     idx = torch.tensor([[0, 0, 0], [3, 3, 3], [8, 8, 8], [1, 1, 1], [0, 0, 0],
                         [2, 2, 2], [0, 0, 0], [6, 6, 6], [9, 9, 9], [0, 0, 0],
