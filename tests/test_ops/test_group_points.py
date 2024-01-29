@@ -72,10 +72,20 @@ def test_grouping_points(dtype, device):
     assert torch.allclose(output, expected_output)
 
 
-@pytest.mark.skipif(
-    not torch.cuda.is_available(), reason='requires CUDA support')
+@pytest.mark.parametrize('device', [
+    pytest.param(
+        'cuda',
+        marks=pytest.mark.skipif(
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    pytest.param(
+        'npu',
+        marks=pytest.mark.skipif(
+            not IS_NPU_AVAILABLE, reason='requires NPU support'))
+])
 @pytest.mark.parametrize('dtype', [torch.half, torch.float, torch.double])
-def test_stack_grouping_points(dtype):
+def test_stack_grouping_points(dtype, device):
+    if device == 'npu' and dtype == torch.double:
+        return
     idx = torch.tensor([[0, 0, 0], [3, 3, 3], [8, 8, 8], [1, 1, 1], [0, 0, 0],
                         [2, 2, 2], [0, 0, 0], [6, 6, 6], [9, 9, 9], [0, 0, 0],
                         [1, 1, 1], [0, 0, 0]]).int().cuda()
