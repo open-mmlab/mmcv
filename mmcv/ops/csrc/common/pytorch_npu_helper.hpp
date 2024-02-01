@@ -23,6 +23,7 @@
 
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"
+#include "pytorch_npu_util.hpp"
 
 #define NPU_NAME_SPACE at_npu::native
 
