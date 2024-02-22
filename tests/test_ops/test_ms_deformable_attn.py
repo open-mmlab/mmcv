@@ -5,7 +5,7 @@ import torch
 from mmcv.ops.multi_scale_deform_attn import (
     MultiScaleDeformableAttention, MultiScaleDeformableAttnFunction,
     multi_scale_deformable_attn_pytorch)
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
 
 _USING_PARROTS = True
 _IS_AUTOCAST_AVAILABLE = True
@@ -111,6 +111,40 @@ def test_forward_equal_with_pytorch_double():
     assert torch.allclose(output_cuda, output_pytorch)
     max_abs_err = (output_cuda - output_pytorch).abs().max()
     max_rel_err = ((output_cuda - output_pytorch).abs() /
+                   output_pytorch.abs()).max()
+    assert max_abs_err < 1e-18
+    assert max_rel_err < 1e-15
+
+
+@pytest.mark.skipif(not IS_NPU_AVAILABLE, reason='requires NPU support')
+def test_forward_equal_with_pytorch_npu():
+    N, M, D = 6, 4, 8
+    Lq, L, P = 10000, 4, 8
+    shapes = torch.as_tensor([(60, 40), (30, 20), (16, 24), (53, 32)],
+                             dtype=torch.int32)
+    level_start_index = torch.cat((shapes.new_zeros(
+        (1, )), shapes.prod(1).cumsum(0)[:-1]))
+    S = sum((H * W).item() for H, W in shapes)
+
+    torch.manual_seed(3)
+    value = torch.rand(N, S, M, D) * 0.01
+    sampling_locations = torch.rand(N, Lq, M, L, P, 2)
+    attention_weights = torch.rand(N, Lq, M, L, P) + 1e-5
+    attention_weights /= attention_weights.sum(
+        -1, keepdim=True).sum(
+            -2, keepdim=True)
+    im2col_step = 2
+    output_pytorch = multi_scale_deformable_attn_pytorch(
+        value.float(), shapes, sampling_locations.float(),
+        attention_weights.float()).detach().cpu()
+
+    output_npu = MultiScaleDeformableAttnFunction.apply(
+        value.npu().float(), shapes.npu(), level_start_index.npu(),
+        sampling_locations.npu().float(),
+        attention_weights.npu().float(), im2col_step).detach().cpu()
+    assert torch.allclose(output_npu, output_pytorch)
+    max_abs_err = (output_npu - output_pytorch).abs().max()
+    max_rel_err = ((output_npu - output_pytorch).abs() /
                    output_pytorch.abs()).max()
     assert max_abs_err < 1e-18
     assert max_rel_err < 1e-15

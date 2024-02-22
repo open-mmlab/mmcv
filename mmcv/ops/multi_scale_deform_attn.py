@@ -13,7 +13,7 @@ from mmcv import deprecated_api_warning
 from mmcv.cnn import constant_init, xavier_init
 from mmcv.cnn.bricks.registry import ATTENTION
 from mmcv.runner import BaseModule
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
@@ -85,7 +85,7 @@ class MultiScaleDeformableAttnFunction(Function):
         Returns:
             tuple[Tensor]: Gradient of input tensors in forward.
         """
-        value, value_spatial_shapes, value_level_start_index,\
+        value, value_spatial_shapes, value_level_start_index, \
             sampling_locations, attention_weights = ctx.saved_tensors
         grad_value = torch.zeros_like(value)
         grad_sampling_loc = torch.zeros_like(sampling_locations)
@@ -361,7 +361,8 @@ class MultiScaleDeformableAttention(BaseModule):
                 f'Last dim of reference_points must be'
                 f' 2 or 4, but get {reference_points.shape[-1]} instead.')
         if ((IS_CUDA_AVAILABLE and value.is_cuda)
-                or (IS_MLU_AVAILABLE and value.is_mlu)):
+                or (IS_MLU_AVAILABLE and value.is_mlu)
+                or (IS_NPU_AVAILABLE and value.device.type == 'npu')):
             output = MultiScaleDeformableAttnFunction.apply(
                 value, spatial_shapes, level_start_index, sampling_locations,
                 attention_weights, self.im2col_step)
