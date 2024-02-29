@@ -12,7 +12,7 @@ void points_in_polygons_npu(const Tensor points, Tensor polygons, Tensor output,
       "The batch of polygons tensor must be less than MAX_POLYGONS_BATCH");
   at::Tensor trans_polygons = polygons.transpose(0, 1);
   OpCommand cmd;
-  at::Tensor new_trans_polygons = NpuUtils::format_contiguous(trans_polygons);
+  at::Tensor new_trans_polygons = trans_polygons.contiguous();
   cmd.Name("PointsInPolygons")
       .Input(points, (string) "points")
       .Input(new_trans_polygons, (string) "polygons")
