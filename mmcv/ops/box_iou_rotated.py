@@ -149,6 +149,10 @@ def box_iou_rotated(bboxes1: torch.Tensor,
         bboxes2 = bboxes2 * scale_mat
     bboxes1 = bboxes1.contiguous()
     bboxes2 = bboxes2.contiguous()
+
+    # cast "bboxes2" according to the type of "bboxes1"
+    bboxes2 = bboxes2.type_as(bboxes1)
+
     ext_module.box_iou_rotated(
         bboxes1, bboxes2, ious, mode_flag=mode_flag, aligned=aligned)
     if not aligned:
