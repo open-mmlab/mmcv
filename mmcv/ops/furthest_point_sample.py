@@ -27,8 +27,12 @@ class FurthestPointSampling(Function):
         assert points_xyz.is_contiguous()
 
         B, N = points_xyz.size()[:2]
-        output = torch.cuda.IntTensor(B, num_points)
-        temp = torch.cuda.FloatTensor(B, N).fill_(1e10)
+        if points_xyz.device.type == 'npu':
+            output = torch.IntTensor(B, num_points).npu()
+            temp = torch.FloatTensor(B, N).fill_(1e10).npu()
+        else:
+            output = torch.cuda.IntTensor(B, num_points)
+            temp = torch.cuda.FloatTensor(B, N).fill_(1e10)
 
         ext_module.furthest_point_sampling_forward(
             points_xyz,
