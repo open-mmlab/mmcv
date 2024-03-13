@@ -5,7 +5,7 @@ import torch
 from mmcv.ops.multi_scale_deform_attn import (
     MultiScaleDeformableAttention, MultiScaleDeformableAttnFunction,
     multi_scale_deformable_attn_pytorch)
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
 
 _USING_PARROTS = True
 _IS_AUTOCAST_AVAILABLE = True
@@ -146,6 +146,40 @@ def test_forward_equal_with_pytorch_double():
         max_abs_err = (output_musa - output_pytorch).abs().max()
         max_rel_err = ((output_musa - output_pytorch).abs() /
                        output_pytorch.abs()).max()
+    assert max_abs_err < 1e-18
+    assert max_rel_err < 1e-15
+
+
+@pytest.mark.skipif(not IS_NPU_AVAILABLE, reason='requires NPU support')
+def test_forward_equal_with_pytorch_npu():
+    N, M, D = 6, 4, 8
+    Lq, L, P = 10000, 4, 8
+    shapes = torch.as_tensor([(60, 40), (30, 20), (16, 24), (53, 32)],
+                             dtype=torch.int32)
+    level_start_index = torch.cat((shapes.new_zeros(
+        (1, )), shapes.prod(1).cumsum(0)[:-1]))
+    S = sum((H * W).item() for H, W in shapes)
+
+    torch.manual_seed(3)
+    value = torch.rand(N, S, M, D) * 0.01
+    sampling_locations = torch.rand(N, Lq, M, L, P, 2)
+    attention_weights = torch.rand(N, Lq, M, L, P) + 1e-5
+    attention_weights /= attention_weights.sum(
+        -1, keepdim=True).sum(
+            -2, keepdim=True)
+    im2col_step = 2
+    output_pytorch = multi_scale_deformable_attn_pytorch(
+        value.float(), shapes, sampling_locations.float(),
+        attention_weights.float()).detach().cpu()
+
+    output_npu = MultiScaleDeformableAttnFunction.apply(
+        value.npu().float(), shapes.npu(), level_start_index.npu(),
+        sampling_locations.npu().float(),
+        attention_weights.npu().float(), im2col_step).detach().cpu()
+    assert torch.allclose(output_npu, output_pytorch)
+    max_abs_err = (output_npu - output_pytorch).abs().max()
+    max_rel_err = ((output_npu - output_pytorch).abs() /
+                   output_pytorch.abs()).max()
     assert max_abs_err < 1e-18
     assert max_rel_err < 1e-15
 
@@ -330,3 +364,67 @@ def test_gradient_numerical(channels,
                    im2col_step),
             eps=eps,
             atol=1e-2)
+
+
+@pytest.mark.skipif(not IS_NPU_AVAILABLE, reason='requires NPU support')
+def test_backward_equal_with_pytorch_npu():
+    N, M, D = 6, 4, 8
+    Lq, L, P = 10000, 4, 8
+    shapes = torch.as_tensor([(60, 40), (30, 20), (16, 24), (53, 32)],
+                             dtype=torch.int32)
+    level_start_index = torch.cat((shapes.new_zeros(
+        (1, )), shapes.prod(1).cumsum(0)[:-1]))
+    S = sum((H * W).item() for H, W in shapes)
+
+    torch.manual_seed(3)
+    value = torch.rand(N, S, M, D) * 0.01
+    sampling_locations = torch.rand(N, Lq, M, L, P, 2)
+    attention_weights = torch.rand(N, Lq, M, L, P) + 1e-5
+    attention_weights /= attention_weights.sum(
+        -1, keepdim=True).sum(
+            -2, keepdim=True)
+    im2col_step = 2
+    value.requires_grad = True
+    sampling_locations.requires_grad = True
+    attention_weights.requires_grad = True
+    output_pytorch = multi_scale_deformable_attn_pytorch(
+        value.float(), shapes, sampling_locations.float(),
+        attention_weights.float())
+    grad_output_pytorch = torch.ones_like(output_pytorch)
+    output_pytorch.backward(grad_output_pytorch)
+    grad_value = value.grad.detach().cpu()
+    grad_location = sampling_locations.grad.detach().cpu()
+    grad_attn_weight = attention_weights.grad.detach().cpu()
+
+    value_npu = value.npu()
+    shapes_npu = shapes.npu()
+    level_start_index_npu = level_start_index.npu()
+    sampling_locations_npu = sampling_locations.npu()
+    attention_weights_npu = attention_weights.npu()
+    output_npu = MultiScaleDeformableAttnFunction.apply(
+        value_npu.float(), shapes_npu, level_start_index_npu,
+        sampling_locations_npu.float(), attention_weights_npu.float(),
+        im2col_step)
+    grad_output_npu = torch.ones_like(output_npu)
+    output_npu.backward(grad_output_npu)
+    grad_value_npu = value_npu.grad.detach().cpu()
+    grad_location_npu = sampling_locations_npu.grad.detach().cpu()
+    grad_attn_weight_npu = attention_weights_npu.grad.detach().cpu()
+    assert torch.allclose(grad_value_npu, grad_value)
+    max_abs_err_1 = (grad_value_npu - grad_value).abs().max()
+    max_rel_err_1 = ((grad_value_npu - grad_value).abs() /
+                     grad_value.abs()).max()
+    assert max_abs_err_1 < 1e-5
+    assert max_rel_err_1 < 1e-4
+    assert torch.allclose(grad_location_npu, grad_location)
+    max_abs_err_2 = (grad_location_npu - grad_location).abs().max()
+    max_rel_err_2 = ((grad_location_npu - grad_location).abs() /
+                     grad_location.abs()).max()
+    assert max_abs_err_2 < 1e-5
+    assert max_rel_err_2 < 1e-4
+    assert torch.allclose(grad_attn_weight_npu, grad_attn_weight)
+    max_abs_err_3 = (grad_attn_weight_npu - grad_attn_weight).abs().max()
+    max_rel_err_3 = ((grad_attn_weight_npu - grad_attn_weight).abs() /
+                     grad_attn_weight.abs()).max()
+    assert max_abs_err_3 < 1e-5
+    assert max_rel_err_3 < 1e-4
