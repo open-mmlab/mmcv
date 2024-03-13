@@ -55,7 +55,7 @@ Tensor ms_deform_attn_forward_npu(const Tensor &value,
 
   c10::SmallVector<int64_t, 3> output_size = {
       value.size(0), sampling_locations.size(1), value.size(2) * value.size(3)};
-  at::Tensor output = at::empty(output_size, value_fp32.options());
+  at::Tensor output = at::zeros(output_size, value_fp32.options());
 
   OpCommand cmd;
   cmd.Name("MultiScaleDeformableAttnFunction")
@@ -75,3 +75,60 @@ Tensor ms_deform_attn_forward_npu(const Tensor &value,
 }
 
 REGISTER_NPU_IMPL(ms_deform_attn_impl_forward, ms_deform_attn_forward_npu);
+
+void ms_deform_attn_impl_backward(
+    const Tensor &value, const Tensor &spatial_shapes,
+    const Tensor &level_start_index, const Tensor &sampling_loc,
+    const Tensor &attn_weight, const Tensor &grad_output, Tensor &grad_value,
+    Tensor &grad_sampling_loc, Tensor &grad_attn_weight,
+    const int im2col_step);
+
+void ms_deform_attn_backward_npu(const Tensor &value, const Tensor &spatial_shapes,
+                                const Tensor &level_start_index,
+                                const Tensor &sampling_loc,
+                                const Tensor &attn_weight,
+                                const Tensor &grad_output, Tensor &grad_value,
+                                Tensor &grad_sampling_loc,
+                                Tensor &grad_attn_weight, const int im2col_step) {
+  check_support(value, attn_weight);
+  at::Tensor value_fp32 = value;
+  at::Tensor spatial_shapes_int32 = spatial_shapes;
+  at::Tensor level_start_index_int32 = level_start_index;
+  at::Tensor sampling_loc_fp32 = sampling_loc.transpose(4, 5).contiguous();
+  at::Tensor attn_weight_fp32 = attn_weight;
+  at::Tensor grad_output_fp32 = grad_output;
+  if (value.scalar_type() != at::kFloat) {
+    value_fp32 = value.to(at::kFloat);
+  }
+  if (spatial_shapes.scalar_type() != at::kInt) {
+    spatial_shapes_int32 = spatial_shapes.to(at::kInt);
+  }
+  if (level_start_index.scalar_type() != at::kInt) {
+    level_start_index_int32 = level_start_index.to(at::kInt);
+  }
+  if (sampling_loc.scalar_type() != at::kFloat) {
+    sampling_loc_fp32 = sampling_loc_fp32.to(at::kFloat);
+  }
+  if (attn_weight.scalar_type() != at::kFloat) {
+    attn_weight_fp32 = attn_weight.to(at::kFloat);
+  }
+  if (grad_output.scalar_type() != at::kFloat) {
+    grad_output_fp32 = grad_output.to(at::kFloat);
+  }
+
+  OpCommand cmd;
+  cmd.Name("MultiScaleDeformableAttentionGrad")
+      .Input(value_fp32)
+      .Input(spatial_shapes_int32)
+      .Input(level_start_index_int32)
+      .Input(sampling_loc_fp32)
+      .Input(attn_weight_fp32)
+      .Input(grad_output_fp32)
+      .Output(grad_value)
+      .Output(grad_sampling_loc)
+      .Output(grad_attn_weight)
+      .Run();
+  grad_sampling_loc = grad_sampling_loc.transpose(4, 5).contiguous();
+}
+
+REGISTER_NPU_IMPL(ms_deform_attn_impl_backward, ms_deform_attn_backward_npu);
