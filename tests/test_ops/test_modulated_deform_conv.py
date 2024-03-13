@@ -7,7 +7,7 @@ import torch
 from mmengine.utils import digit_version
 from mmengine.utils.dl_utils import TORCH_VERSION
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE
 
 try:
     # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast
@@ -41,8 +41,9 @@ dcn_offset_b_grad = [
 
 class TestMdconv:
 
-    def _test_mdconv(self, dtype=torch.float, device='cuda'):
-        if not torch.cuda.is_available() and device == 'cuda':
+    def _test_mdconv(self, device, dtype=torch.float):
+        if (not torch.cuda.is_available() and device
+                == 'cuda') and (not IS_MUSA_AVAILABLE and device == 'musa'):
             pytest.skip('test requires GPU')
         if device == 'mlu':
             from mmcv.ops import \
@@ -127,6 +128,10 @@ class TestMdconv:
             marks=pytest.mark.skipif(
                 not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
         pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
+        pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
                 not IS_MLU_AVAILABLE, reason='requires MLU support')),
@@ -141,11 +146,18 @@ class TestMdconv:
             marks=pytest.mark.skipif(
                 not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
         pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
+        pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
                 not IS_MLU_AVAILABLE, reason='requires MLU support')),
     ])
     def test_mdconv_double(self, device):
+        # TODO haowen.han@mthreads.com:not supported by musa yet!
+        if IS_MUSA_AVAILABLE:
+            return
         self._test_mdconv(dtype=torch.double, device=device)
 
     @pytest.mark.parametrize('device', [
@@ -160,6 +172,7 @@ class TestMdconv:
     ])
     def test_mdconv_half(self, device):
         self._test_mdconv(torch.half, device=device)
+
         # test amp when torch version >= '1.6.0', the type of
         # input data for mdconv might be torch.float or torch.half
         if (TORCH_VERSION != 'parrots'

@@ -3,6 +3,7 @@
 
 #include "pytorch_cpp_helper.hpp"
 #include "pytorch_device_registry.hpp"
+#include <iostream>
 
 void ball_query_forward_impl(int b, int n, int m, float min_radius,
                              float max_radius, int nsample,

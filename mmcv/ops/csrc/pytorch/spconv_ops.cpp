@@ -35,6 +35,30 @@ std::vector<torch::Tensor> get_indice_pairs_forward_cuda(
       padding, dilation, outPadding, _subM, _transpose);
 };
 
+
+
+template <unsigned NDim>
+std::vector<torch::Tensor> GetIndicePairsForwardMUSAKernelLauncher(
+    torch::Tensor indices, int64_t batchSize,
+    std::vector<int64_t> outSpatialShape, std::vector<int64_t> spatialShape,
+    std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
+    std::vector<int64_t> padding, std::vector<int64_t> dilation,
+    std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose);
+
+template <unsigned NDim>
+std::vector<torch::Tensor> get_indice_pairs_forward_musa(
+    torch::Tensor indices, int64_t batchSize,
+    std::vector<int64_t> outSpatialShape, std::vector<int64_t> spatialShape,
+    std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
+    std::vector<int64_t> padding, std::vector<int64_t> dilation,
+    std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose) {
+  return GetIndicePairsForwardMUSAKernelLauncher<NDim>(
+      indices, batchSize, outSpatialShape, spatialShape, kernelSize, stride,
+      padding, dilation, outPadding, _subM, _transpose);
+};
+
+
+
 template <unsigned NDim>
 std::vector<torch::Tensor> GetIndicePairsForwardMLUKernelLauncher(
     torch::Tensor indices, int64_t batchSize,
@@ -75,6 +99,28 @@ std::vector<torch::Tensor> get_indice_pairs_backward_cuda(
       stride, padding, dilation, outPadding, _subM, _transpose);
 };
 
+#ifdef MMCV_WITH_MUSA
+template <unsigned NDim>
+std::vector<torch::Tensor> GetIndicePairsBackwardMUSAKernelLauncher(
+    torch::Tensor indices, torch::Tensor gridOut, int64_t batchSize,
+    std::vector<int64_t> outSpatialShape, std::vector<int64_t> spatialShape,
+    std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
+    std::vector<int64_t> padding, std::vector<int64_t> dilation,
+    std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose);
+
+template <unsigned NDim>
+std::vector<torch::Tensor> get_indice_pairs_backward_musa(
+    torch::Tensor indices, torch::Tensor gridOut, int64_t batchSize,
+    std::vector<int64_t> outSpatialShape, std::vector<int64_t> spatialShape,
+    std::vector<int64_t> kernelSize, std::vector<int64_t> stride,
+    std::vector<int64_t> padding, std::vector<int64_t> dilation,
+    std::vector<int64_t> outPadding, int64_t _subM, int64_t _transpose) {
+  return GetIndicePairsBackwardMUSAKernelLauncher<NDim>(
+      indices, gridOut, batchSize, outSpatialShape, spatialShape, kernelSize,
+      stride, padding, dilation, outPadding, _subM, _transpose);
+};
+#endif
+
 template <unsigned NDim>
 std::vector<torch::Tensor> get_indice_pairs_forward(
     torch::Tensor indices, int64_t batchSize,
@@ -95,6 +141,12 @@ std::vector<torch::Tensor> get_indice_pairs_forward(
 #ifdef MMCV_WITH_MLU
   } else if (indices.device().type() == at::kMLU) {
     return get_indice_pairs_forward_mlu<NDim>(
+        indices, batchSize, outSpatialShape, spatialShape, kernelSize, stride,
+        padding, dilation, outPadding, _subM, _transpose);
+#endif
+#ifdef MMCV_WITH_MUSA
+  } else if (indices.device().type() == at::kMUSA) {
+    return get_indice_pairs_forward_musa<NDim>(
         indices, batchSize, outSpatialShape, spatialShape, kernelSize, stride,
         padding, dilation, outPadding, _subM, _transpose);
 #endif
@@ -122,6 +174,15 @@ std::vector<torch::Tensor> get_indice_pairs_backward(
     AT_ERROR("get_indice_pairs is not compiled with GPU support");
 #endif
   } else {
+#ifdef MMCV_WITH_MUSA
+    if (indices.device().type() == at::kMUSA) {
+      CHECK_MUSA_INPUT(indices);
+      CHECK_MUSA_INPUT(gridOut);
+    return get_indice_pairs_backward_musa<NDim>(
+        indices, gridOut, batchSize, outSpatialShape, spatialShape, kernelSize,
+        stride, padding, dilation, outPadding, _subM, _transpose);
+    }
+#endif
     AT_ERROR("get_indice_pairs is not implemented on CPU");
   }
 }

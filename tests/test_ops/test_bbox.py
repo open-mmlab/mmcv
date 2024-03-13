@@ -5,7 +5,7 @@ import torch
 from mmengine.utils import digit_version
 
 from mmcv.utils import (IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MPS_AVAILABLE,
-                        IS_NPU_AVAILABLE)
+                        IS_MUSA_AVAILABLE, IS_NPU_AVAILABLE)
 
 
 class TestBBox:
@@ -50,6 +50,10 @@ class TestBBox:
             'cuda',
             marks=pytest.mark.skipif(
                 not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(

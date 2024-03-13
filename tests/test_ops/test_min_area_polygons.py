@@ -2,6 +2,7 @@
 import numpy as np
 import pytest
 import torch
+from mmengine.device import is_musa_available
 
 from mmcv.ops import min_area_polygons
 
@@ -20,10 +21,13 @@ expected_polygons = np.asarray(
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available(), reason='requires CUDA support')
+    not (torch.cuda.is_available() or is_musa_available()),
+    reason='requires CUDA/MUSA support')
 def test_min_area_polygons():
-    pointsets = torch.from_numpy(np_pointsets).cuda().float()
-
+    if torch.cuda.is_available():
+        pointsets = torch.from_numpy(np_pointsets).cuda().float()
+    elif is_musa_available():
+        pointsets = torch.from_numpy(np_pointsets).musa().float()
     assert np.allclose(
         min_area_polygons(pointsets).cpu().numpy(),
         expected_polygons,

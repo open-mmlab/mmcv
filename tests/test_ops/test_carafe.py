@@ -4,32 +4,52 @@ import pytest
 import torch
 from torch.autograd import gradcheck
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE
 
 
 class TestCarafe:
 
     def test_carafe_naive_gradcheck(self):
-        if not torch.cuda.is_available():
+        if (not torch.cuda.is_available()) and (not IS_MUSA_AVAILABLE):
             return
         from mmcv.ops import CARAFENaive
-        feat = torch.randn(
-            2, 64, 3, 3, requires_grad=True, device='cuda').double()
-        mask = torch.randn(
-            2, 100, 6, 6, requires_grad=True,
-            device='cuda').sigmoid().double()
-        gradcheck(CARAFENaive(5, 4, 2), (feat, mask), atol=1e-4, eps=1e-4)
+
+        if IS_CUDA_AVAILABLE:
+            feat = torch.randn(
+                2, 64, 3, 3, requires_grad=True, device='cuda').double()
+            mask = torch.randn(
+                2, 100, 6, 6, requires_grad=True,
+                device='cuda').sigmoid().double()
+            gradcheck(CARAFENaive(5, 4, 2), (feat, mask), atol=1e-4, eps=1e-4)
+        # @TODO haowen.han@mthreads.com: it is not supported by musa
+        # elif IS_MUSA_AVAILABLE:
+        #     feat = torch.randn(
+        #         2, 64, 3, 3, requires_grad=True, device='musa').float()
+        #     mask = torch.randn(
+        #         2, 100, 6, 6, requires_grad=True,
+        #         device='musa').sigmoid().float()
+        #     gradcheck(CARAFENaive(5, 4, 2),
+        # (feat, mask), atol=1e-4, eps=1e-4)
 
     def test_carafe_gradcheck(self):
-        if not torch.cuda.is_available():
+        if (not torch.cuda.is_available()) and (not IS_MUSA_AVAILABLE):
             return
         from mmcv.ops import CARAFE
-        feat = torch.randn(
-            2, 64, 3, 3, requires_grad=True, device='cuda').double()
-        mask = torch.randn(
-            2, 100, 6, 6, requires_grad=True,
-            device='cuda').sigmoid().double()
-        gradcheck(CARAFE(5, 4, 2), (feat, mask), atol=1e-4, eps=1e-4)
+        if IS_CUDA_AVAILABLE:
+            feat = torch.randn(
+                2, 64, 3, 3, requires_grad=True, device='cuda').double()
+            mask = torch.randn(
+                2, 100, 6, 6, requires_grad=True,
+                device='cuda').sigmoid().double()
+            gradcheck(CARAFE(5, 4, 2), (feat, mask), atol=1e-4, eps=1e-4)
+        # @TODO haowen.han@mthreads.com: it is not supported by musa
+        # elif IS_MUSA_AVAILABLE:
+        #     feat = torch.randn(
+        #         2, 64, 3, 3, requires_grad=True, device='musa').float()
+        #     mask = torch.randn(
+        #         2, 100, 6, 6, requires_grad=True,
+        #         device='musa').sigmoid().float()
+        #     gradcheck(CARAFE(5, 4, 2), (feat, mask), atol=1e-4, eps=1e-4)
 
     @pytest.mark.parametrize('device', [
         pytest.param(
@@ -39,7 +59,7 @@ class TestCarafe:
         pytest.param(
             'mlu',
             marks=pytest.mark.skipif(
-                not IS_MLU_AVAILABLE, reason='requires MLU support'))
+                not IS_MLU_AVAILABLE, reason='requires MLU support')),
     ])
     def test_carafe_allclose(self, device):
         try:

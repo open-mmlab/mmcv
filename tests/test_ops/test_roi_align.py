@@ -3,7 +3,8 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import (IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE,
+                        IS_NPU_AVAILABLE)
 
 _USING_PARROTS = True
 try:
@@ -93,13 +94,24 @@ def _test_roialign_allclose(device, dtype):
             x.grad.data.type(torch.float).cpu().numpy(), np_grad, atol=1e-3)
 
 
-@pytest.mark.parametrize('dtype', [torch.float, torch.half])
+@pytest.mark.parametrize('dtype', [
+    torch.float,
+    pytest.param(
+        torch.half,
+        marks=pytest.mark.skipif(
+            IS_MUSA_AVAILABLE,
+            reason='TODO haowen.han@mthreads.com: not supported yet')),
+])
 @pytest.mark.parametrize('device', [
     'cpu',
     pytest.param(
         'cuda',
         marks=pytest.mark.skipif(
             not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
     pytest.param(
         'mlu',
         marks=pytest.mark.skipif(
@@ -113,12 +125,13 @@ def test_roialign_float(device, dtype):
     _test_roialign_allclose(device=device, dtype=dtype)
 
 
+# TODO:haowen.han@mthreads.com musa not supported yet!
 @pytest.mark.parametrize('device', [
     'cpu',
     pytest.param(
         'cuda',
         marks=pytest.mark.skipif(
-            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support'))
 ])
 def test_roialign_float64(device):
     _test_roialign_allclose(device=device, dtype=torch.double)

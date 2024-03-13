@@ -10,6 +10,7 @@ if IS_MLU_AVAILABLE:
     torch.backends.mlu.matmul.allow_tf32 = False
 
 
+# TODO haowen.han@mthreads.com there are some bugs for musa!
 @pytest.mark.parametrize('device', [
     pytest.param(
         'cuda',
@@ -39,6 +40,7 @@ def test_diff_iou_rotated_2d(device):
     assert np.allclose(ious.cpu().numpy(), np_expect_ious, atol=1e-4)
 
 
+# TODO haowen.han@mthreads.com there are some bugs for musa!
 @pytest.mark.parametrize('device', [
     pytest.param(
         'cuda',

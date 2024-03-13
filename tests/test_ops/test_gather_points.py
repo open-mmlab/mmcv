@@ -16,7 +16,11 @@ class TestGatherPoints:
         pytest.param(
             'npu',
             marks=pytest.mark.skipif(
-                not IS_NPU_AVAILABLE, reason='requires NPU support'))
+                not IS_NPU_AVAILABLE, reason='requires NPU support')),
+        pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_NPU_AVAILABLE, reason='requires MUSA support'))
     ])
     def test_gather_points_all_close(self, device):
         features = torch.tensor(

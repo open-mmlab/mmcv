@@ -24,7 +24,13 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
     pytest.param(
         'cpu',
         marks=pytest.mark.skipif(
-            torch.__version__ == 'parrots', reason='requires PyTorch support'))
+            torch.__version__ == 'parrots',
+            reason='requires PyTorch support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            torch.__version__ == 'parrots',
+            reason='requires PyTorch support')),
 ])
 def test_rotated_feature_align(device):
     feature = torch.tensor([[[[1.2924, -0.2172, -0.5222, 0.1172],

@@ -4,6 +4,7 @@
 from typing import Tuple
 
 import torch
+from mmengine.device import is_musa_available
 from torch import Tensor
 from torch.autograd import Function
 
@@ -262,6 +263,9 @@ def diff_iou_rotated_2d(box1: Tensor, box2: Tensor) -> Tensor:
     Returns:
         Tensor: (B, N) IoU.
     """
+    if is_musa_available() and box1.device.type == 'musa':
+        raise NotImplementedError(
+            'TODO haowen.han@mthreads.com: there are some bug in musa!')
     corners1 = box2corners(box1)
     corners2 = box2corners(box2)
     intersection, _ = oriented_box_intersection_2d(corners1,
@@ -283,6 +287,9 @@ def diff_iou_rotated_3d(box3d1: Tensor, box3d2: Tensor) -> Tensor:
     Returns:
         Tensor: (B, N) IoU.
     """
+    if is_musa_available() and box3d1.device.type == 'musa':
+        raise NotImplementedError(
+            'TODO haowen.han@mthreads.com: there are some bug in musa!')
     box1 = box3d1[..., [0, 1, 3, 4, 6]]  # 2d box
     box2 = box3d2[..., [0, 1, 3, 4, 6]]
     corners1 = box2corners(box1)
