@@ -16,6 +16,8 @@ if torch.__version__ != 'parrots':
         for fun in funcs:
             assert hasattr(ext, fun), f'{fun} miss in module {name}'
             if os.getenv('MMCV_OPS_PRINT', '0') == '1':
+                if isinstance(getattr(ext, fun), OpInputInfoLogger):
+                    continue
                 setattr(ext, fun, OpInputInfoLogger(getattr(ext, fun)))
         return ext
 else:
