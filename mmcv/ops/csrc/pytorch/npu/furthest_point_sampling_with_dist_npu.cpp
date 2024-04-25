@@ -6,11 +6,11 @@ void furthest_point_sampling_with_dist_npu(Tensor points_tensor,
                                            Tensor temp_tensor,
                                            Tensor idx_tensor, int b, int n,
                                            int m) {
-  auto output_size = {b, m};
-  at::Tensor result =
-      at::empty(output_size, points_tensor.options().dtype(at::kInt));
+  TORCH_CHECK(
+      (points_tensor.sizes()[1] >= m),
+      "the num of sampled points should smaller than total num of points.");
   EXEC_NPU_CMD(aclnnFurthestPointSamplingWithDist, points_tensor, temp_tensor,
-               m, result);
+               m, idx_tensor);
 }
 
 void furthest_point_sampling_with_dist_forward_impl(Tensor points_tensor,
