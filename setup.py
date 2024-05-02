@@ -263,8 +263,9 @@ def get_extensions():
             define_macros += [('MMCV_WITH_CUDA', None)]
             cuda_args = os.getenv('MMCV_CUDA_ARGS')
             if cuda_args:
-                extra_compile_args['nvcc'].extend(cuda_args.split())
-
+                extra_compile_args['nvcc'] = cuda_args.split()
+            else:
+                extra_compile_args['nvcc'] = []
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') + \
