@@ -19,6 +19,9 @@ def points_in_polygons(points: Tensor, polygons: Tensor) -> Tensor:
         polygons (torch.Tensor): It has shape (M, 8), indicating
             (x1, y1, x2, y2, x3, y3, x4, y4). M means the number of
             ground truth polygons.
+        constraints: The absolute value of input range from e-10 to
+            e10 on NPU.
+
 
     Returns:
         torch.Tensor: Return the result with the shape of (B, M),
