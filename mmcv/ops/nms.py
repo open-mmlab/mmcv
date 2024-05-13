@@ -405,7 +405,7 @@ def nms_rotated(dets: Tensor,
         flip_mat[-1] = -1
         dets_cw = dets * flip_mat
     else:
-        dets_cw = dets
+        dets_cw = dets.clone()
     multi_label = labels is not None
     if labels is None:
         input_labels = scores.new_empty(0, dtype=torch.int)
@@ -415,6 +415,8 @@ def nms_rotated(dets: Tensor,
         order = scores.new_empty(0, dtype=torch.long)
         if dets.device.type == 'npu':
             coefficient = 57.29578  # 180 / PI
+            dets_cw = dets_cw.float()
+            scores = scores.float()
             for i in range(dets.size()[0]):
                 dets_cw[i][4] *= coefficient  # radians to angle
         keep_inds = ext_module.nms_rotated(dets_cw, scores, order, dets_cw,
