@@ -31,7 +31,7 @@ __global__ void chamfer_distance_forward_cuda_kernel(int b, int n,
         scalar_t y1 = xyz[(i * n + j) * 2 + 1];
         int best_i = 0;
         scalar_t best = 1e10;
-        int end_ka = end_k & (~2);
+        int end_ka = end_k & (~3);
         if (end_ka == THREADS_PER_BLOCK) {
           for (int k = 0; k < THREADS_PER_BLOCK; k += 4) {
 #pragma unroll

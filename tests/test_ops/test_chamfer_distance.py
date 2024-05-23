@@ -54,7 +54,7 @@ def torch_to_np_type(dtype):
             not IS_NPU_AVAILABLE, reason='requires NPU support'))
 ])
 @pytest.mark.parametrize('dtype', [torch.half, torch.float32])
-@pytest.mark.parametrize('shape', [(2, 600, 2), (2, 600, 2)])
+@pytest.mark.parametrize('shape', [(2, 600, 2), (1, 1, 2), (7, 7, 2)])
 def test_chamfer_distance_npu_dynamic_shape(dtype, device, shape):
     bs = shape[0]
     ns = shape[1]
