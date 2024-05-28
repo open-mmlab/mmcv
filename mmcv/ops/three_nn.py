@@ -30,7 +30,10 @@ class ThreeNN(Function):
             set to their corresponding top three nearest neighbors.
         """
         target = target.contiguous()
-        source = source.contiguous()
+        if source.device.type == 'npu':
+            source = source.transpose(1, 2).contiguous()
+        else:
+            source = source.contiguous()
 
         B, N, _ = target.size()
         m = source.size(1)

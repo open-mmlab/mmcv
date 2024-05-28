@@ -45,9 +45,15 @@ class KNN(Function):
         if center_xyz is None:
             center_xyz = xyz
 
-        if transposed:
-            xyz = xyz.transpose(2, 1).contiguous()
-            center_xyz = center_xyz.transpose(2, 1).contiguous()
+        if xyz.device.type == 'npu':
+            if not transposed:
+                xyz = xyz.transpose(1, 2).contiguous()
+            else:
+                center_xyz = center_xyz.transpose(1, 2).contiguous()
+        else:
+            if transposed:
+                xyz = xyz.transpose(2, 1).contiguous()
+                center_xyz = center_xyz.transpose(2, 1).contiguous()
 
         assert xyz.is_contiguous()  # [B, N, 3]
         assert center_xyz.is_contiguous()  # [B, npoint, 3]
@@ -55,8 +61,9 @@ class KNN(Function):
         center_xyz_device = center_xyz.get_device()
         assert center_xyz_device == xyz.get_device(), \
             'center_xyz and xyz should be put on the same device'
-        if torch.cuda.current_device() != center_xyz_device:
-            torch.cuda.set_device(center_xyz_device)
+        if xyz.device.type != 'npu':
+            if torch.cuda.current_device() != center_xyz_device:
+                torch.cuda.set_device(center_xyz_device)
 
         B, npoint, _ = center_xyz.shape
         N = xyz.shape[1]
