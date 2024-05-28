@@ -30,7 +30,14 @@ class ThreeNN(Function):
             set to their corresponding top three nearest neighbors.
         """
         target = target.contiguous()
-        source = source.contiguous()
+        if source.device.type == 'npu':
+            source = source.transpose(1, 2).contiguous()
+        else:
+            source = source.contiguous()
+        dtype_ = source.dtype
+        if source.device.type == 'npu' and dtype_ == torch.float16:
+            target = target.float()
+            source = source.float()
 
         B, N, _ = target.size()
         m = source.size(1)
@@ -38,6 +45,9 @@ class ThreeNN(Function):
         idx = target.new_empty(B, N, 3, dtype=torch.int32)
 
         ext_module.three_nn_forward(target, source, dist2, idx, b=B, n=N, m=m)
+        if source.device.type == 'npu'and dtype_ == torch.float16:
+            dist2 = dist2.half()
+            idx = idx.half()
         if torch.__version__ != 'parrots':
             ctx.mark_non_differentiable(idx)
 
