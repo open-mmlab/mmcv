@@ -47,8 +47,11 @@ def test_grouping_points(dtype, device):
                                   -1.4049, 0.4990, -0.7037, -0.9924, 0.0386
                               ]]],
                             dtype=dtype).to(device)
+    features.requires_grad = True
 
     output = grouping_operation(features, idx)
+    output.backward(output)
+    grad_features = features.grad
     expected_output = torch.tensor(
         [[[[0.5798, 0.5798, 0.5798], [-1.3311, -1.3311, -1.3311],
            [0.9268, 0.9268, 0.9268], [0.5798, 0.5798, 0.5798],
@@ -69,7 +72,34 @@ def test_grouping_points(dtype, device):
            [0.0386, 0.0386, 0.0386], [-0.6646, -0.6646, -0.6646],
            [-0.6646, -0.6646, -0.6646], [-0.6646, -0.6646, -0.6646]]]],
         dtype=dtype).to(device)
+    expected_grad_features = torch.tensor(
+        [[[
+            6.9576, 0.0000, 0.0000, -3.9933, 0.0000, 0.0000, 0.0000, 0.0000,
+            2.7804, 0.0000
+        ],
+          [
+              65.0964, 0.0000, 0.0000, 4.4220, 0.0000, 0.0000, 0.0000, 0.0000,
+              6.4743, 0.0000
+          ],
+          [
+              -19.5192, 0.0000, 0.0000, -5.0793, 0.0000, 0.0000, 0.0000,
+              0.0000, -5.0358, 0.0000
+          ]],
+         [[
+             -0.4560, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, -1.1079, 0.0000,
+             0.0000, -5.5581
+         ],
+          [
+              14.1276, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 18.2595, 0.0000,
+              0.0000, 8.4687
+          ],
+          [
+              -7.9752, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 1.4970, 0.0000,
+              0.0000, 0.1158
+          ]]],
+        dtype=dtype).to(device)
     assert torch.allclose(output, expected_output)
+    assert torch.allclose(grad_features, expected_grad_features)
 
 
 @pytest.mark.parametrize('device', [
