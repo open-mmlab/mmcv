@@ -70,7 +70,8 @@ void roi_pool_backward_npu(Tensor grad_output, Tensor rois, Tensor argmax,
       .Attr("spatial_scale_w", spatial_scale)
       .Attr("pool_channel", pooled_channel)
       .Run();
-  at::Tensor res = NpuUtils::format_contiguous(result);
+  at::Tensor result = y.transpose(2, 3).transpose(1, 2);
+  at::Tensor res = result.contiguous();
   grad_input.copy_(res);
 }
 
