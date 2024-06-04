@@ -38,8 +38,29 @@ void group_points_forward_npu(int b, int c, int n, int npoints, int nsample,
   out.copy_(res);
 }
 
+void group_points_backward_npu(int b, int c, int n, int npoints, int nsample,
+                               const Tensor grad_out, const Tensor idx,
+                               Tensor grad_features) {
+  at::Tensor trans_idx = idx.view({b * npoints * nsample});
+  at::Tensor trans_grad_out = grad_out.permute({0, 2, 3, 1});
+  at::Tensor grad_out_tensor = trans_grad_out.contiguous();
+  grad_out_tensor = grad_out_tensor.view({b * npoints * nsample, c});
+  at::Tensor out = at::zeros({b, n, c}, grad_out.options());
+
+  EXEC_NPU_CMD(aclnnGroupPointsGrad, grad_out_tensor, trans_idx, b, c, n,
+               npoints, nsample, out);
+
+  at::Tensor grad_points = out.transpose(1, 2);
+
+  grad_features.copy_(grad_points);
+}
+
 void group_points_forward_impl(int b, int c, int n, int npoints, int nsample,
                                const Tensor points, const Tensor idx,
                                Tensor out);
+void group_points_backward_impl(int b, int c, int n, int npoints, int nsample,
+                                const Tensor points, const Tensor idx,
+                                Tensor out);
 
 REGISTER_NPU_IMPL(group_points_forward_impl, group_points_forward_npu);
+REGISTER_NPU_IMPL(group_points_backward_impl, group_points_backward_npu);
