@@ -5,7 +5,7 @@ using namespace std;
 
 void chamfer_distance_forward_npu(Tensor XYZ1, Tensor XYZ2, Tensor dist1,
                                   Tensor dist2, Tensor idx1, Tensor idx2) {
-  bool is_half = input.scalar_type() == at::kHalf;
+  bool is_half = XYZ1.scalar_type() == at::kHalf;
   at::Tensor xyz1 = at::ones_like(XYZ1);
   at::Tensor xyz2 = at::ones_like(XYZ2);
   at::Tensor distf1 = at::ones_like(dist1);
