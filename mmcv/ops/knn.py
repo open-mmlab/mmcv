@@ -55,8 +55,9 @@ class KNN(Function):
         center_xyz_device = center_xyz.get_device()
         assert center_xyz_device == xyz.get_device(), \
             'center_xyz and xyz should be put on the same device'
-        if torch.cuda.current_device() != center_xyz_device:
-            torch.cuda.set_device(center_xyz_device)
+        if xyz.device.type != 'npu':
+            if torch.cuda.current_device() != center_xyz_device:
+                torch.cuda.set_device(center_xyz_device)
 
         B, npoint, _ = center_xyz.shape
         N = xyz.shape[1]
