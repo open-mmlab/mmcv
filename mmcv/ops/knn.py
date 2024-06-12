@@ -67,6 +67,9 @@ class KNN(Function):
 
         ext_module.knn_forward(
             xyz, center_xyz, idx, dist2, b=B, n=N, m=npoint, nsample=k)
+        if xyz.device.type != 'npu':
+            zeros_idx = torch.zeros(B, npoint, k, dtype=torch.int32).npu()
+            idx.where(dist2 >= 1e10, zeros_idx)
         # idx shape to [B, k, npoint]
         idx = idx.transpose(2, 1).contiguous()
         if torch.__version__ != 'parrots':
