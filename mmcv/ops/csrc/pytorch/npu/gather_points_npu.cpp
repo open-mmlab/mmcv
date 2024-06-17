@@ -24,6 +24,12 @@ void gather_points_forward_npu(int b, int c, int n, int npoints,
 void gather_points_backward_npu(int b, int c, int n, int npoints,
                                 const Tensor grad_out, const Tensor idx,
                                 Tensor grad_points) {
+  at::Tensor grad_out_cast = grad_out;
+  at::Tensor grad_points_cast = grad_points;
+  if (grad_out.scalar_type() == at::ScalarType::Half) {
+    grad_out_cast = grad_out.to(at::kFloat);
+    grad_points_cast = grad_points.to(at::kFloat);
+  }
   at::Tensor indices = idx;
   if (idx.scalar_type() != at::ScalarType::Int) {
     indices = idx.to(at::kInt);
@@ -37,11 +43,11 @@ void gather_points_backward_npu(int b, int c, int n, int npoints,
   for (uint64_t i = 0; i < shape.size(); i++) {
     pad_size.emplace_back(shape[i]);
   }
-  at::Tensor trans_grad_points = grad_points.transpose(1, 2).contiguous();
+  at::Tensor trans_grad_points = grad_points_cast.transpose(1, 2).contiguous();
   at::Tensor grad_points_view = trans_grad_points.view(
       {trans_grad_points.sizes()[0] * trans_grad_points.sizes()[1],
        trans_grad_points.sizes()[2]});
-  at::Tensor trans_grad_out = grad_out.transpose(1, 2).contiguous();
+  at::Tensor trans_grad_out = grad_out_cast.transpose(1, 2).contiguous();
   trans_grad_out = trans_grad_out.view(
       {trans_grad_out.sizes()[0] * trans_grad_out.sizes()[1],
        trans_grad_out.sizes()[2]});
@@ -63,7 +69,11 @@ void gather_points_backward_npu(int b, int c, int n, int npoints,
   at::Tensor grad_points_result =
       grad_points_view.view(trans_grad_points.sizes());
   grad_points_result = grad_points_result.transpose(1, 2);
-  grad_points.copy_(grad_points_result);
+  at::Tensor grad_points_result_cast = grad_points_result;
+  if (grad_out.scalar_type() == at::ScalarType::Half) {
+    grad_points_result_cast = grad_points_result.to(at::kHalf);
+  }
+  grad_points.copy_(grad_points_result_cast);
 }
 
 void gather_points_forward_impl(int b, int c, int n, int npoints,
