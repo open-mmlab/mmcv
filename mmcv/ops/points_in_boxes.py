@@ -50,6 +50,8 @@ def points_in_boxes_part(points: Tensor, boxes: Tensor) -> Tensor:
     if points.device.type != 'npu':
         if torch.cuda.current_device() != points_device:
             torch.cuda.set_device(points_device)
+    elif points.device.type == 'npu':
+        boxes[:, :, 2] += boxes[:, :, 5] / 2.0
 
     ext_module.points_in_boxes_part_forward(boxes.contiguous(),
                                             points.contiguous(),
