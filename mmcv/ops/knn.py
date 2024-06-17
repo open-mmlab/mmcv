@@ -55,11 +55,30 @@ class KNN(Function):
         center_xyz_device = center_xyz.get_device()
         assert center_xyz_device == xyz.get_device(), \
             'center_xyz and xyz should be put on the same device'
-        if torch.cuda.current_device() != center_xyz_device:
-            torch.cuda.set_device(center_xyz_device)
+        if xyz.device.type != 'npu':
+            if torch.cuda.current_device() != center_xyz_device:
+                torch.cuda.set_device(center_xyz_device)
 
         B, npoint, _ = center_xyz.shape
         N = xyz.shape[1]
+
+        if xyz.device.type == 'npu':
+            dist = center_xyz.new_zeros((B, npoint, N)).float()
+            ext_module.knn_forward(
+                xyz,
+                center_xyz,
+                torch.Tensor([]).npu(),
+                dist,
+                b=B,
+                n=N,
+                m=npoint,
+                nsample=k)
+            dist2, idx = torch.topk(dist, k, dim=2, largest=False, sorted=True)
+            zeros_idx = torch.zeros(
+                xyz.shape[0], center_xyz.shape[1], k, dtype=torch.int32).npu()
+            idx.where(dist2 >= 1e10, zeros_idx)
+            idx = idx.transpose(2, 1).contiguous()  # [B, k, npoint]
+            return idx.int()
 
         idx = center_xyz.new_zeros((B, npoint, k)).int()
         dist2 = center_xyz.new_zeros((B, npoint, k)).float()
