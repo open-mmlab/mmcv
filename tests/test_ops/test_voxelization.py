@@ -200,6 +200,9 @@ def test_voxelization_npu(device_type):
     points = voxel_dict['points']
 
     points = torch.tensor(points)
+    max_num_points = -1
+    dynamic_voxelization = Voxelization(voxel_size, point_cloud_range,
+                                        max_num_points)
     max_num_points = 1000
     hard_voxelization = Voxelization(voxel_size, point_cloud_range,
                                      max_num_points)
@@ -215,3 +218,15 @@ def test_voxelization_npu(device_type):
     assert np.all(coors == expected_coors)
     assert np.all(voxels == expected_voxels)
     assert np.all(num_points_per_voxel == expected_num_points_per_voxel)
+    
+    # test dynamic_voxelization on npu
+    coors = dynamic_voxelization.forward(points)
+    coors = coors.cpu().detach().numpy()
+    points = points.cpu().detach().numpy()
+    for i in range(expected_voxels.shape[0]):
+        indices = _get_voxel_points_indices(points, coors, expected_voxels[i])
+        num_points_current_voxel = points[indices].shape[0]
+        assert num_points_current_voxel > 0
+        assert np.all(
+            points[indices] == expected_coors[i][:num_points_current_voxel])
+        assert num_points_current_voxel == expected_num_points_per_voxel[i]
