@@ -57,7 +57,7 @@ class DeformConv2dFunction(Function):
         grad_input, grad_weight, grad_offset_all, grad_bias = \
             torch_npu.npu_deformable_conv2dbk(
                 input_tensor, grad_output, offset_out, weight, offset_all,
-                kernel_size=[weight.shape[3], weight.shape[2]],
+                kernel_size=[weight.shape[2], weight.shape[3]],
                 stride=[1, 1, ctx.stride[0], ctx.stride[1]],
                 padding=[ctx.padding[0], ctx.padding[0], ctx.padding[1],
                          ctx.padding[1]],
