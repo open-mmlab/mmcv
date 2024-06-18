@@ -1,4 +1,5 @@
 #include "pytorch_npu_helper.hpp"
+#include <cmath.h>
 
 using namespace NPU_NAME_SPACE;
 using namespace std;
@@ -10,6 +11,11 @@ int hard_voxelize_forward_impl(const at::Tensor &points, at::Tensor &voxels,
                                const std::vector<float> coors_range,
                                const int max_points, const int max_voxels,
                                const int NDim = 3);
+
+void dynamic_voxelize_forward_impl(const at::Tensor &points, at::Tensor &coors,
+                                   const std::vector<float> voxel_size,
+                                   const std::vector<float> coors_range,
+                                   const int NDim = 3);
 
 int hard_voxelize_forward_npu(const at::Tensor &points, at::Tensor &voxels,
                               at::Tensor &coors,
@@ -53,4 +59,31 @@ int hard_voxelize_forward_npu(const at::Tensor &points, at::Tensor &voxels,
   return voxel_num_int;
 }
 
+void dynamic_voxelize_forward_npu(const at::Tensor &points, at::Tensor &coors,
+                                   const std::vector<float> voxel_size,
+                                   const std::vector<float> coors_range,
+                                   const int NDim = 3) {
+    uint32_t ptsNum = points.size(0);
+    uint32_t ptsFeature = points.size(1);
+    at::Tensor pts = at::transpose(points, 0, 1);
+    at::Tensor ptsTrans = at::reshape(pts, {ptsNum, ptsFeature});
+    float coors_min_x = coors_range[0];
+    float coors_min_y = coors_range[1];
+    float coors_min_z = coors_range[2];
+    float coors_max_x = coors_range[3];
+    float coors_max_y = coors_range[4];
+    float coors_max_z = coors_range[5];
+    float voxel_x = voxel_size[0];
+    float voxel_y = voxel_size[1];
+    float voxel_z = voxel_size[2];
+    int32_t grid_x = std::round((coors_max_x - coors_min_x) / voxel_x);
+    int32_t grid_y = std::round((coors_max_y - coors_min_y) / voxel_y);
+    int32_t grid_z = std::round((coors_max_z - coors_min_z) / voxel_z);
+
+    EXEC_NPU_CMD(aclnnDynamicVoxelization, ptsTrans, coors_min_x, coors_min_y, coors_min_z, voxel_x, voxel_y, voxel_z,
+        grid_x, grid_y, grid_z, coors);
+    coors.transpose_(0, 1);                           
+}
+
 REGISTER_NPU_IMPL(hard_voxelize_forward_impl, hard_voxelize_forward_npu);
+REGISTER_NPU_IMPL(dynamic_voxelize_forward_impl, dynamic_voxelize_forward_npu);
