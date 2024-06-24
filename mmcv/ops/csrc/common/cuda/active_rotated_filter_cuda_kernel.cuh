@@ -18,6 +18,7 @@ __global__ void active_rotated_filter_forward_cuda_kernel(
     scalar_t* output_data) {
   CUDA_1D_KERNEL_LOOP(index, nthreads) {
     int l = index % nEntry;
+    int flag = 1;
     int j = (index / nEntry) % num_input_planes;
     int i = index / nEntry / num_input_planes;
     int k;
