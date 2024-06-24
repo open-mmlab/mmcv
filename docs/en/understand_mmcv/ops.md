@@ -61,3 +61,6 @@ We implement common ops used in detection, segmentation, etc.
 | Voxelization                 | √   | √    |     |     | √      |
 | PrRoIPool                    |     | √    |     |     |        |
 | BezierAlign                  | √   | √    |     |     |        |
+| BiasAct                      |     | √    |     |     |        |
+| FilteredLrelu                |     | √    |     |     |        |
+| Conv2dGradfix                |     | √    |     |     |        |

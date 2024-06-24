@@ -255,7 +255,7 @@ at::Tensor ms_deform_attn_cuda_forward(const at::Tensor &value,
   auto per_attn_weight_size = num_query * num_heads * num_levels * num_point;
   for (int n = 0; n < batch / im2col_step_; ++n) {
     auto columns = output_n.select(0, n);
-    AT_DISPATCH_FLOATING_TYPES(
+    AT_DISPATCH_FLOATING_TYPES_AND_HALF(
         value.scalar_type(), "ms_deform_attn_forward_cuda", ([&] {
           ms_deformable_im2col_cuda(
               at::cuda::getCurrentCUDAStream(),
@@ -326,7 +326,7 @@ void ms_deform_attn_cuda_backward(
 
   for (int n = 0; n < batch / im2col_step_; ++n) {
     auto grad_output_g = grad_output_n.select(0, n);
-    AT_DISPATCH_FLOATING_TYPES(
+    AT_DISPATCH_FLOATING_TYPES_AND_HALF(
         value.scalar_type(), "ms_deform_attn_backward_cuda", ([&] {
           ms_deformable_col2im_cuda(
               at::cuda::getCurrentCUDAStream(),

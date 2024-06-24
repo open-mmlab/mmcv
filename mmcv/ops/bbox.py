@@ -106,25 +106,17 @@ def bbox_overlaps(bboxes1: torch.Tensor,
 
     rows = bboxes1.size(0)
     cols = bboxes2.size(0)
+
     if aligned:
         assert rows == cols
+        ious = bboxes1.new_zeros(rows)
+    else:
+        ious = bboxes1.new_zeros((rows, cols))
 
     if rows * cols == 0:
-        return bboxes1.new(rows, 1) if aligned else bboxes1.new(rows, cols)
-
-    if bboxes1.device.type == 'cpu':
-        return _bbox_overlaps_cpu(
-            bboxes1, bboxes2, mode=mode, aligned=aligned, offset=offset)
-    else:
-        if aligned:
-            ious = bboxes1.new_zeros(rows)
-        else:
-            ious = bboxes1.new_zeros((rows, cols))
-        ext_module.bbox_overlaps(
-            bboxes1,
-            bboxes2,
-            ious,
-            mode=mode_flag,
-            aligned=aligned,
-            offset=offset)
         return ious
+
+    ext_module.bbox_overlaps(
+        bboxes1, bboxes2, ious, mode=mode_flag, aligned=aligned, offset=offset)
+
+    return ious

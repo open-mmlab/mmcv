@@ -35,6 +35,14 @@ class TestBBox:
         out = bbox_overlaps(b1, b2, offset=1)
         assert np.allclose(out.cpu().numpy(), should_output, 1e-2)
 
+        b1 = torch.tensor([[10.0 + i, 10.0 + i, 30.0 + i, 30.0 + i]
+                           for i in range(1000)]).to(device).type(dtype)
+        b2 = torch.tensor([[20.0 + i, 20.0 + i, 40.0 + i, 40.0 + i]
+                           for i in range(1000)]).to(device).type(dtype)
+        should_output = np.array([1 / 7] * 1000)
+        out = bbox_overlaps(b1, b2, aligned=True)
+        assert np.allclose(out.cpu().numpy(), should_output, 1e-2)
+
     @pytest.mark.parametrize('device', [
         'cpu',
         pytest.param(

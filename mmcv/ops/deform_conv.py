@@ -108,8 +108,10 @@ class DeformConv2dFunction(Function):
             return output
         ctx.save_for_backward(input, offset, weight)
 
-        output = input.new_empty(
-            DeformConv2dFunction._output_size(ctx, input, weight))
+        output = input.new_empty([
+            int(i)
+            for i in DeformConv2dFunction._output_size(ctx, input, weight)
+        ])
 
         ctx.bufs_ = [input.new_empty(0), input.new_empty(0)]  # columns, ones
 
