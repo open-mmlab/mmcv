@@ -21,6 +21,7 @@ __global__ void active_rotated_filter_forward_cuda_kernel(
     int j = (index / nEntry) % num_input_planes;
     int i = index / nEntry / num_input_planes;
     int k;
+    int flag = 1;
     scalar_t val = *(weight_data + index);
     for (k = 0; k < num_rotations; k++) {
       int idx = (int)(*(indices_data + l * num_rotations + k)) - 1;
