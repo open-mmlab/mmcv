@@ -8,6 +8,14 @@ void box_iou_rotated_impl(const Tensor boxes1, const Tensor boxes2, Tensor ious,
 
 void box_iou_rotated_npu(const Tensor boxes1, const Tensor boxes2, Tensor ious,
                          const int mode_flag, const bool aligned) {
+  if (mode_flag == 0 && aligned == false) {
+    auto trans = false;
+    auto is_clockwise = false;
+    auto need_iou = true;
+    EXEC_NPU_CMD(aclnnBoxesOverlapBev, boxes1, boxes2, trans, is_clockwise,
+                 need_iou, ious);
+    return;
+  }
   at::Tensor boxes = at::ones_like(boxes1);
   at::Tensor query_boxes = at::ones_like(boxes2);
   boxes = boxes1.transpose(0, 1).unsqueeze(0);
