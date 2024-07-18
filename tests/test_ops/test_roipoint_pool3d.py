@@ -3,7 +3,7 @@ import pytest
 import torch
 
 from mmcv.ops import RoIPointPool3d
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
 
 
 @pytest.mark.parametrize('device', [
@@ -14,14 +14,19 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
     pytest.param(
         'mlu',
         marks=pytest.mark.skipif(
-            not IS_MLU_AVAILABLE, reason='requires MLU support'))
+            not IS_MLU_AVAILABLE, reason='requires MLU support')),
+    pytest.param(
+        'npu',
+        marks=pytest.mark.skipif(
+            not IS_NPU_AVAILABLE, reason='requires NPU support'))
 ])
 @pytest.mark.parametrize('dtype', [
     torch.float, torch.half,
     pytest.param(
         torch.double,
         marks=pytest.mark.skipif(
-            IS_MLU_AVAILABLE, reason='MLU does not support for double'))
+            IS_MLU_AVAILABLE or IS_NPU_AVAILABLE,
+            reason='MLU and NPU does not support for double'))
 ])
 def test_roipoint(device, dtype):
     points = torch.tensor(

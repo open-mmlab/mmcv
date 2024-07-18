@@ -26,6 +26,7 @@ Tensor nms_rotated_npu(const Tensor dets, const Tensor scores,
       .Output(selectedBox)
       .Output(selectedIndex)
       .Attr("iou_threshold", (float)iou_threshold)
+      .Attr("is_angle", false)
       .Run();
   selectedIndex = selectedIndex.to(at::kLong);
   return selectedIndex;
