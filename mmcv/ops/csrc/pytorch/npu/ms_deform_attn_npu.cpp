@@ -59,7 +59,7 @@ Tensor ms_deform_attn_forward_npu(const Tensor &value,
 
   EXEC_NPU_CMD(aclnnMultiScaleDeformableAttnFunction, value_fp32,
                value_spatial_shapes_int32, value_level_start_index_int32,
-               sampling_locations_fp32, attention_weights_fp32, output)
+               sampling_locations_fp32, attention_weights_fp32, output);
 
   at::Tensor real_output = output;
   if (value.scalar_type() != at::kFloat) {
