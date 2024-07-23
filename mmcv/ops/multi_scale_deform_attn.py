@@ -366,7 +366,7 @@ class MultiScaleDeformableAttention(BaseModule):
                 f' 2 or 4, but get {reference_points.shape[-1]} instead.')
         if ((IS_CUDA_AVAILABLE and value.is_cuda)
                 or (IS_MLU_AVAILABLE and value.is_mlu)
-                or (IS_MUSA_AVAILABLE and value.is_musa)):
+                or (IS_MUSA_AVAILABLE and value.is_musa)
                 or (IS_NPU_AVAILABLE and value.device.type == 'npu')):
             output = MultiScaleDeformableAttnFunction.apply(
                 value, spatial_shapes, level_start_index, sampling_locations,
