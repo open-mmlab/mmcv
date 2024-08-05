@@ -35,7 +35,6 @@ void chamfer_distance_forward_npu(Tensor XYZ1, Tensor XYZ2, Tensor dist1,
   dist2.copy_(distf2);
 }
 
-
 void chamfer_distance_backward_npu(Tensor xyz1, Tensor xyz2, Tensor idx1,
                                    Tensor idx2, Tensor grad_dist1,
                                    Tensor grad_dist2, Tensor grad_xyz1,
