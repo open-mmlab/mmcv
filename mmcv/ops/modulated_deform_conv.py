@@ -55,7 +55,7 @@ class ModulatedDeformConv2dFunction(Function):
         conv2d_bias = bias if len(bias) > 0 else None
         sort_index_fp, sort_index_bp = \
             ModulatedDeformConv2dFunction._calculate_sort_index(
-                kernel_w, kernel_h, ctx.deform_groups)
+                kernel_h, kernel_w, ctx.deform_groups)
         select_offset = offset.index_select(1, sort_index_fp)
         offset_all = torch.cat([select_offset, mask], dim=1)
         import torch_npu
@@ -64,7 +64,7 @@ class ModulatedDeformConv2dFunction(Function):
             weight,
             offset_all,
             conv2d_bias,
-            kernel_size=[kernel_w, kernel_h],
+            kernel_size=[kernel_h, kernel_w],
             stride=[1, 1, ctx.stride[0], ctx.stride[1]],
             padding=[
                 ctx.padding[0], ctx.padding[0], ctx.padding[1], ctx.padding[1]
@@ -87,7 +87,7 @@ class ModulatedDeformConv2dFunction(Function):
         grad_input, grad_weight, grad_offset_all, grad_bias = \
             torch_npu.npu_deformable_conv2dbk(
                 input_tensor, grad_output, offset_out, weight, offset_all,
-                kernel_size=[weight.shape[3], weight.shape[2]],
+                kernel_size=[weight.shape[2], weight.shape[3]],
                 stride=[1, 1, ctx.stride[0], ctx.stride[1]],
                 padding=[ctx.padding[0], ctx.padding[0], ctx.padding[1],
                          ctx.padding[1]],
