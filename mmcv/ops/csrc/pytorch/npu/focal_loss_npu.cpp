@@ -194,6 +194,7 @@ void softmax_focal_loss_backward_npu(Tensor input, Tensor target, Tensor weight,
     weight_y = at::sum(weight_y, 1, true);
     weight_y = at::broadcast_to(weight_y, input.sizes());
   }
+  grad_input_y = grad_input_y.fill_(0);
   OpCommand cmd;
   string reduction = "none";
   cmd.Name("SoftmaxFocalLossGrad")
