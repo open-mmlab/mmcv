@@ -338,6 +338,8 @@ class GeneralizedAttention(nn.Module):
                                             position_feat_x_reshape)
                     energy_x = energy_x.permute(0, 1, 3, 2, 4).unsqueeze(4)
 
+                    proj_query_reshape = proj_query_reshape.\
+                        permute(0, 1, 3, 2, 4)
                     energy_y = torch.matmul(proj_query_reshape,
                                             position_feat_y_reshape)
                     energy_y = energy_y.unsqueeze(5)
