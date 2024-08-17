@@ -62,6 +62,7 @@ repos:
               ^test
               | ^docs
           )
+        args: ["--disable-error-code=import"]
   # - repo: local
   #   hooks:
   #     - id: clang-format

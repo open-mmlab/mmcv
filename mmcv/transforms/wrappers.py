@@ -177,12 +177,11 @@ class KeyMapper(BaseTransform):
     """
 
     def __init__(self,
-                 transforms: Union[Transform, List[Transform]] = None,
+                 transforms: Union[Transform, List[Transform], None] = None,
                  mapping: Optional[Dict] = None,
                  remapping: Optional[Dict] = None,
                  auto_remap: Optional[bool] = None,
                  allow_nonexist_keys: bool = False):
-
         super().__init__()
 
         self.allow_nonexist_keys = allow_nonexist_keys
