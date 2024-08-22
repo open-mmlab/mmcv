@@ -1,3 +1,4 @@
+#include "common_util.h"
 #include "pytorch_npu_helper.hpp"
 
 using namespace NPU_NAME_SPACE;
@@ -42,7 +43,7 @@ void roi_align_backward_npu(Tensor grad_output, Tensor rois, Tensor argmax_y,
     roi_end_mode = 0;
   }
   auto shape = grad_input.sizes();
-  c10::SmallVector<int64_t, SIZE> xdiff_shape;
+  c10::SmallVector<int64_t, 8> xdiff_shape;
   for (uint64_t i = 0; i < shape.size(); i++) {
     xdiff_shape.emplace_back(shape[i]);
   }

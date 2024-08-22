@@ -1,3 +1,4 @@
+#include "common_util.h"
 #include "pytorch_npu_helper.hpp"
 
 using namespace NPU_NAME_SPACE;
@@ -14,7 +15,7 @@ Tensor nms_npu(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
   at::Tensor max_outputsize_y =
       at::empty({}, boxes.options().dtype(at::kInt)).fill_(boxes.size(0));
 
-  c10::SmallVector<int64_t, SIZE> outputsize = {boxes.size(0)};
+  c10::SmallVector<int64_t, 8> outputsize = {boxes.size(0)};
   at::Tensor output =
       at::empty(outputsize, boxes.options().dtype(at::kInt)).fill_(-1);
   OpCommand cmd;
