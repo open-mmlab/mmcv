@@ -8,11 +8,11 @@ using namespace std;
 void knn_forward_npu(int b, int n, int m, int nsample, const Tensor xyz,
                      const Tensor new_xyz, Tensor idx, Tensor dist2) {
   // transpose known from [B, N, 3] to [B, 3, N]
-  at::Tensor source = xyz.transpose(1, 2).contiguous();
+  at::Tensor source = xyz.transpose(2, 1).contiguous();
   at::Tensor target = new_xyz.contiguous();
 
   bool is_from_knn = true;
-  EXEC_NPU_CMD(aclnnKnn, source, target, nsample, is_from_knn, idx, dist2);
+  EXEC_NPU_CMD(aclnnKnn, source, target, is_from_knn, dist2);
 }
 
 void knn_forward_impl(int b, int n, int m, int nsample, const Tensor xyz,
