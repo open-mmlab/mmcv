@@ -10,7 +10,7 @@ void three_nn_forward_npu(int b, int n, int m, const Tensor unknown,
   at::Tensor source = known.contiguous();
   at::Tensor target = unknown.contiguous();
   auto originDtype = source.scalar_type();
-  
+
   bool is_from_knn = false;
   EXEC_NPU_CMD(aclnnKnn, source, target, is_from_knn, dist2);
 }
