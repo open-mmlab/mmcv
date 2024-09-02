@@ -861,7 +861,7 @@ class MultiScaleFlipAug(BaseTransform):
 
                 inputs.append(packed_results['inputs'])  # type: ignore
                 data_samples.append(
-                    packed_results['data_sample'])  # type: ignore
+                    packed_results['data_samples'])  # type: ignore
         return dict(inputs=inputs, data_sample=data_samples)
 
     def __repr__(self) -> str:
