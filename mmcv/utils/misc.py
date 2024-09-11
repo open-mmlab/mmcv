@@ -8,6 +8,7 @@ from collections import abc
 from importlib import import_module
 from inspect import getfullargspec
 from itertools import repeat
+import platform
 
 
 # From PyTorch internals
@@ -251,10 +252,16 @@ def _check_py_package(package):
 
 
 def _check_executable(cmd):
-    if subprocess.call(f'which {cmd}', shell=True) != 0:
-        return False
-    else:
-        return True
+    if platform.system() == 'Linux':
+        if subprocess.call(f'which {cmd}', shell=True) != 0:
+            return False
+        else:
+            return True
+    if platform.system() == 'Windows':
+        if subprocess.call(f'where {cmd}', shell=True) != 0:
+            return False
+        else:
+            return True
 
 
 def requires_package(prerequisites):
