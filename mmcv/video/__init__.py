@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .io import Cache, VideoReader, frames2video
+from .mm_io import Cache, VideoReader, frames2video
 from .optflow import (dequantize_flow, flow_from_bytes, flow_warp, flowread,
                       flowwrite, quantize_flow, sparse_flow_from_bytes)
 from .processing import concat_video, convert_video, cut_video, resize_video
