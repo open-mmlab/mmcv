@@ -208,6 +208,15 @@ void roi_align_backward(Tensor grad_output, Tensor rois, Tensor argmax_y,
                         int aligned_width, float spatial_scale,
                         int sampling_ratio, int pool_mode, bool aligned);
 
+void roi_align_rotated_v2_forward(Tensor input, Tensor rois, Tensor output,
+                               double spatial_scale, int sampling_ratio,
+                               int aligned_height, int aligned_width,
+                               bool aligned, bool clockwise);
+
+void roi_align_rotated_v2_backward(Tensor input, Tensor rois, Tensor grad_output, Tensor grad_input,
+                               int pooled_height, int pooled_width, double spatial_scale,
+                               int sampling_ratio, bool aligned, bool clockwise);
+
 void roi_pool_forward(Tensor input, Tensor rois, Tensor output, Tensor argmax,
                       int pooled_height, int pooled_width, float spatial_scale);
 
@@ -792,6 +801,16 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("grad_output"), py::arg("pooled_height"),
         py::arg("pooled_width"), py::arg("spatial_scale"),
         py::arg("sampling_ratio"), py::arg("aligned"), py::arg("clockwise"));
+  m.def("roi_align_rotated_v2_forward", &roi_align_rotated_v2_forward,
+        "roi_align_rotated_v2_forward", py::arg("input"), py::arg("rois"),
+        py::arg("output"), py::arg("spatial_scale"), py::arg("sampling_ratio"),
+        py::arg("pooled_height"), py::arg("pooled_width"),
+        py::arg("aligned"), py::arg("clockwise"));
+  m.def("roi_align_rotated_v2_backward", &roi_align_rotated_v2_backward,
+        "roi_align_rotated_v2_backward", py::arg("input"), py::arg("rois"),
+        py::arg("grad_output"), py::arg("grad_input"), py::arg("pooled_height"),
+        py::arg("pooled_width"), py::arg("spatial_scale"), py::arg("sampling_ratio"),
+        py::arg("aligned"), py::arg("clockwise"));
   m.def("dynamic_point_to_voxel_forward", &dynamic_point_to_voxel_forward,
         "dynamic_point_to_voxel_forward", py::arg("feats"), py::arg("coors"),
         py::arg("reduce_type"));
