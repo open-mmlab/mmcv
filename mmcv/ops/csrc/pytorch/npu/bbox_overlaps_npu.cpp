@@ -25,7 +25,7 @@ void bbox_overlaps_npu(const Tensor bboxes1, const Tensor bboxes2, Tensor ious,
     bboxesFP32 = bboxesFP32.to(at::kFloat);
     gtboxesFP32 = gtboxesFP32.to(at::kFloat);
   }
-  c10::SmallVector<int64_t, SIZE> iousSize = {gtboxesFP32.size(0),
+  c10::SmallVector<int64_t, 8> iousSize = {gtboxesFP32.size(0),
                                               bboxesFP32.size(0)};
   if (aligned) {
     iousSize = {gtboxesFP32.size(0), 1};
