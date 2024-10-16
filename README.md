@@ -137,7 +137,7 @@ you may first refer to this [Frequently Asked Questions](https://mmcv.readthedoc
 
 If you face installation problems or runtime issues, you may first refer to this [Frequently Asked Questions](https://mmcv.readthedocs.io/en/latest/faq.html) to see if there is a solution. If the problem is still not solved, feel free to open an [issue](https://github.com/open-mmlab/mmcv/issues).
 
-If you face some installation issues with ROCm build, you may first refer to [this](https://github.com/Looong01/mmcv-rocm-build/issues).
+If you face some installation issues with ROCm build, you may first refer to [this](https://github.com/Looong01/mmcv-rocm-build/issues) to see if there is a solution or feel free to open an [issue](https://github.com/Looong01/mmcv-rocm-build/issues) if not.
 
 ## Citation
 

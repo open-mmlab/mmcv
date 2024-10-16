@@ -154,7 +154,7 @@ mim install mmcv-lite
 
 如果你遇到了安装问题或者运行时问题，请查看[问题解决页面](https://mmcv.readthedocs.io/zh_CN/latest/faq.html)是否已有解决方案。如果问题仍然没有解决，欢迎提 [issue](https://github.com/open-mmlab/mmcv/issues)。
 
-如果您在使用 ROCm 构建时遇到一些安装问题，你可以先参考 [这里](https://github.com/Looong01/mmcv-rocm-build/issues)。
+如果您在使用 ROCm 构建时遇到一些安装问题，你可以先参考 [这里](https://github.com/Looong01/mmcv-rocm-build/issues)是否已有解决方案。如果问题仍然没有解决，欢迎提 [issue](https://github.com/Looong01/mmcv-rocm-build/issues)。
 
 ## 贡献指南
 
