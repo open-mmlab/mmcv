@@ -103,7 +103,7 @@ Looking in links: https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/inde
 Collecting mmcv<br />
 <b>Downloading https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/mmcv-2.0.0-cp38-cp38-manylinux1_x86_64.whl</b>
   
-  
+
 ###### 2. For ROCm pre-built packages:  
 The external [`mmcv-rocm-build` repository](https://github.com/Looong01/mmcv-rocm-build) provides wheels and detailed instructions on how to install MMCV for ROCm.
 If you have any questions about it, please open an issue [here](https://github.com/Looong01/mmcv-rocm-build/issues).
@@ -135,9 +135,9 @@ mim install mmcv-lite
 If you face some installation issues, CUDA related issues or RuntimeErrors,
 you may first refer to this [Frequently Asked Questions](https://mmcv.readthedocs.io/en/latest/faq.html).
 
-If you face some installation issues with ROCm build, you may first refer to [this](https://github.com/Looong01/mmcv-rocm-build/issues).
-
 If you face installation problems or runtime issues, you may first refer to this [Frequently Asked Questions](https://mmcv.readthedocs.io/en/latest/faq.html) to see if there is a solution. If the problem is still not solved, feel free to open an [issue](https://github.com/open-mmlab/mmcv/issues).
+
+If you face some installation issues with ROCm build, you may first refer to [this](https://github.com/Looong01/mmcv-rocm-build/issues).
 
 ## Citation
 
