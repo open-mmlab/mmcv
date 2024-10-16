@@ -71,10 +71,10 @@ Note: MMCV requires Python 3.7+.
 
 There are two versions of MMCV:
 
-- **mmcv**: comprehensive, with full features and various CUDA ops out of the box. It takes longer time to build.
-- **mmcv-lite**: lite, without CUDA ops but all other features, similar to mmcv\<1.0.0. It is useful when you do not need those CUDA ops.
+- **mmcv**: comprehensive, with full features and various CUDA/hip(ROCm) ops out of the box. It takes longer time to build.
+- **mmcv-lite**: lite, without CUDA/hip(ROCm) ops but all other features, similar to mmcv\<1.0.0. It is useful when you do not need those CUDA/hip(ROCm) ops.
 
-**Note**: Do not install both versions in the same environment, otherwise you may encounter errors like `ModuleNotFound`. You need to uninstall one before installing the other. `Installing the full version is highly recommended if CUDA is available`.
+**Note**: Do not install both versions in the same environment, otherwise you may encounter errors like `ModuleNotFound`. You need to uninstall one before installing the other. `Installing the full version is highly recommended if CUDA/hip(ROCm) is available`.
 
 ### Install mmcv
 
@@ -93,14 +93,19 @@ If you need to specify the version of mmcv, you can use the following command:
 mim install mmcv==2.0.0
 ```
 
-If you find that the above installation command does not use a pre-built package ending with `.whl` but a source package ending with `.tar.gz`, you may not have a pre-build package corresponding to the PyTorch or CUDA or mmcv version, in which case you can [build mmcv from source](https://mmcv.readthedocs.io/en/latest/get_started/build.html).
+If you find that the above installation command does not use a pre-built package ending with `.whl` but a source package ending with `.tar.gz`, you may not have a pre-build package corresponding to the PyTorch or CUDA/hip(ROCm) or mmcv version, in which case you can [build mmcv from source](https://mmcv.readthedocs.io/en/latest/get_started/build.html).
 
 <details>
 <summary>Installation log using pre-built packages</summary>
 
+For CUDA pre-built packages
 Looking in links: https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html<br />
 Collecting mmcv<br />
 <b>Downloading https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/mmcv-2.0.0-cp38-cp38-manylinux1_x86_64.whl</b>
+  
+For ROCm pre-built packages:  
+The external [`mmcv-rocm-build` repository](https://github.com/Looong01/mmcv-rocm-build) provides wheels and detailed instructions on how to install MMCV for ROCm.
+If you have any questions about it, please open an issue [here](https://github.com/Looong01/mmcv-rocm-build/issues).
 
 </details>
 
@@ -128,6 +133,8 @@ mim install mmcv-lite
 
 If you face some installation issues, CUDA related issues or RuntimeErrors,
 you may first refer to this [Frequently Asked Questions](https://mmcv.readthedocs.io/en/latest/faq.html).
+
+If you face some installation issues with ROCm build, you may first refer to [this](https://github.com/Looong01/mmcv-rocm-build/issues).
 
 If you face installation problems or runtime issues, you may first refer to this [Frequently Asked Questions](https://mmcv.readthedocs.io/en/latest/faq.html) to see if there is a solution. If the problem is still not solved, feel free to open an [issue](https://github.com/open-mmlab/mmcv/issues).
 
