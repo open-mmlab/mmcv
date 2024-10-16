@@ -117,7 +117,7 @@ mim install mmcv==2.0.0
 
 <details>
 <summary>使用预编译包的安装日志</summary>
-
+  
 对于CUDA构建的预编译包
 Looking in links: https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html<br />
 Collecting mmcv<br />

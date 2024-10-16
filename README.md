@@ -97,7 +97,7 @@ If you find that the above installation command does not use a pre-built package
 
 <details>
 <summary>Installation log using pre-built packages</summary>
-
+  
 For CUDA pre-built packages
 Looking in links: https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html<br />
 Collecting mmcv<br />
