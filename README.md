@@ -98,12 +98,13 @@ If you find that the above installation command does not use a pre-built package
 <details>
 <summary>Installation log using pre-built packages</summary>
   
-For CUDA pre-built packages
+###### 1. For CUDA pre-built packages
 Looking in links: https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html<br />
 Collecting mmcv<br />
 <b>Downloading https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/mmcv-2.0.0-cp38-cp38-manylinux1_x86_64.whl</b>
   
-For ROCm pre-built packages:  
+  
+###### 2. For ROCm pre-built packages:  
 The external [`mmcv-rocm-build` repository](https://github.com/Looong01/mmcv-rocm-build) provides wheels and detailed instructions on how to install MMCV for ROCm.
 If you have any questions about it, please open an issue [here](https://github.com/Looong01/mmcv-rocm-build/issues).
 

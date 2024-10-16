@@ -118,12 +118,13 @@ mim install mmcv==2.0.0
 <details>
 <summary>使用预编译包的安装日志</summary>
   
-对于CUDA构建的预编译包
+###### 1. 对于CUDA构建的预编译包:  
 Looking in links: https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html<br />
 Collecting mmcv<br />
 <b>Downloading https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/mmcv-2.0.0-cp38-cp38-manylinux1_x86_64.whl</b>
   
-对于 ROCm 构建的预编译包： 
+
+###### 2. 对于 ROCm 构建的预编译包:  
 一个外部 [`mmcv-rocm-build` 仓库](https://github.com/Looong01/mmcv-rocm-build) 提供了如何为 ROCm 安装 MMCV 的 wheels 和详细说明。
 如果您对此有任何疑问，请在 [这里](https://github.com/Looong01/mmcv-rocm-build/issues) 打开一个 issue。
 
