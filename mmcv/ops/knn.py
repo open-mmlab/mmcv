@@ -63,17 +63,10 @@ class KNN(Function):
         N = xyz.shape[1]
 
         if xyz.device.type == 'npu':
-            dist = center_xyz.new_zeros((B, npoint, N)).float()
+            dist2 = center_xyz.new_zeros((B, npoint, k)).float()
+            idx = center_xyz.new_zeros((B, npoint, k)).int()
             ext_module.knn_forward(
-                xyz,
-                center_xyz,
-                torch.Tensor([]).npu(),
-                dist,
-                b=B,
-                n=N,
-                m=npoint,
-                nsample=k)
-            dist2, idx = torch.topk(dist, k, dim=2, largest=False, sorted=True)
+                xyz, center_xyz, idx, dist2, b=B, n=N, m=npoint, nsample=k)
             zeros_idx = torch.zeros(
                 xyz.shape[0], center_xyz.shape[1], k, dtype=torch.int32).npu()
             idx.where(dist2 >= 1e10, zeros_idx)

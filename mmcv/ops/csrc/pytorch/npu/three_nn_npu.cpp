@@ -11,7 +11,8 @@ void three_nn_forward_npu(int b, int n, int m, const Tensor unknown,
   at::Tensor target = unknown.contiguous();
 
   bool is_from_knn = false;
-  EXEC_NPU_CMD(aclnnKnn, source, target, is_from_knn, dist2);
+  int nsample = 3;
+  EXEC_NPU_CMD(aclnnKnn, source, target, is_from_knn, nsample, dist2, idx);
 }
 
 void three_nn_forward_impl(int b, int n, int m, const Tensor unknown,
