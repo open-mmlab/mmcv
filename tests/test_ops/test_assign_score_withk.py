@@ -6,15 +6,15 @@ from mmcv.ops import assign_score_withk
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
 
 
-@pytest.mark.parametrize('device', [
+@pytest.mark.parametrize("device", [
     pytest.param(
-        'cuda',
+        "cuda",
         marks=pytest.mark.skipif(
-            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+            not IS_CUDA_AVAILABLE, reason="requires CUDA support")),
     pytest.param(
-        'npu',
+        "npu",
         marks=pytest.mark.skipif(
-            not IS_NPU_AVAILABLE, reason='requires NPU support'))
+            not IS_NPU_AVAILABLE, reason="requires NPU support"))
 ])
 def test_paconv_assign_scores(device):
     scores = torch.tensor([[[[0.06947571, 0.6065746], [0.28462553, 0.8378516],
@@ -94,14 +94,14 @@ def test_paconv_assign_scores(device):
                              [[0.5274848, 0.82096446, 0.9415489, 0.7123748],
                               [0.7537517, 0.8086482, 0.85345286,
                                0.7472754]]]], device=device).float()
-    if device == 'cuda':
+    if device == "cuda":
         points.requires_grad_()
         scores.requires_grad_()
         centers.requires_grad_()
     knn_idx = torch.tensor(
         [[[6, 7, 4, 6], [2, 4, 2, 4]],
          [[7, 1, 3, 2], [6, 0, 2, 6]]], device=device).long()
-    aggregate = 'sum'
+    aggregate = "sum"
     expected_output = torch.tensor(
         [[[[-0.08134781, 0.03877336, -0.8212776, -0.2869547],
            [-0.23378491, -0.24112664, -0.1600166, -0.4121864]],
