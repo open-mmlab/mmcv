@@ -12,7 +12,7 @@ void knn_forward_npu(int b, int n, int m, int nsample, const Tensor xyz,
   at::Tensor target = new_xyz.contiguous();
 
   bool is_from_knn = true;
-  EXEC_NPU_CMD(aclnnKnn, source, target, is_from_knn, dist2);
+  EXEC_NPU_CMD(aclnnKnn, source, target, is_from_knn, nsample, dist2, idx);
 }
 
 void knn_forward_impl(int b, int n, int m, int nsample, const Tensor xyz,
