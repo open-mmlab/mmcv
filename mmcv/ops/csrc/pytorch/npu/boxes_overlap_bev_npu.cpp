@@ -6,7 +6,7 @@ using namespace std;
 void iou3d_boxes_overlap_bev_forward_impl(const int num_a, const Tensor boxes_a,
                                           const int num_b, const Tensor boxes_b,
                                           Tensor ans_overlap);
-                
+
 void iou3d_boxes_overlap_bev_forward_npu(const int num_a, const Tensor boxes_a,
                                          const int num_b, const Tensor boxes_b,
                                          Tensor ans_overlap) {
