@@ -449,7 +449,9 @@ if IS_MLU_AVAILABLE:
 
     @MODELS.register_module('DCN', force=True)
     class DeformConv2dPack_MLU(DeformConv2d):
-        """This class is the DCN implementation of the MLU device. The MLU
+        """This class is the DCN implementation of the MLU device.
+
+        The MLU
         backend support of the operator has been implemented in torchvision.
         The mmcv registration mechanism is used for multiplexing here. The
         torchvision implementation of DCN is called.

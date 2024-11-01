@@ -6,7 +6,7 @@ import torch
 
 def scatter_nd(indices: torch.Tensor, updates: torch.Tensor,
                shape: torch.Tensor) -> torch.Tensor:
-    """pytorch edition of tensorflow scatter_nd.
+    """Pytorch edition of tensorflow scatter_nd.
 
     this function don't contain except handle code. so use this carefully when
     indice repeats, don't support repeat add which is supported in tensorflow.
