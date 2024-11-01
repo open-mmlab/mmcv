@@ -56,6 +56,7 @@ from .psa_mask import PSAMask
 from .riroi_align_rotated import RiRoIAlignRotated, riroi_align_rotated
 from .roi_align import RoIAlign, roi_align
 from .roi_align_rotated import RoIAlignRotated, roi_align_rotated
+from .roi_align_rotated_v2 import RoIAlignRotatedV2, roi_align_rotated_v2
 from .roi_pool import RoIPool, roi_pool
 from .roiaware_pool3d import RoIAwarePool3d
 from .roipoint_pool3d import RoIPointPool3d
@@ -92,23 +93,24 @@ __all__ = [
     'knn', 'ball_query', 'upfirdn2d', 'FusedBiasLeakyReLU',
     'fused_bias_leakyrelu', 'rotated_feature_align', 'RiRoIAlignRotated',
     'riroi_align_rotated', 'RoIAlignRotated', 'roi_align_rotated',
-    'pixel_group', 'QueryAndGroup', 'GroupAll', 'grouping_operation',
-    'contour_expand', 'three_nn', 'three_interpolate',
-    'MultiScaleDeformableAttention', 'BorderAlign', 'border_align',
-    'gather_points', 'furthest_point_sample', 'nms_quadri',
-    'furthest_point_sample_with_dist', 'PointsSampler', 'Correlation',
-    'boxes_iou3d', 'boxes_iou_bev', 'boxes_overlap_bev', 'nms_bev',
-    'nms_normal_bev', 'nms3d', 'nms3d_normal', 'Voxelization', 'voxelization',
-    'dynamic_scatter', 'DynamicScatter', 'RoIAwarePool3d', 'SparseConv2d',
-    'SparseConv3d', 'SparseConvTranspose2d', 'SparseConvTranspose3d',
-    'SparseInverseConv2d', 'SparseInverseConv3d', 'SubMConv2d', 'SubMConv3d',
-    'SparseModule', 'SparseSequential', 'SparseMaxPool2d', 'SparseMaxPool3d',
-    'SparseConvTensor', 'scatter_nd', 'points_in_boxes_part',
-    'points_in_boxes_cpu', 'points_in_boxes_all', 'points_in_polygons',
-    'min_area_polygons', 'active_rotated_filter', 'convex_iou', 'convex_giou',
-    'diff_iou_rotated_2d', 'diff_iou_rotated_3d', 'chamfer_distance',
-    'PrRoIPool', 'prroi_pool', 'bias_act', 'filtered_lrelu', 'conv2d',
-    'conv_transpose2d', 'filter2d', 'upsample2d', 'BezierAlign', 'bezier_align'
+    'RoIAlignRotatedV2', 'roi_align_rotated_v2', 'pixel_group',
+    'QueryAndGroup', 'GroupAll', 'grouping_operation', 'contour_expand',
+    'three_nn', 'three_interpolate', 'MultiScaleDeformableAttention',
+    'BorderAlign', 'border_align', 'gather_points', 'furthest_point_sample',
+    'nms_quadri', 'furthest_point_sample_with_dist', 'PointsSampler',
+    'Correlation', 'boxes_iou3d', 'boxes_iou_bev', 'boxes_overlap_bev',
+    'nms_bev', 'nms_normal_bev', 'nms3d', 'nms3d_normal', 'Voxelization',
+    'voxelization', 'dynamic_scatter', 'DynamicScatter', 'RoIAwarePool3d',
+    'SparseConv2d', 'SparseConv3d', 'SparseConvTranspose2d',
+    'SparseConvTranspose3d', 'SparseInverseConv2d', 'SparseInverseConv3d',
+    'SubMConv2d', 'SubMConv3d', 'SparseModule', 'SparseSequential',
+    'SparseMaxPool2d', 'SparseMaxPool3d', 'SparseConvTensor', 'scatter_nd',
+    'points_in_boxes_part', 'points_in_boxes_cpu', 'points_in_boxes_all',
+    'points_in_polygons', 'min_area_polygons', 'active_rotated_filter',
+    'convex_iou', 'convex_giou', 'diff_iou_rotated_2d', 'diff_iou_rotated_3d',
+    'chamfer_distance', 'PrRoIPool', 'prroi_pool', 'bias_act',
+    'filtered_lrelu', 'conv2d', 'conv_transpose2d', 'filter2d', 'upsample2d',
+    'BezierAlign', 'bezier_align'
 ]
 
 if IS_MLU_AVAILABLE:
