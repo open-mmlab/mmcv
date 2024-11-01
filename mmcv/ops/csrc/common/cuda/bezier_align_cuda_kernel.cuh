@@ -222,9 +222,9 @@ __global__ void bezier_align_backward_cuda_kernel(
           atomicAdd(offset_bottom_diff + y_high * width + x_high,
                     static_cast<T>(g4));
         }  // if
-      }    // ix
-    }      // iy
-  }        // CUDA_1D_KERNEL_LOOP
+      }  // ix
+    }  // iy
+  }  // CUDA_1D_KERNEL_LOOP
 }  // BezierAlignBackward
 
 #endif  // BEZIER_ALIGN_CUDA_KERNEL_CUH

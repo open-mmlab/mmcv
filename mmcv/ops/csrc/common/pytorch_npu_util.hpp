@@ -468,7 +468,7 @@ void ReleaseConvertTypes(Tuple &t) {
 }
 
 template <typename... Ts>
-constexpr auto ConvertTypes(Ts &... args) {
+constexpr auto ConvertTypes(Ts &...args) {
   return std::make_tuple(ConvertType(args)...);
 }
 
@@ -506,7 +506,7 @@ void AddParamToBuf(const string &);
 void AddParamToBuf();
 
 template <typename T, typename... Args>
-void AddParamToBuf(const T &arg, Args &... args) {
+void AddParamToBuf(const T &arg, Args &...args) {
   AddParamToBuf(arg);
   AddParamToBuf(args...);
 }
