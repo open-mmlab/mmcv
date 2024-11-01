@@ -43,6 +43,7 @@ repos:
           - mdformat_frontmatter
           - linkify-it-py
   - repo: https://gitee.com/openmmlab/mirrors-docformatter
+    # TODO:https://github.com/PyCQA/docformatter/issues/289
     rev: v1.3.1
     hooks:
       - id: docformatter
