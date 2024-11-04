@@ -18,7 +18,7 @@ void three_nn_forward_npu(int b, int n, int m, const Tensor unknown,
 
   bool is_from_knn = false;
   uint32_t nsample = 3;
-  EXEC_NPU_CMD(aclnnKnn, source, target, nsample, is_from_knn, idx, dist2);
+  EXEC_NPU_CMD(aclnnKnn, source, target, is_from_knn, nsample, dist2, idx);
   if (originDtype == at::kHalf) {
     dist2 = dist2.to(at::kHalf);
   }
