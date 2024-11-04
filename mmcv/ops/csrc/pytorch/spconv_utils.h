@@ -35,7 +35,7 @@ struct TorchGPU : public tv::GPU {
 
 template <typename scalar_t>
 void check_torch_dtype(const torch::Tensor &tensor) {
-  switch (tensor.type().scalarType()) {
+  switch (tensor.scalar_type()) {
     case at::ScalarType::Double: {
       auto val = std::is_same<std::remove_const_t<scalar_t>, double>::value;
       TV_ASSERT_RT_ERR(val, "error");
