@@ -149,8 +149,8 @@ def dequantize_flow(dx: np.ndarray,
     dx, dy = (dequantize(d, -max_val, max_val, 255) for d in [dx, dy])
 
     if denorm:
-        dx *= dx.shape[1]
-        dy *= dx.shape[0]
+        dx *= dx.shape[1]  # type: ignore
+        dy *= dx.shape[0]  # type: ignore
     flow = np.dstack((dx, dy))
     return flow
 

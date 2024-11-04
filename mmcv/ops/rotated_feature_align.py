@@ -17,9 +17,9 @@ class RotatedFeatureAlignFunction(Function):
     correspond to the refined rotate anchors and reconstruct the feature maps
     in pixel-wise manner to achieve feature alignment.
 
-    The details are described in the paper
-    `R3Det: Refined Single-Stage Detector with Feature Refinement for Rotating
-    Object <https://arxiv.org/abs/1908.05612>`_.
+    The details are described in the paper `R3Det: Refined Single-Stage
+    Detector with Feature Refinement for Rotating Object
+    <https://arxiv.org/abs/1908.05612>`_.
     """
 
     @staticmethod

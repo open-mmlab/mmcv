@@ -47,16 +47,15 @@ def _mean_update(vals: Union[int, List], m_vals: Union[int, List],
 
 
 class SparseModule(nn.Module):
-    """place holder, All module subclass from this will take sptensor in
+    """Place holder, All module subclass from this will take sptensor in
     SparseSequential."""
     pass
 
 
 class SparseSequential(SparseModule):
-    r"""A sequential container.
-    Modules will be added to it in the order they are passed in the
-    constructor.
-    Alternatively, an ordered dict of modules can also be passed in.
+    r"""A sequential container. Modules will be added to it in the order they
+    are passed in the constructor. Alternatively, an ordered dict of modules
+    can also be passed in.
 
     To make it easier to understand, given is a small example::
 
@@ -189,14 +188,14 @@ class SparseSequential(SparseModule):
 
 
 class ToDense(SparseModule):
-    """convert SparseConvTensor to NCHW dense tensor."""
+    """Convert SparseConvTensor to NCHW dense tensor."""
 
     def forward(self, x: SparseConvTensor):
         return x.dense()
 
 
 class RemoveGrid(SparseModule):
-    """remove pre-allocated grid buffer."""
+    """Remove pre-allocated grid buffer."""
 
     def forward(self, x: SparseConvTensor):
         x.grid = None

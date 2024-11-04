@@ -234,9 +234,9 @@ __global__ void riroi_align_rotated_backward_cuda_kernel(
                     g4 * l_var);
 
         }  // if
-      }    // ix
-    }      // iy
-  }        // CUDA_1D_KERNEL_LOOP
+      }  // ix
+    }  // iy
+  }  // CUDA_1D_KERNEL_LOOP
 }  // RiRoIAlignBackward
 
 #endif  // RIROI_ALIGN_ROTATED_CUDA_KERNEL_CUH

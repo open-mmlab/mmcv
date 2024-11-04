@@ -40,7 +40,7 @@ void assigner(TT &src, std::vector<int> counter, std::vector<scalar_t> &arg) {
 
 template <int Idx, class TT, class scalar_t, class... TArgs>
 void assigner(TT &src, std::vector<int> counter, std::vector<scalar_t> &arg,
-              std::vector<TArgs> &... args) {
+              std::vector<TArgs> &...args) {
   std::get<Idx>(src) = arg[counter[Idx]];
   assigner<Idx + 1>(src, counter, args...);
 }
