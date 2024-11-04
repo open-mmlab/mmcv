@@ -39,11 +39,12 @@ class _DynamicScatter(Function):
         ctx.device = feats.device.type
         if ctx.device == 'npu':
             import ads_c
-            voxel_idx = ads_c.point_to_voxel(coors, [], [])
+            voxel_idx = ads_c.point_to_voxel(coors, [], [], 'XYZ')
             unique_res = ads_c.unique_voxel(voxel_idx)
             num_voxels, uniqued_voxel_idx, prefix_sum, \
                 argsort_coor, _ = unique_res
-            voxel_coors = ads_c.voxel_to_point(uniqued_voxel_idx, [], [])
+            voxel_coors = \
+                ads_c.voxel_to_point(uniqued_voxel_idx, [], [], 'XYZ')
             voxel_feats, \
                 compare_mask = ads_c.npu_dynamic_scatter(feats, coors,
                                                          prefix_sum,
