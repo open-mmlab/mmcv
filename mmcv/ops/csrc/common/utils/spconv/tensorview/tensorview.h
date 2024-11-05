@@ -108,7 +108,7 @@ struct CPU {};
 template <typename scalar_t, size_t MaxDim = TV_MAX_DIM>
 struct SimpleVector {
  public:
-  TV_HOST_DEVICE_INLINE SimpleVector(){};
+  TV_HOST_DEVICE_INLINE SimpleVector() {};
   TV_HOST_DEVICE_INLINE SimpleVector(std::initializer_list<scalar_t> q) {
     TV_ASSERT(q.size() <= MaxDim);
     mSize = 0;
@@ -315,7 +315,7 @@ struct Slice {
 
 template <size_t MaxDim = TV_MAX_DIM>
 struct ShapeBase : public SimpleVector<int, MaxDim> {
-  TV_HOST_DEVICE_INLINE ShapeBase() : SimpleVector<int, MaxDim>(){};
+  TV_HOST_DEVICE_INLINE ShapeBase() : SimpleVector<int, MaxDim>() {};
   TV_HOST_DEVICE_INLINE ShapeBase(std::initializer_list<int> shape)
       : SimpleVector<int, MaxDim>(shape) {}
 

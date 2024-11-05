@@ -208,6 +208,17 @@ void roi_align_backward(Tensor grad_output, Tensor rois, Tensor argmax_y,
                         int aligned_width, float spatial_scale,
                         int sampling_ratio, int pool_mode, bool aligned);
 
+void roi_align_rotated_v2_forward(Tensor input, Tensor rois, Tensor output,
+                                  double spatial_scale, int sampling_ratio,
+                                  int aligned_height, int aligned_width,
+                                  bool aligned, bool clockwise);
+
+void roi_align_rotated_v2_backward(Tensor input, Tensor rois,
+                                   Tensor grad_output, Tensor grad_input,
+                                   int pooled_height, int pooled_width,
+                                   double spatial_scale, int sampling_ratio,
+                                   bool aligned, bool clockwise);
+
 void roi_pool_forward(Tensor input, Tensor rois, Tensor output, Tensor argmax,
                       int pooled_height, int pooled_width, float spatial_scale);
 

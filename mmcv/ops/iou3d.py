@@ -42,7 +42,7 @@ def boxes_iou3d(boxes_a: Tensor, boxes_b: Tensor) -> Tensor:
     Returns:
         torch.Tensor: 3D IoU result with shape (M, N).
     """
-    assert boxes_a.shape[1] == boxes_b.shape[1] == 7,\
+    assert boxes_a.shape[1] == boxes_b.shape[1] == 7, \
         'Input boxes shape should be (N, 7)'
 
     boxes_a_height_max = (boxes_a[:, 2] + boxes_a[:, 5] / 2).view(-1, 1)

@@ -20,7 +20,7 @@ class _DynamicScatter(Function):
                 feats: torch.Tensor,
                 coors: torch.Tensor,
                 reduce_type: str = 'max') -> Tuple[torch.Tensor, torch.Tensor]:
-        """convert kitti points(N, >=3) to voxels.
+        """Convert kitti points(N, >=3) to voxels.
 
         Args:
             feats (torch.Tensor): [N, C]. Points features to be reduced

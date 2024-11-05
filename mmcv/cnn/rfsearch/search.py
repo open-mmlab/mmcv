@@ -71,7 +71,7 @@ class RFSearchHook(Hook):
         self.by_epoch = by_epoch
 
     def init_model(self, model: nn.Module):
-        """init model with search ability.
+        """Init model with search ability.
 
         Args:
             model (nn.Module): pytorch model
@@ -132,7 +132,7 @@ class RFSearchHook(Hook):
             )
 
     def estimate_and_expand(self, model: nn.Module) -> None:
-        """estimate and search for RFConvOp.
+        """Estimate and search for RFConvOp.
 
         Args:
             model (nn.Module): pytorch model
@@ -146,7 +146,7 @@ class RFSearchHook(Hook):
                    model: nn.Module,
                    search_op: str = 'Conv2d',
                    prefix: str = '') -> None:
-        """wrap model to support searchable conv op.
+        """Wrap model to support searchable conv op.
 
         Args:
             model (nn.Module): pytorch model
@@ -187,7 +187,7 @@ class RFSearchHook(Hook):
                   search_op: str = 'Conv2d',
                   init_rates: Optional[int] = None,
                   prefix: str = '') -> None:
-        """set model based on config.
+        """Set model based on config.
 
         Args:
             model (nn.Module): pytorch model

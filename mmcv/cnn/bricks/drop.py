@@ -13,7 +13,8 @@ def drop_path(x: torch.Tensor,
     residual blocks).
 
     We follow the implementation
-    https://github.com/rwightman/pytorch-image-models/blob/a2727c1bf78ba0d7b5727f5f95e37fb7f8866b1f/timm/models/layers/drop.py  # noqa: E501
+    https://github.com/rwightman/pytorch-image-models/blob/a2727c1bf78ba0d7b5727f5f95e37fb7f8866b1f/timm/models/layers/drop.py
+    # noqa: E501
     """
     if drop_prob == 0. or not training:
         return x

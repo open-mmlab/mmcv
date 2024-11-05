@@ -1,3 +1,4 @@
+#include "common_util.h"
 #include "pytorch_npu_helper.hpp"
 
 using namespace NPU_NAME_SPACE;
@@ -11,7 +12,7 @@ Tensor nms_rotated_npu(const Tensor dets, const Tensor scores,
     detsCast = detsCast.to(at::kFloat);
     scoresCast = scoresCast.to(at::kFloat);
   }
-  c10::SmallVector<int64_t, SIZE> selectedIndexSize = {dets.size(0)};
+  c10::SmallVector<int64_t, 8> selectedIndexSize = {dets.size(0)};
 
   at::Tensor selectedBox = at::empty_like(dets);
   at::Tensor selectedIndex =
@@ -27,6 +28,7 @@ Tensor nms_rotated_npu(const Tensor dets, const Tensor scores,
       .Output(selectedBox)
       .Output(selectedIndex)
       .Attr("iou_threshold", (float)iou_threshold)
+      .Attr("is_angle", false)
       .Run();
   selectedIndex = selectedIndex.to(at::kLong);
   return selectedIndex;

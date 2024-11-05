@@ -1,3 +1,4 @@
+#include "common_util.h"
 #include "pytorch_npu_helper.hpp"
 
 using namespace NPU_NAME_SPACE;
@@ -32,7 +33,7 @@ void roi_align_rotated_backward_npu(Tensor top_grad, Tensor rois,
   int64_t aligned_height_64 = aligned_height;
   int64_t aligned_width_64 = aligned_width;
   int64_t sampling_ratio_64 = sampling_ratio;
-  c10::SmallVector<int64_t, SIZE> y_grad_shape;
+  c10::SmallVector<int64_t, 8> y_grad_shape;
   auto shape = bottom_grad.sizes();
   for (uint64_t i = 0; i < shape.size(); i++) {
     y_grad_shape.emplace_back(shape[i]);

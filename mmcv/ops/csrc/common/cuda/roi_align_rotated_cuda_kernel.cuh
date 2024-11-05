@@ -194,9 +194,9 @@ __global__ void roi_align_rotated_backward_cuda_kernel(
           atomicAdd(offset_bottom_diff + y_high * width + x_low, g3);
           atomicAdd(offset_bottom_diff + y_high * width + x_high, g4);
         }  // if
-      }    // ix
-    }      // iy
-  }        // CUDA_1D_KERNEL_LOOP
+      }  // ix
+    }  // iy
+  }  // CUDA_1D_KERNEL_LOOP
 }  // RoIAlignBackward
 
 #endif  // ROI_ALIGN_ROTATED_CUDA_KERNEL_CUH
