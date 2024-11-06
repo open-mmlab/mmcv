@@ -10,6 +10,36 @@ from ..utils import ext_loader
 ext_module = ext_loader.load_ext('_ext', ['pixel_group'])
 
 
+def estimate_confidence(label: torch.Tensor, score: torch.Tensor,
+                        label_num: int) -> List[List[float]]:
+
+    import torch_npu
+    point_vector = torch.zeros((label_num, 2),
+                               dtype=torch.float32).to(score.device)
+
+    label_flat = label.flatten()
+    score_flat = score.flatten()
+
+    mask = label_flat > 0
+    valid_labels = label_flat[mask]
+    valid_scores = score_flat[mask]
+
+    point_vector.index_add_(
+        0, valid_labels,
+        torch.stack((valid_scores, torch.ones_like(valid_scores)), dim=1))
+
+    valid_mask = point_vector[:, 1] > 0
+    point_vector[valid_mask, 0] /= point_vector[valid_mask, 1]
+
+    point_vector_list = point_vector.tolist()
+    for l in range(1, label_num):
+        coords = (label == l).nonzero(as_tuple=False).float()
+        coords = coords[:, [1, 0]]
+        point_vector_list[l].extend(coords.flatten().tolist())
+
+    return point_vector_list
+
+
 def pixel_group(
     score: Union[np.ndarray, Tensor],
     mask: Union[np.ndarray, Tensor],
@@ -58,6 +88,30 @@ def pixel_group(
         kernel_label = torch.from_numpy(kernel_label)
     if isinstance(kernel_contour, np.ndarray):
         kernel_contour = torch.from_numpy(kernel_contour)
+
+    if score.device.type == 'npu':
+        import torch_npu
+        embedding_dim = embedding.shape[2]
+        kernel_vector = torch.zeros((kernel_region_num, embedding_dim),
+                                    dtype=torch.float32).to(score.device)
+
+        for label in range(1, kernel_region_num):
+            label_mask = (kernel_label == label)
+            label_embeddings = embedding[label_mask]
+            kernel_vector[label, :] = label_embeddings.sum(dim=0)
+            vector_sum = label_mask.sum()
+            kernel_vector[label, :] /= vector_sum
+
+            kernel_cv = kernel_vector[label, :]
+            valid_mask = (mask == 1) & (kernel_label == 0)
+            valid_embeddings = embedding[valid_mask]
+            distances = torch.sum((valid_embeddings - kernel_cv)**2, dim=1)
+            within_threshold = distances < distance_threshold**2
+
+            kernel_label[valid_mask] = torch.where(within_threshold, label,
+                                                   kernel_label[valid_mask])
+
+        return estimate_confidence(kernel_label, score, kernel_region_num)
 
     if torch.__version__ == 'parrots':
         label = ext_module.pixel_group(
