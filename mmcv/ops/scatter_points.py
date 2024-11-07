@@ -71,13 +71,13 @@ class _DynamicScatter(Function):
                  grad_voxel_feats: torch.Tensor,
                  grad_voxel_coors: Optional[torch.Tensor] = None) -> tuple:
         if ctx.device == 'npu':
-            import ads_c
+            import mx_driving._C
             prefix_sum, argsort_coor, compare_mask = ctx.saved_tensors
             grad_point_feats = torch.zeros(
                 ctx.feats_shape,
                 dtype=grad_voxel_feats.dtype,
                 device=grad_voxel_feats.device)
-            ads_c.npu_dynamic_scatter_grad(grad_point_feats,
+            mx_driving._C.npu_dynamic_scatter_grad(grad_point_feats,
                                            grad_voxel_feats.contiguous(),
                                            prefix_sum, argsort_coor,
                                            compare_mask, ctx.reduce_type)
