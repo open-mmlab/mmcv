@@ -36,10 +36,30 @@ class _DynamicScatter(Function):
             reduced from input features that share the same voxel coordinates.
             The second is voxel coordinates with shape [M, ndim].
         """
+        ctx.device = feats.device.type
+        if ctx.device == 'npu':
+            import mx_driving._C
+            voxel_idx = mx_driving._C.point_to_voxel(coors, [], [], 'XYZ')
+            unique_res = mx_driving._C.unique_voxel(voxel_idx)
+            num_voxels, uniqued_voxel_idx, prefix_sum, \
+                argsort_coor, _ = unique_res
+            voxel_coors = \
+                mx_driving._C.voxel_to_point(uniqued_voxel_idx, [], [], 'XYZ')
+            voxel_feats, \
+                compare_mask = mx_driving._C.npu_dynamic_scatter(feats, coors,
+                                                         prefix_sum,
+                                                         argsort_coor,
+                                                         num_voxels,
+                                                         reduce_type)
+            ctx.reduce_type = reduce_type
+            ctx.feats_shape = feats.shape
+            ctx.save_for_backward(prefix_sum, argsort_coor, compare_mask)
+            ctx.mark_non_differentiable(voxel_coors)
+            return voxel_feats, voxel_coors
+
         results = ext_module.dynamic_point_to_voxel_forward(
             feats, coors, reduce_type)
-        (voxel_feats, voxel_coors, point2voxel_map,
-         voxel_points_count) = results
+        voxel_feats, voxel_coors, point2voxel_map, voxel_points_count = results
         ctx.reduce_type = reduce_type
         ctx.save_for_backward(feats, voxel_feats, point2voxel_map,
                               voxel_points_count)
@@ -50,6 +70,19 @@ class _DynamicScatter(Function):
     def backward(ctx: Any,
                  grad_voxel_feats: torch.Tensor,
                  grad_voxel_coors: Optional[torch.Tensor] = None) -> tuple:
+        if ctx.device == 'npu':
+            import mx_driving._C
+            prefix_sum, argsort_coor, compare_mask = ctx.saved_tensors
+            grad_point_feats = torch.zeros(
+                ctx.feats_shape,
+                dtype=grad_voxel_feats.dtype,
+                device=grad_voxel_feats.device)
+            mx_driving._C.npu_dynamic_scatter_grad(grad_point_feats,
+                                           grad_voxel_feats.contiguous(),
+                                           prefix_sum, argsort_coor,
+                                           compare_mask, ctx.reduce_type)
+            return grad_point_feats, None, None
+
         (feats, voxel_feats, point2voxel_map,
          voxel_points_count) = ctx.saved_tensors
         grad_feats = torch.zeros_like(feats)
