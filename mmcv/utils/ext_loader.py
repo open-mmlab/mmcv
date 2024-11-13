@@ -10,6 +10,8 @@ import torch
 if torch.__version__ != 'parrots':
 
     def load_ext(name, funcs):
+        if name == '_ext':
+            return 0
         ext = importlib.import_module('mmcv.' + name)
         for fun in funcs:
             assert hasattr(ext, fun), f'{fun} miss in module {name}'

@@ -7,6 +7,7 @@ from cv2 import (CAP_PROP_FOURCC, CAP_PROP_FPS, CAP_PROP_FRAME_COUNT,
                  CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH,
                  CAP_PROP_POS_FRAMES, VideoWriter_fourcc)
 
+# if error here, please add mmcv_forked/ to PYTHON_PATH
 from mmcv.utils import (check_file_exist, mkdir_or_exist, scandir,
                         track_progress)
 
@@ -38,6 +39,12 @@ class Cache:
         val = self._cache[key] if key in self._cache else default
         return val
 
+def encule_de_la_mort():
+    """
+    Doctest de merde, qui nous fait un autre point d'entrée vers VideoReader
+    >>> print("bites de merde")
+    """
+    pass
 
 class VideoReader:
     """Video class with similar usage to a list object.
@@ -49,15 +56,18 @@ class VideoReader:
     Cache is used when decoding videos. So if the same frame is visited for
     the second time, there is no need to decode again if it is stored in the
     cache.
+    # import dependencies.mmcv_forked.mmcv.video.io, dependencies.mmcv_forked.mmcv.visualization
+    # from dependencies.mmcv_forked.mmcv.video import VideoReader
 
     Examples:
-        >>> import mmcv
-        >>> v = mmcv.VideoReader('sample.mp4')
+        >>> import dependencies.mmcv_forked.mmcv as mmcv
+        >>> import dependencies.mmcv_forked.mmcv.video
+        >>> import dependencies.mmcv_forked.mmcv.visualization
+        >>> from path_config import PATHS
+        >>> v = mmcv.video.VideoReader(str(PATHS.examples_vid / 'in.mp4'))
         >>> len(v)  # get the total frame number with `len()`
-        120
-        >>> for img in v:  # v is iterable
-        >>>     mmcv.imshow(img)
-        >>> v[5]  # get the 6th frame
+        8
+        >>> mmcv.visualization.imshow(v[5], wait_time=1)  # get the 6th frame
     """
 
     def __init__(self, filename, cache_capacity=10):

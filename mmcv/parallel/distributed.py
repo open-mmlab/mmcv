@@ -5,7 +5,7 @@ import torch
 from torch.nn.parallel.distributed import (DistributedDataParallel,
                                            _find_tensors)
 
-from mmcv import print_log
+from mmcv.utils.logging import print_log
 from mmcv.utils import TORCH_VERSION, digit_version
 from .scatter_gather import ScatterInputs, scatter_kwargs
 
