@@ -3,25 +3,36 @@
 using namespace NPU_NAME_SPACE;
 using namespace std;
 
-void roi_align_rotated_v2_forward_npu(const Tensor input, Tensor rois_map,
-                                    Tensor output,
+void roi_align_rotated_v2_forward_npu(const Tensor x, Tensor rois_map,
+                                    Tensor y,
+                                    int32_t pooled_h,
+                                    int32_t pooled_w,
                                     double spatial_scale,
                                     int32_t sampling_ratio,
-                                    int32_t pooled_height,
-                                    int32_t pooled_width,
                                     bool aligned,
                                     bool clockwise) {
-  at::Tensor feature_map = input.permute({0, 2, 3, 1}).contiguous();
+  at::Tensor feature_map = x.permute({0, 2, 3, 1}).contiguous();
   at::Tensor rois = rois_map.permute({1, 0}).contiguous();
-  EXEC_NPU_CMD(aclnnRoiAlignRotatedV2, feature_map, rois, spatial_scale, sampling_ratio, pooled_height, pooled_width, aligned, clockwise, output);
+  at_npu::native::OpCommand cmd;
+  cmd.Name("RoiAlignRotated")
+      .Input(feature_map)
+      .Input(rois)
+      .Output(y)
+      .Attr("pooled_h", static_cast<int64_t>(pooled_h))
+      .Attr("pooled_w", static_cast<int64_t>(pooled_w))
+      .Attr("spatial_scale", static_cast<float>(spatial_scale))
+      .Attr("sampling_ratio", static_cast<int64_t>(sampling_ratio))
+      .Attr("aligned", aligned)
+      .Attr("clockwise", clockwise)
+      .Run();
 }
 
-void roi_align_rotated_v2_forward_impl(const Tensor input, Tensor rois,
-                                    Tensor output,
+void roi_align_rotated_v2_forward_impl(const Tensor x, Tensor rois,
+                                    Tensor y,
+                                    int32_t pooled_h,
+                                    int32_t pooled_w,
                                     double spatial_scale,
                                     int32_t sampling_ratio,
-                                    int32_t pooled_height,
-                                    int32_t pooled_width,
                                     bool aligned,
                                     bool clockwise);
 
