@@ -209,8 +209,8 @@ void roi_align_backward(Tensor grad_output, Tensor rois, Tensor argmax_y,
                         int sampling_ratio, int pool_mode, bool aligned);
 
 void roi_align_rotated_v2_forward(Tensor input, Tensor rois, Tensor output,
+                                  int pooled_h, int pooled_w,
                                   double spatial_scale, int sampling_ratio,
-                                  int aligned_height, int aligned_width,
                                   bool aligned, bool clockwise);
 
 void roi_align_rotated_v2_backward(Tensor input, Tensor rois,
@@ -343,9 +343,9 @@ void roi_align_rotated_backward(Tensor grad_output, Tensor rois,
                                 bool clockwise);
 
 void roi_align_rotated_v2_forward(Tensor input, Tensor rois, Tensor output,
-                               double spatial_scale, int sampling_ratio,
-                               int aligned_height, int aligned_width,
-                               bool aligned, bool clockwise);
+                                  int pooled_h, int pooled_w,
+                                  double spatial_scale, int sampling_ratio,
+                                  bool aligned, bool clockwise);
 
 void roi_align_rotated_v2_backward(Tensor input, Tensor rois, Tensor grad_output, Tensor grad_input,
                                int pooled_height, int pooled_width, double spatial_scale,
@@ -814,8 +814,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("sampling_ratio"), py::arg("aligned"), py::arg("clockwise"));
   m.def("roi_align_rotated_v2_forward", &roi_align_rotated_v2_forward,
         "roi_align_rotated_v2_forward", py::arg("input"), py::arg("rois"),
-        py::arg("output"), py::arg("spatial_scale"), py::arg("sampling_ratio"),
-        py::arg("pooled_height"), py::arg("pooled_width"),
+        py::arg("output"), py::arg("pooled_h"), py::arg("pooled_w"),
+        py::arg("spatial_scale"), py::arg("sampling_ratio"),
         py::arg("aligned"), py::arg("clockwise"));
   m.def("roi_align_rotated_v2_backward", &roi_align_rotated_v2_backward,
         "roi_align_rotated_v2_backward", py::arg("input"), py::arg("rois"),
