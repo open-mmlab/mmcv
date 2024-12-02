@@ -16,7 +16,8 @@ class ChamferDistanceFunction(Function):
     """This is an implementation of the 2D Chamfer Distance.
 
     It has been used in the paper `Oriented RepPoints for Aerial Object
-    Detection (CVPR 2022) <https://arxiv.org/abs/2105.11111>_`.
+    Detection (CVPR 2022)
+    <https://arxiv.org/abs/2105.11111>_`.
     """
 
     @staticmethod

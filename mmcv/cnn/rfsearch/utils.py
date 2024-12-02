@@ -4,7 +4,7 @@ import numpy as np
 
 
 def write_to_json(config: dict, filename: str):
-    """save config to json file.
+    """Save config to json file.
 
     Args:
         config (dict): Config to be saved.
@@ -16,7 +16,7 @@ def write_to_json(config: dict, filename: str):
 
 
 def expand_rates(dilation: tuple, config: dict) -> list:
-    """expand dilation rate according to config.
+    """Expand dilation rate according to config.
 
     Args:
         dilation (int): _description_

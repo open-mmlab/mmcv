@@ -207,10 +207,10 @@ void ROIAlignForward(const int nthreads, const T* input, const T* rois,
             // We do average (integral) pooling inside a bin
             output[index] = output_val / count;
           }  // if
-        }    // for pw
-      }      // for ph
-    }        // for c
-  }          // for n
+        }  // for pw
+      }  // for ph
+    }  // for c
+  }  // for n
 }
 
 template <typename T>
@@ -334,7 +334,7 @@ void ROIAlignBackward(const int nthreads, const T* grad_output, const T* rois,
           add(offset_grad_input + y_high * width + x_low, static_cast<T>(g3));
           add(offset_grad_input + y_high * width + x_high, static_cast<T>(g4));
         }  // if
-      }    // mode
+      }  // mode
     } else if (pool_mode == 1) {
       // We do average (integral) pooling inside a bin
       // We use roi_bin_grid to sample the grid and mimic integral
@@ -375,10 +375,10 @@ void ROIAlignBackward(const int nthreads, const T* grad_output, const T* rois,
             add(offset_grad_input + y_high * width + x_high,
                 static_cast<T>(g4));
           }  // if
-        }    // ix
-      }      // iy
-    }        // mode
-  }          // for
+        }  // ix
+      }  // iy
+    }  // mode
+  }  // for
 }  // ROIAlignBackward
 
 void ROIAlignForwardCPULauncher(Tensor input, Tensor rois, Tensor output,

@@ -51,7 +51,7 @@ class CrissCrossAttention(nn.Module):
         self.in_channels = in_channels
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """forward function of Criss-Cross Attention.
+        """Forward function of Criss-Cross Attention.
 
         Args:
             x (torch.Tensor): Input feature with the shape of

@@ -206,9 +206,9 @@ void ROIAlignRotatedForward(const int nthreads, const T* input,
 
           output[index] = output_val;
         }  // for pw
-      }    // for ph
-    }      // for c
-  }        // for n
+      }  // for ph
+    }  // for c
+  }  // for n
 }
 
 template <typename T>
@@ -366,9 +366,9 @@ void ROIAlignRotatedBackward(
           add(offset_grad_input + y_high * width + x_low, static_cast<T>(g3));
           add(offset_grad_input + y_high * width + x_high, static_cast<T>(g4));
         }  // if
-      }    // ix
-    }      // iy
-  }        // for
+      }  // ix
+    }  // iy
+  }  // for
 }  // ROIAlignRotatedBackward
 
 void ROIAlignRotatedForwardCPULauncher(Tensor input, Tensor rois, Tensor output,

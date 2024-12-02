@@ -110,6 +110,7 @@ class ImageToTensor(BaseTransform):
     def transform(self, results: dict) -> dict:
         """Transform function to convert image in results to
         :obj:`torch.Tensor` and transpose the channel order.
+
         Args:
             results (dict): Result dict contains the image data to convert.
         Returns:

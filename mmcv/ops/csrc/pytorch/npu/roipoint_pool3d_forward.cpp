@@ -19,7 +19,7 @@ void roipoint_pool3d_forward_impl_npu(int batch_size, int pts_num,
   at::Tensor pooled_features_trans =
       at::empty(features_trans_size, xyz.options());
   c10::SmallVector<int64_t, 8> empty_flag_size = {boxes3d.size(0),
-                                                     boxes3d.size(1)};
+                                                  boxes3d.size(1)};
   EXEC_NPU_CMD(aclnnRoipointPool3dForward, points_trans, point_features_trans,
                boxes3d, sampled_pts_num, pooled_features_trans,
                pooled_empty_flag);

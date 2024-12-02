@@ -16,9 +16,9 @@ class ActiveRotatedFilterFunction(Function):
     """Encoding the orientation information and generating orientation-
     sensitive features.
 
-    The details are described in the paper `Align Deep Features for Oriented
-    Object Detection  <https://arxiv.org/abs/2008.09397>_`.
-    """
+    The details are described in the paper
+    `Align Deep Features for Oriented Object Detection  <https://arxiv.org/abs/2008.09397>_`.
+    """  # noqa: E501
 
     @staticmethod
     def forward(ctx, input: torch.Tensor,

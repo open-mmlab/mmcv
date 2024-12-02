@@ -1457,7 +1457,7 @@ class RandomResize(BaseTransform):
     def __init__(
         self,
         scale: Union[Tuple[int, int], Sequence[Tuple[int, int]]],
-        ratio_range: Tuple[float, float] = None,
+        ratio_range: Optional[Tuple[float, float]] = None,
         resize_type: str = 'Resize',
         **resize_kwargs,
     ) -> None:

@@ -220,9 +220,9 @@ void BezierAlignForward(const int nthreads, const T *input, const T *rois,
 
           output[index] = output_val;
         }  // for pw
-      }    // for ph
-    }      // for c
-  }        // for n
+      }  // for ph
+    }  // for c
+  }  // for n
 }
 
 template <typename T>
@@ -381,9 +381,9 @@ void BezierAlignBackward(const int nthreads, const T *grad_output,
           add(offset_grad_input + y_high * width + x_low, static_cast<T>(g3));
           add(offset_grad_input + y_high * width + x_high, static_cast<T>(g4));
         }  // if
-      }    // ix
-    }      // iy
-  }        // for
+      }  // ix
+    }  // iy
+  }  // for
 }  // BezierAlignBackward
 
 void BezierAlignForwardCPULauncher(Tensor input, Tensor rois, Tensor output,

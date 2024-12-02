@@ -177,7 +177,7 @@ class KeyMapper(BaseTransform):
     """
 
     def __init__(self,
-                 transforms: Union[Transform, List[Transform]] = None,
+                 transforms: Union[Transform, List[Transform], None] = None,
                  mapping: Optional[Dict] = None,
                  remapping: Optional[Dict] = None,
                  auto_remap: Optional[bool] = None,
