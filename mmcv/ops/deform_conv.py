@@ -49,10 +49,11 @@ class DeformConv2dFunction(Function):
 
     @staticmethod
     def _npu_backward(ctx, grad_output):
+        import torch_npu
         input_tensor, weight, offset_out, offset_all, sort_index_for_npu_bp = \
             ctx.saved_tensors
         grad_input, grad_weight, grad_offset_all, grad_bias = \
-            torch.npu_deformable_conv2dbk(
+            torch_npu.npu_deformable_conv2dbk(
                 input_tensor, grad_output, offset_out, weight, offset_all,
                 kernel_size=[weight.shape[2], weight.shape[3]],
                 stride=[1, 1, ctx.stride[0], ctx.stride[1]],
