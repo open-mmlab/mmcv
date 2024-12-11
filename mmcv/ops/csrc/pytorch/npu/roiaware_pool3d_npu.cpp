@@ -37,7 +37,7 @@ void roiaware_pool3d_backward_npu(int boxes_num, int out_x, int out_y,
                                   int max_pts_each_voxel,
                                   const Tensor pts_idx_of_voxels,
                                   const Tensor argmax, const Tensor grad_out,
-                                  Tensor grad_in, int pool_method){
+                                  Tensor grad_in, int pool_method) {
   int32_t npoints = grad_in.size(0);
 
   auto dtype = grad_out.dtype();
