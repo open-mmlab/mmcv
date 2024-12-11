@@ -37,8 +37,7 @@ void roiaware_pool3d_backward_npu(int boxes_num, int out_x, int out_y,
                                   int max_pts_each_voxel,
                                   const Tensor pts_idx_of_voxels,
                                   const Tensor argmax, const Tensor grad_out,
-                                  Tensor grad_in, int pool_method)
-{
+                                  Tensor grad_in, int pool_method){
   int32_t npoints = grad_in.size(0);
 
   auto dtype = grad_out.dtype();
@@ -53,12 +52,12 @@ void roiaware_pool3d_backward_npu(int boxes_num, int out_x, int out_y,
   if (pool_method == 0) {
     // maxpool3d
     EXEC_NPU_CMD(aclnnRoiawareMaxpool3dGrad, argmax, grad_out_cast, boxes_num,
-        out_x, out_y, out_z, channels, npoints, grad_in_cast);
+                 out_x, out_y, out_z, channels, npoints, grad_in_cast);
   } else if (pool_method == 1) {
     // avgpool3d
     EXEC_NPU_CMD(aclnnRoiawareAvgpool3dGrad, pts_idx_of_voxels, grad_out_cast,
-                boxes_num, out_x, out_y, out_z, channels, npoints,
-                max_pts_each_voxel, grad_in_cast);
+                 boxes_num, out_x, out_y, out_z, channels, npoints,
+                 max_pts_each_voxel, grad_in_cast);
   }
 
   if (dtype == at::kHalf) {
