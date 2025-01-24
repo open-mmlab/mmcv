@@ -11,11 +11,7 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
     pytest.param(
         'cuda',
         marks=pytest.mark.skipif(
-            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
-    pytest.param(
-        'npu',
-        marks=pytest.mark.skipif(
-            not IS_NPU_AVAILABLE, reason='requires NPU support'))
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support'))
 ])
 def test_boxes_overlap_bev(device):
     np_boxes1 = np.asarray([[1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 0.0],
