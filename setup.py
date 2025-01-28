@@ -16,6 +16,16 @@ try:
         from torch_mlu.utils.cpp_extension import BuildExtension
         EXT_TYPE = 'pytorch'
     else:
+        # build disable ninja
+        if os.getenv("MMCV_NO_NINJA", "0") == "1":
+        
+            class BuildExtension(torch.utils.cpp_extension.BuildExtension):
+                def __init__(self, *args, **kwargs):
+                    super().__init__(use_ninja=False, *args, **kwargs)
+        
+        else:
+            BuildExtension = torch.utils.cpp_extension.BuildExtension
+
         from torch.utils.cpp_extension import BuildExtension
         EXT_TYPE = 'pytorch'
     cmd_class = {'build_ext': BuildExtension}
