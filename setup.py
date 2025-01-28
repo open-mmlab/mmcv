@@ -26,7 +26,6 @@ try:
         else:
             BuildExtension = torch.utils.cpp_extension.BuildExtension
 
-        from torch.utils.cpp_extension import BuildExtension
         EXT_TYPE = 'pytorch'
     cmd_class = {'build_ext': BuildExtension}
 except ModuleNotFoundError:
