@@ -4,6 +4,7 @@ from typing import Optional
 import torch
 import torch.distributed as dist
 import torch.nn.functional as F
+from mmengine.device import is_cuda_available, is_musa_available
 from mmengine.registry import MODELS
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
@@ -47,10 +48,20 @@ class SyncBatchNormFunction(Function):
         self.group_size = group_size
         self.stats_mode = stats_mode
 
-        assert isinstance(
-                   input, (torch.HalfTensor, torch.FloatTensor,
-                           torch.cuda.HalfTensor, torch.cuda.FloatTensor)), \
-               f'only support Half or Float Tensor, but {input.type()}'
+        if is_cuda_available():
+            assert isinstance(
+                    input, (torch.HalfTensor, torch.FloatTensor,
+                            torch.cuda.HalfTensor, torch.cuda.FloatTensor)), \
+                f'only support Half or Float Tensor, but {input.type()}'
+        elif is_musa_available():
+            assert isinstance(
+                    input, (torch.HalfTensor, torch.FloatTensor,
+                            torch.musa.HalfTensor, torch.musa.FloatTensor)), \
+                f'only support Half or Float Tensor, but {input.type()}'
+        else:
+            assert isinstance(
+                    input, (torch.HalfTensor, torch.FloatTensor)), \
+                f'only support Half or Float Tensor, but {input.type()}'
         output = torch.zeros_like(input)
         input3d = input.flatten(start_dim=2)
         output3d = output.view_as(input3d)

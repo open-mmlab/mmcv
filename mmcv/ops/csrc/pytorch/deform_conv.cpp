@@ -153,6 +153,17 @@ void deform_conv_forward(Tensor input, Tensor weight, Tensor offset,
 #else
     AT_ERROR("DeformConv is not compiled with GPU support");
 #endif
+  } elif (input.device().is_musa()) {
+#ifdef MMCV_WITH_MUSA
+    CHECK_MUSA_INPUT(input);
+    CHECK_MUSA_INPUT(offset);
+    CHECK_MUSA_INPUT(weight);
+    CHECK_MUSA_INPUT(output);
+    CHECK_MUSA_INPUT(columns);
+    CHECK_MUSA_INPUT(ones);
+#else
+    AT_ERROR("DeformConv is not compiled with GPU support");
+#endif
   } else {
     CHECK_CPU_INPUT(input);
     CHECK_CPU_INPUT(offset);
@@ -272,6 +283,18 @@ void deform_conv_backward_input(Tensor input, Tensor offset, Tensor gradOutput,
     CHECK_CUDA_INPUT(gradOffset);
     CHECK_CUDA_INPUT(weight);
     CHECK_CUDA_INPUT(columns);
+#else
+    AT_ERROR("DeformConv is not compiled with GPU support");
+#endif
+  } elif (input.device().is_musa()) {
+#ifdef MMCV_WITH_MUSA
+    CHECK_MUSA_INPUT(input);
+    CHECK_MUSA_INPUT(offset);
+    CHECK_MUSA_INPUT(gradOutput);
+    CHECK_MUSA_INPUT(gradInput);
+    CHECK_MUSA_INPUT(gradOffset);
+    CHECK_MUSA_INPUT(weight);
+    CHECK_MUSA_INPUT(columns);
 #else
     AT_ERROR("DeformConv is not compiled with GPU support");
 #endif
@@ -404,6 +427,17 @@ void deform_conv_backward_parameters(Tensor input, Tensor offset,
     CHECK_CUDA_INPUT(gradWeight);
     CHECK_CUDA_INPUT(columns);
     CHECK_CUDA_INPUT(ones);
+#else
+    AT_ERROR("DeformConv is not compiled with GPU support");
+#endif
+  } elif (input.device().is_musa()) {
+#ifdef MMCV_WITH_MUSA
+    CHECK_MUSA_INPUT(input);
+    CHECK_MUSA_INPUT(offset);
+    CHECK_MUSA_INPUT(gradOutput);
+    CHECK_MUSA_INPUT(gradWeight);
+    CHECK_MUSA_INPUT(columns);
+    CHECK_MUSA_INPUT(ones);
 #else
     AT_ERROR("DeformConv is not compiled with GPU support");
 #endif
