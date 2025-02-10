@@ -446,6 +446,11 @@ def get_extensions():
                         'torch_npu').submodule_search_locations[0] +
                     '/include/third_party/acl/inc'
                 ]
+                extra_compile_args['cxx'] += [
+                    '-I' + importlib.util.find_spec(
+                        'torch_npu').submodule_search_locations[0] +
+                    '/include/third_party/hccl/inc'
+                ]
                 define_macros += [('MMCV_WITH_NPU', None)]
                 extension = NpuExtension
                 if parse_version(torch.__version__) < parse_version('2.1.0'):
