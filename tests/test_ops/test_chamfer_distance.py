@@ -4,7 +4,7 @@ import pytest
 import torch
 
 from mmcv.ops import chamfer_distance
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
 
 
 def chamfer_distance_forward_groundtruth(xyz1, xyz2, dtype):
@@ -51,7 +51,11 @@ def torch_to_np_type(dtype):
     pytest.param(
         'npu',
         marks=pytest.mark.skipif(
-            not IS_NPU_AVAILABLE, reason='requires NPU support'))
+            not IS_NPU_AVAILABLE, reason='requires NPU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
 @pytest.mark.parametrize('dtype', [torch.half, torch.float32])
 @pytest.mark.parametrize('shape', [(2, 600, 2), (1, 1, 2), (7, 7, 2)])

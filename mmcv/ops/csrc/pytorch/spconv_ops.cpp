@@ -115,6 +115,7 @@ std::vector<torch::Tensor> get_indice_pairs_backward_musa(
       indices, gridOut, batchSize, outSpatialShape, spatialShape, kernelSize,
       stride, padding, dilation, outPadding, _subM, _transpose);
 };
+#endif
 
 template <unsigned NDim>
 std::vector<torch::Tensor> get_indice_pairs_forward(

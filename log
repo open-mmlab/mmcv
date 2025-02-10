@@ -1,0 +1,1572 @@
+running install
+running bdist_egg
+running egg_info
+writing mmcv.egg-info/PKG-INFO
+writing dependency_links to mmcv.egg-info/dependency_links.txt
+writing requirements to mmcv.egg-info/requires.txt
+writing top-level names to mmcv.egg-info/top_level.txt
+reading manifest file 'mmcv.egg-info/SOURCES.txt'
+reading manifest template 'MANIFEST.in'
+adding license file 'LICENSE'
+adding license file 'LICENSES.md'
+writing manifest file 'mmcv.egg-info/SOURCES.txt'
+installing library code to build/bdist.linux-x86_64/egg
+running install_lib
+running build_py
+copying mmcv/__init__.py -> build/lib.linux-x86_64-cpython-310/mmcv
+copying mmcv/version.py -> build/lib.linux-x86_64-cpython-310/mmcv
+copying mmcv/utils/device_type.py -> build/lib.linux-x86_64-cpython-310/mmcv/utils
+copying mmcv/utils/parrots_jit.py -> build/lib.linux-x86_64-cpython-310/mmcv/utils
+copying mmcv/utils/__init__.py -> build/lib.linux-x86_64-cpython-310/mmcv/utils
+copying mmcv/utils/env.py -> build/lib.linux-x86_64-cpython-310/mmcv/utils
+copying mmcv/utils/ext_loader.py -> build/lib.linux-x86_64-cpython-310/mmcv/utils
+copying mmcv/arraymisc/__init__.py -> build/lib.linux-x86_64-cpython-310/mmcv/arraymisc
+copying mmcv/arraymisc/quantization.py -> build/lib.linux-x86_64-cpython-310/mmcv/arraymisc
+copying mmcv/ops/psa_mask.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/sparse_structure.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/convex_iou.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/furthest_point_sample.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/deform_roi_pool.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/sync_bn.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/sparse_pool.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/sparse_conv.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/assign_score_withk.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/roipoint_pool3d.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/upfirdn2d.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/focal_loss.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/pixel_group.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/three_nn.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/points_in_polygons.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/fused_bias_leakyrelu.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/scatter_points.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/rotated_feature_align.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/chamfer_distance.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/points_sampler.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/corner_pool.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/roi_align_rotated_v2.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/sparse_modules.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/correlation.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/sparse_ops.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/box_iou_rotated.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/contour_expand.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/bezier_align.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/deprecated_wrappers.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/iou3d.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/tin_shift.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/active_rotated_filter.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/filtered_lrelu.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/prroi_pool.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/point_sample.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/conv2d_gradfix.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/roi_align.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/modulated_deform_conv.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/multi_scale_deform_attn.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/roi_pool.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/box_iou_quadri.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/masked_conv.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/__init__.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/roiaware_pool3d.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/carafe.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/riroi_align_rotated.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/saconv.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/points_in_boxes.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/gather_points.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/diff_iou_rotated.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/merge_cells.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/roi_align_rotated.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/three_interpolate.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/voxelize.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/cc_attention.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/group_points.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/sparse_functional.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/info.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/deform_conv.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/bbox.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/knn.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/bias_act.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/nms.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/ball_query.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/min_area_polygons.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/ops/border_align.py -> build/lib.linux-x86_64-cpython-310/mmcv/ops
+copying mmcv/image/misc.py -> build/lib.linux-x86_64-cpython-310/mmcv/image
+copying mmcv/image/__init__.py -> build/lib.linux-x86_64-cpython-310/mmcv/image
+copying mmcv/image/io.py -> build/lib.linux-x86_64-cpython-310/mmcv/image
+copying mmcv/image/colorspace.py -> build/lib.linux-x86_64-cpython-310/mmcv/image
+copying mmcv/image/geometric.py -> build/lib.linux-x86_64-cpython-310/mmcv/image
+copying mmcv/image/photometric.py -> build/lib.linux-x86_64-cpython-310/mmcv/image
+copying mmcv/video/processing.py -> build/lib.linux-x86_64-cpython-310/mmcv/video
+copying mmcv/video/optflow.py -> build/lib.linux-x86_64-cpython-310/mmcv/video
+copying mmcv/video/__init__.py -> build/lib.linux-x86_64-cpython-310/mmcv/video
+copying mmcv/video/io.py -> build/lib.linux-x86_64-cpython-310/mmcv/video
+copying mmcv/transforms/wrappers.py -> build/lib.linux-x86_64-cpython-310/mmcv/transforms
+copying mmcv/transforms/processing.py -> build/lib.linux-x86_64-cpython-310/mmcv/transforms
+copying mmcv/transforms/utils.py -> build/lib.linux-x86_64-cpython-310/mmcv/transforms
+copying mmcv/transforms/builder.py -> build/lib.linux-x86_64-cpython-310/mmcv/transforms
+copying mmcv/transforms/__init__.py -> build/lib.linux-x86_64-cpython-310/mmcv/transforms
+copying mmcv/transforms/loading.py -> build/lib.linux-x86_64-cpython-310/mmcv/transforms
+copying mmcv/transforms/base.py -> build/lib.linux-x86_64-cpython-310/mmcv/transforms
+copying mmcv/transforms/formatting.py -> build/lib.linux-x86_64-cpython-310/mmcv/transforms
+copying mmcv/visualization/optflow.py -> build/lib.linux-x86_64-cpython-310/mmcv/visualization
+copying mmcv/visualization/image.py -> build/lib.linux-x86_64-cpython-310/mmcv/visualization
+copying mmcv/visualization/__init__.py -> build/lib.linux-x86_64-cpython-310/mmcv/visualization
+copying mmcv/visualization/color.py -> build/lib.linux-x86_64-cpython-310/mmcv/visualization
+copying mmcv/cnn/__init__.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn
+copying mmcv/cnn/alexnet.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn
+copying mmcv/cnn/resnet.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn
+copying mmcv/cnn/vgg.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn
+copying mmcv/cnn/utils/fuse_conv_bn.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/utils
+copying mmcv/cnn/utils/flops_counter.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/utils
+copying mmcv/cnn/utils/__init__.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/utils
+copying mmcv/cnn/bricks/wrappers.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks
+copying mmcv/cnn/bricks/scale.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks
+copying mmcv/cnn/bricks/generalized_attention.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks
+copying mmcv/cnn/bricks/plugin.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks
+copying mmcv/cnn/bricks/swish.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks
+copying mmcv/cnn/bricks/drop.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks
+copying mmcv/cnn/bricks/depthwise_separable_conv_module.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks
+copying mmcv/cnn/bricks/conv_ws.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks
+copying mmcv/cnn/bricks/hswish.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks
+copying mmcv/cnn/bricks/conv_module.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks
+copying mmcv/cnn/bricks/__init__.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks
+copying mmcv/cnn/bricks/activation.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks
+copying mmcv/cnn/bricks/padding.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks
+copying mmcv/cnn/bricks/conv.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks
+copying mmcv/cnn/bricks/transformer.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks
+copying mmcv/cnn/bricks/upsample.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks
+copying mmcv/cnn/bricks/non_local.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks
+copying mmcv/cnn/bricks/norm.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks
+copying mmcv/cnn/bricks/context_block.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks
+copying mmcv/cnn/bricks/conv2d_adaptive_padding.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks
+copying mmcv/cnn/bricks/hsigmoid.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks
+copying mmcv/cnn/rfsearch/search.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/rfsearch
+copying mmcv/cnn/rfsearch/utils.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/rfsearch
+copying mmcv/cnn/rfsearch/__init__.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/rfsearch
+copying mmcv/cnn/rfsearch/operator.py -> build/lib.linux-x86_64-cpython-310/mmcv/cnn/rfsearch
+copying mmcv/ops/csrc/common/box_iou_rotated_utils.hpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common
+copying mmcv/ops/csrc/common/parrots_cpp_helper.hpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common
+copying mmcv/ops/csrc/common/parrots_cuda_helper.hpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common
+copying mmcv/ops/csrc/common/pytorch_cpp_helper.hpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common
+copying mmcv/ops/csrc/common/pytorch_cuda_helper.hpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common
+copying mmcv/ops/csrc/common/pytorch_device_registry.hpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common
+copying mmcv/ops/csrc/common/pytorch_mlu_helper.hpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common
+copying mmcv/ops/csrc/common/pytorch_musa_helper.hpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common
+copying mmcv/ops/csrc/common/pytorch_npu_helper.hpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common
+copying mmcv/ops/csrc/common/pytorch_npu_util.hpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common
+copying mmcv/ops/csrc/common/cuda/active_rotated_filter_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/assign_score_withk_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/ball_query_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/bbox_overlaps_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/bezier_align_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/border_align_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/box_iou_quadri_cuda.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/box_iou_rotated_cuda.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/carafe_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/carafe_naive_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/chamfer_distance_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/common_cuda_helper.hpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/convex_iou_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/correlation_cuda.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/deform_conv_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/deform_roi_pool_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/diff_iou_rotated_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/furthest_point_sample_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/gather_points_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/group_points_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/iou3d_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/knn_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/masked_conv2d_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/min_area_polygons_cuda.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/modulated_deform_conv_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/ms_deform_attn_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/nms_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/nms_quadri_cuda.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/nms_rotated_cuda.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/parrots_cudawarpfunction.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/points_in_boxes_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/points_in_polygons_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/prroi_pool_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/psamask_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/riroi_align_rotated_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/roi_align_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/roi_align_rotated_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/roi_pool_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/roiaware_pool3d_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/roipoint_pool3d_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/rotated_feature_align_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/scatter_points_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/sigmoid_focal_loss_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/softmax_focal_loss_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/stack_ball_query_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/stack_group_points_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/sync_bn_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/three_interpolate_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/three_nn_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/tin_shift_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/voxelization_cuda_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda
+copying mmcv/ops/csrc/common/cuda/spconv/indice.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/spconv
+copying mmcv/ops/csrc/common/cuda/spconv/reordering.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/spconv
+copying mmcv/ops/csrc/common/mlu/common_mlu_helper.hpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/mlu
+copying mmcv/ops/csrc/common/mps/MPSDevice.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/mps
+copying mmcv/ops/csrc/common/mps/MPSLibrary.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/mps
+copying mmcv/ops/csrc/common/mps/MPSLibrary.mm -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/mps
+copying mmcv/ops/csrc/common/mps/MPSStream.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/mps
+copying mmcv/ops/csrc/common/mps/MPSUtils.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/mps
+copying mmcv/ops/csrc/common/musa/common_musa_helper.hpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/musa
+copying mmcv/ops/csrc/common/utils/spconv/paramsgrid.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv
+copying mmcv/ops/csrc/common/utils/spconv/prettyprint.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv
+copying mmcv/ops/csrc/common/utils/spconv/pybind11_utils.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv
+copying mmcv/ops/csrc/common/utils/spconv/spconv/geometry.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv/spconv
+copying mmcv/ops/csrc/common/utils/spconv/spconv/indice.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv/spconv
+copying mmcv/ops/csrc/common/utils/spconv/spconv/maxpool.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv/spconv
+copying mmcv/ops/csrc/common/utils/spconv/spconv/mp_helper.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv/spconv
+copying mmcv/ops/csrc/common/utils/spconv/spconv/point2voxel.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv/spconv
+copying mmcv/ops/csrc/common/utils/spconv/spconv/reordering.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv/spconv
+copying mmcv/ops/csrc/common/utils/spconv/tensorview/helper_kernel.cuh -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv/tensorview
+copying mmcv/ops/csrc/common/utils/spconv/tensorview/helper_launch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv/tensorview
+copying mmcv/ops/csrc/common/utils/spconv/tensorview/tensorview.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv/tensorview
+copying mmcv/ops/csrc/parrots/active_rotated_filter.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/active_rotated_filter_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/active_rotated_filter_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/assign_score_withk.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/assign_score_withk_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/assign_score_withk_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/ball_query._parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/ball_query.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/ball_query_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/bbox_overlaps.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/bbox_overlaps_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/bbox_overlaps_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/border_align.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/border_align_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/border_align_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/box_iou_rotated.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/box_iou_rotated_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/box_iou_rotated_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/carafe.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/carafe_naive.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/carafe_naive_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/carafe_naive_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/carafe_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/carafe_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/chamfer_distance.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/chamfer_distance_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/chamfer_distance_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/contour_expand.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/contour_expand_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/contour_expand_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/convex_iou.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/convex_iou_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/convex_iou_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/correlation.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/correlation_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/correlation_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/cudabind.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/deform_conv.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/deform_conv_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/deform_conv_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/deform_roi_pool.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/deform_roi_pool_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/deform_roi_pool_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/diff_iou_rotated.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/diff_iou_rotated_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/diff_iou_rotated_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/focal_loss.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/focal_loss_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/focal_loss_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/furthest_point_sample.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/furthest_point_sample_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/furthest_point_sample_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/fused_bias_leakyrelu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/fused_bias_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/gather_points.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/gather_points_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/gather_points_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/group_points.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/group_points_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/group_points_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/info.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/iou3d.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/iou3d_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/iou3d_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/knn.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/knn_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/knn_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/masked_conv2d.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/masked_conv2d_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/masked_conv2d_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/min_area_polygons.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/min_area_polygons_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/min_area_polygons_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/modulated_deform_conv.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/modulated_deform_conv_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/modulated_deform_conv_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/ms_deform_attn.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/ms_deform_attn_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/nms.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/nms_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/nms_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/nms_rotated.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/pixel_group.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/pixel_group_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/pixel_group_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/points_in_boxes.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/points_in_boxes_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/points_in_boxes_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/points_in_polygons.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/points_in_polygons_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/points_in_polygons_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/prroi_pool.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/prroi_pool_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/prroi_pool_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/psamask.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/psamask_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/psamask_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/riroi_align_rotated.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/riroi_align_rotated_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/riroi_align_rotated_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/roi_align.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/roi_align_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/roi_align_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/roi_align_rotated.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/roi_align_rotated_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/roi_align_rotated_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/roi_pool.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/roi_pool_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/roi_pool_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/roiaware_pool3d.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/roiaware_pool3d_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/roiaware_pool3d_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/roipoint_pool3d.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/roipoint_pool3d_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/roipoint_pool3d_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/rotated_feature_align.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/rotated_feature_align_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/rotated_feature_align_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/sync_bn.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/sync_bn_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/sync_bn_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/three_interpolate.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/three_interpolate_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/three_interpolate_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/three_nn.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/three_nn_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/three_nn_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/tin_shift.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/tin_shift_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/tin_shift_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/upfirdn2d.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/upfirdn2d_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/voxelization.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/voxelization_parrots.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/parrots/voxelization_pytorch.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots
+copying mmcv/ops/csrc/pytorch/active_rotated_filter.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/assign_score_withk.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/ball_query.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/bbox_overlaps.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/bezier_align.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/bias_act.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/border_align.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/box_iou_quadri.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/box_iou_rotated.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/carafe.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/carafe_naive.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/chamfer_distance.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/contour_expand.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/convex_iou.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/correlation.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/deform_conv.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/deform_roi_pool.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/diff_iou_rotated.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/filtered_lrelu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/focal_loss.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/furthest_point_sample.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/fused_bias_leakyrelu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/fused_spconv_ops.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/gather_points.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/group_points.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/info.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/iou3d.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/knn.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/masked_conv2d.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/min_area_polygons.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/modulated_deform_conv.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/ms_deform_attn.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/nms.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/nms_quadri.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/nms_rotated.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/pixel_group.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/points_in_boxes.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/points_in_polygons.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/prroi_pool.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/psamask.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/pybind.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/riroi_align_rotated.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/roi_align.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/roi_align_rotated.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/roi_align_rotated_v2.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/roi_pool.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/roiaware_pool3d.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/roipoint_pool3d.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/rotated_feature_align.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/scatter_points.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/sparse_pool_ops.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/spconv_ops.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/spconv_utils.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/sync_bn.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/three_interpolate.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/three_nn.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/tin_shift.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/upfirdn2d.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/voxelization.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch
+copying mmcv/ops/csrc/pytorch/cpu/active_rotated_filter.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu
+copying mmcv/ops/csrc/pytorch/cpu/bbox_overlaps_cpu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu
+copying mmcv/ops/csrc/pytorch/cpu/bezier_align.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu
+copying mmcv/ops/csrc/pytorch/cpu/box_iou_quadri.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu
+copying mmcv/ops/csrc/pytorch/cpu/box_iou_rotated.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu
+copying mmcv/ops/csrc/pytorch/cpu/deform_conv.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu
+copying mmcv/ops/csrc/pytorch/cpu/modulated_deform_conv.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu
+copying mmcv/ops/csrc/pytorch/cpu/nms.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu
+copying mmcv/ops/csrc/pytorch/cpu/nms_quadri.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu
+copying mmcv/ops/csrc/pytorch/cpu/nms_rotated.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu
+copying mmcv/ops/csrc/pytorch/cpu/pixel_group.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu
+copying mmcv/ops/csrc/pytorch/cpu/points_in_boxes.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu
+copying mmcv/ops/csrc/pytorch/cpu/psamask.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu
+copying mmcv/ops/csrc/pytorch/cpu/roi_align.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu
+copying mmcv/ops/csrc/pytorch/cpu/roi_align_rotated.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu
+copying mmcv/ops/csrc/pytorch/cpu/rotated_feature_align.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu
+copying mmcv/ops/csrc/pytorch/cpu/sparse_indice.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu
+copying mmcv/ops/csrc/pytorch/cpu/sparse_maxpool.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu
+copying mmcv/ops/csrc/pytorch/cpu/sparse_reordering.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu
+copying mmcv/ops/csrc/pytorch/cpu/voxelization.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu
+copying mmcv/ops/csrc/pytorch/cuda/active_rotated_filter_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/assign_score_withk_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/ball_query_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/bbox_overlaps_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/bezier_align_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/bias_act_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/border_align_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/box_iou_quadri_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/box_iou_rotated_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/carafe_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/carafe_naive_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/chamfer_distance_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/convex_iou.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/correlation_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/cudabind.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/deform_conv_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/deform_roi_pool_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/diff_iou_rotated_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/filtered_lrelu.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/focal_loss_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/furthest_point_sample_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/fused_bias_leakyrelu_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/fused_spconv_ops_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/gather_points_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/group_points_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/iou3d_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/knn_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/masked_conv2d_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/min_area_polygons.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/modulated_deform_conv_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/ms_deform_attn_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/nms_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/nms_quadri_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/nms_rotated_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/points_in_boxes_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/points_in_polygons_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/prroi_pool_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/psamask_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/riroi_align_rotated_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/roi_align_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/roi_align_rotated_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/roi_pool_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/roiaware_pool3d_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/roipoint_pool3d_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/rotated_feature_align_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/scatter_points_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/sparse_indice.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/sparse_maxpool.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/sparse_pool_ops_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/sparse_reordering.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/spconv_ops_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/stack_ball_query_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/stack_group_points_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/sync_bn_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/three_interpolate_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/three_nn_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/tin_shift_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/upfirdn2d_kernel.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/cuda/voxelization_cuda.cu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda
+copying mmcv/ops/csrc/pytorch/mlu/ball_query_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/bbox_overlaps_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/box_iou_rotated.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/carafe_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/deform_roi_pool_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/diff_iou_rotated_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/focal_loss_sigmoid_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/iou3d_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/masked_conv2d_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/mlu_common_helper.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/mlu_common_helper.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/ms_deform_attn_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/nms_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/nms_rotated_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/psamask_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/roi_align_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/roi_align_rotated_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/roi_pool_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/roiaware_pool3d_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/roipoint_pool3d_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/rotated_feature_align_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/scatter_points_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/sparse_conv_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/three_nn_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/tin_shift_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mlu/voxelization_mlu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu
+copying mmcv/ops/csrc/pytorch/mps/bbox_overlaps_mps.mm -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mps
+copying mmcv/ops/csrc/pytorch/musa/active_rotated_filter_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/assign_score_withk_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/ball_query_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/bbox_overlaps_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/bezier_align_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/bias_act_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/border_align_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/box_iou_quadri_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/box_iou_rotated_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/carafe_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/carafe_naive_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/chamfer_distance_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/convex_iou.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/correlation_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/deform_conv_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/deform_roi_pool_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/diff_iou_rotated_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/filtered_lrelu.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/focal_loss_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/furthest_point_sample_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/fused_bias_leakyrelu_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/fused_spconv_ops_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/gather_points_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/group_points_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/iou3d_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/knn_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/masked_conv2d_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/min_area_polygons.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/modulated_deform_conv_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/ms_deform_attn_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/musabind.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/nms_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/nms_quadri_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/nms_rotated_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/points_in_boxes_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/points_in_polygons_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/prroi_pool_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/psamask_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/riroi_align_rotated_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/roi_align_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/roi_align_rotated_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/roi_pool_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/roiaware_pool3d_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/roipoint_pool3d_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/rotated_feature_align_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/scatter_points_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/sparse_indice.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/sparse_maxpool.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/sparse_pool_ops_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/sparse_reordering.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/spconv_ops_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/stack_ball_query_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/stack_group_points_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/sync_bn_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/three_interpolate_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/three_nn_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/tin_shift_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/upfirdn2d_kernel.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/musa/voxelization_musa.mu -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa
+copying mmcv/ops/csrc/pytorch/npu/active_rotated_filter_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/assign_score_withk_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/ball_query_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/bbox_overlaps_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/border_align_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/box_iou_quadri_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/box_iou_rotated_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/boxes_overlap_bev_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/chamfer_distance_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/common_util.h -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/deform_roi_pool.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/focal_loss_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/furthest_point_sample_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/furthest_point_sampling_with_dist_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/fused_bias_leakyrelu_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/gather_points_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/group_points_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/knn_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/ms_deform_attn_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/nms3d_normal_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/nms3d_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/nms_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/nms_rotated_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/pixel_group_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/points_in_box_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/points_in_box_npu_all.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/points_in_polygons_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/psa_mask_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/roi_align_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/roi_align_rotated_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/roi_align_rotated_v2_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/roi_pool_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/roiaware_pool3d_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/roipoint_pool3d_forward.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/rotated_feature_align_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/stack_ball_query_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/stack_group_points_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/three_interpolate_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/three_nn_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+copying mmcv/ops/csrc/pytorch/npu/voxelization_npu.cpp -> build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu
+running build_ext
+building 'mmcv._ext' extension
+[1/1] /usr/local/musa/bin/mcc -MD -MF /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/carafe_musa.o.d -DMMCV_WITH_MUSA -DMUSA_ARCH=22 -DTORCH_MUSA_ARCH=220 -I/data/yanguo.sun/mmcv/sunyanguo/mmcv/mmcv/ops/csrc/pytorch -I/data/yanguo.sun/mmcv/sunyanguo/mmcv/mmcv/ops/csrc/common -I/data/yanguo.sun/mmcv/sunyanguo/mmcv/mmcv/ops/csrc/common/musa -I/usr/local/musa/include -I/opt/conda/envs/py310/lib/python3.10/site-packages/torch_musa/share/generated_cuda_compatible/aten/src -I/opt/conda/envs/py310/lib/python3.10/site-packages/torch_musa/share/generated_cuda_compatible/include -I/opt/conda/envs/py310/lib/python3.10/site-packages/torch_musa/share/generated_cuda_compatible/include/torch/csrc/api/include -I/opt/conda/envs/py310/lib/python3.10/site-packages/torch_musa/share/torch_musa_codegen -I/opt/conda/envs/py310/lib/python3.10/site-packages -I/usr/local/musa/include -I/opt/conda/envs/py310/include/python3.10 -c -c /data/yanguo.sun/mmcv/sunyanguo/mmcv/mmcv/ops/csrc/pytorch/musa/carafe_musa.mu -o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/carafe_musa.o -fPIC --cuda-gpu-arch=mp_22 -march=native -DTORCH_API_INCLUDE_EXTENSION_H '-DPYBIND11_COMPILER_TYPE="_gcc"' '-DPYBIND11_STDLIB="_libstdcpp"' '-DPYBIND11_BUILD_ABI="_cxxabi1016"' -DTORCH_EXTENSION_NAME=_ext -D_GLIBCXX_USE_CXX11_ABI=1 -std=c++17
+In file included from /data/yanguo.sun/mmcv/sunyanguo/mmcv/mmcv/ops/csrc/pytorch/musa/carafe_musa.mu:2:
+/data/yanguo.sun/mmcv/sunyanguo/mmcv/mmcv/ops/csrc/common/musa/carafe_musa_kernel.muh:97:17: warning: loop not unrolled: the optimizer was unable to perform the requested transformation; the transformation might be disabled or specified as part of an unsupported transformation ordering [-Wpass-failed=transform-warning]
+__global__ void CARAFEForward(
+                ^
+/data/yanguo.sun/mmcv/sunyanguo/mmcv/mmcv/ops/csrc/common/musa/carafe_musa_kernel.muh:97:17: warning: loop not unrolled: the optimizer was unable to perform the requested transformation; the transformation might be disabled or specified as part of an unsupported transformation ordering [-Wpass-failed=transform-warning]
+/data/yanguo.sun/mmcv/sunyanguo/mmcv/mmcv/ops/csrc/common/musa/carafe_musa_kernel.muh:97:17: warning: loop not unrolled: the optimizer was unable to perform the requested transformation; the transformation might be disabled or specified as part of an unsupported transformation ordering [-Wpass-failed=transform-warning]
+/data/yanguo.sun/mmcv/sunyanguo/mmcv/mmcv/ops/csrc/common/musa/carafe_musa_kernel.muh:97:17: warning: loop not unrolled: the optimizer was unable to perform the requested transformation; the transformation might be disabled or specified as part of an unsupported transformation ordering [-Wpass-failed=transform-warning]
+/data/yanguo.sun/mmcv/sunyanguo/mmcv/mmcv/ops/csrc/common/musa/carafe_musa_kernel.muh:97:17: warning: loop not unrolled: the optimizer was unable to perform the requested transformation; the transformation might be disabled or specified as part of an unsupported transformation ordering [-Wpass-failed=transform-warning]
+/data/yanguo.sun/mmcv/sunyanguo/mmcv/mmcv/ops/csrc/common/musa/carafe_musa_kernel.muh:97:17: warning: loop not unrolled: the optimizer was unable to perform the requested transformation; the transformation might be disabled or specified as part of an unsupported transformation ordering [-Wpass-failed=transform-warning]
+/data/yanguo.sun/mmcv/sunyanguo/mmcv/mmcv/ops/csrc/common/musa/carafe_musa_kernel.muh:171:17: warning: loop not unrolled: the optimizer was unable to perform the requested transformation; the transformation might be disabled or specified as part of an unsupported transformation ordering [-Wpass-failed=transform-warning]
+__global__ void CARAFEBackward_Feature(
+                ^
+/data/yanguo.sun/mmcv/sunyanguo/mmcv/mmcv/ops/csrc/common/musa/carafe_musa_kernel.muh:171:17: warning: loop not unrolled: the optimizer was unable to perform the requested transformation; the transformation might be disabled or specified as part of an unsupported transformation ordering [-Wpass-failed=transform-warning]
+/data/yanguo.sun/mmcv/sunyanguo/mmcv/mmcv/ops/csrc/common/musa/carafe_musa_kernel.muh:171:17: warning: loop not unrolled: the optimizer was unable to perform the requested transformation; the transformation might be disabled or specified as part of an unsupported transformation ordering [-Wpass-failed=transform-warning]
+/data/yanguo.sun/mmcv/sunyanguo/mmcv/mmcv/ops/csrc/common/musa/carafe_musa_kernel.muh:171:17: warning: loop not unrolled: the optimizer was unable to perform the requested transformation; the transformation might be disabled or specified as part of an unsupported transformation ordering [-Wpass-failed=transform-warning]
+/data/yanguo.sun/mmcv/sunyanguo/mmcv/mmcv/ops/csrc/common/musa/carafe_musa_kernel.muh:171:17: warning: loop not unrolled: the optimizer was unable to perform the requested transformation; the transformation might be disabled or specified as part of an unsupported transformation ordering [-Wpass-failed=transform-warning]
+/data/yanguo.sun/mmcv/sunyanguo/mmcv/mmcv/ops/csrc/common/musa/carafe_musa_kernel.muh:171:17: warning: loop not unrolled: the optimizer was unable to perform the requested transformation; the transformation might be disabled or specified as part of an unsupported transformation ordering [-Wpass-failed=transform-warning]
+/data/yanguo.sun/mmcv/sunyanguo/mmcv/mmcv/ops/csrc/common/musa/carafe_musa_kernel.muh:171:17: warning: loop not unrolled: the optimizer was unable to perform the requested transformation; the transformation might be disabled or specified as part of an unsupported transformation ordering [-Wpass-failed=transform-warning]
+/data/yanguo.sun/mmcv/sunyanguo/mmcv/mmcv/ops/csrc/common/musa/carafe_musa_kernel.muh:171:17: warning: loop not unrolled: the optimizer was unable to perform the requested transformation; the transformation might be disabled or specified as part of an unsupported transformation ordering [-Wpass-failed=transform-warning]
+/data/yanguo.sun/mmcv/sunyanguo/mmcv/mmcv/ops/csrc/common/musa/carafe_musa_kernel.muh:171:17: warning: loop not unrolled: the optimizer was unable to perform the requested transformation; the transformation might be disabled or specified as part of an unsupported transformation ordering [-Wpass-failed=transform-warning]
+15 warnings generated when compiling for mp_22.
+g++ -pthread -B /opt/conda/envs/py310/compiler_compat -Wno-unused-result -Wsign-compare -DNDEBUG -fwrapv -O2 -Wall -fPIC -O2 -isystem /opt/conda/envs/py310/include -fPIC -O2 -isystem /opt/conda/envs/py310/include -pthread -B /opt/conda/envs/py310/compiler_compat -shared /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/active_rotated_filter.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/assign_score_withk.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/ball_query.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/bbox_overlaps.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/bezier_align.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/bias_act.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/border_align.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/box_iou_quadri.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/box_iou_rotated.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/carafe.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/carafe_naive.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/chamfer_distance.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/contour_expand.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/convex_iou.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/correlation.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/cpu/active_rotated_filter.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/cpu/bbox_overlaps_cpu.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/cpu/bezier_align.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/cpu/box_iou_quadri.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/cpu/box_iou_rotated.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/cpu/deform_conv.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/cpu/modulated_deform_conv.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/cpu/nms.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/cpu/nms_quadri.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/cpu/nms_rotated.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/cpu/pixel_group.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/cpu/points_in_boxes.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/cpu/psamask.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/cpu/roi_align.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/cpu/roi_align_rotated.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/cpu/rotated_feature_align.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/cpu/sparse_indice.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/cpu/sparse_maxpool.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/cpu/sparse_reordering.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/cpu/voxelization.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/deform_conv.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/deform_roi_pool.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/diff_iou_rotated.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/filtered_lrelu.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/focal_loss.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/furthest_point_sample.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/fused_bias_leakyrelu.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/fused_spconv_ops.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/gather_points.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/group_points.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/info.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/iou3d.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/knn.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/masked_conv2d.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/min_area_polygons.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/modulated_deform_conv.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/ms_deform_attn.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/active_rotated_filter_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/assign_score_withk_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/ball_query_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/bbox_overlaps_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/bezier_align_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/bias_act_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/border_align_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/box_iou_quadri_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/box_iou_rotated_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/carafe_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/carafe_naive_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/chamfer_distance_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/convex_iou.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/correlation_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/deform_conv_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/deform_roi_pool_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/diff_iou_rotated_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/filtered_lrelu.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/focal_loss_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/furthest_point_sample_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/fused_bias_leakyrelu_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/fused_spconv_ops_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/gather_points_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/group_points_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/iou3d_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/knn_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/masked_conv2d_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/min_area_polygons.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/modulated_deform_conv_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/ms_deform_attn_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/musabind.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/nms_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/nms_quadri_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/nms_rotated_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/points_in_boxes_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/points_in_polygons_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/prroi_pool_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/psamask_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/riroi_align_rotated_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/roi_align_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/roi_align_rotated_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/roi_pool_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/roiaware_pool3d_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/roipoint_pool3d_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/rotated_feature_align_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/scatter_points_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/sparse_indice.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/sparse_maxpool.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/sparse_pool_ops_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/sparse_reordering.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/spconv_ops_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/stack_ball_query_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/stack_group_points_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/sync_bn_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/three_interpolate_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/three_nn_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/tin_shift_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/upfirdn2d_kernel.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/musa/voxelization_musa.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/nms.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/nms_quadri.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/nms_rotated.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/pixel_group.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/points_in_boxes.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/points_in_polygons.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/prroi_pool.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/psamask.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/pybind.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/riroi_align_rotated.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/roi_align.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/roi_align_rotated.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/roi_align_rotated_v2.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/roi_pool.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/roiaware_pool3d.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/roipoint_pool3d.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/rotated_feature_align.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/scatter_points.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/sparse_pool_ops.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/spconv_ops.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/sync_bn.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/three_interpolate.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/three_nn.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/tin_shift.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/upfirdn2d.o /data/yanguo.sun/mmcv/sunyanguo/mmcv/build/temp.linux-x86_64-cpython-310/./mmcv/ops/csrc/pytorch/voxelization.o -L/opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib -L/opt/conda/envs/py310/lib/python3.10/site-packages/torch_musa/lib -L/usr/local/musa/lib -lc10 -ltorch -ltorch_cpu -ltorch_python -lmusa_python -o build/lib.linux-x86_64-cpython-310/mmcv/_ext.cpython-310-x86_64-linux-gnu.so -Wl,-rpath,$ORIGIN/lib -Wl,-rpath,/opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib -Wl,-rpath,/opt/conda/envs/py310/lib/python3.10/site-packages/torch_musa/lib
+creating build/bdist.linux-x86_64/egg
+creating build/bdist.linux-x86_64/egg/mmcv
+creating build/bdist.linux-x86_64/egg/mmcv/utils
+copying build/lib.linux-x86_64-cpython-310/mmcv/utils/device_type.py -> build/bdist.linux-x86_64/egg/mmcv/utils
+copying build/lib.linux-x86_64-cpython-310/mmcv/utils/parrots_jit.py -> build/bdist.linux-x86_64/egg/mmcv/utils
+copying build/lib.linux-x86_64-cpython-310/mmcv/utils/__init__.py -> build/bdist.linux-x86_64/egg/mmcv/utils
+copying build/lib.linux-x86_64-cpython-310/mmcv/utils/env.py -> build/bdist.linux-x86_64/egg/mmcv/utils
+copying build/lib.linux-x86_64-cpython-310/mmcv/utils/ext_loader.py -> build/bdist.linux-x86_64/egg/mmcv/utils
+creating build/bdist.linux-x86_64/egg/mmcv/arraymisc
+copying build/lib.linux-x86_64-cpython-310/mmcv/arraymisc/__init__.py -> build/bdist.linux-x86_64/egg/mmcv/arraymisc
+copying build/lib.linux-x86_64-cpython-310/mmcv/arraymisc/quantization.py -> build/bdist.linux-x86_64/egg/mmcv/arraymisc
+creating build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/psa_mask.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/sparse_structure.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/convex_iou.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/furthest_point_sample.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/deform_roi_pool.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/sync_bn.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/sparse_pool.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/sparse_conv.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/assign_score_withk.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/roipoint_pool3d.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/upfirdn2d.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/focal_loss.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/pixel_group.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/three_nn.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/points_in_polygons.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/fused_bias_leakyrelu.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/scatter_points.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/rotated_feature_align.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/chamfer_distance.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/points_sampler.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/corner_pool.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/roi_align_rotated_v2.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/sparse_modules.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/correlation.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/sparse_ops.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/box_iou_rotated.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/contour_expand.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/bezier_align.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/deprecated_wrappers.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/iou3d.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+creating build/bdist.linux-x86_64/egg/mmcv/ops/csrc
+creating build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/ball_query.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/spconv_utils.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/masked_conv2d.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/prroi_pool.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/active_rotated_filter.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/psamask.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/nms.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/tin_shift.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/roiaware_pool3d.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/info.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/carafe.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/filtered_lrelu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/contour_expand.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/chamfer_distance.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/riroi_align_rotated.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/group_points.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/box_iou_rotated.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/bbox_overlaps.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/voxelization.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/box_iou_quadri.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/convex_iou.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/fused_bias_leakyrelu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/sync_bn.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/three_interpolate.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/pybind.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/nms_quadri.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/modulated_deform_conv.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/roi_align_rotated.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/three_nn.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/scatter_points.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+creating build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/diff_iou_rotated_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/roi_align_rotated_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/scatter_points_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/stack_ball_query_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/convex_iou.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/bias_act_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/iou3d_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/sync_bn_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/carafe_naive_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/group_points_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/bezier_align_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/active_rotated_filter_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/knn_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/sparse_pool_ops_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/chamfer_distance_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/masked_conv2d_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/border_align_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/musabind.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/nms_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/roi_pool_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/deform_conv_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/correlation_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/box_iou_rotated_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/voxelization_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/deform_roi_pool_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/assign_score_withk_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/roiaware_pool3d_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/bbox_overlaps_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/sparse_indice.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/roi_align_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/nms_quadri_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/box_iou_quadri_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/spconv_ops_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/sparse_maxpool.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/upfirdn2d_kernel.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/fused_bias_leakyrelu_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/nms_rotated_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/ms_deform_attn_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/min_area_polygons.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/sparse_reordering.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/riroi_align_rotated_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/roipoint_pool3d_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/modulated_deform_conv_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/prroi_pool_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/stack_group_points_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/fused_spconv_ops_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/points_in_polygons_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/furthest_point_sample_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/gather_points_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/psamask_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/focal_loss_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/three_nn_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/filtered_lrelu.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/tin_shift_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/three_interpolate_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/rotated_feature_align_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/points_in_boxes_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/carafe_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/musa/ball_query_musa.mu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/points_in_polygons.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/carafe_naive.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/rotated_feature_align.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/bias_act.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/roi_align_rotated_v2.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/ms_deform_attn.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/pixel_group.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/sparse_pool_ops.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/roipoint_pool3d.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/min_area_polygons.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/roi_pool.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/deform_conv.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/spconv_ops.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/assign_score_withk.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+creating build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/furthest_point_sampling_with_dist_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/border_align_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/pixel_group_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/ball_query_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/boxes_overlap_bev_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/roi_align_rotated_v2_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/three_interpolate_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/box_iou_rotated_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/roi_align_rotated_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/focal_loss_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/nms3d_normal_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/points_in_polygons_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/furthest_point_sample_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/three_nn_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/nms_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/roi_pool_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/points_in_box_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/rotated_feature_align_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/fused_bias_leakyrelu_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/bbox_overlaps_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/roipoint_pool3d_forward.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/box_iou_quadri_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/gather_points_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/stack_ball_query_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/points_in_box_npu_all.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/voxelization_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/roi_align_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/assign_score_withk_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/group_points_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/nms_rotated_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/common_util.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/active_rotated_filter_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/ms_deform_attn_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/psa_mask_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/roiaware_pool3d_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/deform_roi_pool.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/knn_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/nms3d_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/chamfer_distance_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/npu/stack_group_points_npu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/npu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/diff_iou_rotated.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/gather_points.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+creating build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mps
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mps/bbox_overlaps_mps.mm -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mps
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/nms_rotated.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+creating build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/iou3d_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/nms_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/sparse_conv_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/nms_rotated_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/masked_conv2d_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/carafe_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/roi_align_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/ms_deform_attn_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/voxelization_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/roiaware_pool3d_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/box_iou_rotated.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/deform_roi_pool_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/roipoint_pool3d_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/tin_shift_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/rotated_feature_align_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/three_nn_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/diff_iou_rotated_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/mlu_common_helper.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/mlu_common_helper.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/bbox_overlaps_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/scatter_points_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/ball_query_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/roi_align_rotated_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/psamask_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/focal_loss_sigmoid_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/mlu/roi_pool_mlu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/focal_loss.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+creating build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cpu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu/sparse_indice.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cpu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu/active_rotated_filter.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cpu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu/psamask.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cpu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu/nms.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cpu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu/box_iou_rotated.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cpu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu/voxelization.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cpu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu/box_iou_quadri.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cpu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu/sparse_reordering.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cpu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu/nms_quadri.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cpu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu/modulated_deform_conv.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cpu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu/roi_align_rotated.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cpu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu/rotated_feature_align.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cpu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu/pixel_group.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cpu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu/deform_conv.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cpu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu/sparse_maxpool.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cpu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu/nms_rotated.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cpu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu/points_in_boxes.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cpu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu/roi_align.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cpu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu/bbox_overlaps_cpu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cpu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cpu/bezier_align.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cpu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/deform_roi_pool.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/fused_spconv_ops.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/furthest_point_sample.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/border_align.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/iou3d.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/points_in_boxes.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/roi_align.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/knn.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+creating build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/sparse_reordering.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/iou3d_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/fused_bias_leakyrelu_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/focal_loss_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/three_interpolate_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/knn_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/fused_spconv_ops_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/ms_deform_attn_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/masked_conv2d_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/prroi_pool_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/three_nn_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/ball_query_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/chamfer_distance_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/psamask_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/bezier_align_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/points_in_boxes_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/upfirdn2d_kernel.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/roi_pool_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/roipoint_pool3d_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/roi_align_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/gather_points_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/sparse_indice.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/box_iou_quadri_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/nms_quadri_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/furthest_point_sample_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/roiaware_pool3d_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/bias_act_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/sparse_pool_ops_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/scatter_points_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/rotated_feature_align_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/min_area_polygons.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/carafe_naive_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/stack_group_points_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/spconv_ops_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/sparse_maxpool.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/diff_iou_rotated_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/nms_rotated_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/carafe_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/correlation_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/riroi_align_rotated_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/stack_ball_query_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/nms_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/box_iou_rotated_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/points_in_polygons_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/modulated_deform_conv_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/group_points_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/filtered_lrelu.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/deform_conv_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/tin_shift_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/cudabind.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/assign_score_withk_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/sync_bn_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/voxelization_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/border_align_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/deform_roi_pool_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/roi_align_rotated_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/active_rotated_filter_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/bbox_overlaps_cuda.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/cuda/convex_iou.cu -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/upfirdn2d.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/bezier_align.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/pytorch/correlation.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/pytorch
+creating build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/box_iou_rotated_utils.hpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/parrots_cuda_helper.hpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/pytorch_device_registry.hpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common
+creating build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/utils
+creating build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/utils/spconv
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv/pybind11_utils.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/utils/spconv
+creating build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/utils/spconv/tensorview
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv/tensorview/helper_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/utils/spconv/tensorview
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv/tensorview/helper_launch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/utils/spconv/tensorview
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv/tensorview/tensorview.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/utils/spconv/tensorview
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv/prettyprint.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/utils/spconv
+creating build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/utils/spconv/spconv
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv/spconv/point2voxel.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/utils/spconv/spconv
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv/spconv/indice.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/utils/spconv/spconv
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv/spconv/reordering.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/utils/spconv/spconv
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv/spconv/geometry.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/utils/spconv/spconv
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv/spconv/maxpool.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/utils/spconv/spconv
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv/spconv/mp_helper.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/utils/spconv/spconv
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/utils/spconv/paramsgrid.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/utils/spconv
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/pytorch_cpp_helper.hpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/pytorch_musa_helper.hpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/pytorch_npu_util.hpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/parrots_cpp_helper.hpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common
+creating build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/musa
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/musa/common_musa_helper.hpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/musa
+creating build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/mps
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/mps/MPSLibrary.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/mps
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/mps/MPSDevice.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/mps
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/mps/MPSLibrary.mm -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/mps
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/mps/MPSUtils.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/mps
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/mps/MPSStream.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/mps
+creating build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/mlu/common_mlu_helper.hpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/mlu
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/pytorch_cuda_helper.hpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/pytorch_mlu_helper.hpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common
+creating build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/voxelization_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/ball_query_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/points_in_polygons_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/modulated_deform_conv_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/prroi_pool_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/deform_conv_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/assign_score_withk_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/correlation_cuda.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/bbox_overlaps_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/roi_align_rotated_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/scatter_points_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/ms_deform_attn_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/deform_roi_pool_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/three_interpolate_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/roi_pool_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/group_points_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/carafe_naive_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/min_area_polygons_cuda.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/iou3d_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/riroi_align_rotated_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/stack_group_points_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/active_rotated_filter_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/furthest_point_sample_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/diff_iou_rotated_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/tin_shift_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/softmax_focal_loss_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/knn_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/box_iou_quadri_cuda.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/parrots_cudawarpfunction.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/points_in_boxes_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/stack_ball_query_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/roipoint_pool3d_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/sync_bn_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/roiaware_pool3d_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/convex_iou_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/masked_conv2d_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/box_iou_rotated_cuda.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/carafe_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/nms_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/roi_align_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/psamask_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/sigmoid_focal_loss_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/bezier_align_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/rotated_feature_align_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/chamfer_distance_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/nms_rotated_cuda.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/three_nn_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/gather_points_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+creating build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda/spconv
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/spconv/reordering.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda/spconv
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/spconv/indice.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda/spconv
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/nms_quadri_cuda.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/border_align_cuda_kernel.cuh -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/cuda/common_cuda_helper.hpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common/cuda
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/common/pytorch_npu_helper.hpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/common
+creating build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/riroi_align_rotated_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/diff_iou_rotated_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/assign_score_withk_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/roi_pool_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/focal_loss_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/ball_query.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/correlation_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/deform_conv_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/rotated_feature_align_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/psamask_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/min_area_polygons_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/three_nn_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/masked_conv2d.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/pixel_group_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/roipoint_pool3d_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/group_points_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/box_iou_rotated_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/prroi_pool.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/active_rotated_filter.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/psamask.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/nms.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/tin_shift.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/roiaware_pool3d.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/points_in_polygons_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/contour_expand_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/info.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/iou3d_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/roi_align_rotated_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/pixel_group_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/modulated_deform_conv_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/roi_align_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/ball_query._parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/carafe.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/convex_iou_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/bbox_overlaps_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/active_rotated_filter_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/contour_expand.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/sync_bn_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/deform_conv_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/chamfer_distance.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/masked_conv2d_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/riroi_align_rotated.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/carafe_naive_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/three_interpolate_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/gather_points_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/group_points.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/box_iou_rotated.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/diff_iou_rotated_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/bbox_overlaps.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/voxelization.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/furthest_point_sample_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/roipoint_pool3d_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/convex_iou.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/roi_align_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/riroi_align_rotated_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/fused_bias_leakyrelu.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/sync_bn.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/fused_bias_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/group_points_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/voxelization_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/focal_loss_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/knn_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/three_interpolate.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/ball_query_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/points_in_boxes_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/masked_conv2d_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/modulated_deform_conv.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/roi_align_rotated.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/active_rotated_filter_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/three_nn.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/assign_score_withk_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/points_in_polygons.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/carafe_naive.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/bbox_overlaps_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/rotated_feature_align.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/three_interpolate_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/prroi_pool_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/points_in_polygons_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/ms_deform_attn.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/ms_deform_attn_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/nms_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/points_in_boxes_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/furthest_point_sample_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/convex_iou_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/pixel_group.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/box_iou_rotated_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/carafe_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/modulated_deform_conv_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/roipoint_pool3d.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/min_area_polygons.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/contour_expand_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/roi_pool.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/deform_conv.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/carafe_naive_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/assign_score_withk.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/chamfer_distance_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/diff_iou_rotated.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/cudabind.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/chamfer_distance_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/carafe_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/gather_points.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/gather_points_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/prroi_pool_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/roiaware_pool3d_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/nms_rotated.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/deform_roi_pool_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/rotated_feature_align_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/focal_loss.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/deform_roi_pool.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/tin_shift_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/furthest_point_sample.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/border_align.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/iou3d.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/points_in_boxes.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/knn_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/roi_align.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/correlation_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/psamask_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/roi_align_rotated_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/knn.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/sync_bn_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/three_nn_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/border_align_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/min_area_polygons_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/roiaware_pool3d_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/upfirdn2d_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/upfirdn2d.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/roi_pool_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/tin_shift_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/nms_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/iou3d_parrots.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/deform_roi_pool_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/voxelization_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/border_align_pytorch.h -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/csrc/parrots/correlation.cpp -> build/bdist.linux-x86_64/egg/mmcv/ops/csrc/parrots
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/tin_shift.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/active_rotated_filter.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/filtered_lrelu.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/prroi_pool.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/point_sample.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/conv2d_gradfix.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/roi_align.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/modulated_deform_conv.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/multi_scale_deform_attn.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/roi_pool.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/box_iou_quadri.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/masked_conv.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/__init__.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/roiaware_pool3d.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/carafe.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/riroi_align_rotated.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/saconv.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/points_in_boxes.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/gather_points.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/diff_iou_rotated.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/merge_cells.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/roi_align_rotated.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/three_interpolate.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/voxelize.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/cc_attention.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/group_points.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/sparse_functional.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/info.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/deform_conv.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/bbox.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/knn.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/bias_act.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/nms.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/ball_query.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/min_area_polygons.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+copying build/lib.linux-x86_64-cpython-310/mmcv/ops/border_align.py -> build/bdist.linux-x86_64/egg/mmcv/ops
+creating build/bdist.linux-x86_64/egg/mmcv/image
+copying build/lib.linux-x86_64-cpython-310/mmcv/image/misc.py -> build/bdist.linux-x86_64/egg/mmcv/image
+copying build/lib.linux-x86_64-cpython-310/mmcv/image/__init__.py -> build/bdist.linux-x86_64/egg/mmcv/image
+copying build/lib.linux-x86_64-cpython-310/mmcv/image/io.py -> build/bdist.linux-x86_64/egg/mmcv/image
+copying build/lib.linux-x86_64-cpython-310/mmcv/image/colorspace.py -> build/bdist.linux-x86_64/egg/mmcv/image
+copying build/lib.linux-x86_64-cpython-310/mmcv/image/geometric.py -> build/bdist.linux-x86_64/egg/mmcv/image
+copying build/lib.linux-x86_64-cpython-310/mmcv/image/photometric.py -> build/bdist.linux-x86_64/egg/mmcv/image
+creating build/bdist.linux-x86_64/egg/mmcv/video
+copying build/lib.linux-x86_64-cpython-310/mmcv/video/processing.py -> build/bdist.linux-x86_64/egg/mmcv/video
+copying build/lib.linux-x86_64-cpython-310/mmcv/video/optflow.py -> build/bdist.linux-x86_64/egg/mmcv/video
+copying build/lib.linux-x86_64-cpython-310/mmcv/video/__init__.py -> build/bdist.linux-x86_64/egg/mmcv/video
+copying build/lib.linux-x86_64-cpython-310/mmcv/video/io.py -> build/bdist.linux-x86_64/egg/mmcv/video
+creating build/bdist.linux-x86_64/egg/mmcv/transforms
+copying build/lib.linux-x86_64-cpython-310/mmcv/transforms/wrappers.py -> build/bdist.linux-x86_64/egg/mmcv/transforms
+copying build/lib.linux-x86_64-cpython-310/mmcv/transforms/processing.py -> build/bdist.linux-x86_64/egg/mmcv/transforms
+copying build/lib.linux-x86_64-cpython-310/mmcv/transforms/utils.py -> build/bdist.linux-x86_64/egg/mmcv/transforms
+copying build/lib.linux-x86_64-cpython-310/mmcv/transforms/builder.py -> build/bdist.linux-x86_64/egg/mmcv/transforms
+copying build/lib.linux-x86_64-cpython-310/mmcv/transforms/__init__.py -> build/bdist.linux-x86_64/egg/mmcv/transforms
+copying build/lib.linux-x86_64-cpython-310/mmcv/transforms/loading.py -> build/bdist.linux-x86_64/egg/mmcv/transforms
+copying build/lib.linux-x86_64-cpython-310/mmcv/transforms/base.py -> build/bdist.linux-x86_64/egg/mmcv/transforms
+copying build/lib.linux-x86_64-cpython-310/mmcv/transforms/formatting.py -> build/bdist.linux-x86_64/egg/mmcv/transforms
+copying build/lib.linux-x86_64-cpython-310/mmcv/__init__.py -> build/bdist.linux-x86_64/egg/mmcv
+creating build/bdist.linux-x86_64/egg/mmcv/visualization
+copying build/lib.linux-x86_64-cpython-310/mmcv/visualization/optflow.py -> build/bdist.linux-x86_64/egg/mmcv/visualization
+copying build/lib.linux-x86_64-cpython-310/mmcv/visualization/image.py -> build/bdist.linux-x86_64/egg/mmcv/visualization
+copying build/lib.linux-x86_64-cpython-310/mmcv/visualization/__init__.py -> build/bdist.linux-x86_64/egg/mmcv/visualization
+copying build/lib.linux-x86_64-cpython-310/mmcv/visualization/color.py -> build/bdist.linux-x86_64/egg/mmcv/visualization
+creating build/bdist.linux-x86_64/egg/mmcv/cnn
+creating build/bdist.linux-x86_64/egg/mmcv/cnn/utils
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/utils/fuse_conv_bn.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/utils
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/utils/flops_counter.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/utils
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/utils/__init__.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/utils
+creating build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks/wrappers.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks/scale.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks/generalized_attention.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks/plugin.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks/swish.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks/drop.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks/depthwise_separable_conv_module.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks/conv_ws.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks/hswish.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks/conv_module.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks/__init__.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks/activation.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks/padding.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks/conv.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks/transformer.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks/upsample.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks/non_local.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks/norm.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks/context_block.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks/conv2d_adaptive_padding.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/bricks/hsigmoid.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/bricks
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/__init__.py -> build/bdist.linux-x86_64/egg/mmcv/cnn
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/alexnet.py -> build/bdist.linux-x86_64/egg/mmcv/cnn
+creating build/bdist.linux-x86_64/egg/mmcv/cnn/rfsearch
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/rfsearch/search.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/rfsearch
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/rfsearch/utils.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/rfsearch
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/rfsearch/__init__.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/rfsearch
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/rfsearch/operator.py -> build/bdist.linux-x86_64/egg/mmcv/cnn/rfsearch
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/resnet.py -> build/bdist.linux-x86_64/egg/mmcv/cnn
+copying build/lib.linux-x86_64-cpython-310/mmcv/cnn/vgg.py -> build/bdist.linux-x86_64/egg/mmcv/cnn
+copying build/lib.linux-x86_64-cpython-310/mmcv/version.py -> build/bdist.linux-x86_64/egg/mmcv
+copying build/lib.linux-x86_64-cpython-310/mmcv/_ext.cpython-310-x86_64-linux-gnu.so -> build/bdist.linux-x86_64/egg/mmcv
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/utils/device_type.py to device_type.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/utils/parrots_jit.py to parrots_jit.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/utils/__init__.py to __init__.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/utils/env.py to env.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/utils/ext_loader.py to ext_loader.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/arraymisc/__init__.py to __init__.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/arraymisc/quantization.py to quantization.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/psa_mask.py to psa_mask.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/sparse_structure.py to sparse_structure.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/convex_iou.py to convex_iou.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/furthest_point_sample.py to furthest_point_sample.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/deform_roi_pool.py to deform_roi_pool.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/sync_bn.py to sync_bn.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/sparse_pool.py to sparse_pool.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/sparse_conv.py to sparse_conv.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/assign_score_withk.py to assign_score_withk.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/roipoint_pool3d.py to roipoint_pool3d.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/upfirdn2d.py to upfirdn2d.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/focal_loss.py to focal_loss.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/pixel_group.py to pixel_group.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/three_nn.py to three_nn.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/points_in_polygons.py to points_in_polygons.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/fused_bias_leakyrelu.py to fused_bias_leakyrelu.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/scatter_points.py to scatter_points.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/rotated_feature_align.py to rotated_feature_align.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/chamfer_distance.py to chamfer_distance.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/points_sampler.py to points_sampler.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/corner_pool.py to corner_pool.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/roi_align_rotated_v2.py to roi_align_rotated_v2.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/sparse_modules.py to sparse_modules.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/correlation.py to correlation.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/sparse_ops.py to sparse_ops.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/box_iou_rotated.py to box_iou_rotated.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/contour_expand.py to contour_expand.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/bezier_align.py to bezier_align.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/deprecated_wrappers.py to deprecated_wrappers.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/iou3d.py to iou3d.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/tin_shift.py to tin_shift.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/active_rotated_filter.py to active_rotated_filter.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/filtered_lrelu.py to filtered_lrelu.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/prroi_pool.py to prroi_pool.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/point_sample.py to point_sample.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/conv2d_gradfix.py to conv2d_gradfix.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/roi_align.py to roi_align.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/modulated_deform_conv.py to modulated_deform_conv.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/multi_scale_deform_attn.py to multi_scale_deform_attn.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/roi_pool.py to roi_pool.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/box_iou_quadri.py to box_iou_quadri.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/masked_conv.py to masked_conv.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/__init__.py to __init__.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/roiaware_pool3d.py to roiaware_pool3d.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/carafe.py to carafe.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/riroi_align_rotated.py to riroi_align_rotated.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/saconv.py to saconv.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/points_in_boxes.py to points_in_boxes.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/gather_points.py to gather_points.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/diff_iou_rotated.py to diff_iou_rotated.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/merge_cells.py to merge_cells.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/roi_align_rotated.py to roi_align_rotated.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/three_interpolate.py to three_interpolate.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/voxelize.py to voxelize.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/cc_attention.py to cc_attention.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/group_points.py to group_points.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/sparse_functional.py to sparse_functional.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/info.py to info.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/deform_conv.py to deform_conv.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/bbox.py to bbox.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/knn.py to knn.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/bias_act.py to bias_act.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/nms.py to nms.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/ball_query.py to ball_query.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/min_area_polygons.py to min_area_polygons.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/ops/border_align.py to border_align.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/image/misc.py to misc.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/image/__init__.py to __init__.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/image/io.py to io.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/image/colorspace.py to colorspace.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/image/geometric.py to geometric.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/image/photometric.py to photometric.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/video/processing.py to processing.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/video/optflow.py to optflow.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/video/__init__.py to __init__.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/video/io.py to io.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/transforms/wrappers.py to wrappers.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/transforms/processing.py to processing.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/transforms/utils.py to utils.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/transforms/builder.py to builder.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/transforms/__init__.py to __init__.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/transforms/loading.py to loading.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/transforms/base.py to base.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/transforms/formatting.py to formatting.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/__init__.py to __init__.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/visualization/optflow.py to optflow.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/visualization/image.py to image.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/visualization/__init__.py to __init__.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/visualization/color.py to color.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/utils/fuse_conv_bn.py to fuse_conv_bn.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/utils/flops_counter.py to flops_counter.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/utils/__init__.py to __init__.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/bricks/wrappers.py to wrappers.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/bricks/scale.py to scale.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/bricks/generalized_attention.py to generalized_attention.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/bricks/plugin.py to plugin.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/bricks/swish.py to swish.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/bricks/drop.py to drop.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/bricks/depthwise_separable_conv_module.py to depthwise_separable_conv_module.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/bricks/conv_ws.py to conv_ws.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/bricks/hswish.py to hswish.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/bricks/conv_module.py to conv_module.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/bricks/__init__.py to __init__.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/bricks/activation.py to activation.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/bricks/padding.py to padding.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/bricks/conv.py to conv.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/bricks/transformer.py to transformer.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/bricks/upsample.py to upsample.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/bricks/non_local.py to non_local.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/bricks/norm.py to norm.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/bricks/context_block.py to context_block.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/bricks/conv2d_adaptive_padding.py to conv2d_adaptive_padding.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/bricks/hsigmoid.py to hsigmoid.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/__init__.py to __init__.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/alexnet.py to alexnet.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/rfsearch/search.py to search.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/rfsearch/utils.py to utils.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/rfsearch/__init__.py to __init__.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/rfsearch/operator.py to operator.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/resnet.py to resnet.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/cnn/vgg.py to vgg.cpython-310.pyc
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/version.py to version.cpython-310.pyc
+creating stub loader for mmcv/_ext.cpython-310-x86_64-linux-gnu.so
+byte-compiling build/bdist.linux-x86_64/egg/mmcv/_ext.py to _ext.cpython-310.pyc
+creating build/bdist.linux-x86_64/egg/EGG-INFO
+copying mmcv.egg-info/PKG-INFO -> build/bdist.linux-x86_64/egg/EGG-INFO
+copying mmcv.egg-info/SOURCES.txt -> build/bdist.linux-x86_64/egg/EGG-INFO
+copying mmcv.egg-info/dependency_links.txt -> build/bdist.linux-x86_64/egg/EGG-INFO
+copying mmcv.egg-info/not-zip-safe -> build/bdist.linux-x86_64/egg/EGG-INFO
+copying mmcv.egg-info/requires.txt -> build/bdist.linux-x86_64/egg/EGG-INFO
+copying mmcv.egg-info/top_level.txt -> build/bdist.linux-x86_64/egg/EGG-INFO
+writing build/bdist.linux-x86_64/egg/EGG-INFO/native_libs.txt
+creating 'dist/mmcv-2.2.0-py3.10-linux-x86_64.egg' and adding 'build/bdist.linux-x86_64/egg' to it
+removing 'build/bdist.linux-x86_64/egg' (and everything under it)
+Processing mmcv-2.2.0-py3.10-linux-x86_64.egg
+removing '/opt/conda/envs/py310/lib/python3.10/site-packages/mmcv-2.2.0-py3.10-linux-x86_64.egg' (and everything under it)
+creating /opt/conda/envs/py310/lib/python3.10/site-packages/mmcv-2.2.0-py3.10-linux-x86_64.egg
+Extracting mmcv-2.2.0-py3.10-linux-x86_64.egg to /opt/conda/envs/py310/lib/python3.10/site-packages
+Adding mmcv 2.2.0 to easy-install.pth file
+
+Installed /opt/conda/envs/py310/lib/python3.10/site-packages/mmcv-2.2.0-py3.10-linux-x86_64.egg
+Processing dependencies for mmcv==2.2.0
+Searching for yapf==0.43.0
+Best match: yapf 0.43.0
+Adding yapf 0.43.0 to easy-install.pth file
+Installing yapf script to /opt/conda/envs/py310/bin
+Installing yapf-diff script to /opt/conda/envs/py310/bin
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Searching for PyYAML==6.0.2
+Best match: PyYAML 6.0.2
+Adding PyYAML 6.0.2 to easy-install.pth file
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Searching for Pillow==9.2.0
+Best match: Pillow 9.2.0
+Adding Pillow 9.2.0 to easy-install.pth file
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Searching for packaging==24.1
+Best match: packaging 24.1
+Adding packaging 24.1 to easy-install.pth file
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages/setuptools/_vendor
+Searching for numpy==1.26.0
+Best match: numpy 1.26.0
+Adding numpy 1.26.0 to easy-install.pth file
+Installing f2py script to /opt/conda/envs/py310/bin
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Searching for mmengine==0.10.6
+Best match: mmengine 0.10.6
+Adding mmengine 0.10.6 to easy-install.pth file
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Searching for addict==2.4.0
+Best match: addict 2.4.0
+Adding addict 2.4.0 to easy-install.pth file
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Searching for tomli==2.0.2
+Best match: tomli 2.0.2
+Adding tomli 2.0.2 to easy-install.pth file
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Searching for platformdirs==4.3.6
+Best match: platformdirs 4.3.6
+Adding platformdirs 4.3.6 to easy-install.pth file
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Searching for opencv-python==4.11.0.86
+Best match: opencv-python 4.11.0.86
+Adding opencv-python 4.11.0.86 to easy-install.pth file
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Searching for termcolor==2.5.0
+Best match: termcolor 2.5.0
+Adding termcolor 2.5.0 to easy-install.pth file
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Searching for rich==13.9.4
+Best match: rich 13.9.4
+Adding rich 13.9.4 to easy-install.pth file
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Searching for matplotlib==3.10.0
+Best match: matplotlib 3.10.0
+Adding matplotlib 3.10.0 to easy-install.pth file
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Searching for typing-extensions==4.12.2
+Best match: typing-extensions 4.12.2
+typing-extensions 4.12.2 is already the active version in easy-install.pth
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages/setuptools/_vendor
+Searching for pygments==2.19.1
+Best match: pygments 2.19.1
+Adding pygments 2.19.1 to easy-install.pth file
+Installing pygmentize script to /opt/conda/envs/py310/bin
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Searching for markdown-it-py==3.0.0
+Best match: markdown-it-py 3.0.0
+Adding markdown-it-py 3.0.0 to easy-install.pth file
+Installing markdown-it script to /opt/conda/envs/py310/bin
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Searching for python-dateutil==2.9.0.post0
+Best match: python-dateutil 2.9.0.post0
+Adding python-dateutil 2.9.0.post0 to easy-install.pth file
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Searching for pyparsing==3.2.1
+Best match: pyparsing 3.2.1
+Adding pyparsing 3.2.1 to easy-install.pth file
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Searching for kiwisolver==1.4.8
+Best match: kiwisolver 1.4.8
+Adding kiwisolver 1.4.8 to easy-install.pth file
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Searching for fonttools==4.55.8
+Best match: fonttools 4.55.8
+Adding fonttools 4.55.8 to easy-install.pth file
+Installing fonttools script to /opt/conda/envs/py310/bin
+Installing pyftmerge script to /opt/conda/envs/py310/bin
+Installing pyftsubset script to /opt/conda/envs/py310/bin
+Installing ttx script to /opt/conda/envs/py310/bin
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Searching for cycler==0.12.1
+Best match: cycler 0.12.1
+Adding cycler 0.12.1 to easy-install.pth file
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Searching for contourpy==1.3.1
+Best match: contourpy 1.3.1
+Adding contourpy 1.3.1 to easy-install.pth file
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Searching for mdurl==0.1.2
+Best match: mdurl 0.1.2
+Adding mdurl 0.1.2 to easy-install.pth file
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Searching for six==1.16.0
+Best match: six 1.16.0
+Adding six 1.16.0 to easy-install.pth file
+
+Using /opt/conda/envs/py310/lib/python3.10/site-packages
+Finished processing dependencies for mmcv==2.2.0

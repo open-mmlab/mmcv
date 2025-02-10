@@ -27,7 +27,7 @@
 #include <type_traits>
 #include <utils/spconv/tensorview/helper_kernel.muh>
 
-#include "pytorch_cuda_helper.hpp"
+#include "pytorch_musa_helper.hpp"
 
 template <typename scalar_t, typename Index, int NumTLP, int NumILP>
 __global__ void maxPoolFwdBlockKernel(scalar_t *outFeatures,
@@ -345,7 +345,7 @@ struct SparseMaxPoolForwardFunctor<tv::TorchGPU, scalar_t, Index> {
                                     indices.subview(0).data(),
                                     indices.subview(1).data(), numHotBlock,
                                     numPlanes / vecloadFactor);
-            TV_CHECK_CUDA_ERR();
+            TV_CHECK_MUSA_ERR();
           }
 
           if (size > numHotBlock) {
@@ -355,7 +355,7 @@ struct SparseMaxPoolForwardFunctor<tv::TorchGPU, scalar_t, Index> {
                                        indices.subview(0).data() + numHotBlock,
                                        indices.subview(1).data() + numHotBlock,
                                        size - numHotBlock, numPlanes);
-            TV_CHECK_CUDA_ERR();
+            TV_CHECK_MUSA_ERR();
           }
           notFound = false;
         }
@@ -373,7 +373,7 @@ struct SparseMaxPoolForwardFunctor<tv::TorchGPU, scalar_t, Index> {
                 outFeatures.data(), inFeatures.data(),
                 indices.subview(0).data(), indices.subview(1).data(),
                 numHotBlock, numPlanes);
-        TV_CHECK_CUDA_ERR();
+        TV_CHECK_MUSA_ERR();
       }
 
       if (size > numHotBlock) {
@@ -384,7 +384,7 @@ struct SparseMaxPoolForwardFunctor<tv::TorchGPU, scalar_t, Index> {
                 indices.subview(0).data() + numHotBlock,
                 indices.subview(1).data() + numHotBlock, size - numHotBlock,
                 numPlanes);
-        TV_CHECK_CUDA_ERR();
+        TV_CHECK_MUSA_ERR();
       }
     }
   }
@@ -422,7 +422,7 @@ struct SparseMaxPoolBackwardFunctor<tv::TorchGPU, scalar_t, Index> {
                                     indices.subview(0).data(),
                                     indices.subview(1).data(), numHotBlock,
                                     numPlanes / vecloadFactor);
-            TV_CHECK_CUDA_ERR();
+            TV_CHECK_MUSA_ERR();
           }
 
           if (size > numHotBlock) {
@@ -433,7 +433,7 @@ struct SparseMaxPoolBackwardFunctor<tv::TorchGPU, scalar_t, Index> {
                                        indices.subview(0).data() + numHotBlock,
                                        indices.subview(1).data() + numHotBlock,
                                        size - numHotBlock, numPlanes);
-            TV_CHECK_CUDA_ERR();
+            TV_CHECK_MUSA_ERR();
           }
           notFound = false;
         }
@@ -451,7 +451,7 @@ struct SparseMaxPoolBackwardFunctor<tv::TorchGPU, scalar_t, Index> {
                 outFeatures.data(), inFeatures.data(), fout.data(), fin.data(),
                 indices.subview(0).data(), indices.subview(1).data(),
                 numHotBlock, numPlanes);
-        TV_CHECK_CUDA_ERR();
+        TV_CHECK_MUSA_ERR();
       }
 
       if (size > numHotBlock) {
@@ -462,7 +462,7 @@ struct SparseMaxPoolBackwardFunctor<tv::TorchGPU, scalar_t, Index> {
                 indices.subview(0).data() + numHotBlock,
                 indices.subview(1).data() + numHotBlock, size - numHotBlock,
                 numPlanes);
-        TV_CHECK_CUDA_ERR();
+        TV_CHECK_MUSA_ERR();
       }
     }
   }

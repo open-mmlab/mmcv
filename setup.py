@@ -15,6 +15,10 @@ try:
             os.getenv('FORCE_MLU', '0') == '1':
         from torch_mlu.utils.cpp_extension import BuildExtension
         EXT_TYPE = 'pytorch'
+    elif (hasattr(torch, 'is_musa_available') and torch.is_musa_available()) or \
+            os.getenv('FORCE_MUSA', '0') == '1':
+        from torch_musa.utils.musa_extension import BuildExtension
+        EXT_TYPE = 'pytorch'
     else:
         from torch.utils.cpp_extension import BuildExtension
         EXT_TYPE = 'pytorch'
@@ -22,12 +26,6 @@ try:
 except ModuleNotFoundError:
     cmd_class = {}
     print('Skip building ext ops due to the absence of torch.')
-
-try:
-    from torch_musa.utils.musa_extension import MUSAExtension,BuildExtension
-    cmd_class = {'build_ext': BuildExtension}
-except ModuleNotFoundError:
-    pass
 
 
 def choose_requirement(primary, secondary):
@@ -430,6 +428,7 @@ def get_extensions():
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/npu'))
         elif hasattr(torch, 'musa') or os.getenv('FORCE_MUSA', '0') == '1':
+            from torch_musa.utils.musa_extension import MUSAExtension
             from torch_musa.testing import get_musa_arch
             define_macros += [('MMCV_WITH_MUSA', None),
                               ('MUSA_ARCH', str(get_musa_arch()))]

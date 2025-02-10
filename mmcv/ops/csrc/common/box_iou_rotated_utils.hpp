@@ -192,7 +192,7 @@ HOST_DEVICE_INLINE int convex_hull_graham(const Point<T> (&p)[24],
   }
 
 #if defined(__CUDACC__) || defined(__MUSACC__)
-  // CUDA/MUSA version
+  // CUDA version
   // In the future, we can potentially use thrust
   // for sorting here to improve speed (though not guaranteed)
   for (int i = 1; i < num_in - 1; i++) {

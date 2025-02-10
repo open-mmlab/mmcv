@@ -100,7 +100,7 @@ void sstream_print(SStream &ss, T val, TArgs... args) {
       throw std::runtime_error(__macro_s.str());               \
     }                                                          \
   }
-  
+
 #define TV_CHECK_MUSA_ERR()                                    \
   {                                                            \
     auto err = musaGetLastError();                             \

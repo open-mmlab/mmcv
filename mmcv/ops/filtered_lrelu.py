@@ -111,19 +111,36 @@ def filtered_lrelu(input: torch.Tensor,
             clamp=clamp,
             flip_filter=flip_filter).apply(input, filter_up, filter_down, bias,
                                            None, 0, 0)
-    try:
-        if use_custom_op and input.is_musa:
-            return _filtered_lrelu_musa(
-                up=up,
-                down=down,
-                padding=padding,
-                gain=gain,
-                slope=slope,
-                clamp=clamp,
-                flip_filter=flip_filter).apply(input, filter_up, filter_down, bias,
-                                            None, 0, 0)
-    except AttributeError:
-        pass
+    if use_custom_op and input.is_musa:
+        # @MTAI there have some bugs
+        # return _filtered_lrelu_musa(
+        #     up=up,
+        #     down=down,
+        #     padding=padding,
+        #     gain=gain,
+        #     slope=slope,
+        #     clamp=clamp,
+        #     flip_filter=flip_filter).apply(input, filter_up, filter_down, bias,
+        #                                 None, 0, 0)
+        input = input.cpu()
+        if bias is not None:
+            bias = bias.cpu()
+        if filter_up is not None:
+            filter_up = filter_up.cpu()
+        if filter_down is not None:
+            filter_down = filter_down.cpu()
+        return _filtered_lrelu_ref(
+            input,
+            filter_up=filter_up,
+            filter_down=filter_down,
+            bias=bias,
+            up=up,
+            down=down,
+            padding=padding,
+            gain=gain,
+            slope=slope,
+            clamp=clamp,
+            flip_filter=flip_filter)
     return _filtered_lrelu_ref(
         input,
         filter_up=filter_up,

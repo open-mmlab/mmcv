@@ -8,8 +8,8 @@
 #include <c10/util/Half.h>
 #include <torch/types.h>
 
-#include "pytorch_cuda_helper.hpp"
-
+#include "pytorch_musa_helper.hpp"
+#if MUSA_ARCH > 21
 struct upfirdn2d_kernel_params {
   const void *x;
   const float *f;
@@ -38,7 +38,7 @@ struct upfirdn2d_kernel_params {
 };
 
 //------------------------------------------------------------------------
-// CUDA kernel specialization.
+// MUSA kernel specialization.
 
 struct upfirdn2d_kernel_spec {
   void *kernel;
@@ -49,7 +49,7 @@ struct upfirdn2d_kernel_spec {
 };
 
 //------------------------------------------------------------------------
-// CUDA kernel selection.
+// MUSA kernel selection.
 
 template <class T>
 upfirdn2d_kernel_spec choose_upfirdn2d_kernel(const upfirdn2d_kernel_params &p);
@@ -87,7 +87,7 @@ static __device__ __forceinline__ int floor_div(int a, int b) {
 }
 
 //------------------------------------------------------------------------
-// Generic CUDA implementation for large filters.
+// Generic MUSA implementation for large filters.
 
 template <class T>
 static __global__ void upfirdn2d_kernel_large(upfirdn2d_kernel_params p) {
@@ -160,7 +160,7 @@ static __global__ void upfirdn2d_kernel_large(upfirdn2d_kernel_params p) {
 }
 
 //------------------------------------------------------------------------
-// Specialized CUDA implementation for small filters.
+// Specialized MUSA implementation for small filters.
 
 template <class T, int upx, int upy, int downx, int downy, int filterW,
           int filterH, int tileOutW, int tileOutH, int loopMinor>
@@ -225,9 +225,9 @@ static __global__ void upfirdn2d_kernel_small(upfirdn2d_kernel_params p) {
         scalar_t v = 0;
         if (inX >= 0 & inY >= 0 & inX < p.inSize.x & inY < p.inSize.y &
             c < p.inSize.z)
-          v = (scalar_t)((const T *)
-                             p.x)[inX * p.inStride.x + inY * p.inStride.y +
-                                  c * p.inStride.z + n * p.inStride.w];
+          v = (scalar_t)(
+              (const T *)p.x)[inX * p.inStride.x + inY * p.inStride.y +
+                              c * p.inStride.z + n * p.inStride.w];
         sx[relInY][relInX][relC] = v;
       }
 
@@ -273,7 +273,7 @@ static __global__ void upfirdn2d_kernel_small(upfirdn2d_kernel_params p) {
 }
 
 //------------------------------------------------------------------------
-// CUDA kernel selection.
+// MUSA kernel selection.
 
 template <class T>
 upfirdn2d_kernel_spec choose_upfirdn2d_kernel(
@@ -644,7 +644,7 @@ torch::Tensor upfirdn2d_op(torch::Tensor x, torch::Tensor f, int upx, int upy,
                            int downx, int downy, int padx0, int padx1,
                            int pady0, int pady1, bool flip, float gain) {
   // Validate arguments.
-  TORCH_CHECK(x.is_privateuseone(), "x must reside on CUDA device");
+  TORCH_CHECK(x.is_privateuseone(), "x must reside on MUSA device");
   TORCH_CHECK(f.device() == x.device(),
               "f must reside on the same device as x");
   TORCH_CHECK(f.dtype() == torch::kFloat, "f must be float32");
@@ -680,7 +680,7 @@ torch::Tensor upfirdn2d_op(torch::Tensor x, torch::Tensor f, int upx, int upy,
                   INT_MAX,
               "output memory footprint is too large");
 
-  // Initialize CUDA kernel parameters.
+  // Initialize MUSA kernel parameters.
   upfirdn2d_kernel_params p;
   p.x = x.data_ptr();
   p.f = f.data_ptr<float>();
@@ -703,9 +703,9 @@ torch::Tensor upfirdn2d_op(torch::Tensor x, torch::Tensor f, int upx, int upy,
   p.sizeMajor = (p.inStride.z == 1) ? p.inSize.w : p.inSize.w * p.inSize.z;
   p.sizeMinor = (p.inStride.z == 1) ? p.inSize.z : 1;
 
-  // Choose CUDA kernel.
+  // Choose MUSA kernel.
   upfirdn2d_kernel_spec spec;
-  AT_DISPATCH_FLOATING_TYPES(x.scalar_type(), "upfirdn2d_cuda", [&] {
+  AT_DISPATCH_FLOATING_TYPES(x.scalar_type(), "upfirdn2d_musa", [&] {
     spec = choose_upfirdn2d_kernel<scalar_t>(p);
   });
 
@@ -732,15 +732,18 @@ torch::Tensor upfirdn2d_op(torch::Tensor x, torch::Tensor f, int upx, int upy,
              (p.outSize.x - 1) / (spec.tileOutW * p.loopX) + 1, p.launchMajor);
   }
 
-  // Launch CUDA kernel.
+  // Launch MUSA kernel.
   void *args[] = {&p};
 #ifdef MMCV_WITH_HIP
   AT_MUSA_CHECK(hipLaunchKernel(spec.kernel, gridSize, blockSize, args, 0,
-                                at::musa::getCurrentMUSAStream()));
+                                c10::musa::getCurrentMUSAStream()));
 #else
   AT_MUSA_CHECK(musaLaunchKernel(spec.kernel, gridSize, blockSize, args, 0,
-                                 at::musa::getCurrentMUSAStream()));
+                                 c10::musa::getCurrentMUSAStream()));
 #endif
 
   return y;
 }
+#else
+#warning "upfirdn2d is supported when MUSA_ARCH > 21"
+#endif  //MUSA_ARCH

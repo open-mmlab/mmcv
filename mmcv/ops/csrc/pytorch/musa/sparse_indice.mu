@@ -27,7 +27,7 @@
 #include <spconv/indice.muh>
 #include <type_traits>
 
-#include "pytorch_cuda_helper.hpp"
+#include "pytorch_musa_helper.hpp"
 
 namespace functor {
 template <typename Index, typename IndexGrid, unsigned NDim>
@@ -49,17 +49,17 @@ struct CreateConvIndicePairFunctorP1<tv::TorchGPU, Index, IndexGrid, NDim> {
     if (numActIn == 0) return 0;
     if (transpose)
       prepareDeConvIndicePairsKernel<Index, IndexGrid, NDim, 4096>
-          <<<tv::launch::getBlocks(numActIn), tv::launch::CUDA_NUM_THREADS, 0,
+          <<<tv::launch::getBlocks(numActIn), tv::launch::MUSA_NUM_THREADS, 0,
              d.getStream()>>>(indicesIn, indicesOut, gridsOut, indicePairs,
                               indiceNum, indicePairUnique, kernelSize, stride,
                               padding, dilation, outSpatialShape);
     else
       prepareIndicePairsKernel<Index, IndexGrid, NDim, 4096>
-          <<<tv::launch::getBlocks(numActIn), tv::launch::CUDA_NUM_THREADS, 0,
+          <<<tv::launch::getBlocks(numActIn), tv::launch::MUSA_NUM_THREADS, 0,
              d.getStream()>>>(indicesIn, indicesOut, gridsOut, indicePairs,
                               indiceNum, indicePairUnique, kernelSize, stride,
                               padding, dilation, outSpatialShape);
-    TV_CHECK_CUDA_ERR();
+    TV_CHECK_MUSA_ERR();
     return 1;
   }
 };
@@ -80,21 +80,21 @@ struct CreateConvIndicePairFunctorP2<tv::TorchGPU, Index, IndexGrid, NDim> {
     if (numActIn == 0) return 0;
     Index numAct = indicePairUnique.dim(0) - 1;
     assignGridAndIndiceOutKernel<Index, IndexGrid, NDim>
-        <<<tv::launch::getBlocks(numAct), tv::launch::CUDA_NUM_THREADS, 0,
+        <<<tv::launch::getBlocks(numAct), tv::launch::MUSA_NUM_THREADS, 0,
            d.getStream()>>>(indicesOut, gridsOut, numAct, indicePairs,
                             indicePairUnique, outSpatialShape, batchSize);
-    TV_CHECK_CUDA_ERR();
+    TV_CHECK_MUSA_ERR();
     assignIndicePairsKernel<Index, IndexGrid, NDim>
-        <<<tv::launch::getBlocks(numActIn), tv::launch::CUDA_NUM_THREADS, 0,
+        <<<tv::launch::getBlocks(numActIn), tv::launch::MUSA_NUM_THREADS, 0,
            d.getStream()>>>(indicesOut, gridsOut, numActIn, indicePairs,
                             indicePairUnique, outSpatialShape);
-    TV_CHECK_CUDA_ERR();
+    TV_CHECK_MUSA_ERR();
 
     if (resetGrid) {
       resetGridKernel<Index, IndexGrid, NDim>
-          <<<tv::launch::getBlocks(numAct), tv::launch::CUDA_NUM_THREADS, 0,
+          <<<tv::launch::getBlocks(numAct), tv::launch::MUSA_NUM_THREADS, 0,
              d.getStream()>>>(indicePairUnique.data(), gridsOut, numAct);
-      TV_CHECK_CUDA_ERR();
+      TV_CHECK_MUSA_ERR();
     }
     return numAct;
   }
@@ -115,22 +115,22 @@ struct CreateSubMIndicePairFunctor<tv::TorchGPU, Index, IndexGrid, NDim> {
     auto numActIn = indicesIn.dim(0);
     if (numActIn == 0) return 0;
     prepareSubMGridKernel<Index, IndexGrid, NDim>
-        <<<tv::launch::getBlocks(numActIn), tv::launch::CUDA_NUM_THREADS, 0,
+        <<<tv::launch::getBlocks(numActIn), tv::launch::MUSA_NUM_THREADS, 0,
            d.getStream()>>>(indicesIn, gridsOut, outSpatialShape);
-    TV_CHECK_CUDA_ERR();
+    TV_CHECK_MUSA_ERR();
     getSubMIndicePairsKernel<Index, IndexGrid, NDim, 4096>
-        <<<tv::launch::getBlocks(numActIn), tv::launch::CUDA_NUM_THREADS, 0,
+        <<<tv::launch::getBlocks(numActIn), tv::launch::MUSA_NUM_THREADS, 0,
            d.getStream()>>>(indicesIn, gridsOut, indicePairs, indiceNum,
                             kernelSize, stride, padding, dilation,
                             outSpatialShape);
-    TV_CHECK_CUDA_ERR();
+    TV_CHECK_MUSA_ERR();
 
     if (resetGrid) {
       resetGridSubMKernel<Index, IndexGrid, NDim>
-          <<<tv::launch::getBlocks(numActIn), tv::launch::CUDA_NUM_THREADS, 0,
+          <<<tv::launch::getBlocks(numActIn), tv::launch::MUSA_NUM_THREADS, 0,
              d.getStream()>>>(indicesIn.data(), gridsOut, outSpatialShape,
                               numActIn);
-      TV_CHECK_CUDA_ERR();
+      TV_CHECK_MUSA_ERR();
     }
     return numActIn;
   }

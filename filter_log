@@ -1,0 +1,16 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.15, pytest-8.2.2, pluggy-1.5.0
+rootdir: /data/yanguo.sun/mmcv/sunyanguo/mmcv
+plugins: hypothesis-6.115.5, typeguard-4.3.0
+collected 3 items
+
+tests/test_ops/test_filtered_lrelu.py .s.                                [100%]
+
+=============================== warnings summary ===============================
+tests/test_ops/test_filtered_lrelu.py::TestFilteredLrelu::test_filtered_lrelu_cpu
+tests/test_ops/test_filtered_lrelu.py::TestFilteredLrelu::test_filtered_lrelu_musa
+  /opt/conda/envs/py310/lib/python3.10/site-packages/mmcv-2.2.0-py3.10-linux-x86_64.egg/mmcv/ops/conv2d_gradfix.py:45: UserWarning: Since aten:cudnn_convolution_backward_weight is not supported in torch==2.2.0, rolling back to `torch.nn.functional.conv2d`
+    warnings.warn('Since '
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=================== 2 passed, 1 skipped, 2 warnings in 2.83s ===================

@@ -5,7 +5,7 @@ import torch
 from mmcv.ops.multi_scale_deform_attn import (
     MultiScaleDeformableAttention, MultiScaleDeformableAttnFunction,
     multi_scale_deformable_attn_pytorch)
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
 
 _USING_PARROTS = True
 _IS_AUTOCAST_AVAILABLE = True
@@ -15,13 +15,20 @@ except ImportError:
     from torch.autograd import gradcheck
     _USING_PARROTS = False
 
-try:
-    # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast
-    # would be imported and used; we should test if our modules support it.
-    from torch.cuda.amp import autocast
-except ImportError:
-    _IS_AUTOCAST_AVAILABLE = False
-    pass
+if IS_MUSA_AVAILABLE:
+    try:
+        from torch.musa.amp import autocast
+    except ImportError:
+        _IS_AUTOCAST_AVAILABLE = False
+        pass
+else:
+    try:
+        # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast
+        # would be imported and used; we should test if our modules support it.
+        from torch.cuda.amp import autocast
+    except ImportError:
+        _IS_AUTOCAST_AVAILABLE = False
+        pass
 
 
 @pytest.mark.parametrize('device', [
@@ -33,7 +40,11 @@ except ImportError:
     pytest.param(
         'mlu',
         marks=pytest.mark.skipif(
-            not IS_MLU_AVAILABLE, reason='requires MLU support'))
+            not IS_MLU_AVAILABLE, reason='requires MLU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
 ])
 def test_multiscale_deformable_attention(device):
     with pytest.raises(ValueError):
@@ -178,7 +189,11 @@ def test_forward_equal_with_pytorch_npu():
     pytest.param(
         'mlu',
         marks=pytest.mark.skipif(
-            not IS_MLU_AVAILABLE, reason='requires MLU support'))
+            not IS_MLU_AVAILABLE, reason='requires MLU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
 ])
 def test_forward_equal_with_pytorch_float(device):
     N, M, D = 1, 2, 2
@@ -213,8 +228,17 @@ def test_forward_equal_with_pytorch_float(device):
 
 @pytest.mark.skipif(
     not _IS_AUTOCAST_AVAILABLE, reason='requires autocast support')
-@pytest.mark.skipif(not IS_CUDA_AVAILABLE, reason='requires CUDA support')
-def test_forward_equal_with_autocast():
+@pytest.mark.parametrize('device', [
+    pytest.param(
+        'cuda',
+        marks=pytest.mark.skipif(
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
+])
+def test_forward_equal_with_autocast(device):
     N, M, D = 1, 2, 2
     Lq, L, P = 2, 2, 2
     shapes = torch.as_tensor([(6, 4), (3, 2)], dtype=torch.long)
@@ -237,8 +261,8 @@ def test_forward_equal_with_autocast():
     dtype = torch.float
     with autocast(enabled=True):
         output_device = MultiScaleDeformableAttnFunction.apply(
-            value.cuda().type(dtype), shapes.cuda(), level_start_index.cuda(),
-            sampling_locations.cuda(), attention_weights.cuda(),
+            value.to(device).type(dtype), shapes.to(device), level_start_index.to(device),
+            sampling_locations.to(device), attention_weights.to(device),
             im2col_step).detach().cpu()
     assert torch.allclose(output_device, output_pytorch, rtol=1e-2, atol=1e-3)
     max_abs_err = (output_device - output_pytorch).abs().max()
@@ -251,8 +275,8 @@ def test_forward_equal_with_autocast():
     dtype = torch.half
     with autocast(enabled=True):
         output_device = MultiScaleDeformableAttnFunction.apply(
-            value.cuda().type(dtype), shapes.cuda(), level_start_index.cuda(),
-            sampling_locations.cuda(), attention_weights.cuda(),
+            value.to(device).type(dtype), shapes.to(device), level_start_index.to(device),
+            sampling_locations.to(device), attention_weights.to(device),
             im2col_step).detach().cpu()
     assert torch.allclose(
         output_device, output_pytorch.half(), rtol=1e-2, atol=1e-3)
@@ -271,15 +295,19 @@ def test_forward_equal_with_autocast():
     pytest.param(
         'mlu',
         marks=pytest.mark.skipif(
-            not IS_MLU_AVAILABLE, reason='requires MLU support'))
+            not IS_MLU_AVAILABLE, reason='requires MLU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
 @pytest.mark.parametrize('dtype', [
     torch.float,
     pytest.param(
         torch.double,
         marks=pytest.mark.skipif(
-            IS_MLU_AVAILABLE,
-            reason='MLU does not support for 64-bit floating point')),
+            IS_MLU_AVAILABLE or IS_MUSA_AVAILABLE,
+            reason='MLU, MUSA does not support for 64-bit floating point')),
     torch.half
 ])
 @pytest.mark.parametrize('channels', [
@@ -321,6 +349,9 @@ def test_gradient_numerical(channels,
         dtype = torch.double
         eps = 1e-6
     elif device == 'mlu':
+        dtype = torch.float
+        eps = 1e-4
+    elif device == 'musa':
         dtype = torch.float
         eps = 1e-4
     if _USING_PARROTS:

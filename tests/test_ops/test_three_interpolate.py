@@ -3,7 +3,7 @@ import pytest
 import torch
 
 from mmcv.ops import three_interpolate
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
 
 
 @pytest.mark.parametrize('dtype', [
@@ -11,8 +11,8 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
     pytest.param(
         torch.double,
         marks=pytest.mark.skipif(
-            IS_NPU_AVAILABLE,
-            reason='NPU does not support for 64-bit floating point'))
+            IS_NPU_AVAILABLE or IS_MUSA_AVAILABLE,
+            reason='NPU, MUSA does not support for 64-bit floating point'))
 ])
 @pytest.mark.parametrize('device', [
     pytest.param(
@@ -22,9 +22,15 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
     pytest.param(
         'npu',
         marks=pytest.mark.skipif(
-            not IS_NPU_AVAILABLE, reason='requires NPU support'))
+            not IS_NPU_AVAILABLE, reason='requires NPU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
 def test_three_interpolate(dtype, device):
+    if IS_MUSA_AVAILABLE:
+        torch.musa.empty_cache()
     features = torch.tensor(
         [[[2.4350, 4.7516, 4.4995, 2.4350, 2.4350, 2.4350],
           [3.1236, 2.6278, 3.0447, 3.1236, 3.1236, 3.1236],

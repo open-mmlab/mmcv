@@ -11,11 +11,11 @@
 
 #include <cstdint>
 
-#include "pytorch_cuda_helper.hpp"
+#include "pytorch_musa_helper.hpp"
 #include "pytorch_device_registry.hpp"
 
 //------------------------------------------------------------------------
-// CUDA kernel parameters.
+// MUSA kernel parameters.
 
 struct filtered_lrelu_kernel_params {
   // These parameters decide which kernel to use.
@@ -76,7 +76,7 @@ struct filtered_lrelu_act_kernel_params {
 };
 
 //------------------------------------------------------------------------
-// CUDA kernel specialization.
+// MUSA kernel specialization.
 
 struct filtered_lrelu_kernel_spec {
   void *setup;   // Function for filter kernel setup.
@@ -89,7 +89,7 @@ struct filtered_lrelu_kernel_spec {
 };
 
 //------------------------------------------------------------------------
-// CUDA kernel selection.
+// MUSA kernel selection.
 
 template <class T, class index_t, bool signWrite, bool signRead>
 filtered_lrelu_kernel_spec choose_filtered_lrelu_kernel(
@@ -100,9 +100,8 @@ void *choose_filtered_lrelu_act_kernel(void);
 //------------------------------------------------------------------------
 // Helpers.
 
-enum  // Filter modes.
-{
-  MODE_SUSD = 0,  // Separable upsampling, separable downsampling.
+enum              // Filter modes.
+{ MODE_SUSD = 0,  // Separable upsampling, separable downsampling.
   MODE_FUSD = 1,  // Full upsampling, separable downsampling.
   MODE_SUFD = 2,  // Separable upsampling, full downsampling.
   MODE_FUFD = 3,  // Full upsampling, full downsampling.
@@ -158,11 +157,12 @@ struct InternalType<c10::Half> {
 
 #define MIN(A, B) ((A) < (B) ? (A) : (B))
 #define MAX(A, B) ((A) > (B) ? (A) : (B))
-#define CEIL_DIV(A, B)                  \
-  (((B) == 1)   ? (A)                   \
-   : ((B) == 2) ? ((int)((A) + 1) >> 1) \
-   : ((B) == 4) ? ((int)((A) + 3) >> 2) \
-                : (((A) + ((A) > 0 ? (B) - 1 : 0)) / (B)))
+#define CEIL_DIV(A, B)                                   \
+  (((B) == 1)                                            \
+       ? (A)                                             \
+       : ((B) == 2) ? ((int)((A) + 1) >> 1)              \
+                    : ((B) == 4) ? ((int)((A) + 3) >> 2) \
+                                 : (((A) + ((A) > 0 ? (B)-1 : 0)) / (B)))
 
 // This works only up to blocks of size 256 x 256 and for all N that are powers
 // of two.
@@ -333,16 +333,22 @@ static __global__ void filtered_lrelu_kernel(filtered_lrelu_kernel_params p) {
   const int szDownX = tileUpH * tileOutW;
 
   // Sizes for shared memory arrays.
-  const int s_buf0_size_base = (filterMode == MODE_SUSD)   ? MAX(szIn, szUpXY)
-                               : (filterMode == MODE_FUSD) ? MAX(szIn, szDownX)
-                               : (filterMode == MODE_SUFD) ? MAX(szIn, szUpXY)
-                               : (filterMode == MODE_FUFD) ? szIn
-                                                           : -1;
-  const int s_buf1_size_base = (filterMode == MODE_SUSD)   ? MAX(szUpX, szDownX)
-                               : (filterMode == MODE_FUSD) ? szUpXY
-                               : (filterMode == MODE_SUFD) ? szUpX
-                               : (filterMode == MODE_FUFD) ? szUpXY
-                                                           : -1;
+  const int s_buf0_size_base =
+      (filterMode == MODE_SUSD)
+          ? MAX(szIn, szUpXY)
+          : (filterMode == MODE_FUSD)
+                ? MAX(szIn, szDownX)
+                : (filterMode == MODE_SUFD)
+                      ? MAX(szIn, szUpXY)
+                      : (filterMode == MODE_FUFD) ? szIn : -1;
+  const int s_buf1_size_base =
+      (filterMode == MODE_SUSD)
+          ? MAX(szUpX, szDownX)
+          : (filterMode == MODE_FUSD)
+                ? szUpXY
+                : (filterMode == MODE_SUFD)
+                      ? szUpX
+                      : (filterMode == MODE_FUFD) ? szUpXY : -1;
 
   // Ensure U128 alignment.
   const int s_buf0_size = (s_buf0_size_base + 3) & ~3;
@@ -974,17 +980,17 @@ static __global__ void filtered_lrelu_kernel(filtered_lrelu_kernel_params p) {
 
 #define X_LOOP(TAPY, PX)                                             \
   for (int sx = 0; sx < fuSize / up; sx++) {                         \
-    v.x += a * (scalar_t)c_fu[(sx * up + (((PX) - 0) & (up - 1))) +  \
+    v.x += a * (scalar_t)c_fu[(sx * up + (((PX)-0) & (up - 1))) +    \
                               (sy * up + (TAPY)) * MAX_FILTER_SIZE]; \
-    v.z += b * (scalar_t)c_fu[(sx * up + (((PX) - 0) & (up - 1))) +  \
+    v.z += b * (scalar_t)c_fu[(sx * up + (((PX)-0) & (up - 1))) +    \
                               (sy * up + (TAPY)) * MAX_FILTER_SIZE]; \
     if ((PX) == 0) {                                                 \
       a = b;                                                         \
       b = s_tileIn[src0 + 2 + sx + sy * tileInW];                    \
     }                                                                \
-    v.y += a * (scalar_t)c_fu[(sx * up + (((PX) - 1) & (up - 1))) +  \
+    v.y += a * (scalar_t)c_fu[(sx * up + (((PX)-1) & (up - 1))) +    \
                               (sy * up + (TAPY)) * MAX_FILTER_SIZE]; \
-    v.w += b * (scalar_t)c_fu[(sx * up + (((PX) - 1) & (up - 1))) +  \
+    v.w += b * (scalar_t)c_fu[(sx * up + (((PX)-1) & (up - 1))) +    \
                               (sy * up + (TAPY)) * MAX_FILTER_SIZE]; \
     if ((PX) == 1) {                                                 \
       a = b;                                                         \
@@ -1441,7 +1447,7 @@ static __global__ void filtered_lrelu_act_kernel(
         s |= __shfl_xor(s, 4);
         s |= __shfl_xor(s, 8);
 #else
-        s |= __shfl_xor_sync(m, s, 1);  // Distribute.
+        s |= __shfl_xor_sync(m, s, 1);                  // Distribute.
         s |= __shfl_xor_sync(m, s, 2);
         s |= __shfl_xor_sync(m, s, 4);
         s |= __shfl_xor_sync(m, s, 8);
@@ -1506,7 +1512,7 @@ void *choose_filtered_lrelu_act_kernel(void) {
 }
 
 //------------------------------------------------------------------------
-// CUDA kernel selection.
+// MUSA kernel selection.
 
 template <class T, class index_t, bool signWrite, bool signRead>
 filtered_lrelu_kernel_spec choose_filtered_lrelu_kernel(
@@ -1625,20 +1631,13 @@ filtered_lrelu_kernel_spec choose_filtered_lrelu_kernel(
 #endif
 #endif
 
-#if CUDA_VERSION < 10020
-#undef BUILD_FILTERED_LRELU_OP
-#define BUILD_FILTERED_LRELU_OP 0
-#endif
-#endif
-
-#if BUILD_FILTERED_LRELU_OP == 1
 std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
     torch::Tensor x, torch::Tensor fu, torch::Tensor fd, torch::Tensor b,
     torch::Tensor si, int up, int down, int px0, int px1, int py0, int py1,
     int sx, int sy, float gain, float slope, float clamp, bool flip_filters,
     bool writeSigns) {
-  // Set CUDA device.
-  TORCH_CHECK(x.is_privateuseone(), "x must reside on CUDA device");
+  // Set MUSA device.
+  TORCH_CHECK(x.is_privateuseone(), "x must reside on MUSA device");
   const at::musa::OptionalMUSAGuard device_guard(device_of(x));
 
   // Validate arguments.
@@ -1672,7 +1671,7 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
   int maxSharedBytes = 0;
 #ifdef MMCV_WITH_HIP
   musaDeviceGetAttribute(&maxSharedBytes,
-                         hipDeviceAttributeMaxSharedMemoryPerBlock,
+                         hipDeviceAttributeSharedMemPerBlockOptin,
                          x.device().index());
 #else
   AT_MUSA_CHECK(musaDeviceGetAttribute(&maxSharedBytes,
@@ -1681,7 +1680,7 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
 #endif
   int sharedKB = maxSharedBytes >> 10;
 
-  // Populate enough launch parameters to check if a CUDA kernel exists.
+  // Populate enough launch parameters to check if a MUSA kernel exists.
   filtered_lrelu_kernel_params p;
   p.up = up;
   p.down = down;
@@ -1755,7 +1754,7 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
                 "signs is too large");
   }
 
-  // Populate rest of CUDA kernel parameters.
+  // Populate rest of MUSA kernel parameters.
   p.x = x.data_ptr();
   p.y = y.data_ptr();
   p.b = b.data_ptr();
@@ -1820,10 +1819,10 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
     index64b = true;
   if (s.numel() > INT_MAX) index64b = true;
 
-  // Choose CUDA kernel.
+  // Choose MUSA kernel.
   filtered_lrelu_kernel_spec spec = {0};
   AT_DISPATCH_FLOATING_TYPES(
-      x.scalar_type(), "filtered_lrelu_cuda", [&] {
+      x.scalar_type(), "filtered_lrelu_musa", [&] {
         if constexpr (sizeof(scalar_t) <=
                       4)  // Exclude doubles. constexpr
                           // prevents template instantiation.
@@ -1854,11 +1853,11 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
       });
   TORCH_CHECK(
       spec.exec,
-      "internal error - CUDA kernel not found")  // This should not happen
+      "internal error - MUSA kernel not found")  // This should not happen
                                                  // because we tested earlier
                                                  // that kernel exists.
 
-  // Launch CUDA kernel.
+  // Launch MUSA kernel.
   void *args[] = {&p};
   int bx = spec.numWarps * 32;
   int gx = (p.yShape.x - 1) / spec.tileOut.x + 1;
@@ -1878,22 +1877,23 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
   }
 #ifdef MMCV_WITH_HIP
   AT_MUSA_CHECK(hipLaunchKernel(spec.setup, 1, 1024, args, 0,
-                                at::musa::getCurrentMUSAStream()));
+                                c10::musa::getCurrentMUSAStream()));
 #else
   // Launch filter setup kernel.
   AT_MUSA_CHECK(musaLaunchKernel(spec.setup, 1, 1024, args, 0,
-                                 at::musa::getCurrentMUSAStream()));
+                                 c10::musa::getCurrentMUSAStream()));
 #endif
 
   // Copy kernels to constant memory.
   if (writeSigns && !readSigns)
-    AT_MUSA_CHECK((copy_filters(at::musa::getCurrentMUSAStream())));
+    AT_MUSA_CHECK((copy_filters(c10::musa::getCurrentMUSAStream())));
   else if (!writeSigns && readSigns)
-    AT_MUSA_CHECK((copy_filters(at::musa::getCurrentMUSAStream())));
+    AT_MUSA_CHECK((copy_filters(c10::musa::getCurrentMUSAStream())));
   else if (!writeSigns && !readSigns)
-    AT_MUSA_CHECK((copy_filters(at::musa::getCurrentMUSAStream())));
+    AT_MUSA_CHECK((copy_filters(c10::musa::getCurrentMUSAStream())));
 
   // Set cache and shared memory configurations for main kernel.
+  // FIXME:TODO FIX BUG
   AT_MUSA_CHECK(musaFuncSetCacheConfig(spec.exec, musaFuncCachePreferShared));
   if (spec.dynamicSharedKB)  // Need dynamically allocated shared memory?
 #ifdef MMCV_WITH_HIP
@@ -1905,24 +1905,26 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
         spec.exec, musaFuncAttributeMaxDynamicSharedMemorySize,
         spec.dynamicSharedKB << 10));
 #endif
+  // FIXME:TODO FIX BUG
   AT_MUSA_CHECK(
       musaFuncSetSharedMemConfig(spec.exec, musaSharedMemBankSizeFourByte));
 
   // Launch main kernel.
-  const int maxSubGz = 65535;  // CUDA maximum for block z dimension.
+  const int maxSubGz = 65535;  // MUSA maximum for block z dimension.
   for (int zofs = 0; zofs < gz;
        zofs += maxSubGz)  // Do multiple launches if gz is too big.
   {
     p.blockZofs = zofs;
     int subGz = std::min(maxSubGz, gz - zofs);
+// FIXME:TODO FIX BUG  
 #ifdef MMCV_WITH_HIP
     AT_MUSA_CHECK(hipLaunchKernel(spec.exec, dim3(gx, gy, subGz), bx, args,
                                   spec.dynamicSharedKB << 10,
-                                  at::musa::getCurrentMUSAStream()));
+                                  c10::musa::getCurrentMUSAStream()));
 #else
     AT_MUSA_CHECK(musaLaunchKernel(spec.exec, dim3(gx, gy, subGz), bx, args,
                                    spec.dynamicSharedKB << 10,
-                                   at::musa::getCurrentMUSAStream()));
+                                   c10::musa::getCurrentMUSAStream()));
 #endif
   }
 
@@ -1936,13 +1938,13 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op_impl(
     int sx, int sy, float gain, float slope, float clamp, bool flip_filters,
     bool writeSigns);
 
-REGISTER_DEVICE_IMPL(filtered_lrelu_op_impl, PrivateUse1, filtered_lrelu_op);
+REGISTER_DEVICE_IMPL(filtered_lrelu_op_impl, MUSA, filtered_lrelu_op);
 
 #else
 
 #pragma message(                           \
     "filtered_lrelu_op is not available. " \
-    "Please update your compiler and cuda version.")
+    "Please update your compiler and musa version.")
 
 #endif
 #undef BUILD_FILTERED_LRELU_OP
@@ -1952,8 +1954,8 @@ REGISTER_DEVICE_IMPL(filtered_lrelu_op_impl, PrivateUse1, filtered_lrelu_op);
 torch::Tensor filtered_lrelu_act_op(torch::Tensor x, torch::Tensor si, int sx,
                                     int sy, float gain, float slope,
                                     float clamp, bool writeSigns) {
-  // Set CUDA device.
-  TORCH_CHECK(x.is_privateuseone(), "x must reside on CUDA device");
+  // Set MUSA device.
+  TORCH_CHECK(x.is_privateuseone(), "x must reside on MUSA device");
   const at::musa::OptionalMUSAGuard device_guard(device_of(x));
 
   // Validate arguments.
@@ -1991,7 +1993,7 @@ torch::Tensor filtered_lrelu_act_op(torch::Tensor x, torch::Tensor si, int sx,
                 "signs tensor is too large");
   }
 
-  // Initialize CUDA kernel parameters.
+  // Initialize MUSA kernel parameters.
   filtered_lrelu_act_kernel_params p;
   p.x = x.data_ptr();
   p.s = (readSigns || writeSigns) ? s.data_ptr<unsigned char>() : 0;
@@ -2007,10 +2009,10 @@ torch::Tensor filtered_lrelu_act_op(torch::Tensor x, torch::Tensor si, int sx,
                  : make_int2(0, 0);  // Width is in elements. Contiguous.
   p.sOfs = make_int2(sx, sy);
 
-  // Choose CUDA kernel.
+  // Choose MUSA kernel.
   void *func = 0;
   AT_DISPATCH_FLOATING_TYPES(
-      x.scalar_type(), "filtered_lrelu_act_cuda", [&] {
+      x.scalar_type(), "filtered_lrelu_act_musa", [&] {
         if (writeSigns)
           func = choose_filtered_lrelu_act_kernel<scalar_t, true, false>();
         else if (readSigns)
@@ -2018,9 +2020,9 @@ torch::Tensor filtered_lrelu_act_op(torch::Tensor x, torch::Tensor si, int sx,
         else
           func = choose_filtered_lrelu_act_kernel<scalar_t, false, false>();
       });
-  TORCH_CHECK(func, "internal error - CUDA kernel not found");
+  TORCH_CHECK(func, "internal error - MUSA kernel not found");
 
-  // Launch CUDA kernel.
+  // Launch MUSA kernel.
   void *args[] = {&p};
   int bx = 128;  // 4 warps per block.
 
@@ -2031,7 +2033,7 @@ torch::Tensor filtered_lrelu_act_op(torch::Tensor x, torch::Tensor si, int sx,
       p.xShape.z * p.xShape.w;  // Same as in p.sShape if signs are in use.
   gx = (gx - 1) / bx + 1;
 
-  // Make sure grid y and z dimensions are within CUDA launch limits. Kernel
+  // Make sure grid y and z dimensions are within MUSA launch limits. Kernel
   // loops internally to do the rest.
   const uint32_t gmax = 65535;
   gy = std::min(gy, gmax);
@@ -2040,10 +2042,10 @@ torch::Tensor filtered_lrelu_act_op(torch::Tensor x, torch::Tensor si, int sx,
   // Launch.
 #ifdef MMCV_WITH_HIP
   AT_MUSA_CHECK(hipLaunchKernel(func, dim3(gx, gy, gz), bx, args, 0,
-                                at::musa::getCurrentMUSAStream()));
+                                c10::musa::getCurrentMUSAStream()));
 #else
   AT_MUSA_CHECK(musaLaunchKernel(func, dim3(gx, gy, gz), bx, args, 0,
-                                 at::musa::getCurrentMUSAStream()));
+                                 c10::musa::getCurrentMUSAStream()));
 #endif
 
   return so;

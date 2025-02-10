@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
 
 
 class TestBoxIoUQuadri:
@@ -17,7 +17,11 @@ class TestBoxIoUQuadri:
         pytest.param(
             'npu',
             marks=pytest.mark.skipif(
-                not IS_NPU_AVAILABLE, reason='requires NPU support'))
+                not IS_NPU_AVAILABLE, reason='requires NPU support')),
+        pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
     ])
     def test_box_iou_quadri_cuda(self, device):
         from mmcv.ops import box_iou_quadri
@@ -55,7 +59,11 @@ class TestBoxIoUQuadri:
         pytest.param(
             'npu',
             marks=pytest.mark.skipif(
-                not IS_NPU_AVAILABLE, reason='requires NPU support'))
+                not IS_NPU_AVAILABLE, reason='requires NPU support')),
+        pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
     ])
     def test_box_iou_quadri_iof_cuda(self, device):
         from mmcv.ops import box_iou_quadri

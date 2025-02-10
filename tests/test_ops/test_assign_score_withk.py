@@ -3,7 +3,7 @@ import pytest
 import torch
 
 from mmcv.ops import assign_score_withk
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
 
 
 @pytest.mark.parametrize('device', [
@@ -14,7 +14,11 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
     pytest.param(
         'npu',
         marks=pytest.mark.skipif(
-            not IS_NPU_AVAILABLE, reason='requires NPU support'))
+            not IS_NPU_AVAILABLE, reason='requires NPU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
 ])
 def test_paconv_assign_scores(device):
     scores = torch.tensor(
@@ -95,7 +99,7 @@ def test_paconv_assign_scores(device):
           [[0.5274848, 0.82096446, 0.9415489, 0.7123748],
            [0.7537517, 0.8086482, 0.85345286, 0.7472754]]]],
         device=device).float()
-    if device == 'cuda':
+    if device == 'cuda' or device == 'musa':
         points.requires_grad_()
         scores.requires_grad_()
         centers.requires_grad_()
@@ -126,7 +130,7 @@ def test_paconv_assign_scores(device):
     assert torch.allclose(output.detach().cpu(), expected_output, atol=1e-6)
 
     # test backward
-    if device == 'cuda':
+    if device == 'cuda' or device == 'musa':
         loss = output.sum()
         loss.backward()
         expected_scores_grad = torch.tensor([[[[0.04288036, -0.18217683],

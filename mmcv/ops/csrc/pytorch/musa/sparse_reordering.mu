@@ -28,7 +28,7 @@
 #include <type_traits>
 #include <utils/spconv/tensorview/helper_kernel.muh>
 
-#include "pytorch_cuda_helper.hpp"
+#include "pytorch_musa_helper.hpp"
 
 namespace functor {
 template <typename scalar_t, typename Index>
@@ -58,7 +58,7 @@ struct SparseGatherFunctor<tv::TorchGPU, scalar_t, Index> {
                                     indices.data(), nHotBlock,
                                     numPlanes / vecloadFactor);
 
-            TV_CHECK_CUDA_ERR();
+            TV_CHECK_MUSA_ERR();
           }
           if (size - nHotBlock > 0) {
             gatherVecKernel<scalar_t, Index, int(NumTLP), NumILP,
@@ -69,7 +69,7 @@ struct SparseGatherFunctor<tv::TorchGPU, scalar_t, Index> {
                                     features.data(), indices.data() + nHotBlock,
                                     size - nHotBlock,
                                     numPlanes / vecloadFactor);
-            TV_CHECK_CUDA_ERR();
+            TV_CHECK_MUSA_ERR();
           }
           notFound = false;
         }
@@ -84,7 +84,7 @@ struct SparseGatherFunctor<tv::TorchGPU, scalar_t, Index> {
                   tv::launch::DivUp(numPlanes, NumTLP)),
              dim3(NumTLP / NumILP, NumTLP), 0, d.getStream()>>>(
               buffer.data(), features.data(), indices.data(), size, numPlanes);
-      TV_CHECK_CUDA_ERR();
+      TV_CHECK_MUSA_ERR();
     }
   }
 };
@@ -115,7 +115,7 @@ struct SparseScatterAddFunctor<tv::TorchGPU, scalar_t, Index> {
                    d.getStream()>>>(outFeatures.data(), buffer.data(),
                                     indices.data(), nHotBlock,
                                     numPlanes / vecloadFactor);
-            TV_CHECK_CUDA_ERR();
+            TV_CHECK_MUSA_ERR();
           }
           if (size - nHotBlock > 0) {
             scatterAddGenericKernel<scalar_t, Index, int(NumTLP), NumILP>
@@ -123,7 +123,7 @@ struct SparseScatterAddFunctor<tv::TorchGPU, scalar_t, Index> {
                    0, d.getStream()>>>(
                     outFeatures.data(), buffer.data() + nHotBlock * numPlanes,
                     indices.data() + nHotBlock, size - nHotBlock, numPlanes);
-            TV_CHECK_CUDA_ERR();
+            TV_CHECK_MUSA_ERR();
           }
           notFound = false;
         }
@@ -138,7 +138,7 @@ struct SparseScatterAddFunctor<tv::TorchGPU, scalar_t, Index> {
              dim3(NumTLP / NumILP, NumTLP), 0, d.getStream()>>>(
               outFeatures.data(), buffer.data(), indices.data(), size,
               numPlanes);
-      TV_CHECK_CUDA_ERR();
+      TV_CHECK_MUSA_ERR();
     }
   }
 };

@@ -473,13 +473,13 @@ def _bias_act_musa(dim: int = 1,
             Defaults to 1.
         act (str): Name of the activation function to evaluate, or `"linear"`
             to disable. Can be e.g. "relu", "lrelu", "tanh", "sigmoid",
-            "swish", etc. See `activation_funcs` for a full list. `None` is not
-            allowed. Defaults to `linear`.
+            "swish", etc. See `activation_funcs_musa` for a full list. `None`
+            is not allowed. Defaults to `linear`.
         alpha (float | int): Shape parameter for the activation
             function, or `None` to use the default. Defaults to None.
         gain (float): Scaling factor for the output tensor, or `None`
-            to use default. See `activation_funcs` for the default scaling of
-            each activation function. If unsure, consider specifying 1.
+            to use default. See `activation_funcs_musa` for the default scaling
+            of each activation function. If unsure, consider specifying 1.
             Defaults to None.
         clamp (float): Clamp the output values to `[-clamp, +clamp]`,
             or `None` to disable the clamping (default). Defaults to None.
@@ -489,7 +489,7 @@ def _bias_act_musa(dim: int = 1,
     """
     # Parse arguments.
     assert clamp is None or clamp >= 0
-    spec = activation_funcs[act]
+    spec = activation_funcs_musa[act]
     alpha = float(alpha if alpha is not None else spec.def_alpha)
     gain = float(gain if gain is not None else spec.def_gain)
     clamp = float(clamp if clamp is not None else -1)

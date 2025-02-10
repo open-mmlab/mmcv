@@ -1,0 +1,334 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.15, pytest-8.2.2, pluggy-1.5.0
+rootdir: /data/yanguo.sun/mmcv/sunyanguo/mmcv
+plugins: hypothesis-6.115.5, typeguard-4.3.0
+collected 5 items
+
+tests/test_ops/test_carafe.py ..ssF                                      [100%]
+
+=================================== FAILURES ===================================
+____________________ TestCarafe.test_carafe_allclose[musa] _____________________
+
+self = <test_carafe.TestCarafe object at 0x7f8b2715a7d0>, device = 'musa'
+
+    @pytest.mark.parametrize('device', [
+        pytest.param(
+            'cuda',
+            marks=pytest.mark.skipif(
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'mlu',
+            marks=pytest.mark.skipif(
+                not IS_MLU_AVAILABLE, reason='requires MLU support')),
+        pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
+    ])
+    def test_carafe_allclose(self, device):
+        try:
+            from mmcv.ops import CARAFE
+        except ModuleNotFoundError:
+            pytest.skip('test requires compilation')
+    
+        np_feat = np.fromfile(
+            'tests/data/for_carafe/carafe_feat.bin', dtype=np.float32)
+        np_mask = np.fromfile(
+            'tests/data/for_carafe/carafe_mask.bin', dtype=np.float32)
+        np_output = np.fromfile(
+            'tests/data/for_carafe/carafe_output.bin', dtype=np.float32)
+        np_feat_grad = np.fromfile(
+            'tests/data/for_carafe/carafe_feat_grad.bin', dtype=np.float32)
+        np_mask_grad = np.fromfile(
+            'tests/data/for_carafe/carafe_mask_grad.bin', dtype=np.float32)
+    
+        np_feat = np_feat.reshape((2, 64, 3, 3))
+        np_mask = np_mask.reshape((2, 100, 6, 6))
+        np_output = np_output.reshape((2, 64, 6, 6))
+        np_feat_grad = np_feat_grad.reshape((2, 64, 3, 3))
+        np_mask_grad = np_mask_grad.reshape((2, 100, 6, 6))
+    
+        # feat = torch.tensor(
+        #     np_feat, dtype=torch.float, device=device, requires_grad=True)
+        # mask = torch.tensor(
+        #     np_mask, dtype=torch.float, device=device, requires_grad=True)
+    
+        feat = torch.tensor(
+            np_feat, dtype=torch.float, requires_grad=True).to(device)
+        mask = torch.tensor(
+            np_mask, dtype=torch.float, requires_grad=True).to(device)
+    
+        carafe = CARAFE(5, 4, 2)
+    
+        output = carafe(feat, mask)
+>       output.backward(torch.ones_like(output))
+
+tests/test_ops/test_carafe.py:102: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/conda/envs/py310/lib/python3.10/site-packages/torch/_tensor.py:522: in backward
+    torch.autograd.backward(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tensors = (<[RuntimeError('MUSA error: unknown error\nException raised from MUSACopyFrom at /home/torch_musa/torch_musa/csrc/ate...efault + 0x4b2c (0x4f1e9c in /opt/conda/envs/py310/bin/python)\n') raised in repr()] Tensor object at 0x7f8b252356c0>,)
+grad_tensors = <[RuntimeError('MUSA error: unknown error\nException raised from MUSACopyFrom at /home/torch_musa/torch_musa/csrc/aten...meDefault + 0x731 (0x4edaa1 in /opt/conda/envs/py310/bin/python)\n') raised in repr()] Tensor object at 0x7f8bd32e04a0>
+retain_graph = False, create_graph = False, grad_variables = None, inputs = ()
+
+    def backward(
+        tensors: _TensorOrTensors,
+        grad_tensors: Optional[_TensorOrTensors] = None,
+        retain_graph: Optional[bool] = None,
+        create_graph: bool = False,
+        grad_variables: Optional[_TensorOrTensors] = None,
+        inputs: Optional[_TensorOrTensorsOrGradEdge] = None,
+    ) -> None:
+        r"""Computes the sum of gradients of given tensors with respect to graph
+        leaves.
+    
+        The graph is differentiated using the chain rule. If any of ``tensors``
+        are non-scalar (i.e. their data has more than one element) and require
+        gradient, then the Jacobian-vector product would be computed, in this
+        case the function additionally requires specifying ``grad_tensors``.
+        It should be a sequence of matching length, that contains the "vector"
+        in the Jacobian-vector product, usually the gradient of the differentiated
+        function w.r.t. corresponding tensors (``None`` is an acceptable value for
+        all tensors that don't need gradient tensors).
+    
+        This function accumulates gradients in the leaves - you might need to zero
+        ``.grad`` attributes or set them to ``None`` before calling it.
+        See :ref:`Default gradient layouts<default-grad-layouts>`
+        for details on the memory layout of accumulated gradients.
+    
+        .. note::
+            Using this method with ``create_graph=True`` will create a reference cycle
+            between the parameter and its gradient which can cause a memory leak.
+            We recommend using ``autograd.grad`` when creating the graph to avoid this.
+            If you have to use this function, make sure to reset the ``.grad`` fields of your
+            parameters to ``None`` after use to break the cycle and avoid the leak.
+    
+        .. note::
+    
+            If you run any forward ops, create ``grad_tensors``, and/or call ``backward``
+            in a user-specified CUDA stream context, see
+            :ref:`Stream semantics of backward passes<bwd-cuda-stream-semantics>`.
+    
+        .. note::
+    
+            When ``inputs`` are provided and a given input is not a leaf,
+            the current implementation will call its grad_fn (even though it is not strictly needed to get this gradients).
+            It is an implementation detail on which the user should not rely.
+            See https://github.com/pytorch/pytorch/pull/60521#issuecomment-867061780 for more details.
+    
+        Args:
+            tensors (Sequence[Tensor] or Tensor): Tensors of which the derivative will be
+                computed.
+            grad_tensors (Sequence[Tensor or None] or Tensor, optional): The "vector" in
+                the Jacobian-vector product, usually gradients w.r.t. each element of
+                corresponding tensors. None values can be specified for scalar Tensors or
+                ones that don't require grad. If a None value would be acceptable for all
+                grad_tensors, then this argument is optional.
+            retain_graph (bool, optional): If ``False``, the graph used to compute the grad
+                will be freed. Note that in nearly all cases setting this option to ``True``
+                is not needed and often can be worked around in a much more efficient
+                way. Defaults to the value of ``create_graph``.
+            create_graph (bool, optional): If ``True``, graph of the derivative will
+                be constructed, allowing to compute higher order derivative products.
+                Defaults to ``False``.
+            inputs (Sequence[Tensor] or Tensor or Sequence[GradientEdge], optional): Inputs w.r.t. which the gradient
+                be will accumulated into ``.grad``. All other Tensors will be ignored. If
+                not provided, the gradient is accumulated into all the leaf Tensors that
+                were used to compute the attr::tensors.
+        """
+        if torch._C._are_functorch_transforms_active():
+            raise RuntimeError(
+                "backward() called inside a functorch transform. This is not "
+                "supported, please use functorch.grad or functorch.vjp instead "
+                "or call backward() outside of functorch transforms."
+            )
+    
+        if grad_variables is not None:
+            warnings.warn("'grad_variables' is deprecated. Use 'grad_tensors' instead.")
+            if grad_tensors is None:
+                grad_tensors = grad_variables
+            else:
+                raise RuntimeError(
+                    "'grad_tensors' and 'grad_variables' (deprecated) "
+                    "arguments both passed to backward(). Please only "
+                    "use 'grad_tensors'."
+                )
+        if inputs is not None and len(inputs) == 0:
+            raise RuntimeError("'inputs' argument to backward() cannot be empty.")
+    
+        tensors = (tensors,) if isinstance(tensors, torch.Tensor) else tuple(tensors)
+        inputs = (
+            (inputs,)
+            if isinstance(inputs, (torch.Tensor, graph.GradientEdge))
+            else tuple(inputs)
+            if inputs is not None
+            else tuple()
+        )
+    
+        grad_tensors_ = _tensor_or_tensors_to_tuple(grad_tensors, len(tensors))
+        grad_tensors_ = _make_grads(tensors, grad_tensors_, is_grads_batched=False)
+        if retain_graph is None:
+            retain_graph = create_graph
+    
+        # The reason we repeat the same comment below is that
+        # some Python versions print out the first line of a multi-line function
+        # calls in the traceback and some print out the last line
+>       Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+            tensors,
+            grad_tensors_,
+            retain_graph,
+            create_graph,
+            inputs,
+            allow_unreachable=True,
+            accumulate_grad=True,
+        )  # Calls into the C++ engine to run the backward pass
+E       RuntimeError: MUSA error: unknown error
+E       Exception raised from MUSACopyFrom at /home/torch_musa/torch_musa/csrc/aten/ops/Copy.cpp:357 (most recent call first):
+E       frame #0: c10::Error::Error(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0xae (0x7f8be191d8fe in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libc10.so)
+E       frame #1: c10::detail::torchCheckFail(char const*, char const*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) + 0xf3 (0x7f8be18c7e49 in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libc10.so)
+E       frame #2: at::musa::MUSACopyFrom(at::Tensor const&, at::Tensor const&, bool) + 0x15c0 (0x7f8bd0c60f40 in /opt/conda/envs/py310/lib/python3.10/site-packages/torch_musa/lib/libmusa_python.so.1)
+E       frame #3: <unknown function> + 0x3a0b37 (0x7f8bd0e2bb37 in /opt/conda/envs/py310/lib/python3.10/site-packages/torch_musa/lib/libmusa_python.so.1)
+E       frame #4: <unknown function> + 0x3eb35e (0x7f8bd0e7635e in /opt/conda/envs/py310/lib/python3.10/site-packages/torch_musa/lib/libmusa_python.so.1)
+E       frame #5: at::_ops::_copy_from::call(at::Tensor const&, at::Tensor const&, bool) + 0x178 (0x7f8be417fac8 in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+E       frame #6: <unknown function> + 0x198fe39 (0x7f8be3311e39 in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+E       frame #7: at::native::copy_(at::Tensor&, at::Tensor const&, bool) + 0x70 (0x7f8be33134c0 in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+E       frame #8: at::_ops::copy_::call(at::Tensor&, at::Tensor const&, bool) + 0x169 (0x7f8be403b3c9 in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+E       frame #9: at::native::_to_copy(at::Tensor const&, std::optional<c10::ScalarType>, std::optional<c10::Layout>, std::optional<c10::Device>, std::optional<bool>, bool, std::optional<c10::MemoryFormat>) + 0x148c (0x7f8be35e3f6c in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+E       frame #10: <unknown function> + 0x2a7a8e1 (0x7f8be43fc8e1 in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+E       frame #11: at::_ops::_to_copy::redispatch(c10::DispatchKeySet, at::Tensor const&, std::optional<c10::ScalarType>, std::optional<c10::Layout>, std::optional<c10::Device>, std::optional<bool>, bool, std::optional<c10::MemoryFormat>) + 0x10c (0x7f8be3ab4e2c in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+E       frame #12: <unknown function> + 0x289ae14 (0x7f8be421ce14 in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+E       frame #13: at::_ops::_to_copy::redispatch(c10::DispatchKeySet, at::Tensor const&, std::optional<c10::ScalarType>, std::optional<c10::Layout>, std::optional<c10::Device>, std::optional<bool>, bool, std::optional<c10::MemoryFormat>) + 0x10c (0x7f8be3ab4e2c in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+E       frame #14: <unknown function> + 0x404e4d5 (0x7f8be59d04d5 in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+E       frame #15: <unknown function> + 0x404e924 (0x7f8be59d0924 in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+E       frame #16: at::_ops::_to_copy::call(at::Tensor const&, std::optional<c10::ScalarType>, std::optional<c10::Layout>, std::optional<c10::Device>, std::optional<bool>, bool, std::optional<c10::MemoryFormat>) + 0x1f5 (0x7f8be3b6e2a5 in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+E       frame #17: at::native::to(at::Tensor const&, std::optional<c10::ScalarType>, std::optional<c10::Layout>, std::optional<c10::Device>, std::optional<bool>, bool, bool, std::optional<c10::MemoryFormat>) + 0x134 (0x7f8be35d83c4 in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+E       frame #18: <unknown function> + 0x2c4e607 (0x7f8be45d0607 in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+E       frame #19: at::_ops::to_dtype_layout::call(at::Tensor const&, std::optional<c10::ScalarType>, std::optional<c10::Layout>, std::optional<c10::Device>, std::optional<bool>, bool, bool, std::optional<c10::MemoryFormat>) + 0x20a (0x7f8be3d1d94a in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+E       frame #20: <unknown function> + 0x5444b0b (0x7f8be6dc6b0b in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+E       frame #21: torch::autograd::generated::ToCopyBackward0::apply(std::vector<at::Tensor, std::allocator<at::Tensor> >&&) + 0xff (0x7f8be587178f in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+E       frame #22: <unknown function> + 0x4b6beeb (0x7f8be64edeeb in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+E       frame #23: torch::autograd::Engine::evaluate_function(std::shared_ptr<torch::autograd::GraphTask>&, torch::autograd::Node*, torch::autograd::InputBuffer&, std::shared_ptr<torch::autograd::ReadyQueue> const&) + 0xd68 (0x7f8be64e7c48 in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+E       frame #24: torch::autograd::Engine::thread_main(std::shared_ptr<torch::autograd::GraphTask> const&) + 0x557 (0x7f8be64e8e67 in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+E       frame #25: torch::autograd::Engine::thread_init(int, std::shared_ptr<torch::autograd::ReadyQueue> const&, bool) + 0xaf (0x7f8be64e02cf in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+E       frame #26: torch::autograd::python::PythonEngine::thread_init(int, std::shared_ptr<torch::autograd::ReadyQueue> const&, bool) + 0x75 (0x7f8bf820bed5 in /opt/conda/envs/py310/lib/python3.10/site-packages/torch/lib/libtorch_python.so)
+E       frame #27: <unknown function> + 0xdc253 (0x7f8be1750253 in /usr/lib/x86_64-linux-gnu/libstdc++.so.6)
+E       frame #28: <unknown function> + 0x94ac3 (0x7f8c9b0ebac3 in /usr/lib/x86_64-linux-gnu/libc.so.6)
+E       frame #29: <unknown function> + 0x126850 (0x7f8c9b17d850 in /usr/lib/x86_64-linux-gnu/libc.so.6)
+
+/opt/conda/envs/py310/lib/python3.10/site-packages/torch/autograd/__init__.py:266: RuntimeError
+----------------------------- Captured stderr call -----------------------------
+muDNN(v2700) 2025-02-08 17:43:49.549316 0d:0h:0m:1s TID=0x486778758cf70f3c GPU=0 Handle=0x932f810 INFO# Fill::Run called:
+    FillConfig:
+        value: 0x0
+    Tensor:
+        dtype: FLOAT
+        ndim: 4
+        dim: [2, 64, 6, 6]
+        stride: [2304, 36, 6, 1]
+        format: NCHW
+        addr: 0x100008400
+muDNN(v2700) 2025-02-08 17:43:49.585634 0d:0h:0m:1s TID=0x486778758cf70f3c GPU=0 Handle=0x932f810 INFO# Fill::Run called:
+    FillConfig:
+        value: 0x0
+    Tensor:
+        dtype: FLOAT
+        ndim: 4
+        dim: [2, 64, 6, 6]
+        stride: [2304, 36, 6, 1]
+        format: NCHW
+        addr: 0x10000cc00
+muDNN(v2700) 2025-02-08 17:43:49.585742 0d:0h:0m:1s TID=0x486778758cf70f3c GPU=0 Handle=0x932f810 INFO# Fill::Run called:
+    FillConfig:
+        value: 0x0
+    Tensor:
+        dtype: FLOAT
+        ndim: 4
+        dim: [2, 64, 3, 3]
+        stride: [576, 9, 3, 1]
+        format: NCHW
+        addr: 0x100011400
+muDNN(v2700) 2025-02-08 17:43:49.585765 0d:0h:0m:1s TID=0x486778758cf70f3c GPU=0 Handle=0x932f810 INFO# Fill::Run called:
+    FillConfig:
+        value: 0x0
+    Tensor:
+        dtype: FLOAT
+        ndim: 4
+        dim: [2, 100, 6, 6]
+        stride: [3600, 36, 6, 1]
+        format: NCHW
+        addr: 0x100012600
+muDNN(v2700) 2025-02-08 17:43:49.587289 0d:0h:0m:1s TID=0x486778758cf70f3c GPU=0 Handle=0x932f810 INFO# Fill::Run called:
+    FillConfig:
+        value: 0x3ff0000000000000
+    Tensor:
+        dtype: FLOAT
+        ndim: 4
+        dim: [2, 64, 6, 6]
+        stride: [2304, 36, 6, 1]
+        format: NCHW
+        addr: 0x10000cc00
+muDNN(v2700) 2025-02-08 17:43:49.588435 0d:0h:0m:1s TID=0x219da0bab4cb798d GPU=0 Handle=0x7f8b0c007b00 INFO# Fill::Run called:
+    FillConfig:
+        value: 0x0
+    Tensor:
+        dtype: FLOAT
+        ndim: 4
+        dim: [2, 64, 6, 6]
+        stride: [2304, 36, 6, 1]
+        format: NCHW
+        addr: 0x100012600
+muDNN(v2700) 2025-02-08 17:43:49.588711 0d:0h:0m:1s TID=0x219da0bab4cb798d GPU=0 Handle=0x7f8b0c007b00 INFO# Fill::Run called:
+    FillConfig:
+        value: 0x0
+    Tensor:
+        dtype: FLOAT
+        ndim: 4
+        dim: [2, 64, 6, 6]
+        stride: [2304, 36, 6, 1]
+        format: NCHW
+        addr: 0x100016e00
+muDNN(v2700) 2025-02-08 17:43:49.588819 0d:0h:0m:1s TID=0x219da0bab4cb798d GPU=0 Handle=0x7f8b0c007b00 INFO# Fill::Run called:
+    FillConfig:
+        value: 0x0
+    Tensor:
+        dtype: FLOAT
+        ndim: 4
+        dim: [2, 64, 3, 3]
+        stride: [576, 9, 3, 1]
+        format: NCHW
+        addr: 0x10001b600
+muDNN(v2700) 2025-02-08 17:43:49.588879 0d:0h:0m:1s TID=0x219da0bab4cb798d GPU=0 Handle=0x7f8b0c007b00 INFO# Fill::Run called:
+    FillConfig:
+        value: 0x0
+    Tensor:
+        dtype: FLOAT
+        ndim: 4
+        dim: [2, 100, 6, 6]
+        stride: [3600, 36, 6, 1]
+        format: NCHW
+        addr: 0x10001c800
+muDNN(v2700) 2025-02-08 17:43:49.588932 0d:0h:0m:1s TID=0x219da0bab4cb798d GPU=0 Handle=0x7f8b0c007b00 INFO# Fill::Run called:
+    FillConfig:
+        value: 0x0
+    Tensor:
+        dtype: FLOAT
+        ndim: 4
+        dim: [2, 64, 3, 3]
+        stride: [576, 9, 3, 1]
+        format: NCHW
+        addr: 0x100023a00
+muDNN(v2700) 2025-02-08 17:43:49.588980 0d:0h:0m:1s TID=0x219da0bab4cb798d GPU=0 Handle=0x7f8b0c007b00 INFO# Fill::Run called:
+    FillConfig:
+        value: 0x0
+    Tensor:
+        dtype: FLOAT
+        ndim: 4
+        dim: [2, 100, 6, 6]
+        stride: [3600, 36, 6, 1]
+        format: NCHW
+        addr: 0x100024c00
+=========================== short test summary info ============================
+FAILED tests/test_ops/test_carafe.py::TestCarafe::test_carafe_allclose[musa]
+==================== 1 failed, 2 passed, 2 skipped in 3.48s ====================
