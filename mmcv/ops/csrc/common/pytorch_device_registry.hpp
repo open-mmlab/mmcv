@@ -11,7 +11,9 @@
 #include <functional>
 #include <map>
 #include <type_traits>
-
+#ifdef MMCV_WITH_MUSA
+#include "torch_musa/csrc/aten/utils/Utils.h"
+#endif
 inline std::string GetDeviceStr(const at::Device& device) {
   std::string str = DeviceTypeName(device.type(), true);
   if (device.has_index()) {

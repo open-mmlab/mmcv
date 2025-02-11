@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MUSA_AVAILABLE
 from mmcv.cnn.bricks import GeneralizedAttention
 
 
@@ -63,7 +64,7 @@ def test_context_block():
     assert out.shape == imgs.shape
 
     # test fp16 with attention_type='1111'
-    if torch.cuda.is_available():
+    if IS_CUDA_AVAILABLE:
         imgs = torch.randn(2, 16, 20, 20).cuda().to(torch.half)
         gen_attention_block = GeneralizedAttention(
             16,
@@ -72,5 +73,16 @@ def test_context_block():
             attention_type='1111',
             kv_stride=2)
         gen_attention_block.cuda().type(torch.half)
+        out = gen_attention_block(imgs)
+        assert out.shape == imgs.shape
+    elif IS_MUSA_AVAILABLE:
+        imgs = torch.randn(2, 16, 20, 20).musa().to(torch.half)
+        gen_attention_block = GeneralizedAttention(
+            16,
+            spatial_range=-1,
+            num_heads=8,
+            attention_type='1111',
+            kv_stride=2)
+        gen_attention_block.musa().type(torch.half)
         out = gen_attention_block(imgs)
         assert out.shape == imgs.shape

@@ -4,7 +4,7 @@ import pytest
 import torch
 
 from mmcv.ops import points_in_polygons
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
 
 
 @pytest.mark.parametrize('device', [
@@ -15,7 +15,11 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
     pytest.param(
         'npu',
         marks=pytest.mark.skipif(
-            not IS_NPU_AVAILABLE, reason='requires NPU support'))
+            not IS_NPU_AVAILABLE, reason='requires NPU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
 ])
 def test_points_in_polygons(device):
     points = np.array([[300., 300.], [400., 400.], [100., 100], [300, 250],
