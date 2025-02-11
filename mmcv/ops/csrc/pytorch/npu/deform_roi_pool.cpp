@@ -53,7 +53,7 @@ void deform_roi_pool_backward_npu(Tensor grad_output, Tensor input, Tensor rois,
       .Output(grad_offset)
       .Attr("output_size", output_size)
       .Attr("spatial_scale", spatial_scale)
-      .Attr("sample_ratio", sampling_ratio_)
+      .Attr("sampling_ratio", sampling_ratio_)
       .Attr("gamma", gamma)
       .Run();
 }
