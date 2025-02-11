@@ -15,7 +15,7 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE, IS
     pytest.param(
         'npu',
         marks=pytest.mark.skipif(
-            not IS_NPU_AVAILABLE, reason='requires NPU support')),
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
     pytest.param(
         'musa',
         marks=pytest.mark.skipif(
