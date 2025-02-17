@@ -60,7 +60,8 @@ class BaseRunner(metaclass=ABCMeta):
                  logger: Optional[logging.Logger] = None,
                  meta: Optional[Dict] = None,
                  max_iters: Optional[int] = None,
-                 max_epochs: Optional[int] = None) -> None:
+                 max_epochs: Optional[int] = None,
+                 max_epochs_iter: Optional[int] = None) -> None:
         if batch_processor is not None:
             if not callable(batch_processor):
                 raise TypeError('batch_processor must be callable, '
@@ -138,6 +139,7 @@ class BaseRunner(metaclass=ABCMeta):
 
         self._max_epochs = max_epochs
         self._max_iters = max_iters
+        self.max_epochs_iter = max_epochs_iter
         # TODO: Redesign LogBuffer, it is not flexible and elegant enough
         self.log_buffer = LogBuffer()
 
