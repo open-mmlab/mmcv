@@ -2,11 +2,11 @@
 
 ### Image
 
-This module provides some image processing methods, which requires `opencv` to be installed first.
+This module provides some image processing methods, which requires `opencv` and `numpy` to be installed first.
 
 #### Read/Write/Show
 
-To read or write images files, use `imread` or `imwrite`.
+To read or write images files, use `imread` or `imwrite` with `opencv` and `load` or `save` with `numpy`.
 
 ```python
 import mmcv
@@ -15,6 +15,13 @@ img = mmcv.imread('test.jpg')
 img = mmcv.imread('test.jpg', flag='grayscale')
 img_ = mmcv.imread(img)  # nothing will happen, img_ = img
 mmcv.imwrite(img, 'out.jpg')
+```
+
+```python
+import numpy as np
+
+img = np.load('test.npy')
+np.save('test.npy', img)
 ```
 
 To read images from bytes
