@@ -284,7 +284,8 @@ def imfrombytes(content: bytes,
         flag = imread_flags[flag] if is_str(flag) else flag
         img = cv2.imdecode(img_np, flag)
         if flag == IMREAD_COLOR and channel_order == 'rgb':
-            cv2.cvtColor(img, cv2.COLOR_BGR2RGB, img)
+            # Faster than cv2.cvtColor(img, cv2.COLOR_BGR2RGB, img)
+            img = img[..., ::-1]
         return img
 
 

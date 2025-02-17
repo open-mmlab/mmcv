@@ -44,7 +44,8 @@ def imnormalize_(img, mean, std, to_rgb=True):
     mean = np.float64(mean.reshape(1, -1))
     stdinv = 1 / np.float64(std.reshape(1, -1))
     if to_rgb:
-        cv2.cvtColor(img, cv2.COLOR_BGR2RGB, img)  # inplace
+        # Faster than cv2.cvtColor(img, cv2.COLOR_BGR2RGB, img)
+        img = img[..., ::-1]
     cv2.subtract(img, mean, img)  # inplace
     cv2.multiply(img, stdinv, img)  # inplace
     return img
@@ -56,8 +57,9 @@ def imdenormalize(img, mean, std, to_bgr=True):
     std = std.reshape(1, -1).astype(np.float64)
     img = cv2.multiply(img, std)  # make a copy
     cv2.add(img, mean, img)  # inplace
+    # Faster than cv2.cvtColor(img, cv2.COLOR_RGB2BGR, img)
     if to_bgr:
-        cv2.cvtColor(img, cv2.COLOR_RGB2BGR, img)  # inplace
+        img = img[..., ::-1]
     return img
 
 
@@ -427,7 +429,8 @@ def adjust_lighting(img, eigval, eigvec, alphastd=0.1, to_rgb=True):
 
     img = img.copy().astype(np.float32)
     if to_rgb:
-        cv2.cvtColor(img, cv2.COLOR_BGR2RGB, img)  # inplace
+        # Faster than cv2.cvtColor(img, cv2.COLOR_BGR2RGB, img)
+        img = img[..., ::-1]
 
     alpha = np.random.normal(0, alphastd, n_eigval)
     alter = eigvec \
