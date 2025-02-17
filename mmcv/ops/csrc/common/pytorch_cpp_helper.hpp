@@ -10,6 +10,8 @@ using namespace at;
   TORCH_CHECK(x.device().is_cuda(), #x " must be a CUDA tensor")
 #define CHECK_MLU(x) \
   TORCH_CHECK(x.device().type() == at::kMLU, #x " must be a MLU tensor")
+#define CHECK_MUSA(x) \
+  TORCH_CHECK(x.device().is_privateuseone(), #x " must be a MUSA tensor")
 #define CHECK_CPU(x) \
   TORCH_CHECK(x.device().type() == at::kCPU, #x " must be a CPU tensor")
 #define CHECK_CONTIGUOUS(x) \
@@ -19,6 +21,9 @@ using namespace at;
   CHECK_CONTIGUOUS(x)
 #define CHECK_MLU_INPUT(x) \
   CHECK_MLU(x);            \
+  CHECK_CONTIGUOUS(x)
+#define CHECK_MUSA_INPUT(x) \
+  CHECK_MUSA(x);            \
   CHECK_CONTIGUOUS(x)
 #define CHECK_CPU_INPUT(x) \
   CHECK_CPU(x);            \

@@ -15,6 +15,10 @@ try:
             os.getenv('FORCE_MLU', '0') == '1':
         from torch_mlu.utils.cpp_extension import BuildExtension
         EXT_TYPE = 'pytorch'
+    elif (hasattr(torch, 'is_musa_available') and torch.is_musa_available()) or \
+            os.getenv('FORCE_MUSA', '0') == '1':
+        from torch_musa.utils.musa_extension import BuildExtension
+        EXT_TYPE = 'pytorch'
     else:
         from torch.utils.cpp_extension import BuildExtension
         EXT_TYPE = 'pytorch'
@@ -428,6 +432,20 @@ def get_extensions():
                 glob.glob('./mmcv/ops/csrc/pytorch/npu/*.cpp')
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/npu'))
+        elif hasattr(torch, 'musa') or os.getenv('FORCE_MUSA', '0') == '1':
+            from torch_musa.testing import get_musa_arch
+            from torch_musa.utils.musa_extension import MUSAExtension
+            define_macros += [('MMCV_WITH_MUSA', None),
+                              ('MUSA_ARCH', str(get_musa_arch()))]
+            os.environ['MUSA_ARCH'] = str(get_musa_arch())
+            op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/musa/*.mu') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/musa/*.cpp')
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/pytorch'))
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/musa'))
+            extension = MUSAExtension
         else:
             print(f'Compiling {ext_name} only with CPU')
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \

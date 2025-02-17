@@ -3,7 +3,8 @@ import pytest
 import torch
 
 from mmcv.ops import ball_query
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import (IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE,
+                        IS_NPU_AVAILABLE)
 
 
 @pytest.mark.parametrize('device', [
@@ -18,7 +19,11 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
     pytest.param(
         'npu',
         marks=pytest.mark.skipif(
-            not IS_NPU_AVAILABLE, reason='requires NPU support'))
+            not IS_NPU_AVAILABLE, reason='requires NPU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
 def test_ball_query(device):
     new_xyz = torch.tensor(
@@ -71,7 +76,11 @@ def test_ball_query(device):
     pytest.param(
         'npu',
         marks=pytest.mark.skipif(
-            not IS_NPU_AVAILABLE, reason='requires NPU support'))
+            not IS_NPU_AVAILABLE, reason='requires NPU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
 ])
 def test_stack_ball_query(device):
     new_xyz = torch.tensor(
@@ -102,11 +111,13 @@ def test_stack_ball_query(device):
         device=device)
     assert torch.all(idx == expected_idx)
 
-    xyz = xyz.double()
-    new_xyz = new_xyz.double()
-    expected_idx = expected_idx.double()
-    idx = ball_query(0, 0.2, 5, xyz, new_xyz, xyz_batch_cnt, new_xyz_batch_cnt)
-    assert torch.all(idx == expected_idx)
+    if device == 'cuda' or device == 'npu':
+        xyz = xyz.double()
+        new_xyz = new_xyz.double()
+        expected_idx = expected_idx.double()
+        idx = ball_query(0, 0.2, 5, xyz, new_xyz, xyz_batch_cnt,
+                         new_xyz_batch_cnt)
+        assert torch.all(idx == expected_idx)
 
     xyz = xyz.half()
     new_xyz = new_xyz.half()
