@@ -59,7 +59,7 @@ jobs:
             coverage xml
             coverage report -m
         run: docker exec build-container bash -c "$SCRIPT"
-      
+
   build_cu111:
     runs-on: ubuntu-22.04
     env:
