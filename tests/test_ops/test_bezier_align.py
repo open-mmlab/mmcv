@@ -39,7 +39,8 @@ outputs = ([[[[1., 1.75, 3.5, 5.25], [2.5, 3.25, 5., 6.75],
             pytest.mark.skipif(
                 IS_MUSA_AVAILABLE,
                 reason='MUSA does not support for 64-bit floating point')
-        ]), torch.half
+        ]), 
+    torch.half
 ])
 def test_bezieralign(device, dtype):
     try:

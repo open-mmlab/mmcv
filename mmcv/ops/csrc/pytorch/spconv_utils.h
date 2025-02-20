@@ -26,20 +26,7 @@
 
 
 namespace tv {
-#ifdef MMCV_WITH_CUDA
-struct GPU {
-  GPU(cudaStream_t s = 0) : mStream(s) {}
-  virtual cudaStream_t getStream() const { return mStream; }
-  cudaStream_t mStream = 0;
-};
-
-struct TorchGPU : public tv::GPU {
-  virtual cudaStream_t getStream() const override {
-    return at::cuda::getCurrentCUDAStream();
-  }
-};
-
-#elif defined(MMCV_WITH_MUSA)
+#ifdef MMCV_WITH_MUSA
 struct GPU {
   GPU(musaStream_t s = 0) : mStream(s) {}
   virtual musaStream_t getStream() const { return mStream; }
@@ -49,6 +36,19 @@ struct GPU {
 struct TorchGPU : public tv::GPU {
   virtual musaStream_t getStream() const override {
     return at::musa::getCurrentMUSAStream();
+  }
+};
+
+#else
+struct GPU {
+  GPU(cudaStream_t s = 0) : mStream(s) {}
+  virtual cudaStream_t getStream() const { return mStream; }
+  cudaStream_t mStream = 0;
+};
+
+struct TorchGPU : public tv::GPU {
+  virtual cudaStream_t getStream() const override {
+    return at::cuda::getCurrentCUDAStream();
   }
 };
 #endif
