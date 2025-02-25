@@ -21,7 +21,7 @@ void iou3d_boxes_overlap_bev_forward_npu(const int num_a, const Tensor boxes_a,
 
     auto clockwise = true;
     bool aligned = false;
-    double margin = 1e-8;
+    double margin = 1e-5;
     int32_t mode_flag = MODE_FLAG_OVERLAP;
     int32_t format_flag = FORMAT_FLAG_XYZWHDR;
 
