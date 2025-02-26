@@ -174,10 +174,10 @@ std::vector<torch::Tensor> get_indice_pairs_backward(
     if (indices.device().type() == at::kMUSA) {
       CHECK_MUSA_INPUT(indices);
       CHECK_MUSA_INPUT(gridOut);
-    return get_indice_pairs_backward_musa<NDim>(
-        indices, gridOut, batchSize, outSpatialShape, spatialShape, kernelSize,
-        stride, padding, dilation, outPadding, _subM, _transpose);
-    }
+      return get_indice_pairs_backward_musa<NDim>(
+          indices, gridOut, batchSize, outSpatialShape, spatialShape, kernelSize,
+          stride, padding, dilation, outPadding, _subM, _transpose);
+      }
 #endif
     AT_ERROR("get_indice_pairs is not implemented on CPU");
   }

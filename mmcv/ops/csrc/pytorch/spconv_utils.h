@@ -15,15 +15,15 @@
 #pragma once
 #include <ATen/ATen.h>
 #ifdef MMCV_WITH_MUSA
-  #include "torch_musa/csrc/aten/musa/MUSAContext.h"
-  #include "pytorch_musa_helper.hpp"
+#include "pytorch_musa_helper.hpp"
+#include "torch_musa/csrc/aten/musa/MUSAContext.h"
 #else
-  #include <ATen/cuda/CUDAContext.h>
-  #include "pytorch_cuda_helper.hpp"
+#include <ATen/cuda/CUDAContext.h>
+
+#include "pytorch_cuda_helper.hpp"
 #endif
 #include <torch/script.h>
 #include <utils/spconv/tensorview/tensorview.h>
-
 
 namespace tv {
 #ifdef MMCV_WITH_MUSA

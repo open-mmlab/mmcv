@@ -2,13 +2,14 @@
 #define PYTORCH_MUSA_HELPER
 
 #include <ATen/ATen.h>
-#include <ATen/musa/MUSA_PORT_ApplyUtils.muh>
-#include "torch_musa/csrc/aten/musa/MUSAContext.h"
 
+#include <ATen/musa/MUSA_PORT_ApplyUtils.muh>
 #include <THC/THCAtomics.muh>
-#include "torch_musa/csrc/aten/musa/Exceptions.h"
-#include "torch_musa/csrc/core/MUSAGuard.h"
+
 #include "common_musa_helper.hpp"
+#include "torch_musa/csrc/aten/musa/Exceptions.h"
+#include "torch_musa/csrc/aten/musa/MUSAContext.h"
+#include "torch_musa/csrc/core/MUSAGuard.h"
 
 using at::Half;
 using at::Tensor;
