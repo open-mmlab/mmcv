@@ -29,7 +29,6 @@ jobs:
     env:
       FORCE_CUDA: 1
       MMCV_CUDA_ARGS: -gencode=arch=compute_61,code=sm_61
-      CONTAINER: pytorch/pytorch:1.8.1-cuda10.2-cudnn7-devel
     strategy:
       matrix:
         python-version: ['3.9','3.10']
