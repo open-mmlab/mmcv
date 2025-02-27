@@ -14,13 +14,32 @@
 
 #pragma once
 #include <ATen/ATen.h>
+#ifdef MMCV_WITH_MUSA
+#include "pytorch_musa_helper.hpp"
+#include "torch_musa/csrc/aten/musa/MUSAContext.h"
+#else
 #include <ATen/cuda/CUDAContext.h>
+
+#include "pytorch_cuda_helper.hpp"
+#endif
 #include <torch/script.h>
 #include <utils/spconv/tensorview/tensorview.h>
 
-#include "pytorch_cuda_helper.hpp"
-
 namespace tv {
+#ifdef MMCV_WITH_MUSA
+struct GPU {
+  GPU(musaStream_t s = 0) : mStream(s) {}
+  virtual musaStream_t getStream() const { return mStream; }
+  musaStream_t mStream = 0;
+};
+
+struct TorchGPU : public tv::GPU {
+  virtual musaStream_t getStream() const override {
+    return at::musa::getCurrentMUSAStream();
+  }
+};
+
+#else
 struct GPU {
   GPU(cudaStream_t s = 0) : mStream(s) {}
   virtual cudaStream_t getStream() const { return mStream; }
@@ -32,6 +51,7 @@ struct TorchGPU : public tv::GPU {
     return at::cuda::getCurrentCUDAStream();
   }
 };
+#endif
 
 template <typename scalar_t>
 void check_torch_dtype(const torch::Tensor &tensor) {

@@ -27,7 +27,7 @@
 
 namespace tv {
 
-#if defined(__NVCC__) || defined(__HIP__)
+#if defined(__NVCC__) || defined(__HIP__) || defined(__MUSA__)
 #define TV_HOST_DEVICE_INLINE __forceinline__ __device__ __host__
 #define TV_DEVICE_INLINE __forceinline__ __device__
 #define TV_HOST_DEVICE __device__ __host__
@@ -97,6 +97,17 @@ void sstream_print(SStream &ss, T val, TArgs... args) {
       std::stringstream __macro_s;                             \
       __macro_s << __FILE__ << " " << __LINE__ << "\n";        \
       __macro_s << "cuda execution failed with error " << err; \
+      throw std::runtime_error(__macro_s.str());               \
+    }                                                          \
+  }
+
+#define TV_CHECK_MUSA_ERR()                                    \
+  {                                                            \
+    auto err = musaGetLastError();                             \
+    if (err != musaSuccess) {                                  \
+      std::stringstream __macro_s;                             \
+      __macro_s << __FILE__ << " " << __LINE__ << "\n";        \
+      __macro_s << "musa execution failed with error " << err; \
       throw std::runtime_error(__macro_s.str());               \
     }                                                          \
   }
