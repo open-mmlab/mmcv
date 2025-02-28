@@ -83,11 +83,11 @@ jobs:
       - name: Update pip
         run: |
           pip install --upgrade pip wheel
-          sudo apt install wget
+          apt install wget
           wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/arm64/cuda-keyring_1.0-1_all.deb
-          sudo dpkg -i cuda-keyring_1.0-1_all.deb
-          sudo apt-get update
-          sudo apt-get -y install cuda
+          dpkg -i cuda-keyring_1.0-1_all.deb
+          apt-get update
+          apt-get -y install cuda
       - name: Install dependencies
         run: |
           apt-get update && apt-get install -y git ffmpeg libturbojpeg
