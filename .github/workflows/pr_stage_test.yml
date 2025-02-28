@@ -42,7 +42,7 @@ jobs:
         run: python -m  pip install -e . -v
       - name: Install unit tests dependencies
         run: |
-          pwd
+          cd ..
           python -m  pip install -r requirements/tests.txt
           python -m  pip install openmim
           mim install mmcv
