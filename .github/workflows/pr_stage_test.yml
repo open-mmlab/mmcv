@@ -60,7 +60,6 @@ jobs:
     env:
       FORCE_CUDA: 1
       MMCV_CUDA_ARGS: -gencode=arch=compute_61,code=sm_61
-      CUDA_HOME: /usr/local/cuda
     strategy:
       matrix:
         python-version: ['3.9','3.10']
@@ -79,17 +78,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Update pip
         run: |
-          curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
-            && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
-            sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
-            sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
-          sudo apt-get update
-          sudo apt-get install -y nvidia-container-toolkit
           pip install --upgrade pip wheel
       - name: Install dependencies
         run: |
           apt-get update && apt-get install -y git ffmpeg libturbojpeg
-          python -m pip install torch==${{matrix.torch}} --index-url https://download.pytorch.org/whl/${{matrix.cuda}}
+          python -m pip install torch==${{matrix.torch}} torchvision --index-url https://download.pytorch.org/whl/${{matrix.cuda}}
           python -c "import torch; print(f'CUDA 是否可用: {torch.cuda.is_available()}'); print(f'CUDA 版本: {torch.version.cuda}') if torch.cuda.is_available() else print('CUDA 不可用')"
           pip install git+https://github.com/open-mmlab/mmengine.git@main
           pip install ninja psutil
