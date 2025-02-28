@@ -21,6 +21,36 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+   build_cu117:
+    runs-on: ubuntu-22.04
+    container:
+      image: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-devel
+    strategy:
+      matrix:
+        python-version: [3.10]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Upgrade pip
+        run: pip install pip --upgrade
+      - name: Install system dependencies
+        run: apt-get update && apt-get install -y git ffmpeg libturbojpeg
+      - name: Build MMEngine from source
+        run: pip install -e . -v
+      - name: Install unit tests dependencies
+        run: |
+          pip install -r requirements/tests.txt
+          pip install openmim
+          mim install mmcv
+      # Distributed related unit test may randomly error in PyTorch 1.13.0
+      - name: Run unittests and generate coverage report
+        run: |
+          coverage run --branch --source mmengine -m pytest tests/  --ignore tests/test_dist/
+          coverage xml
+          coverage report -m
   build_gpu:
     runs-on: ubuntu-22.04
     defaults:
