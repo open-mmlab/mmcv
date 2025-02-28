@@ -60,6 +60,7 @@ jobs:
     env:
       FORCE_CUDA: 1
       MMCV_CUDA_ARGS: -gencode=arch=compute_61,code=sm_61
+      CUDA_HOME: /usr/local/cuda
     strategy:
       matrix:
         python-version: ['3.9','3.10']
@@ -84,7 +85,7 @@ jobs:
             sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
           sudo apt-get update
           sudo apt-get install -y nvidia-container-toolkit
-          python -m pip install --upgrade pip wheel
+          pip install --upgrade pip wheel
       - name: Install dependencies
         run: |
           apt-get update && apt-get install -y git ffmpeg libturbojpeg
