@@ -155,7 +155,7 @@ void deform_conv_forward(Tensor input, Tensor weight, Tensor offset,
 #endif
   }
 #ifndef MMCV_WITH_MUSA
-else {
+  else {
     CHECK_CPU_INPUT(input);
     CHECK_CPU_INPUT(offset);
     CHECK_CPU_INPUT(weight);
@@ -279,7 +279,7 @@ void deform_conv_backward_input(Tensor input, Tensor offset, Tensor gradOutput,
 #endif
   }
 #ifndef MMCV_WITH_MUSA
-else {
+  else {
     CHECK_CPU_INPUT(input);
     CHECK_CPU_INPUT(offset);
     CHECK_CPU_INPUT(gradOutput);
@@ -414,7 +414,7 @@ void deform_conv_backward_parameters(Tensor input, Tensor offset,
 #endif
   }
 #ifndef MMCV_WITH_MUSA
-else {
+  else {
     CHECK_CPU_INPUT(input);
     CHECK_CPU_INPUT(offset);
     CHECK_CPU_INPUT(gradOutput);
