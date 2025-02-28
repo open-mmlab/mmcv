@@ -42,7 +42,7 @@ jobs:
         run: python -m  pip install -e . -v
       - name: Install unit tests dependencies
         run: |
-          cd ..
+          ls -l
           python -m  pip install -r requirements/tests.txt
           python -m  pip install openmim
           mim install mmcv
@@ -55,11 +55,9 @@ jobs:
   
   build_gpu:
     runs-on: ubuntu-22.04
-    container:
-      image: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-devel
-    # defaults:
-    #   run:
-    #     shell: bash -l {0}
+    defaults:
+      run:
+        shell: bash -l {0}
     env:
       FORCE_CUDA: 1
       MMCV_CUDA_ARGS: -gencode=arch=compute_61,code=sm_61
