@@ -4,6 +4,7 @@ import torch
 
 from mmcv.ops import bias_act
 from mmcv.ops.bias_act import EasyDict
+from mmcv.utils import IS_MUSA_AVAILABLE
 
 _USING_PARROTS = True
 try:
@@ -131,7 +132,7 @@ class TestBiasAct:
         assert out1.max() <= 0.5
         assert out2.max() <= 0.5
 
-    @pytest.mark.skipif(not torch.musa.is_available(), reason='requires musa')
+    @pytest.mark.skipif(not IS_MUSA_AVAILABLE, reason='requires musa')
     def test_bias_act_musa(self):
         if _USING_PARROTS:
             gradcheck(
