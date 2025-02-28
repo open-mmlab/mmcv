@@ -17,8 +17,9 @@ if IS_MUSA_AVAILABLE:
         pass
 else:
     try:
-        # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast
-        # would be imported and used; we should test if our modules support it.
+        # If PyTorch version >= 1.6.0 and fp16 is enabled
+        # torch.cuda.amp.autocast would be imported and used
+        # we should test if our modules support it.
         from torch.cuda.amp import autocast
     except ImportError:
         pass
