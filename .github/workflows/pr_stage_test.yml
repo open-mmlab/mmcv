@@ -50,8 +50,7 @@ jobs:
         run: pip install -e . -v
       - name: Install unit tests dependencies
         run: |
-          ls -R requirements
-          pip install -r requirements/tests.txt
+          pip install -r requirements/test.txt
           python -c "import torch; print(f'CUDA 是否可用: {torch.cuda.is_available()}'); print(f'CUDA 版本: {torch.version.cuda}') if torch.cuda.is_available() else print('CUDA 不可用')"s
       # Distributed related unit test may randomly error in PyTorch 1.13.0
       - name: Run unittests and generate coverage report
@@ -68,7 +67,7 @@ jobs:
     env:
       FORCE_CUDA: 1
       MMCV_CUDA_ARGS: -gencode=arch=compute_61,code=sm_61
-      # CUDA_HOME: $CONDA_PREFIX/
+      CUDA_HOME: /usr/local/cuda
     strategy:
       matrix:
         python-version: ['3.9','3.10']
