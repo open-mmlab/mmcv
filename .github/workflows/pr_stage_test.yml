@@ -1,7 +1,5 @@
 name: pr_stage_test
 
-env:
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 on:
   pull_request:
     paths-ignore:
@@ -21,83 +19,111 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_cu102:
+  build_cu121:
     runs-on: ubuntu-22.04
-    env:
-      FORCE_CUDA: 1
-      MMCV_CUDA_ARGS: -gencode=arch=compute_61,code=sm_61
-      CONTAINER: pytorch/pytorch:1.8.1-cuda10.2-cudnn7-devel
+    container:
+      image: nvidia/cuda:12.1.0-cudnn8-devel-ubuntu22.04
     strategy:
       matrix:
-        python-version: [3.7]
+        python-version: ["3.10"]
+        torch: ["2.5.1"]
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Start Docker Container
+      - uses: actions/checkout@v3
+      - name: Install basic tools
         run: |
-          docker pull $CONTAINER
-          docker run --name build-container -d -e FORCE_CUDA=1 -e MMCV_CUDA_ARGS="-gencode=arch=compute_61,code=sm_61" -v ${{ github.workspace }}:/workspace $CONTAINER tail -f /dev/null
-      - name: Install Dependencies
-        env:
-          SCRIPT: |
-            pip install pip wheel --upgrade
-            apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
-            apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
-            apt-get update && apt-get install -y git ffmpeg libturbojpeg
-            pip install git+https://github.com/open-mmlab/mmengine.git@main
-            pip install ninja psutil
-            pip install -e . -v
-            pip install -r requirements/test.txt
-        run: docker exec build-container bash -c "$SCRIPT"
-      - name: Build
-        env:
-          SCRIPT: |
-            coverage run --branch --source mmcv -m pytest tests/
-            coverage xml
-            coverage report -m
-        run: docker exec build-container bash -c "$SCRIPT"
+          apt-get update
+          apt-get install -y wget build-essential git software-properties-common
 
-  build_cu111:
+      # 安装特定版本的 Python
+      - name: Install Python ${{ matrix.python-version }}
+        run: |
+          add-apt-repository ppa:deadsnakes/ppa -y
+          apt-get update
+          apt-get install -y python${{ matrix.python-version }} python${{ matrix.python-version }}-dev python${{ matrix.python-version }}-distutils
+          update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${{ matrix.python-version }} 1
+          update-alternatives --install /usr/bin/python python /usr/bin/python${{ matrix.python-version }} 1
+          wget https://bootstrap.pypa.io/get-pip.py
+          python get-pip.py
+
+      # 安装 PyTorch
+      - name: Install PyTorch
+        run: |
+          pip install torch==${{ matrix.torch }} torchvision --index-url https://download.pytorch.org/whl/cu121
+      - name: Fetch GPG keys
+        run: |
+          apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
+          apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
+      - name: Install system dependencies
+        run: apt-get update && apt-get install -y git ffmpeg libturbojpeg
+      - name: Install MMEngine from main branch
+        run: pip install git+https://github.com/open-mmlab/mmengine.git@main
+      - name: Install ninja to speed the compilation
+        run: pip install ninja psutil
+      - name: Build MMEngine from source
+        run: pip install -e . -v
+      - name: Install unit tests dependencies
+        run: |
+          pip install -r requirements/test.txt
+        # Distributed related unit test may randomly error in PyTorch 1.13.0
+      - name: Run unittests and generate coverage report
+        run: |
+          coverage run --branch --source mmengine -m pytest tests/  --ignore tests/test_dist/
+          coverage xml
+          coverage report -m
+
+  build_cu118:
     runs-on: ubuntu-22.04
-    env:
-      FORCE_CUDA: 1
-      MMCV_CUDA_ARGS: -gencode=arch=compute_61,code=sm_61
-      CONTAINER: pytorch/pytorch:1.8.1-cuda11.1-cudnn8-devel
+    container:
+      image: nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
     strategy:
       matrix:
-        python-version: [3.7]
+        python-version: ["3.10"]
+        torch: ["2.0.0", "2.1.0","2.3.1"]
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Start Docker Container
+      - uses: actions/checkout@v3
+      - name: Install basic tools
         run: |
-          docker pull $CONTAINER
-          docker run --name build-container -d -e FORCE_CUDA=1 -e MMCV_CUDA_ARGS="-gencode=arch=compute_61,code=sm_61" -v ${{ github.workspace }}:/workspace $CONTAINER tail -f /dev/null
-      - name: Install Dependencies
-        env:
-          SCRIPT: |
-            pip install pip wheel --upgrade
-            apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
-            apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
-            apt-get update && apt-get install -y git ffmpeg libturbojpeg
-            pip install git+https://github.com/open-mmlab/mmengine.git@main
-            pip install ninja psutil
-            pip install -e . -v
-            pip install -r requirements/test.txt
-        run: docker exec build-container bash -c "$SCRIPT"
-      - name: Build
-        env:
-          SCRIPT: |
-            coverage run --branch --source mmcv -m pytest tests/
-            coverage xml
-            coverage report -m
-        run: docker exec build-container bash -c "$SCRIPT"
+          apt-get update
+          apt-get install -y wget build-essential git software-properties-common
+
+      # 安装特定版本的 Python
+      - name: Install Python ${{ matrix.python-version }}
+        run: |
+          add-apt-repository ppa:deadsnakes/ppa -y
+          apt-get update
+          apt-get install -y python${{ matrix.python-version }} python${{ matrix.python-version }}-dev python${{ matrix.python-version }}-distutils
+          update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${{ matrix.python-version }} 1
+          update-alternatives --install /usr/bin/python python /usr/bin/python${{ matrix.python-version }} 1
+          wget https://bootstrap.pypa.io/get-pip.py
+          python get-pip.py
+
+      # 安装 PyTorch
+      - name: Install PyTorch
+        run: |
+          pip install torch==${{ matrix.torch }} torchvision --index-url https://download.pytorch.org/whl/cu118
+      - name: Fetch GPG keys
+        run: |
+          apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
+          apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
+      - name: Install system dependencies
+        run: apt-get update && apt-get install -y git ffmpeg libturbojpeg
+      - name: Install MMEngine from main branch
+        run: pip install git+https://github.com/open-mmlab/mmengine.git@main
+      - name: Install ninja to speed the compilation
+        run: pip install ninja psutil
+      - name: Build MMEngine from source
+        run: pip install -e . -v
+      - name: Install unit tests dependencies
+        run: |
+          pip install -r requirements/test.txt
+          pip install numpy==1.24.3
+        # Distributed related unit test may randomly error in PyTorch 1.13.0
+      - name: Run unittests and generate coverage report
+        run: |
+          coverage run --branch --source mmengine -m pytest tests/  --ignore tests/test_dist/
+          coverage xml
+          coverage report -m
+
   build_windows_without_ops:
     runs-on: windows-2019
     env:
