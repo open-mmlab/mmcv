@@ -50,7 +50,7 @@ jobs:
         run: pip install -e . -v
       - name: Install unit tests dependencies
         run: |
-          ls -l
+          ls -R requirements
           pip install -r requirements/tests.txt
           python -c "import torch; print(f'CUDA 是否可用: {torch.cuda.is_available()}'); print(f'CUDA 版本: {torch.version.cuda}') if torch.cuda.is_available() else print('CUDA 不可用')"s
       # Distributed related unit test may randomly error in PyTorch 1.13.0
