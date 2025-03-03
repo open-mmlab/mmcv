@@ -115,7 +115,7 @@ jobs:
         run: pip install -e . -v
       - name: Install unit tests dependencies
         run: |
-          pip install -r requirements/test.txt 
+          pip install -r requirements/test.txt
           pip install numpy==1.24.3
         # Distributed related unit test may randomly error in PyTorch 1.13.0
       - name: Run unittests and generate coverage report
