@@ -43,6 +43,7 @@ jobs:
       - name: Install unit tests dependencies
         run: |
           ls -l
+          python -c "import torch; print(f'CUDA 是否可用: {torch.cuda.is_available()}'); print(f'CUDA 版本: {torch.version.cuda}') if torch.cuda.is_available() else print('CUDA 不可用')"
           python -m  pip install -r requirements/tests.txt
           python -m  pip install openmim
           mim install mmcv
