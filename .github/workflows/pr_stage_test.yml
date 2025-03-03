@@ -50,9 +50,9 @@ jobs:
         run: pip install -e . -v
       - name: Install unit tests dependencies
         run: |
+          python -c "import torch; print(f'CUDA 是否可用: {torch.cuda.is_available()}'); print(f'CUDA 版本: {torch.version.cuda}') if torch.cuda.is_available() else print('CUDA 不可用')"
           pip install -r requirements/test.txt
-          python -c "import torch; print(f'CUDA 是否可用: {torch.cuda.is_available()}'); print(f'CUDA 版本: {torch.version.cuda}') if torch.cuda.is_available() else print('CUDA 不可用')"s
-      # Distributed related unit test may randomly error in PyTorch 1.13.0
+        # Distributed related unit test may randomly error in PyTorch 1.13.0
       - name: Run unittests and generate coverage report
         run: |
           coverage run --branch --source mmengine -m pytest tests/  --ignore tests/test_dist/
