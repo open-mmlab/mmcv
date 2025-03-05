@@ -1,0 +1,56 @@
+[tool.ruff]
+# Python version range
+target-version = "py37"
+# Max line length
+line-length = 79
+
+# Exclude a variety of commonly ignored directories
+exclude = [
+    ".git",
+    ".eggs",
+    "__pycache__",
+    "build",
+    "dist",
+]
+
+[tool.ruff.lint]
+# Start with a minimal set of rules and gradually add more over time
+select = [
+    "E",   # pycodestyle errors
+    "F",   # Pyflakes
+    "I",   # isort
+    "W",   # pycodestyle warnings
+]
+# Ignore some errors in line with the project's existing style
+ignore = [
+    "E203",  # whitespace before ':'
+    "E501",  # line too long
+    "F401",  # imported but unused
+    "F403",  # import * used
+    "F405",  # name may be undefined from import *
+]
+
+[tool.ruff.format]
+# Use single quotes for non-triple-quoted strings
+quote-style = "single"
+# Indent with 4 spaces
+indent-style = "space"
+# Respect line length
+line-ending = "auto"
+# Similar to yapf's defaults
+skip-magic-trailing-comma = false
+docstring-code-format = true
+
+[tool.ruff.lint.isort]
+known-first-party = ["mmcv"]
+# Configure isort to be compatible with previous settings
+extra-standard-library = ["pkg_resources", "setuptools", "logging", "os", "warnings", "abc"]
+known-third-party = ["addict", "cv2", "matplotlib", "numpy", "onnx", "packaging", "pytest", "pytorch_sphinx_theme", "scipy", "sphinx", "torch", "torchvision", "yaml", "yapf"]
+
+[tool.ruff.lint.mccabe]
+# Maximum McCabe complexity allowed
+max-complexity = 10
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore imported but unused in __init__.py files
+"__init__.py" = ["F401"]
