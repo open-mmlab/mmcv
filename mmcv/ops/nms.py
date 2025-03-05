@@ -8,7 +8,13 @@ from torch import Tensor
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
-    '_ext', ['nms', 'softnms', 'nms_match', 'nms_rotated', 'nms_quadri'])
+    '_ext', ['nms', 'softnms', 'nms_match', 'nms_quadri'])
+
+# Define a stub for nms_rotated for backwards compatibility
+def nms_rotated(*args, **kwargs):
+    raise NotImplementedError(
+        'nms_rotated has been removed. The functionality for rotated detection has been removed.'
+    )
 
 
 # This function is modified from: https://github.com/pytorch/vision/
@@ -372,77 +378,6 @@ def nms_match(dets: array_like_type,
         return [np.array(m, dtype=int) for m in matched]
 
 
-def nms_rotated(dets: Tensor,
-                scores: Tensor,
-                iou_threshold: float,
-                labels: Optional[Tensor] = None,
-                clockwise: bool = True) -> Tuple[Tensor, Tensor]:
-    """Performs non-maximum suppression (NMS) on the rotated boxes according to
-    their intersection-over-union (IoU).
-
-    Rotated NMS iteratively removes lower scoring rotated boxes which have an
-    IoU greater than iou_threshold with another (higher scoring) rotated box.
-
-    Args:
-        dets (torch.Tensor):  Rotated boxes in shape (N, 5).
-            They are expected to be in
-            (x_ctr, y_ctr, width, height, angle_radian) format.
-        scores (torch.Tensor): scores in shape (N, ).
-        iou_threshold (float): IoU thresh for NMS.
-        labels (torch.Tensor, optional): boxes' label in shape (N,).
-        clockwise (bool): flag indicating whether the positive angular
-            orientation is clockwise. default True.
-            `New in version 1.4.3.`
-
-    Returns:
-        tuple: kept dets(boxes and scores) and indice, which is always the
-        same data type as the input.
-    """
-    if dets.shape[0] == 0:
-        return dets, None
-    if not clockwise:
-        flip_mat = dets.new_ones(dets.shape[-1])
-        flip_mat[-1] = -1
-        dets_cw = dets * flip_mat
-    else:
-        dets_cw = dets
-    multi_label = labels is not None
-    if labels is None:
-        input_labels = scores.new_empty(0, dtype=torch.int)
-    else:
-        input_labels = labels
-    if dets.device.type in ('npu', 'mlu'):
-        order = scores.new_empty(0, dtype=torch.long)
-        keep_inds = ext_module.nms_rotated(dets_cw, scores, order, dets_cw,
-                                           input_labels, iou_threshold,
-                                           multi_label)
-        dets = torch.cat((dets[keep_inds], scores[keep_inds].reshape(-1, 1)),
-                         dim=1)
-        return dets, keep_inds
-
-    if multi_label:
-        dets_wl = torch.cat((dets_cw, labels.unsqueeze(1)), 1)  # type: ignore
-    else:
-        dets_wl = dets_cw
-    _, order = scores.sort(0, descending=True)
-    dets_sorted = dets_wl.index_select(0, order)
-
-    if torch.__version__ == 'parrots':
-        keep_inds = ext_module.nms_rotated(
-            dets_wl,
-            scores,
-            order,
-            dets_sorted,
-            input_labels,
-            iou_threshold=iou_threshold,
-            multi_label=multi_label)
-    else:
-        keep_inds = ext_module.nms_rotated(dets_wl, scores, order, dets_sorted,
-                                           input_labels, iou_threshold,
-                                           multi_label)
-    dets = torch.cat((dets[keep_inds], scores[keep_inds].reshape(-1, 1)),
-                     dim=1)
-    return dets, keep_inds
 
 
 def nms_quadri(dets: Tensor,

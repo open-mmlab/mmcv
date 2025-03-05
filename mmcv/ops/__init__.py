@@ -2,13 +2,11 @@
 from mmcv.utils import IS_MLU_AVAILABLE
 from .active_rotated_filter import active_rotated_filter
 from .assign_score_withk import assign_score_withk
-from .ball_query import ball_query
 from .bbox import bbox_overlaps
 from .bezier_align import BezierAlign, bezier_align
 from .bias_act import bias_act
 from .border_align import BorderAlign, border_align
 from .box_iou_quadri import box_iou_quadri
-from .box_iou_rotated import box_iou_rotated
 from .carafe import CARAFE, CARAFENaive, CARAFEPack, carafe, carafe_naive
 from .cc_attention import CrissCrossAttention
 from .chamfer_distance import chamfer_distance
@@ -24,7 +22,6 @@ from .deprecated_wrappers import Conv2d_deprecated as Conv2d
 from .deprecated_wrappers import ConvTranspose2d_deprecated as ConvTranspose2d
 from .deprecated_wrappers import Linear_deprecated as Linear
 from .deprecated_wrappers import MaxPool2d_deprecated as MaxPool2d
-from .diff_iou_rotated import diff_iou_rotated_2d, diff_iou_rotated_3d
 from .filtered_lrelu import filtered_lrelu
 from .focal_loss import (SigmoidFocalLoss, SoftmaxFocalLoss,
                          sigmoid_focal_loss, softmax_focal_loss)
@@ -34,8 +31,6 @@ from .fused_bias_leakyrelu import FusedBiasLeakyReLU, fused_bias_leakyrelu
 from .gather_points import gather_points
 from .group_points import GroupAll, QueryAndGroup, grouping_operation
 from .info import get_compiler_version, get_compiling_cuda_version
-from .iou3d import (boxes_iou3d, boxes_iou_bev, boxes_overlap_bev, nms3d,
-                    nms3d_normal, nms_bev, nms_normal_bev)
 from .knn import knn
 from .masked_conv import MaskedConv2d, masked_conv2d
 from .min_area_polygons import min_area_polygons
@@ -47,22 +42,15 @@ from .nms import batched_nms, nms, nms_match, nms_quadri, nms_rotated, soft_nms
 from .pixel_group import pixel_group
 from .point_sample import (SimpleRoIAlign, point_sample,
                            rel_roi_point_to_rel_img_point)
-from .points_in_boxes import (points_in_boxes_all, points_in_boxes_cpu,
-                              points_in_boxes_part)
 from .points_in_polygons import points_in_polygons
 from .points_sampler import PointsSampler
 from .prroi_pool import PrRoIPool, prroi_pool
 from .psa_mask import PSAMask
-from .riroi_align_rotated import RiRoIAlignRotated, riroi_align_rotated
 from .roi_align import RoIAlign, roi_align
-from .roi_align_rotated import RoIAlignRotated, roi_align_rotated
-from .roi_align_rotated_v2 import RoIAlignRotatedV2, roi_align_rotated_v2
 from .roi_pool import RoIPool, roi_pool
-from .roiaware_pool3d import RoIAwarePool3d
 from .roipoint_pool3d import RoIPointPool3d
 from .rotated_feature_align import rotated_feature_align
 from .saconv import SAConv2d
-from .scatter_points import DynamicScatter, dynamic_scatter
 from .sparse_conv import (SparseConv2d, SparseConv3d, SparseConvTranspose2d,
                           SparseConvTranspose3d, SparseInverseConv2d,
                           SparseInverseConv3d, SubMConv2d, SubMConv3d)
@@ -74,7 +62,6 @@ from .three_interpolate import three_interpolate
 from .three_nn import three_nn
 from .tin_shift import TINShift, tin_shift
 from .upfirdn2d import filter2d, upfirdn2d, upsample2d
-from .voxelize import Voxelization, voxelization
 
 __all__ = [
     'bbox_overlaps', 'CARAFE', 'CARAFENaive', 'CARAFEPack', 'carafe',
@@ -89,25 +76,20 @@ __all__ = [
     'ConvTranspose2d', 'Linear', 'MaxPool2d', 'CrissCrossAttention', 'PSAMask',
     'point_sample', 'rel_roi_point_to_rel_img_point', 'SimpleRoIAlign',
     'SAConv2d', 'TINShift', 'tin_shift', 'assign_score_withk',
-    'box_iou_rotated', 'box_iou_quadri', 'RoIPointPool3d', 'nms_rotated',
-    'knn', 'ball_query', 'upfirdn2d', 'FusedBiasLeakyReLU',
-    'fused_bias_leakyrelu', 'rotated_feature_align', 'RiRoIAlignRotated',
-    'riroi_align_rotated', 'RoIAlignRotated', 'roi_align_rotated',
-    'RoIAlignRotatedV2', 'roi_align_rotated_v2', 'pixel_group',
+    'box_iou_quadri', 'RoIPointPool3d',
+    'knn', 'upfirdn2d', 'FusedBiasLeakyReLU',
+    'fused_bias_leakyrelu', 'rotated_feature_align', 'pixel_group', 'nms_rotated',
     'QueryAndGroup', 'GroupAll', 'grouping_operation', 'contour_expand',
     'three_nn', 'three_interpolate', 'MultiScaleDeformableAttention',
     'BorderAlign', 'border_align', 'gather_points', 'furthest_point_sample',
     'nms_quadri', 'furthest_point_sample_with_dist', 'PointsSampler',
-    'Correlation', 'boxes_iou3d', 'boxes_iou_bev', 'boxes_overlap_bev',
-    'nms_bev', 'nms_normal_bev', 'nms3d', 'nms3d_normal', 'Voxelization',
-    'voxelization', 'dynamic_scatter', 'DynamicScatter', 'RoIAwarePool3d',
+    'Correlation',
     'SparseConv2d', 'SparseConv3d', 'SparseConvTranspose2d',
     'SparseConvTranspose3d', 'SparseInverseConv2d', 'SparseInverseConv3d',
     'SubMConv2d', 'SubMConv3d', 'SparseModule', 'SparseSequential',
     'SparseMaxPool2d', 'SparseMaxPool3d', 'SparseConvTensor', 'scatter_nd',
-    'points_in_boxes_part', 'points_in_boxes_cpu', 'points_in_boxes_all',
     'points_in_polygons', 'min_area_polygons', 'active_rotated_filter',
-    'convex_iou', 'convex_giou', 'diff_iou_rotated_2d', 'diff_iou_rotated_3d',
+    'convex_iou', 'convex_giou',
     'chamfer_distance', 'PrRoIPool', 'prroi_pool', 'bias_act',
     'filtered_lrelu', 'conv2d', 'conv_transpose2d', 'filter2d', 'upsample2d',
     'BezierAlign', 'bezier_align'

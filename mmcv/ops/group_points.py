@@ -6,7 +6,6 @@ from torch import nn as nn
 from torch.autograd import Function
 
 from ..utils import ext_loader
-from .ball_query import ball_query
 from .knn import knn
 
 ext_module = ext_loader.load_ext('_ext', [
@@ -85,14 +84,10 @@ class QueryAndGroup(nn.Module):
             Tuple | torch.Tensor: (B, 3 + C, npoint, sample_num) Grouped
             concatenated coordinates and features of points.
         """
-        # if self.max_radius is None, we will perform kNN instead of ball query
+        # Using kNN instead of ball query since ball_query has been removed
         # idx is of shape [B, npoint, sample_num]
-        if self.max_radius is None:
-            idx = knn(self.sample_num, points_xyz, center_xyz, False)
-            idx = idx.transpose(1, 2).contiguous()
-        else:
-            idx = ball_query(self.min_radius, self.max_radius, self.sample_num,
-                             points_xyz, center_xyz)
+        idx = knn(self.sample_num, points_xyz, center_xyz, False)
+        idx = idx.transpose(1, 2).contiguous()
 
         if self.uniform_sample:
             unique_cnt = torch.zeros((idx.shape[0], idx.shape[1]))
