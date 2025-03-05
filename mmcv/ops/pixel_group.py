@@ -5,9 +5,9 @@ import numpy as np
 import torch
 from torch import Tensor
 
-from ..utils import ext_loader
+from .pure_pytorch_pixel_group.pixel_group import pixel_group_pytorch
+from .pure_pytorch_pixel_group.pixel_group import pixel_group_pytorch
 
-ext_module = ext_loader.load_ext('_ext', ['pixel_group'])
 
 
 def pixel_group(
@@ -59,7 +59,7 @@ def pixel_group(
     if isinstance(kernel_contour, np.ndarray):
         kernel_contour = torch.from_numpy(kernel_contour)
 
-    pixel_assignment = ext_module.pixel_group(score, mask, embedding,
+    pixel_assignment = pixel_group_pytorch(score, mask, embedding,
                                               kernel_label, kernel_contour,
                                               kernel_region_num,
                                               distance_threshold)

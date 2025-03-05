@@ -3,9 +3,11 @@ from typing import Tuple
 
 import torch
 
-from ..utils import ext_loader
+from .pure_pytorch_convex_iou.convex_iou import convex_iou_pytorch
+from .pure_pytorch_convex_iou.convex_giou import convex_giou_pytorch
+from .pure_pytorch_convex_iou.convex_iou import convex_iou_pytorch
+from .pure_pytorch_convex_iou.convex_giou import convex_giou_pytorch
 
-ext_module = ext_loader.load_ext('_ext', ['convex_iou', 'convex_giou'])
 
 
 def convex_giou(pointsets: torch.Tensor,
@@ -25,7 +27,7 @@ def convex_giou(pointsets: torch.Tensor,
         element is the gradient of point sets with the shape (N, 18).
     """
     output = pointsets.new_zeros((pointsets.size(0), 19))
-    ext_module.convex_giou(pointsets, polygons, output)
+    convex_giou_pytorch(pointsets, polygons, output)
     convex_giou = output[:, -1]
     points_grad = output[:, 0:-1]
     return convex_giou, points_grad
@@ -48,5 +50,5 @@ def convex_iou(pointsets: torch.Tensor,
     """
     N, K = pointsets.size(0), polygons.size(0)
     ious = pointsets.new_zeros((N, K))
-    ext_module.convex_iou(pointsets, polygons, ious)
+    convex_iou_pytorch(pointsets, polygons, ious)
     return ious

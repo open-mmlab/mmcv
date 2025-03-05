@@ -6,9 +6,11 @@ from torch import nn
 from torch.autograd import Function
 from torch.nn.modules.utils import _pair
 
-from ..utils import ext_loader
+from .pure_pytorch_psa_mask.psamask_forward import psamask_forward_pytorch
+from .pure_pytorch_psa_mask.psamask_backward import psamask_backward_pytorch
+from .pure_pytorch_psa_mask.psamask_forward import psamask_forward_pytorch
+from .pure_pytorch_psa_mask.psamask_backward import psamask_backward_pytorch
 
-ext_module = ext_loader.load_ext('_ext',
                                  ['psamask_forward', 'psamask_backward'])
 
 
@@ -35,7 +37,7 @@ class PSAMaskFunction(Function):
         output = input.new_zeros(
             (batch_size, h_feature * w_feature, h_feature, w_feature))
 
-        ext_module.psamask_forward(
+        psamask_forward_pytorch(
             input,
             output,
             psa_type=psa_type,
@@ -58,7 +60,7 @@ class PSAMaskFunction(Function):
         batch_size, channels, h_feature, w_feature = input.size()
         grad_input = grad_output.new_zeros(
             (batch_size, channels, h_feature, w_feature))
-        ext_module.psamask_backward(
+        psamask_backward_pytorch(
             grad_output,
             grad_input,
             psa_type=psa_type,

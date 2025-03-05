@@ -12,10 +12,10 @@ from typing import Dict, List, Union
 
 import torch
 
-from ..utils import ext_loader
+from .pure_pytorch_upfirdn2d.upfirdn2d import upfirdn2d_pytorch
+from .pure_pytorch_upfirdn2d.upfirdn2d import upfirdn2d_pytorch
 from .conv2d_gradfix import conv2d
 
-ext_module = ext_loader.load_ext('_ext', ['upfirdn2d'])
 
 
 def _parse_scaling(scaling):
@@ -260,13 +260,13 @@ def _upfirdn2d_cuda(up: int = 1,
             assert isinstance(f, torch.Tensor) and f.ndim in [1, 2]
             y = x
             if f.ndim == 2:
-                y = ext_module.upfirdn2d(y, f, upx, upy, downx, downy, padx0,
+                y = upfirdn2d_pytorch(y, f, upx, upy, downx, downy, padx0,
                                          padx1, pady0, pady1, flip_filter,
                                          gain)
             else:
-                y = ext_module.upfirdn2d(y, f.unsqueeze(0), upx, 1, downx, 1,
+                y = upfirdn2d_pytorch(y, f.unsqueeze(0), upx, 1, downx, 1,
                                          padx0, padx1, 0, 0, flip_filter, 1.0)
-                y = ext_module.upfirdn2d(y, f.unsqueeze(1), 1, upy, 1, downy,
+                y = upfirdn2d_pytorch(y, f.unsqueeze(1), 1, upy, 1, downy,
                                          0, 0, pady0, pady1, flip_filter, gain)
             ctx.save_for_backward(f)
             ctx.x_shape = x.shape

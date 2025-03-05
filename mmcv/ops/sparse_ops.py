@@ -14,9 +14,27 @@
 
 import torch
 
-from ..utils import ext_loader
+from .pure_pytorch_sparse_ops.get_indice_pairs_2d_forward import get_indice_pairs_2d_forward_pytorch
+from .pure_pytorch_sparse_ops.get_indice_pairs_3d_forward import get_indice_pairs_3d_forward_pytorch
+from .pure_pytorch_sparse_ops.get_indice_pairs_4d_forward import get_indice_pairs_4d_forward_pytorch
+from .pure_pytorch_sparse_ops.get_indice_pairs_2d_backward import get_indice_pairs_2d_backward_pytorch
+from .pure_pytorch_sparse_ops.get_indice_pairs_3d_backward import get_indice_pairs_3d_backward_pytorch
+from .pure_pytorch_sparse_ops.indice_conv_forward import indice_conv_forward_pytorch
+from .pure_pytorch_sparse_ops.indice_conv_backward import indice_conv_backward_pytorch
+from .pure_pytorch_sparse_ops.fused_indice_conv_forward import fused_indice_conv_forward_pytorch
+from .pure_pytorch_sparse_ops.indice_maxpool_forward import indice_maxpool_forward_pytorch
+from .pure_pytorch_sparse_ops.indice_maxpool_backward import indice_maxpool_backward_pytorch
+from .pure_pytorch_sparse_ops.get_indice_pairs_2d_forward import get_indice_pairs_2d_forward_pytorch
+from .pure_pytorch_sparse_ops.get_indice_pairs_3d_forward import get_indice_pairs_3d_forward_pytorch
+from .pure_pytorch_sparse_ops.get_indice_pairs_4d_forward import get_indice_pairs_4d_forward_pytorch
+from .pure_pytorch_sparse_ops.get_indice_pairs_2d_backward import get_indice_pairs_2d_backward_pytorch
+from .pure_pytorch_sparse_ops.get_indice_pairs_3d_backward import get_indice_pairs_3d_backward_pytorch
+from .pure_pytorch_sparse_ops.indice_conv_forward import indice_conv_forward_pytorch
+from .pure_pytorch_sparse_ops.indice_conv_backward import indice_conv_backward_pytorch
+from .pure_pytorch_sparse_ops.fused_indice_conv_forward import fused_indice_conv_forward_pytorch
+from .pure_pytorch_sparse_ops.indice_maxpool_forward import indice_maxpool_forward_pytorch
+from .pure_pytorch_sparse_ops.indice_maxpool_backward import indice_maxpool_backward_pytorch
 
-ext_module = ext_loader.load_ext('_ext', [
     'get_indice_pairs_2d_forward', 'get_indice_pairs_3d_forward',
     'get_indice_pairs_4d_forward', 'get_indice_pairs_2d_backward',
     'get_indice_pairs_3d_backward', 'indice_conv_forward',
@@ -121,7 +139,7 @@ def indice_conv(features,
                 inverse=False,
                 subm=False):
     if filters.dtype == torch.float32 or filters.dtype == torch.half:
-        return ext_module.indice_conv_forward(features, filters, indice_pairs,
+        return indice_conv_forward_pytorch(features, filters, indice_pairs,
                                               indice_pair_num,
                                               num_activate_out, int(inverse),
                                               int(subm))
@@ -148,7 +166,7 @@ def indice_conv_backward(features,
                          inverse=False,
                          subm=False):
     if filters.dtype == torch.float32 or filters.dtype == torch.half:
-        return ext_module.indice_conv_backward(features, filters, out_bp,
+        return indice_conv_backward_pytorch(features, filters, out_bp,
                                                indice_pairs, indice_pair_num,
                                                int(inverse), int(subm))
     else:
@@ -157,7 +175,7 @@ def indice_conv_backward(features,
 
 def indice_maxpool(features, indice_pairs, indice_pair_num, num_activate_out):
     if features.dtype == torch.float32 or features.dtype == torch.half:
-        return ext_module.indice_maxpool_forward(features, indice_pairs,
+        return indice_maxpool_forward_pytorch(features, indice_pairs,
                                                  indice_pair_num,
                                                  num_activate_out)
     else:
@@ -167,7 +185,7 @@ def indice_maxpool(features, indice_pairs, indice_pair_num, num_activate_out):
 def indice_maxpool_backward(features, out_features, out_bp, indice_pairs,
                             indice_pair_num):
     if features.dtype == torch.float32 or features.dtype == torch.half:
-        return ext_module.indice_maxpool_backward(features, out_features,
+        return indice_maxpool_backward_pytorch(features, out_features,
                                                   out_bp, indice_pairs,
                                                   indice_pair_num)
     else:

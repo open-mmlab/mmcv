@@ -10,9 +10,17 @@ from torch.autograd.function import once_differentiable
 from torch.nn.modules.module import Module
 from torch.nn.parameter import Parameter
 
-from ..utils import ext_loader
+from .pure_pytorch_sync_bn.sync_bn_forward_mean import sync_bn_forward_mean_pytorch
+from .pure_pytorch_sync_bn.sync_bn_forward_var import sync_bn_forward_var_pytorch
+from .pure_pytorch_sync_bn.sync_bn_forward_output import sync_bn_forward_output_pytorch
+from .pure_pytorch_sync_bn.sync_bn_backward_param import sync_bn_backward_param_pytorch
+from .pure_pytorch_sync_bn.sync_bn_backward_data import sync_bn_backward_data_pytorch
+from .pure_pytorch_sync_bn.sync_bn_forward_mean import sync_bn_forward_mean_pytorch
+from .pure_pytorch_sync_bn.sync_bn_forward_var import sync_bn_forward_var_pytorch
+from .pure_pytorch_sync_bn.sync_bn_forward_output import sync_bn_forward_output_pytorch
+from .pure_pytorch_sync_bn.sync_bn_backward_param import sync_bn_backward_param_pytorch
+from .pure_pytorch_sync_bn.sync_bn_backward_data import sync_bn_backward_data_pytorch
 
-ext_module = ext_loader.load_ext('_ext', [
     'sync_bn_forward_mean', 'sync_bn_forward_var', 'sync_bn_forward_output',
     'sync_bn_backward_param', 'sync_bn_backward_data'
 ])
@@ -69,7 +77,7 @@ class SyncBatchNormFunction(Function):
 
         batch_size = input3d.size(0)
         if batch_size > 0:
-            ext_module.sync_bn_forward_mean(input3d, mean)
+            sync_bn_forward_mean_pytorch(input3d, mean)
             batch_flag = torch.ones([1], device=mean.device, dtype=mean.dtype)
         else:
             # skip updating mean and leave it as zeros when the input is empty
@@ -93,7 +101,7 @@ class SyncBatchNormFunction(Function):
 
         # leave var as zeros when the input is empty
         if batch_size > 0:
-            ext_module.sync_bn_forward_var(input3d, mean, var)
+            sync_bn_forward_var_pytorch(input3d, mean, var)
 
         if self.stats_mode == 'N':
             var *= batch_size
@@ -111,7 +119,7 @@ class SyncBatchNormFunction(Function):
         # we should not update the statistics in the current batch
         update_flag = total_batch.clamp(max=1)
         momentum = update_flag * self.momentum
-        ext_module.sync_bn_forward_output(
+        sync_bn_forward_output_pytorch(
             input3d,
             mean,
             var,
@@ -140,7 +148,7 @@ class SyncBatchNormFunction(Function):
 
         batch_size = grad_input3d.size(0)
         if batch_size > 0:
-            ext_module.sync_bn_backward_param(grad_output3d, norm, grad_weight,
+            sync_bn_backward_param_pytorch(grad_output3d, norm, grad_weight,
                                               grad_bias)
 
         # all reduce
@@ -151,7 +159,7 @@ class SyncBatchNormFunction(Function):
             grad_bias /= self.group_size
 
         if batch_size > 0:
-            ext_module.sync_bn_backward_data(grad_output3d, weight,
+            sync_bn_backward_data_pytorch(grad_output3d, weight,
                                              grad_weight, grad_bias, norm, std,
                                              grad_input3d)
 

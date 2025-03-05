@@ -5,10 +5,16 @@ import torch
 from torch import nn as nn
 from torch.autograd import Function
 
-from ..utils import ext_loader
+from .pure_pytorch_group_points.group_points_forward import group_points_forward_pytorch
+from .pure_pytorch_group_points.group_points_backward import group_points_backward_pytorch
+from .pure_pytorch_group_points.stack_group_points_forward import stack_group_points_forward_pytorch
+from .pure_pytorch_group_points.stack_group_points_backward import stack_group_points_backward_pytorch
+from .pure_pytorch_group_points.group_points_forward import group_points_forward_pytorch
+from .pure_pytorch_group_points.group_points_backward import group_points_backward_pytorch
+from .pure_pytorch_group_points.stack_group_points_forward import stack_group_points_forward_pytorch
+from .pure_pytorch_group_points.stack_group_points_backward import stack_group_points_backward_pytorch
 from .knn import knn
 
-ext_module = ext_loader.load_ext('_ext', [
     'group_points_forward', 'group_points_backward',
     'stack_group_points_forward', 'stack_group_points_backward'
 ])
@@ -213,7 +219,7 @@ class GroupingOperation(Function):
             N, C = features.size()
             B = indices_batch_cnt.shape[0]
             output = features.new_zeros((M, C, nsample))
-            ext_module.stack_group_points_forward(
+            stack_group_points_forward_pytorch(
                 features,
                 features_batch_cnt,
                 indices,
@@ -230,7 +236,7 @@ class GroupingOperation(Function):
             _, C, N = features.size()
             output = features.new_zeros(B, C, nfeatures, nsample)
 
-            ext_module.group_points_forward(
+            group_points_forward_pytorch(
                 features,
                 indices,
                 output,
@@ -260,7 +266,7 @@ class GroupingOperation(Function):
             grad_features = grad_out.new_zeros(B, C, N)
 
             grad_out_data = grad_out.data.contiguous()
-            ext_module.group_points_backward(
+            group_points_backward_pytorch(
                 grad_out_data,
                 idx,
                 grad_features.data,
@@ -277,7 +283,7 @@ class GroupingOperation(Function):
             grad_features = grad_out.new_zeros(N, C)
 
             grad_out_data = grad_out.data.contiguous()
-            ext_module.stack_group_points_backward(
+            stack_group_points_backward_pytorch(
                 grad_out_data,
                 idx,
                 idx_batch_cnt,

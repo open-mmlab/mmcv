@@ -1,9 +1,11 @@
 import torch
 from torch.autograd import Function
 
-from ..utils import ext_loader
+from .pure_pytorch_furthest_point_sample.furthest_point_sampling_forward import furthest_point_sampling_forward_pytorch
+from .pure_pytorch_furthest_point_sample.furthest_point_sampling_with_dist_forward import furthest_point_sampling_with_dist_forward_pytorch
+from .pure_pytorch_furthest_point_sample.furthest_point_sampling_forward import furthest_point_sampling_forward_pytorch
+from .pure_pytorch_furthest_point_sample.furthest_point_sampling_with_dist_forward import furthest_point_sampling_with_dist_forward_pytorch
 
-ext_module = ext_loader.load_ext('_ext', [
     'furthest_point_sampling_forward',
     'furthest_point_sampling_with_dist_forward'
 ])
@@ -34,7 +36,7 @@ class FurthestPointSampling(Function):
             output = torch.cuda.IntTensor(B, num_points)
             temp = torch.cuda.FloatTensor(B, N).fill_(1e10)
 
-        ext_module.furthest_point_sampling_forward(
+        furthest_point_sampling_forward_pytorch(
             points_xyz,
             temp,
             output,
@@ -73,7 +75,7 @@ class FurthestPointSamplingWithDist(Function):
         output = points_dist.new_zeros([B, num_points], dtype=torch.int32)
         temp = points_dist.new_zeros([B, N]).fill_(1e10)
 
-        ext_module.furthest_point_sampling_with_dist_forward(
+        furthest_point_sampling_with_dist_forward_pytorch(
             points_dist, temp, output, b=B, n=N, m=num_points)
         if torch.__version__ != 'parrots':
             ctx.mark_non_differentiable(output)

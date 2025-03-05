@@ -1,9 +1,9 @@
 import torch
 from torch import Tensor
 
-from ..utils import ext_loader
+from .pure_pytorch_points_in_polygons.points_in_polygons_forward import points_in_polygons_forward_pytorch
+from .pure_pytorch_points_in_polygons.points_in_polygons_forward import points_in_polygons_forward_pytorch
 
-ext_module = ext_loader.load_ext('_ext', ['points_in_polygons_forward'])
 
 
 def points_in_polygons(points: Tensor, polygons: Tensor) -> Tensor:
@@ -36,6 +36,6 @@ def points_in_polygons(points: Tensor, polygons: Tensor) -> Tensor:
         polygons.shape[0],
         dtype=torch.float32,
         device=points.device)
-    ext_module.points_in_polygons_forward(points.contiguous(),
+    points_in_polygons_forward_pytorch(points.contiguous(),
                                           polygons.contiguous(), output)
     return output

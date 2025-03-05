@@ -17,9 +17,9 @@ from typing import Any, Dict, Optional, Union
 import numpy as np
 import torch
 
-from ..utils import ext_loader
+from .pure_pytorch_bias_act.bias_act import bias_act_pytorch
+from .pure_pytorch_bias_act.bias_act import bias_act_pytorch
 
-ext_module = ext_loader.load_ext('_ext', ['bias_act'])
 
 
 class EasyDict(dict):
@@ -306,7 +306,7 @@ def _bias_act_cuda(dim: int = 1,
             y = x
             if act != 'linear' or gain != 1 or clamp >= 0 or (
                     b is not _null_tensor.to(x.device)):
-                y = ext_module.bias_act(x, b, _null_tensor.to(x.device),
+                y = bias_act_pytorch(x, b, _null_tensor.to(x.device),
                                         _null_tensor.to(x.device),
                                         _null_tensor.to(x.device), 0, dim,
                                         spec.cuda_idx, alpha, gain, clamp)
@@ -341,7 +341,7 @@ def _bias_act_cuda(dim: int = 1,
         def forward(ctx, dy, x, b, y):  # pylint: disable=arguments-differ
             ctx.memory_format = torch.channels_last if dy.ndim > 2 and (
                 dy.stride(1) == 1) else torch.contiguous_format
-            dx = ext_module.bias_act(dy, b, x, y, _null_tensor.to(x.device), 1,
+            dx = bias_act_pytorch(dy, b, x, y, _null_tensor.to(x.device), 1,
                                      dim, spec.cuda_idx, alpha, gain, clamp)
             ctx.save_for_backward(
                 dy if spec.has_2nd_grad else _null_tensor.to(x.device), x, b,
@@ -362,7 +362,7 @@ def _bias_act_cuda(dim: int = 1,
 
             if spec.has_2nd_grad and (ctx.needs_input_grad[1]
                                       or ctx.needs_input_grad[2]):
-                d_x = ext_module.bias_act(d_dx, b, x, y, dy, 2, dim,
+                d_x = bias_act_pytorch(d_dx, b, x, y, dy, 2, dim,
                                           spec.cuda_idx, alpha, gain, clamp)
 
             if spec.has_2nd_grad and ctx.needs_input_grad[2]:

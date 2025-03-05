@@ -3,9 +3,9 @@ from typing import Optional
 import torch
 from torch.autograd import Function
 
-from ..utils import ext_loader
+from .pure_pytorch_knn.knn_forward import knn_forward_pytorch
+from .pure_pytorch_knn.knn_forward import knn_forward_pytorch
 
-ext_module = ext_loader.load_ext('_ext', ['knn_forward'])
 
 
 class KNN(Function):
@@ -65,7 +65,7 @@ class KNN(Function):
         idx = center_xyz.new_zeros((B, npoint, k)).int()
         dist2 = center_xyz.new_zeros((B, npoint, k)).float()
 
-        ext_module.knn_forward(
+        knn_forward_pytorch(
             xyz, center_xyz, idx, dist2, b=B, n=N, m=npoint, nsample=k)
         # idx shape to [B, k, npoint]
         idx = idx.transpose(2, 1).contiguous()

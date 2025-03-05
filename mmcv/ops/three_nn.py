@@ -3,9 +3,9 @@ from typing import Any, Tuple
 import torch
 from torch.autograd import Function
 
-from ..utils import ext_loader
+from .pure_pytorch_three_nn.three_nn_forward import three_nn_forward_pytorch
+from .pure_pytorch_three_nn.three_nn_forward import three_nn_forward_pytorch
 
-ext_module = ext_loader.load_ext('_ext', ['three_nn_forward'])
 
 
 class ThreeNN(Function):
@@ -37,7 +37,7 @@ class ThreeNN(Function):
         dist2 = target.new_empty(B, N, 3)
         idx = target.new_empty(B, N, 3, dtype=torch.int32)
 
-        ext_module.three_nn_forward(target, source, dist2, idx, b=B, n=N, m=m)
+        three_nn_forward_pytorch(target, source, dist2, idx, b=B, n=N, m=m)
         if torch.__version__ != 'parrots':
             ctx.mark_non_differentiable(idx)
 

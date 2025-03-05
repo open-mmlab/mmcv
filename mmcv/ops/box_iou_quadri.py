@@ -1,9 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 
-from ..utils import ext_loader
+from .pure_pytorch_box_iou_quadri.box_iou_quadri import box_iou_quadri_pytorch
+from .pure_pytorch_box_iou_quadri.box_iou_quadri import box_iou_quadri_pytorch
 
-ext_module = ext_loader.load_ext('_ext', ['box_iou_quadri'])
 
 
 def box_iou_quadri(bboxes1: torch.Tensor,
@@ -42,7 +42,7 @@ def box_iou_quadri(bboxes1: torch.Tensor,
         ious = bboxes1.new_zeros(rows * cols)
     bboxes1 = bboxes1.contiguous()
     bboxes2 = bboxes2.contiguous()
-    ext_module.box_iou_quadri(
+    box_iou_quadri_pytorch(
         bboxes1, bboxes2, ious, mode_flag=mode_flag, aligned=aligned)
     if not aligned:
         ious = ious.view(rows, cols)

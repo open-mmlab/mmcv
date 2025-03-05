@@ -6,9 +6,15 @@ import torch.nn as nn
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 
-from ..utils import ext_loader
+from .pure_pytorch_focal_loss.sigmoid_focal_loss_forward import sigmoid_focal_loss_forward_pytorch
+from .pure_pytorch_focal_loss.sigmoid_focal_loss_backward import sigmoid_focal_loss_backward_pytorch
+from .pure_pytorch_focal_loss.softmax_focal_loss_forward import softmax_focal_loss_forward_pytorch
+from .pure_pytorch_focal_loss.softmax_focal_loss_backward import softmax_focal_loss_backward_pytorch
+from .pure_pytorch_focal_loss.sigmoid_focal_loss_forward import sigmoid_focal_loss_forward_pytorch
+from .pure_pytorch_focal_loss.sigmoid_focal_loss_backward import sigmoid_focal_loss_backward_pytorch
+from .pure_pytorch_focal_loss.softmax_focal_loss_forward import softmax_focal_loss_forward_pytorch
+from .pure_pytorch_focal_loss.softmax_focal_loss_backward import softmax_focal_loss_backward_pytorch
 
-ext_module = ext_loader.load_ext('_ext', [
     'sigmoid_focal_loss_forward', 'sigmoid_focal_loss_backward',
     'softmax_focal_loss_forward', 'softmax_focal_loss_backward'
 ])
@@ -43,7 +49,7 @@ class SigmoidFocalLossFunction(Function):
 
         output = input.new_zeros(input.size())
 
-        ext_module.sigmoid_focal_loss_forward(
+        sigmoid_focal_loss_forward_pytorch(
             input, target, weight, output, gamma=ctx.gamma, alpha=ctx.alpha)
         if ctx.reduction == ctx.reduction_dict['mean']:
             output = output.sum() / input.size(0)
@@ -59,7 +65,7 @@ class SigmoidFocalLossFunction(Function):
 
         grad_input = input.new_zeros(input.size())
 
-        ext_module.sigmoid_focal_loss_backward(
+        sigmoid_focal_loss_backward_pytorch(
             input,
             target,
             weight,
@@ -140,7 +146,7 @@ class SoftmaxFocalLossFunction(Function):
         input_softmax /= channel_stats.unsqueeze(1).expand_as(input)
 
         output = input.new_zeros(input.size(0))
-        ext_module.softmax_focal_loss_forward(
+        softmax_focal_loss_forward_pytorch(
             input_softmax,
             target,
             weight,
@@ -161,7 +167,7 @@ class SoftmaxFocalLossFunction(Function):
         buff = input_softmax.new_zeros(input_softmax.size(0))
         grad_input = input_softmax.new_zeros(input_softmax.size())
 
-        ext_module.softmax_focal_loss_backward(
+        softmax_focal_loss_backward_pytorch(
             input_softmax,
             target,
             weight,

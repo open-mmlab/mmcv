@@ -13,11 +13,13 @@ from typing import Dict, Optional, Union
 import numpy as np
 import torch
 
-from ..utils import ext_loader
+from .pure_pytorch_filtered_lrelu.filtered_lrelu import filtered_lrelu_pytorch
+from .pure_pytorch_filtered_lrelu.filtered_lrelu_act_ import filtered_lrelu_act__pytorch
+from .pure_pytorch_filtered_lrelu.filtered_lrelu import filtered_lrelu_pytorch
+from .pure_pytorch_filtered_lrelu.filtered_lrelu_act_ import filtered_lrelu_act__pytorch
 from .bias_act import bias_act
 from .upfirdn2d import _get_filter_size, _parse_padding, upfirdn2d
 
-ext_module = ext_loader.load_ext('_ext',
                                  ['filtered_lrelu', 'filtered_lrelu_act_'])
 
 _plugin = None
@@ -319,7 +321,7 @@ def _filtered_lrelu_cuda(up: int = 1,
                         'filtered_lrelu called with non-default cuda stream '
                         'but concurrent execution is not supported',
                         RuntimeWarning)
-                y, so, return_code = ext_module.filtered_lrelu(
+                y, so, return_code = filtered_lrelu_pytorch(
                     input, filter_up, filter_down, bias, si.to(input.device),
                     up, down, px0, px1, py0, py1, sx, sy, gain, slope, clamp,
                     flip_filter, write_signs)
@@ -345,7 +347,7 @@ def _filtered_lrelu_cuda(up: int = 1,
                     gain=float(up**2),
                     flip_filter=flip_filter)  # Upsample.
                 # Activation function and sign handling. Modifies y in-place.
-                so = ext_module.filtered_lrelu_act_(y, si.to(y.device), sx, sy,
+                so = filtered_lrelu_act__pytorch(y, si.to(y.device), sx, sy,
                                                     gain, slope, clamp,
                                                     write_signs)
                 y = upfirdn2d(

@@ -10,9 +10,15 @@ from torch import Tensor
 from torch.autograd import Function
 from torch.nn.modules.module import Module
 
-from ..utils import ext_loader
+from .pure_pytorch_carafe.carafe_naive_forward import carafe_naive_forward_pytorch
+from .pure_pytorch_carafe.carafe_naive_backward import carafe_naive_backward_pytorch
+from .pure_pytorch_carafe.carafe_forward import carafe_forward_pytorch
+from .pure_pytorch_carafe.carafe_backward import carafe_backward_pytorch
+from .pure_pytorch_carafe.carafe_naive_forward import carafe_naive_forward_pytorch
+from .pure_pytorch_carafe.carafe_naive_backward import carafe_naive_backward_pytorch
+from .pure_pytorch_carafe.carafe_forward import carafe_forward_pytorch
+from .pure_pytorch_carafe.carafe_backward import carafe_backward_pytorch
 
-ext_module = ext_loader.load_ext('_ext', [
     'carafe_naive_forward', 'carafe_naive_backward', 'carafe_forward',
     'carafe_backward'
 ])
@@ -48,7 +54,7 @@ class CARAFENaiveFunction(Function):
 
         n, c, h, w = features.size()
         output = features.new_zeros((n, c, h * scale_factor, w * scale_factor))
-        ext_module.carafe_naive_forward(
+        carafe_naive_forward_pytorch(
             features,
             masks,
             output,
@@ -74,7 +80,7 @@ class CARAFENaiveFunction(Function):
 
         grad_input = torch.zeros_like(features)
         grad_masks = torch.zeros_like(masks)
-        ext_module.carafe_naive_backward(
+        carafe_naive_backward_pytorch(
             grad_output.contiguous(),
             features,
             masks,
@@ -139,7 +145,7 @@ class CARAFEFunction(Function):
         routput = features.new_zeros(output.size(), requires_grad=False)
         rfeatures = features.new_zeros(features.size(), requires_grad=False)
         rmasks = masks.new_zeros(masks.size(), requires_grad=False)
-        ext_module.carafe_forward(
+        carafe_forward_pytorch(
             features,
             masks,
             rfeatures,
@@ -170,7 +176,7 @@ class CARAFEFunction(Function):
         rgrad_masks = torch.zeros_like(masks, requires_grad=False)
         grad_input = torch.zeros_like(features, requires_grad=False)
         grad_masks = torch.zeros_like(masks, requires_grad=False)
-        ext_module.carafe_backward(
+        carafe_backward_pytorch(
             grad_output.contiguous(),
             rfeatures,
             masks,

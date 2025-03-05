@@ -13,10 +13,14 @@ from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair, _single
 
 from mmcv.utils import IS_MLU_AVAILABLE
-from ..utils import ext_loader
+from .pure_pytorch_deform_conv.deform_conv_forward import deform_conv_forward_pytorch
+from .pure_pytorch_deform_conv.deform_conv_backward_input import deform_conv_backward_input_pytorch
+from .pure_pytorch_deform_conv.deform_conv_backward_parameters import deform_conv_backward_parameters_pytorch
+from .pure_pytorch_deform_conv.deform_conv_forward import deform_conv_forward_pytorch
+from .pure_pytorch_deform_conv.deform_conv_backward_input import deform_conv_backward_input_pytorch
+from .pure_pytorch_deform_conv.deform_conv_backward_parameters import deform_conv_backward_parameters_pytorch
 from .modulated_deform_conv import ModulatedDeformConv2dFunction
 
-ext_module = ext_loader.load_ext('_ext', [
     'deform_conv_forward', 'deform_conv_backward_input',
     'deform_conv_backward_parameters'
 ])
@@ -121,7 +125,7 @@ class DeformConv2dFunction(Function):
         cur_im2col_step = min(ctx.im2col_step, input.size(0))
         assert (input.size(0) % cur_im2col_step
                 ) == 0, 'batch size must be divisible by im2col_step'
-        ext_module.deform_conv_forward(
+        deform_conv_forward_pytorch(
             input,
             weight,
             offset,
@@ -161,7 +165,7 @@ class DeformConv2dFunction(Function):
         if ctx.needs_input_grad[0] or ctx.needs_input_grad[1]:
             grad_input = torch.zeros_like(input)
             grad_offset = torch.zeros_like(offset)
-            ext_module.deform_conv_backward_input(
+            deform_conv_backward_input_pytorch(
                 input,
                 offset,
                 grad_output,
@@ -183,7 +187,7 @@ class DeformConv2dFunction(Function):
 
         if ctx.needs_input_grad[2]:
             grad_weight = torch.zeros_like(weight)
-            ext_module.deform_conv_backward_parameters(
+            deform_conv_backward_parameters_pytorch(
                 input,
                 offset,
                 grad_output,

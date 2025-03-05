@@ -4,6 +4,7 @@ import os
 import pkgutil
 import warnings
 from collections import namedtuple
+import inspect
 
 import torch
 
@@ -11,38 +12,77 @@ import torch
 def load_ext(name, funcs):
     """Load extensions from module 'mmcv.{name}'.
     
-    If the module is not found, returns a MockExtModule that will raise
-    NotImplementedError when any of the functions are called.
+    In the PyTorch-only version, we don't rely on compiled extensions.
+    Instead, this function either:
+    1. Returns a module with pure PyTorch implementations if they exist
+    2. Returns a MockExtModule that will warn when functions without PyTorch 
+       implementations are called.
     """
     class MockExtModule:
-        """Mock extension module to use when CUDA extensions are not available."""
+        """Mock extension module that uses PyTorch-only implementations."""
         def __init__(self, funcs):
             self.funcs = funcs
+            self._pytorch_fallbacks = {}
+            self._load_pytorch_fallbacks()
+            
+        def _load_pytorch_fallbacks(self):
+            """Load pure PyTorch implementations for the functions."""
+            # Try to import any pure PyTorch implementations
+            try:
+                if 'nms' in self.funcs or 'softnms' in self.funcs or 'nms_match' in self.funcs:
+                    from mmcv.ops.pure_pytorch_nms import (
+                        nms_pytorch, soft_nms_pytorch, nms_match_pytorch, nms_quadri_pytorch
+                    )
+                    self._pytorch_fallbacks['nms'] = nms_pytorch
+                    self._pytorch_fallbacks['softnms'] = soft_nms_pytorch
+                    self._pytorch_fallbacks['nms_match'] = nms_match_pytorch
+                    self._pytorch_fallbacks['nms_quadri'] = nms_quadri_pytorch
+                
+                if 'roi_align_forward' in self.funcs or 'roi_pool_forward' in self.funcs:
+                    from mmcv.ops.pure_pytorch_roi import roi_align_pytorch, roi_pool_pytorch
+                    self._pytorch_fallbacks['roi_align_forward'] = roi_align_pytorch
+                    self._pytorch_fallbacks['roi_pool_forward'] = roi_pool_pytorch
+                    
+                    # Add dummy backward implementations that warn users
+                    def backward_warning(*args, **kwargs):
+                        warnings.warn("Backward operation is not fully implemented in PyTorch-only mode. "
+                                     "This may affect training but should work for inference.")
+                        return torch.zeros_like(args[0])
+                    
+                    self._pytorch_fallbacks['roi_align_backward'] = backward_warning
+                    self._pytorch_fallbacks['roi_pool_backward'] = backward_warning
+                
+                # Add more fallback implementations as they are created
+                
+            except ImportError as e:
+                warnings.warn(f"Failed to import some PyTorch-only implementations: {e}")
             
         def __getattr__(self, name):
+            # Check if we have a PyTorch implementation for this function
+            if name in self._pytorch_fallbacks:
+                return self._pytorch_fallbacks[name]
+                
+            # Otherwise, warn the user
             if name in self.funcs:
-                msg = (f"Function '{name}' is not available. CUDA extensions are not installed. "
-                       f"Using PyTorch-only fallbacks where available.")
+                msg = (f"Function '{name}' has no PyTorch-only implementation yet. "
+                       f"This operation will fail in PyTorch-only mode.")
+                warnings.warn(msg)
+                
                 def not_implemented(*args, **kwargs):
-                    raise NotImplementedError(msg)
+                    raise NotImplementedError(
+                        f"Function '{name}' is not available in PyTorch-only mode. "
+                        f"The functionality is not yet implemented.")
                 return not_implemented
+            
             raise AttributeError(f"'{self.__class__.__name__}' has no attribute '{name}'")
     
-    try:
-        ext = importlib.import_module('mmcv.' + name)
-        # Check that requested functions are available
-        for fun in funcs:
-            assert hasattr(ext, fun), f'{fun} miss in module {name}'
-        return ext
-    except (ImportError, ModuleNotFoundError):
-        # If the module is not found, return a mock module
-        # This allows the code to continue running and possibly use alternative pure PyTorch implementations
-        warnings.warn(f"Module 'mmcv.{name}' not found. CUDA extensions are not installed. "
-                     f"Using PyTorch-only fallbacks where available.")
-        return MockExtModule(funcs)
+    # Always return the mock module in PyTorch-only mode
+    return MockExtModule(funcs)
 
 
 def check_ops_exist() -> bool:
-    """Check if compiled operations are available."""
-    ext_loader = pkgutil.find_loader('mmcv._ext')
-    return ext_loader is not None
+    """
+    In PyTorch-only mode, we return False to indicate that compiled ops don't exist.
+    This helps code branches select PyTorch-only implementations.
+    """
+    return False

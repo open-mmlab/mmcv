@@ -4,9 +4,9 @@ from typing import Union
 import numpy as np
 import torch
 
-from ..utils import ext_loader
+from .pure_pytorch_contour_expand.contour_expand import contour_expand_pytorch
+from .pure_pytorch_contour_expand.contour_expand import contour_expand_pytorch
 
-ext_module = ext_loader.load_ext('_ext', ['contour_expand'])
 
 
 def contour_expand(kernel_mask: Union[np.array, torch.Tensor],
@@ -39,6 +39,6 @@ def contour_expand(kernel_mask: Union[np.array, torch.Tensor],
     if kernel_mask.shape[0] == 0 or internal_kernel_label.shape[0] == 0:
         label = []
     else:
-        label = ext_module.contour_expand(kernel_mask, internal_kernel_label,
+        label = contour_expand_pytorch(kernel_mask, internal_kernel_label,
                                          min_kernel_area, kernel_num)
     return label

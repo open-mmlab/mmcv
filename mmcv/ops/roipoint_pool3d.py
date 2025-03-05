@@ -4,9 +4,9 @@ import torch
 from torch import nn as nn
 from torch.autograd import Function
 
-from ..utils import ext_loader
+from .pure_pytorch_roipoint_pool3d.roipoint_pool3d_forward import roipoint_pool3d_forward_pytorch
+from .pure_pytorch_roipoint_pool3d.roipoint_pool3d_forward import roipoint_pool3d_forward_pytorch
 
-ext_module = ext_loader.load_ext('_ext', ['roipoint_pool3d_forward'])
 
 
 class RoIPointPool3d(nn.Module):
@@ -75,7 +75,7 @@ class RoIPointPool3dFunction(Function):
         pooled_empty_flag = point_features.new_zeros(
             (batch_size, boxes_num)).int()
 
-        ext_module.roipoint_pool3d_forward(points.contiguous(),
+        roipoint_pool3d_forward_pytorch(points.contiguous(),
                                            pooled_boxes3d.contiguous(),
                                            point_features.contiguous(),
                                            pooled_features, pooled_empty_flag)

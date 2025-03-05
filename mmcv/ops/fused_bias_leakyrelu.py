@@ -100,9 +100,9 @@ import torch.nn.functional as F
 from torch import nn
 from torch.autograd import Function
 
-from ..utils import ext_loader
+from .pure_pytorch_fused_bias_leakyrelu.fused_bias_leakyrelu import fused_bias_leakyrelu_pytorch
+from .pure_pytorch_fused_bias_leakyrelu.fused_bias_leakyrelu import fused_bias_leakyrelu_pytorch
 
-ext_module = ext_loader.load_ext('_ext', ['fused_bias_leakyrelu'])
 
 
 class FusedBiasLeakyReLUFunctionBackward(Function):
@@ -121,7 +121,7 @@ class FusedBiasLeakyReLUFunctionBackward(Function):
 
         empty = grad_output.new_empty(0)
 
-        grad_input = ext_module.fused_bias_leakyrelu(
+        grad_input = fused_bias_leakyrelu_pytorch(
             grad_output,
             empty,
             out,
@@ -147,7 +147,7 @@ class FusedBiasLeakyReLUFunctionBackward(Function):
         # The second order deviation, in fact, contains two parts, while the
         # the first part is zero. Thus, we direct consider the second part
         # which is similar with the first order deviation in implementation.
-        gradgrad_out = ext_module.fused_bias_leakyrelu(
+        gradgrad_out = fused_bias_leakyrelu_pytorch(
             gradgrad_input,
             gradgrad_bias.to(out.dtype),
             out,
@@ -166,7 +166,7 @@ class FusedBiasLeakyReLUFunction(Function):
                 negative_slope: float, scale: float) -> torch.Tensor:
         empty = input.new_empty(0)
 
-        out = ext_module.fused_bias_leakyrelu(
+        out = fused_bias_leakyrelu_pytorch(
             input,
             bias,
             empty,
