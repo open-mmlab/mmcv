@@ -46,7 +46,58 @@ from .points_in_polygons import points_in_polygons
 from .points_sampler import PointsSampler
 from .prroi_pool import PrRoIPool, prroi_pool
 from .psa_mask import PSAMask
-from .roi_align import RoIAlign, roi_align
+# Always use PyTorch implementation for roi_align
+from .pure_pytorch_roi import roi_align_pytorch as roi_align
+from mmcv.utils import deprecated_api_warning
+from torch.nn.modules.utils import _pair
+import torch.nn as nn
+
+class RoIAlign(nn.Module):
+    """RoI align pooling layer using pure PyTorch implementation."""
+    
+    @deprecated_api_warning(
+        {
+            'out_size': 'output_size',
+            'sample_num': 'sampling_ratio'
+        },
+        cls_name='RoIAlign')
+    def __init__(self,
+                 output_size: tuple,
+                 spatial_scale: float = 1.0,
+                 sampling_ratio: int = 0,
+                 pool_mode: str = 'avg',
+                 aligned: bool = True,
+                 use_torchvision: bool = False):
+        super().__init__()
+        
+        self.output_size = _pair(output_size)
+        self.spatial_scale = float(spatial_scale)
+        self.sampling_ratio = int(sampling_ratio)
+        self.pool_mode = pool_mode
+        self.aligned = aligned
+        self.use_torchvision = use_torchvision
+        
+    def forward(self, input, rois):
+        if self.use_torchvision:
+            from torchvision.ops import roi_align as tv_roi_align
+            if 'aligned' in tv_roi_align.__code__.co_varnames:
+                return tv_roi_align(input, rois, self.output_size,
+                                    self.spatial_scale, self.sampling_ratio,
+                                    self.aligned)
+            else:
+                if self.aligned:
+                    rois -= rois.new_tensor([0.] +
+                                            [0.5 / self.spatial_scale] * 4)
+                return tv_roi_align(input, rois, self.output_size,
+                                    self.spatial_scale, self.sampling_ratio)
+        else:
+            # When using our pure PyTorch version, emit warning if max pooling is requested
+            if self.pool_mode == 'max':
+                import warnings
+                warnings.warn("Pure PyTorch ROI Align only supports 'avg' pooling mode. Using 'avg' instead of 'max'.")
+            return roi_align(input, rois, self.output_size, 
+                             self.spatial_scale, self.sampling_ratio, 
+                             self.aligned)
 from .roi_pool import RoIPool, roi_pool
 from .roipoint_pool3d import RoIPointPool3d
 from .rotated_feature_align import rotated_feature_align
