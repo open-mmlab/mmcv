@@ -3,6 +3,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+from mmcv.utils import IS_MUSA_AVAILABLE
+
 
 class Loss(nn.Module):
 
@@ -19,6 +21,9 @@ class TestCrissCrossAttention:
 
     def test_cc_attention(self):
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+        if IS_MUSA_AVAILABLE:
+            device = torch.device('musa:0')
 
         from mmcv.ops import CrissCrossAttention
         loss_func = Loss()

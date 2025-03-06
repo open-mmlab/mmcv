@@ -153,7 +153,9 @@ void deform_conv_forward(Tensor input, Tensor weight, Tensor offset,
 #else
     AT_ERROR("DeformConv is not compiled with GPU support");
 #endif
-  } else {
+  }
+#ifndef MMCV_WITH_MUSA
+  else {
     CHECK_CPU_INPUT(input);
     CHECK_CPU_INPUT(offset);
     CHECK_CPU_INPUT(weight);
@@ -161,7 +163,7 @@ void deform_conv_forward(Tensor input, Tensor weight, Tensor offset,
     CHECK_CPU_INPUT(columns);
     CHECK_CPU_INPUT(ones);
   }
-
+#endif
   deform_conv_shape_check(input, offset, NULL, weight, kH, kW, dH, dW, padH,
                           padW, dilationH, dilationW, group, deformable_group);
   at::DeviceGuard guard(input.device());
@@ -275,7 +277,9 @@ void deform_conv_backward_input(Tensor input, Tensor offset, Tensor gradOutput,
 #else
     AT_ERROR("DeformConv is not compiled with GPU support");
 #endif
-  } else {
+  }
+#ifndef MMCV_WITH_MUSA
+  else {
     CHECK_CPU_INPUT(input);
     CHECK_CPU_INPUT(offset);
     CHECK_CPU_INPUT(gradOutput);
@@ -284,6 +288,7 @@ void deform_conv_backward_input(Tensor input, Tensor offset, Tensor gradOutput,
     CHECK_CPU_INPUT(weight);
     CHECK_CPU_INPUT(columns);
   }
+#endif
   deform_conv_shape_check(input, offset, &gradOutput, weight, kH, kW, dH, dW,
                           padH, padW, dilationH, dilationW, group,
                           deformable_group);
@@ -407,7 +412,9 @@ void deform_conv_backward_parameters(Tensor input, Tensor offset,
 #else
     AT_ERROR("DeformConv is not compiled with GPU support");
 #endif
-  } else {
+  }
+#ifndef MMCV_WITH_MUSA
+  else {
     CHECK_CPU_INPUT(input);
     CHECK_CPU_INPUT(offset);
     CHECK_CPU_INPUT(gradOutput);
@@ -415,6 +422,7 @@ void deform_conv_backward_parameters(Tensor input, Tensor offset,
     CHECK_CPU_INPUT(columns);
     CHECK_CPU_INPUT(ones);
   }
+#endif
 
   deform_conv_shape_check(input, offset, &gradOutput, gradWeight, kH, kW, dH,
                           dW, padH, padW, dilationH, dilationW, group,

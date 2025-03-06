@@ -5,6 +5,8 @@ import numpy as np
 import pytest
 import torch
 
+from mmcv.utils import IS_MUSA_AVAILABLE
+
 # [1,4c,h,w]
 input_arr = [[[[1., 2., 3., 4.], [5., 6., 7., 8.], [9., 10., 11., 12.]],
               [[6, 7, 5, 8], [2, 1, 3, 4], [12, 9, 11, 10]],
@@ -51,6 +53,8 @@ input_grad_dict = {
 def _test_border_align_allclose(device, dtype, pool_size):
     if not torch.cuda.is_available() and device == 'cuda':
         pytest.skip('test requires GPU')
+    elif not IS_MUSA_AVAILABLE and device == 'musa':
+        pytest.skip('test requires GPU')
     try:
         from mmcv.ops import BorderAlign, border_align
     except ModuleNotFoundError:
@@ -84,8 +88,16 @@ def _test_border_align_allclose(device, dtype, pool_size):
         input.grad.data.type(dtype).cpu().numpy(), np_grad, atol=1e-5)
 
 
-@pytest.mark.parametrize('device', ['cuda'])
-@pytest.mark.parametrize('dtype', [torch.float, torch.half, torch.double])
+@pytest.mark.parametrize('device', ['cuda', 'musa'])
+@pytest.mark.parametrize('dtype', [
+    torch.float,
+    torch.half,
+    pytest.param(
+        torch.double,
+        marks=pytest.mark.skipif(
+            IS_MUSA_AVAILABLE,
+            reason='MUSA does not support for 64-bit floating point')),
+])
 @pytest.mark.parametrize('pool_size', [1, 2])
 def test_border_align(device, dtype, pool_size):
     _test_border_align_allclose(device, dtype, pool_size)
