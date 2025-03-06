@@ -2,7 +2,6 @@
 import numpy as np
 import pytest
 import torch
-
 from mmcv.ops import points_in_polygons
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
 

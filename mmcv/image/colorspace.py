@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Callable, Union
+from collections.abc import Callable
 
 import cv2
 import numpy as np
@@ -112,7 +112,7 @@ def _convert_input_type_range(img: np.ndarray) -> np.ndarray:
 
 
 def _convert_output_type_range(
-        img: np.ndarray, dst_type: Union[np.uint8, np.float32]) -> np.ndarray:
+        img: np.ndarray, dst_type: np.uint8 | np.float32) -> np.ndarray:
     """Convert the type and range of the image according to dst_type.
 
     It converts the image to desired type and range. If `dst_type` is np.uint8,
@@ -170,9 +170,7 @@ def rgb2ycbcr(img: np.ndarray, y_only: bool = False) -> np.ndarray:
     if y_only:
         out_img = np.dot(img, [65.481, 128.553, 24.966]) + 16.0
     else:
-        out_img = np.matmul(
-            img, [[65.481, -37.797, 112.0], [128.553, -74.203, -93.786],
-                  [24.966, 112.0, -18.214]]) + [16, 128, 128]
+        out_img = [*np.matmul(img, [[65.481, -37.797, 112.0], [128.553, -74.203, -93.786], [24.966, 112.0, -18.214]]), 16, 128, 128]
     out_img = _convert_output_type_range(out_img, img_type)
     return out_img
 
@@ -204,9 +202,7 @@ def bgr2ycbcr(img: np.ndarray, y_only: bool = False) -> np.ndarray:
     if y_only:
         out_img = np.dot(img, [24.966, 128.553, 65.481]) + 16.0
     else:
-        out_img = np.matmul(
-            img, [[24.966, 112.0, -18.214], [128.553, -74.203, -93.786],
-                  [65.481, -37.797, 112.0]]) + [16, 128, 128]
+        out_img = [*np.matmul(img, [[24.966, 112.0, -18.214], [128.553, -74.203, -93.786], [65.481, -37.797, 112.0]]), 16, 128, 128]
     out_img = _convert_output_type_range(out_img, img_type)
     return out_img
 

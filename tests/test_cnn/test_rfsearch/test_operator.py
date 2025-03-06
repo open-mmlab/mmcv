@@ -3,19 +3,18 @@ from copy import deepcopy
 
 import torch
 import torch.nn as nn
-
 from mmcv.cnn.rfsearch.operator import Conv2dRFSearchOp
 
-global_config = dict(
-    step=0,
-    max_step=12,
-    search_interval=1,
-    exp_rate=0.5,
-    init_alphas=0.01,
-    mmin=1,
-    mmax=24,
-    num_branches=2,
-    skip_layer=['stem', 'layer1'])
+global_config = {
+    'step': 0,
+    'max_step': 12,
+    'search_interval': 1,
+    'exp_rate': 0.5,
+    'init_alphas': 0.01,
+    'mmin': 1,
+    'mmax': 24,
+    'num_branches': 2,
+    'skip_layer': ['stem', 'layer1']}
 
 
 # test with 3x3 conv

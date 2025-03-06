@@ -37,7 +37,7 @@ class HSigmoid(nn.Module):
             'with PyTorch official. Previous Implementation: '
             'Hsigmoid(x) = min(max((x + 1) / 2, 0), 1). '
             'Current Implementation: '
-            'Hsigmoid(x) = min(max((x + 3) / 6, 0), 1).')
+            'Hsigmoid(x) = min(max((x + 3) / 6, 0), 1).', stacklevel=2)
         self.bias = bias
         self.divisor = divisor
         assert self.divisor != 0

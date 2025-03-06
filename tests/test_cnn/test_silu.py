@@ -1,11 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
-
 from mmcv.cnn.bricks import build_activation_layer
 
 
 def test_silu():
-    act = build_activation_layer(dict(type='SiLU'))
+    act = build_activation_layer({'type': 'SiLU'})
     input = torch.randn(1, 3, 64, 64)
     expected_output = input * torch.sigmoid(input)
     output = act(input)
@@ -15,7 +14,7 @@ def test_silu():
     assert torch.allclose(output, expected_output)
 
     # test inplace
-    act = build_activation_layer(dict(type='SiLU', inplace=True))
+    act = build_activation_layer({'type': 'SiLU', 'inplace': True})
     assert act.inplace
     input = torch.randn(1, 3, 64, 64)
     expected_output = input * torch.sigmoid(input)

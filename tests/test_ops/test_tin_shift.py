@@ -4,7 +4,6 @@ import os
 import numpy as np
 import pytest
 import torch
-
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
 _USING_PARROTS = True
@@ -161,7 +160,7 @@ def _test_tinshift_allclose(device, dtype):
     except ModuleNotFoundError:
         pytest.skip('TINShift op is not successfully compiled')
 
-    for shift, output, grad in zip(shifts, outputs, grads):
+    for shift, output, grad in zip(shifts, outputs, grads, strict=False):
         np_input = np.array(inputs)
         np_shift = np.array(shift)
         np_output = np.array(output)
@@ -192,7 +191,7 @@ def _test_tinshift_assert(device, dtype):
     ]
     shifts = [torch.rand(2, 3), torch.rand(2, 5)]
 
-    for x, shift in zip(inputs, shifts):
+    for x, shift in zip(inputs, shifts, strict=False):
         x = x.to(device).type(dtype)
         shift = shift.to(device).type(dtype)
 

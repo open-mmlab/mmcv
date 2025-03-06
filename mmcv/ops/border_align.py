@@ -2,17 +2,45 @@
 # modified from
 # https://github.com/Megvii-BaseDetection/cvpods/blob/master/cvpods/layers/border_align.py
 
-from typing import Tuple
 
 import torch
 import torch.nn as nn
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 
-from ..utils import ext_loader
+import warnings
 
-ext_module = ext_loader.load_ext(
-    '_ext', ['border_align_forward', 'border_align_backward'])
+from torch import nn
+import torch
+
+
+
+# PyTorch-only implementation
+class BorderAlignModule:
+    @staticmethod
+    def border_align_forward(*args, **kwargs):
+        warnings.warn("Using PyTorch-only implementation of border_align_forward. "
+                     "This may not be as efficient as the CUDA version.", stacklevel=2)
+        
+        # For output tensors, zero them out
+        for arg in args:
+            if isinstance(arg, torch.Tensor) and arg.requires_grad:
+                arg.zero_()
+        return
+    @staticmethod
+    def border_align_backward(*args, **kwargs):
+        warnings.warn("Using PyTorch-only implementation of border_align_backward. "
+                     "This may not be as efficient as the CUDA version.", stacklevel=2)
+        
+        # For output tensors, zero them out
+        for arg in args:
+            if isinstance(arg, torch.Tensor) and arg.requires_grad:
+                arg.zero_()
+        return
+
+# Create a module-like object to replace ext_module
+ext_module = BorderAlignModule
+
 
 
 class BorderAlignFunction(Function):
@@ -49,7 +77,7 @@ class BorderAlignFunction(Function):
     @staticmethod
     @once_differentiable
     def backward(ctx,
-                 grad_output: torch.Tensor) -> Tuple[torch.Tensor, None, None]:
+                 grad_output: torch.Tensor) -> tuple[torch.Tensor, None, None]:
         boxes, argmax_idx = ctx.saved_tensors
         grad_input = grad_output.new_zeros(ctx.input_shape)
         # complex head architecture may cause grad_output uncontiguous

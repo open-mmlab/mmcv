@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
-
 from mmcv.cnn.bricks import GeneralizedAttention
 
 

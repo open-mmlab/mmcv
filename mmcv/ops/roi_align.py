@@ -8,7 +8,7 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
-from .pure_pytorch_roi import roi_align_pytorch
+from mmcv.ops.pure_pytorch_roi import roi_align_pytorch
 
 
 class RoIAlignFunction(Function):
@@ -79,7 +79,7 @@ class RoIAlignFunction(Function):
         # If 'max' is requested, we still use 'avg' and emit a warning
         if pool_mode == 'max':
             import warnings
-            warnings.warn("Pure PyTorch ROI Align only supports 'avg' pooling mode. Using 'avg' instead of 'max'.")
+            warnings.warn("Pure PyTorch ROI Align only supports 'avg' pooling mode. Using 'avg' instead of 'max'.", stacklevel=2)
         
         output = roi_align_pytorch(
             input,

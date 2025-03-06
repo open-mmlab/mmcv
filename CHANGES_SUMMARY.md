@@ -7,9 +7,9 @@ The changes made so far are a first step toward this goal.
 
 ## Files Modified
 
-1. **mmcv/utils/ext_loader.py**
-   - Added fallback mechanism for when CUDA extensions aren't available
-   - Creates a mock module that warns users when CUDA/C++ functions are called
+1. **Removed mmcv/utils/ext_loader.py**
+   - Removed the ext_loader module entirely
+   - Replaced all usages with pure PyTorch implementations
 
 2. **mmcv/ops/nms.py**
    - Replaced CUDA implementation with pure PyTorch version
@@ -25,7 +25,7 @@ The changes made so far are a first step toward this goal.
    - Reimplemented forward pass
    - Added placeholder for backward pass (will need proper implementation for training)
 
-## Files Added
+## Files Added/Modified
 
 1. **mmcv/ops/pure_pytorch_nms.py**
    - Contains pure PyTorch implementations of NMS operations:
@@ -39,15 +39,19 @@ The changes made so far are a first step toward this goal.
      - `roi_pool_pytorch`: ROI pooling
      - `roi_align_pytorch`: ROI align with bilinear interpolation
 
-3. **remove_cuda_deps.py**
+3. **convert_ext_loader.py**
+   - Utility script to convert ext_loader usages to pure PyTorch
+   - Automatically creates PyTorch stub implementations
+
+4. **remove_cuda_deps.py**
    - Utility script to find and replace CUDA/C++ implementations
    - Can be extended to handle more operations in the future
 
-4. **pytorch_only_summary.md**
+5. **pytorch_only_summary.md**
    - Lists all operations that have been converted and those still needing conversion
    - Categorizes operations by type (NMS, ROI, etc.)
 
-5. **README_PYTORCH_ONLY.md**
+6. **README_PYTORCH_ONLY.md**
    - Documentation on how to use and extend the PyTorch-only version
    - Guidelines for implementing missing operations
 
@@ -62,7 +66,7 @@ The changes made so far are a first step toward this goal.
 
 ## Next Steps
 
-1. Implement proper gradient computation for backward passes
-2. Convert more operations to pure PyTorch
+1. Implement proper PyTorch implementations for the stub functions
+2. Implement proper gradient computation for backward passes
 3. Add tests to ensure numerical equivalence with original implementations
 4. Benchmark performance to identify areas for optimization

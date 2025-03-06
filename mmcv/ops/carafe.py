@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Tuple
 
 import torch
 import torch.nn as nn
@@ -10,10 +9,10 @@ from torch import Tensor
 from torch.autograd import Function
 from torch.nn.modules.module import Module
 
-from .pure_pytorch_carafe.carafe_naive_forward import carafe_naive_forward_pytorch
-from .pure_pytorch_carafe.carafe_naive_backward import carafe_naive_backward_pytorch
-from .pure_pytorch_carafe.carafe_forward import carafe_forward_pytorch
-from .pure_pytorch_carafe.carafe_backward import carafe_backward_pytorch
+from mmcv.ops.pure_pytorch_carafe.carafe_backward import carafe_backward_pytorch
+from mmcv.ops.pure_pytorch_carafe.carafe_forward import carafe_forward_pytorch
+from mmcv.ops.pure_pytorch_carafe.carafe_naive_backward import carafe_naive_backward_pytorch
+from mmcv.ops.pure_pytorch_carafe.carafe_naive_forward import carafe_naive_forward_pytorch
 
 
 class CARAFENaiveFunction(Function):
@@ -62,7 +61,7 @@ class CARAFENaiveFunction(Function):
     @staticmethod
     def backward(
             ctx,
-            grad_output: Tensor) -> Tuple[Tensor, Tensor, None, None, None]:
+            grad_output: Tensor) -> tuple[Tensor, Tensor, None, None, None]:
         assert grad_output.is_cuda
 
         features, masks = ctx.saved_tensors
@@ -156,7 +155,7 @@ class CARAFEFunction(Function):
     @staticmethod
     def backward(
             ctx,
-            grad_output: Tensor) -> Tuple[Tensor, Tensor, None, None, None]:
+            grad_output: Tensor) -> tuple[Tensor, Tensor, None, None, None]:
         features, masks, rfeatures = ctx.saved_tensors
         kernel_size = ctx.kernel_size
         group_size = ctx.group_size

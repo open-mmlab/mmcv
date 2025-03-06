@@ -6,23 +6,20 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-# source: https://github.com/NVlabs/stylegan3/blob/main/torch_utils/ops/upfirdn2d.py # noqa
+# source: https://github.com/NVlabs/stylegan3/blob/main/torch_utils/ops/upfirdn2d.py
 """Custom PyTorch ops for efficient resampling of 2D images."""
-from typing import Dict, List, Union
 
 import torch
 
-from .pure_pytorch_upfirdn2d.upfirdn2d import upfirdn2d_pytorch
-from .pure_pytorch_upfirdn2d.upfirdn2d import upfirdn2d_pytorch
-from .conv2d_gradfix import conv2d
-
+from mmcv.ops.conv2d_gradfix import conv2d
+from mmcv.ops.pure_pytorch_upfirdn2d.upfirdn2d import upfirdn2d_pytorch
 
 
 def _parse_scaling(scaling):
     """Parse scaling into list [x, y]"""
     if isinstance(scaling, int):
         scaling = [scaling, scaling]
-    assert isinstance(scaling, (list, tuple))
+    assert isinstance(scaling, list | tuple)
     assert all(isinstance(x, int) for x in scaling)
     sx, sy = scaling
     assert sx >= 1 and sy >= 1
@@ -33,7 +30,7 @@ def _parse_padding(padding):
     """Parse padding into list [padx0, padx1, pady0, pady1]"""
     if isinstance(padding, int):
         padding = [padding, padding]
-    assert isinstance(padding, (list, tuple))
+    assert isinstance(padding, list | tuple)
     assert all(isinstance(x, int) for x in padding)
     if len(padding) == 2:
         padx, pady = padding
@@ -59,9 +56,9 @@ def upfirdn2d(input: torch.Tensor,
               filter: torch.Tensor,
               up: int = 1,
               down: int = 1,
-              padding: Union[int, List[int]] = 0,
+              padding: int | list[int] = 0,
               flip_filter: bool = False,
-              gain: Union[float, int] = 1,
+              gain: float | int = 1,
               use_custom_op: bool = True):
     """Pad, upsample, filter, and downsample a batch of 2D images.
 
@@ -130,9 +127,9 @@ def _upfirdn2d_ref(input: torch.Tensor,
                    filter: torch.Tensor,
                    up: int = 1,
                    down: int = 1,
-                   padding: Union[int, List[int]] = 0,
+                   padding: int | list[int] = 0,
                    flip_filter: bool = False,
-                   gain: Union[float, int] = 1):
+                   gain: float | int = 1):
     """Slow reference implementation of `upfirdn2d()` using standard PyTorch
     ops.
 
@@ -208,14 +205,14 @@ def _upfirdn2d_ref(input: torch.Tensor,
     return x
 
 
-_upfirdn2d_cuda_cache: Dict = dict()
+_upfirdn2d_cuda_cache: dict = {}
 
 
 def _upfirdn2d_cuda(up: int = 1,
                     down: int = 1,
-                    padding: Union[int, List[int]] = 0,
+                    padding: int | list[int] = 0,
                     flip_filter: bool = False,
-                    gain: Union[float, int] = 1):
+                    gain: float | int = 1):
     """Fast CUDA implementation of `upfirdn2d()` using custom ops.
 
     Args:
@@ -305,9 +302,9 @@ def _upfirdn2d_cuda(up: int = 1,
 
 def filter2d(input: torch.Tensor,
              filter: torch.Tensor,
-             padding: Union[int, List[int]] = 0,
+             padding: int | list[int] = 0,
              flip_filter: bool = False,
-             gain: Union[float, int] = 1,
+             gain: float | int = 1,
              use_custom_op: bool = True):
     """Filter a batch of 2D images using the given 2D FIR filter.
 
@@ -355,9 +352,9 @@ def filter2d(input: torch.Tensor,
 def upsample2d(input: torch.Tensor,
                filter: torch.Tensor,
                up: int = 2,
-               padding: Union[int, List[int]] = 0,
+               padding: int | list[int] = 0,
                flip_filter: bool = False,
-               gain: Union[float, int] = 1,
+               gain: float | int = 1,
                use_custom_op: bool = True):
     """Upsample a batch of 2D images using the given 2D FIR filter.
 
@@ -409,9 +406,9 @@ def upsample2d(input: torch.Tensor,
 def downsample2d(input: torch.Tensor,
                  filter: torch.Tensor,
                  down: int = 2,
-                 padding: Union[int, List[int]] = 0,
+                 padding: int | list[int] = 0,
                  flip_filter: bool = False,
-                 gain: Union[float, int] = 1,
+                 gain: float | int = 1,
                  use_custom_op: bool = True):
     """Downsample a batch of 2D images using the given 2D FIR filter.
 

@@ -1,17 +1,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Sequence, Union
+from collections.abc import Sequence
 
 import mmengine
 import numpy as np
 import torch
 
-from .base import BaseTransform
-from .builder import TRANSFORMS
+from mmcv.transforms.base import BaseTransform
+from mmcv.transforms.builder import TRANSFORMS
 
 
 def to_tensor(
-    data: Union[torch.Tensor, np.ndarray, Sequence, int,
-                float]) -> torch.Tensor:
+    data: torch.Tensor | np.ndarray | Sequence | int | float) -> torch.Tensor:
     """Convert objects of various python types to :obj:`torch.Tensor`.
 
     Supported types are: :class:`numpy.ndarray`, :class:`torch.Tensor`,

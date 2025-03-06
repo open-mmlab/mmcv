@@ -13,17 +13,10 @@ from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair, _single
 
 from mmcv.utils import IS_MLU_AVAILABLE
-from .pure_pytorch_deform_conv.deform_conv_forward import deform_conv_forward_pytorch
-from .pure_pytorch_deform_conv.deform_conv_backward_input import deform_conv_backward_input_pytorch
-from .pure_pytorch_deform_conv.deform_conv_backward_parameters import deform_conv_backward_parameters_pytorch
-from .pure_pytorch_deform_conv.deform_conv_forward import deform_conv_forward_pytorch
-from .pure_pytorch_deform_conv.deform_conv_backward_input import deform_conv_backward_input_pytorch
-from .pure_pytorch_deform_conv.deform_conv_backward_parameters import deform_conv_backward_parameters_pytorch
-from .modulated_deform_conv import ModulatedDeformConv2dFunction
-
-    'deform_conv_forward', 'deform_conv_backward_input',
-    'deform_conv_backward_parameters'
-])
+from mmcv.ops.pure_pytorch_deform_conv.deform_conv_forward import deform_conv_forward_pytorch
+from mmcv.ops.pure_pytorch_deform_conv.deform_conv_backward_input import deform_conv_backward_input_pytorch
+from mmcv.ops.pure_pytorch_deform_conv.deform_conv_backward_parameters import deform_conv_backward_parameters_pytorch
+from mmcv.ops.modulated_deform_conv import ModulatedDeformConv2dFunction
 
 
 class DeformConv2dFunction(Function):

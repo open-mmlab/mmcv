@@ -1,9 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import mmcv
 import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
-
-import mmcv
 
 try:
     import torch
@@ -55,19 +54,19 @@ def test_tensor2imgs():
         for t in tensor.flip(1)
     ]
     outputs = mmcv.tensor2imgs(tensor, to_rgb=True)
-    for gt, output in zip(gts, outputs):
+    for gt, output in zip(gts, outputs, strict=False):
         assert_array_equal(gt, output)
 
     # test rgb=False
     tensor = torch.randn(2, 3, 5, 5)
     gts = [t.cpu().numpy().transpose(1, 2, 0).astype(np.uint8) for t in tensor]
     outputs = mmcv.tensor2imgs(tensor, to_rgb=False)
-    for gt, output in zip(gts, outputs):
+    for gt, output in zip(gts, outputs, strict=False):
         assert_array_equal(gt, output)
 
     # test tensor channel 1 and rgb=False
     tensor = torch.randn(2, 1, 5, 5)
     gts = [t.squeeze(0).cpu().numpy().astype(np.uint8) for t in tensor]
     outputs = mmcv.tensor2imgs(tensor, to_rgb=False)
-    for gt, output in zip(gts, outputs):
+    for gt, output in zip(gts, outputs, strict=False):
         assert_array_equal(gt, output)

@@ -1,5 +1,7 @@
-import torch
 import warnings
+
+import torch
+
 
 def sync_bn_forward_var_pytorch(*args, **kwargs):
     """
@@ -9,8 +11,8 @@ def sync_bn_forward_var_pytorch(*args, **kwargs):
     
     For production use, a proper PyTorch implementation is needed.
     """
-    warnings.warn(f"Using stub implementation of sync_bn_forward_var. "
-                 f"This is not a complete implementation and may cause incorrect results.")
+    warnings.warn("Using stub implementation of sync_bn_forward_var. "
+                 "This is not a complete implementation and may cause incorrect results.", stacklevel=2)
     
     # Basic handling depending on the expected output shape
     if len(args) > 0:

@@ -1,12 +1,11 @@
-import torch
-import torch.nn.functional as F
-from typing import Tuple, Optional
 import math
+
+import torch
 
 
 def roi_pool_pytorch(features: torch.Tensor,
                     rois: torch.Tensor,
-                    output_size: Tuple[int, int],
+                    output_size: tuple[int, int],
                     spatial_scale: float = 1.0) -> torch.Tensor:
     """
     Pure PyTorch implementation of ROI Pooling without CUDA dependencies.
@@ -91,7 +90,7 @@ def roi_pool_pytorch(features: torch.Tensor,
 
 def roi_align_pytorch(features: torch.Tensor,
                      rois: torch.Tensor,
-                     output_size: Tuple[int, int],
+                     output_size: tuple[int, int],
                      spatial_scale: float = 1.0,
                      sampling_ratio: int = 0,
                      aligned: bool = False) -> torch.Tensor:

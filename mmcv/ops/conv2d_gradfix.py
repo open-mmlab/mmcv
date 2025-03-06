@@ -6,13 +6,12 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-# source: https://github.com/NVlabs/stylegan3/blob/main/torch_utils/ops/conv2d_gradfix.py # noqa
+# source: https://github.com/NVlabs/stylegan3/blob/main/torch_utils/ops/conv2d_gradfix.py
 """Custom replacement for `torch.nn.functional.conv2d` that supports
 arbitrarily high order gradients with zero performance penalty."""
 
 import contextlib
 import warnings
-from typing import Dict, Optional, Tuple, Union
 
 import torch
 from mmengine.utils import digit_version
@@ -34,17 +33,17 @@ def no_weight_gradients(disable=True):
 
 def conv2d(input: torch.Tensor,
            weight: torch.Tensor,
-           bias: Optional[torch.Tensor] = None,
-           stride: Union[int, Tuple[int, ...]] = 1,
-           padding: Union[int, Tuple[int, ...]] = 0,
-           dilation: Union[int, Tuple[int, ...]] = 1,
+           bias: torch.Tensor | None = None,
+           stride: int | tuple[int, ...] = 1,
+           padding: int | tuple[int, ...] = 0,
+           dilation: int | tuple[int, ...] = 1,
            groups: int = 1):
     flag = True
     if digit_version(torch.__version__) >= digit_version('1.10.0'):
         warnings.warn('Since '
                       'aten:cudnn_convolution_backward_weight is '
                       f'not supported in torch=={torch.__version__},'
-                      ' rolling back to `torch.nn.functional.conv2d`')
+                      ' rolling back to `torch.nn.functional.conv2d`', stacklevel=2)
         flag = False
     if _should_use_custom_op(input) and flag:
         return _conv2d_gradfix(
@@ -67,12 +66,12 @@ def conv2d(input: torch.Tensor,
 
 def conv_transpose2d(input: torch.Tensor,
                      weight: torch.Tensor,
-                     bias: Optional[torch.Tensor] = None,
-                     stride: Union[int, Tuple[int, ...]] = 1,
-                     padding: Union[int, Tuple[int, ...]] = 0,
-                     output_padding: Union[int, Tuple[int, ...]] = 0,
+                     bias: torch.Tensor | None = None,
+                     stride: int | tuple[int, ...] = 1,
+                     padding: int | tuple[int, ...] = 0,
+                     output_padding: int | tuple[int, ...] = 0,
                      groups: int = 1,
-                     dilation: Union[int, Tuple[int, ...]] = 1):
+                     dilation: int | tuple[int, ...] = 1):
     if _should_use_custom_op(input):
         return _conv2d_gradfix(
             transpose=True,
@@ -103,23 +102,23 @@ def _should_use_custom_op(input):
 
 
 def _to_tuple(x, ndim):
-    xs = tuple(x) if isinstance(x, (tuple, list)) else (x, ) * ndim
+    xs = tuple(x) if isinstance(x, tuple | list) else (x, ) * ndim
     assert len(xs) == ndim
     assert all(isinstance(x, int) for x in xs)
     return xs
 
 
-_conv2d_gradfix_cache: Dict = dict()
+_conv2d_gradfix_cache: dict = {}
 _null_tensor = torch.empty([0])
 
 
 def _conv2d_gradfix(
     transpose: bool,
-    weight_shape: Tuple[int, ...],
-    stride: Union[int, Tuple[int, ...]],
-    padding: Union[int, Tuple[int, ...]],
-    output_padding: Union[int, Tuple[int, ...]],
-    dilation: Union[int, Tuple[int, ...]],
+    weight_shape: tuple[int, ...],
+    stride: int | tuple[int, ...],
+    padding: int | tuple[int, ...],
+    output_padding: int | tuple[int, ...],
+    dilation: int | tuple[int, ...],
     groups: int,
 ):
     # Parse arguments.
@@ -152,8 +151,8 @@ def _conv2d_gradfix(
                 dilation[i])  # type: ignore
 
     # Helpers.
-    common_kwargs = dict(
-        stride=stride, padding=padding, dilation=dilation, groups=groups)
+    common_kwargs = {
+        'stride': stride, 'padding': padding, 'dilation': dilation, 'groups': groups}
 
     def calc_output_padding(input_shape, output_shape):
         if transpose:
@@ -262,7 +261,7 @@ def _conv2d_gradfix(
                                    1 else torch.contiguous_format))
 
             # PyTorch consolidated convolution backward API in PR:
-            # https://github.com/pytorch/pytorch/commit/3dc3651e0ee3623f669c3a2c096408dbc476d122  # noqa: E501
+            # https://github.com/pytorch/pytorch/commit/3dc3651e0ee3623f669c3a2c096408dbc476d122
             # Enhance the code referring to the discussion:
             # https://github.com/pytorch/pytorch/issues/74437
             if digit_version(torch.__version__) >= digit_version('1.11.0'):

@@ -1,5 +1,7 @@
-import torch
 import warnings
+
+import torch
+
 
 def pixel_group_pytorch(*args, **kwargs):
     """
@@ -9,8 +11,8 @@ def pixel_group_pytorch(*args, **kwargs):
     
     For production use, a proper PyTorch implementation is needed.
     """
-    warnings.warn(f"Using stub implementation of pixel_group. "
-                 f"This is not a complete implementation and may cause incorrect results.")
+    warnings.warn("Using stub implementation of pixel_group. "
+                 "This is not a complete implementation and may cause incorrect results.", stacklevel=2)
     
     # Basic handling depending on the expected output shape
     if len(args) > 0:

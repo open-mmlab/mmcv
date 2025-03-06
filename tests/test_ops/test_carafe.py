@@ -2,9 +2,8 @@
 import numpy as np
 import pytest
 import torch
-from torch.autograd import gradcheck
-
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from torch.autograd import gradcheck
 
 
 class TestCarafe:

@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
-from typing import Tuple, Union
 
 import torch
 from mmengine.registry import MODELS
@@ -34,10 +33,10 @@ class Conv2dAdaptivePadding(nn.Conv2d):
     def __init__(self,
                  in_channels: int,
                  out_channels: int,
-                 kernel_size: Union[int, Tuple[int, int]],
-                 stride: Union[int, Tuple[int, int]] = 1,
-                 padding: Union[int, Tuple[int, int]] = 0,
-                 dilation: Union[int, Tuple[int, int]] = 1,
+                 kernel_size: int | tuple[int, int],
+                 stride: int | tuple[int, int] = 1,
+                 padding: int | tuple[int, int] = 0,
+                 dilation: int | tuple[int, int] = 1,
                  groups: int = 1,
                  bias: bool = True):
         super().__init__(in_channels, out_channels, kernel_size, stride, 0,

@@ -1,12 +1,44 @@
-from typing import Any, Tuple
+from typing import Any
+import warnings
 
 import torch
 from torch.autograd import Function
 
-from ..utils import ext_loader
+# PyTorch-only implementation
+class ExtModule:
+    @staticmethod
+    def three_interpolate_forward(features, indices, weight, output, b, c, m, n):
+        warnings.warn("Using PyTorch-only implementation of three_interpolate_forward. "
+                     "This may not be as efficient as the CUDA version.", stacklevel=2)
+                     
+        # Implementation using PyTorch operations
+        for batch_idx in range(b):
+            for c_idx in range(c):
+                for n_idx in range(n):
+                    val = 0
+                    for k in range(3):  # 3 nearest neighbors
+                        val += weight[batch_idx, n_idx, k] * features[batch_idx, c_idx, indices[batch_idx, n_idx, k]]
+                    output[batch_idx, c_idx, n_idx] = val
+                    
+        return output
+    
+    @staticmethod
+    def three_interpolate_backward(grad_out, idx, weight, grad_features, b, c, n, m):
+        warnings.warn("Using PyTorch-only implementation of three_interpolate_backward. "
+                     "This may not produce correct gradients.", stacklevel=2)
+                     
+        # Implementation using PyTorch operations
+        for batch_idx in range(b):
+            for c_idx in range(c):
+                for n_idx in range(n):
+                    for k in range(3):  # 3 nearest neighbors
+                        grad_features[batch_idx, c_idx, idx[batch_idx, n_idx, k]] += \
+                            grad_out[batch_idx, c_idx, n_idx] * weight[batch_idx, n_idx, k]
+                            
+        return
 
-ext_module = ext_loader.load_ext(
-    '_ext', ['three_interpolate_forward', 'three_interpolate_backward'])
+# Create a module-like object to replace ext_module
+ext_module = ExtModule
 
 
 class ThreeInterpolate(Function):
@@ -47,7 +79,7 @@ class ThreeInterpolate(Function):
     @staticmethod
     def backward(
         ctx, grad_out: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Args:
             grad_out (torch.Tensor): (B, C, N) tensor with gradients of outputs

@@ -1,9 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import sys
 
-import pytest
-
 import mmcv
+import pytest
 
 
 def test_collect_env():

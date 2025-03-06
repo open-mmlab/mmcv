@@ -5,11 +5,10 @@ import functools
 import inspect
 import weakref
 from collections import defaultdict
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from contextlib import contextmanager
-from typing import Callable, Union
 
-from .base import BaseTransform
+from mmcv.transforms.base import BaseTransform
 
 
 class cache_randomness:
@@ -44,7 +43,7 @@ class cache_randomness:
     def __set_name__(self, owner, name):
         # Maintain a record of decorated methods in the class
         if not hasattr(owner, '_methods_with_randomness'):
-            setattr(owner, '_methods_with_randomness', [])
+            owner._methods_with_randomness = []
 
         # Here `name` equals to `self.__name__`, i.e., the name of the
         # decorated function, due to the invocation of `update_wrapper` in
@@ -66,7 +65,7 @@ class cache_randomness:
             # ``cache_enabled``` is set by contextmanagers like
             # ``cache_random_params```.
             if not hasattr(instance, '_cache'):
-                setattr(instance, '_cache', {})
+                instance._cache = {}
 
             if name not in instance._cache:
                 instance._cache[name] = self.func(instance, *args, **kwargs)
@@ -133,7 +132,7 @@ def avoid_cache_randomness(cls):
 
 
 @contextmanager
-def cache_random_params(transforms: Union[BaseTransform, Iterable]):
+def cache_random_params(transforms: BaseTransform | Iterable):
     """Context-manager that enables the cache of return values of methods
     decorated with ``cache_randomness`` in transforms.
 
@@ -150,7 +149,7 @@ def cache_random_params(transforms: Union[BaseTransform, Iterable]):
 
     # key2method stores the original methods that are replaced by the wrapped
     # ones. These methods will be restituted when exiting the context.
-    key2method = dict()
+    key2method = {}
 
     # key2counter stores the usage number of each cache_randomness. This is
     # used to check that any cache_randomness is invoked once during processing
@@ -211,12 +210,12 @@ def cache_random_params(transforms: Union[BaseTransform, Iterable]):
             return
 
         # Set cache enabled flag
-        setattr(t, '_cache_enabled', True)
+        t._cache_enabled = True
 
         # Store the original method and init the counter
         if hasattr(t, '_methods_with_randomness'):
-            setattr(t, 'transform', _add_invoke_checker(t, 'transform'))
-            for name in getattr(t, '_methods_with_randomness'):
+            t.transform = _add_invoke_checker(t, 'transform')
+            for name in t._methods_with_randomness:
                 setattr(t, name, _add_invoke_counter(t, name))
 
     def _end_cache(t: BaseTransform):
@@ -231,14 +230,14 @@ def cache_random_params(transforms: Union[BaseTransform, Iterable]):
 
         # Restore the original method
         if hasattr(t, '_methods_with_randomness'):
-            for name in getattr(t, '_methods_with_randomness'):
+            for name in t._methods_with_randomness:
                 key = f'{id(t)}.{name}'
                 setattr(t, name, key2method[key])
 
             key_transform = f'{id(t)}.transform'
-            setattr(t, 'transform', key2method[key_transform])
+            t.transform = key2method[key_transform]
 
-    def _apply(t: Union[BaseTransform, Iterable],
+    def _apply(t: BaseTransform | Iterable,
                func: Callable[[BaseTransform], None]):
         if isinstance(t, BaseTransform):
             func(t)

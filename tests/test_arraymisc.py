@@ -1,9 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+import mmcv
 import numpy as np
 import pytest
-
-import mmcv
 
 
 def test_quantize():

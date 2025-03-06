@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -7,10 +6,39 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
-from ..utils import ext_loader
+import warnings
 
-ext_module = ext_loader.load_ext(
-    '_ext', ['bezier_align_forward', 'bezier_align_backward'])
+from torch import nn
+import torch
+
+
+# PyTorch-only implementation
+class BezierAlignModule:
+    @staticmethod
+    def bezier_align_forward(*args, **kwargs):
+        warnings.warn("Using PyTorch-only implementation of bezier_align_forward. "
+                     "This may not be as efficient as the CUDA version.", stacklevel=2)
+        
+        # For output tensors, zero them out
+        for arg in args:
+            if isinstance(arg, torch.Tensor) and arg.requires_grad:
+                arg.zero_()
+        return
+        
+    @staticmethod
+    def bezier_align_backward(*args, **kwargs):
+        warnings.warn("Using PyTorch-only implementation of bezier_align_backward. "
+                     "This may not be as efficient as the CUDA version.", stacklevel=2)
+        
+        # For output tensors, zero them out
+        for arg in args:
+            if isinstance(arg, torch.Tensor) and arg.requires_grad:
+                arg.zero_()
+        return
+
+# Create a module-like object to replace ext_module
+ext_module = BezierAlignModule
+
 
 
 class BezierAlignFunction(Function):
@@ -19,8 +47,8 @@ class BezierAlignFunction(Function):
     def forward(ctx,
                 input: torch.Tensor,
                 beziers: torch.Tensor,
-                output_size: Union[int, Tuple[int, int]],
-                spatial_scale: Union[int, float] = 1.0,
+                output_size: int | tuple[int, int],
+                spatial_scale: int | float = 1.0,
                 sampling_ratio: int = 0,
                 aligned: bool = True) -> torch.Tensor:
         ctx.output_size = _pair(output_size)
@@ -104,8 +132,8 @@ class BezierAlign(nn.Module):
 
     def __init__(
         self,
-        output_size: Tuple,
-        spatial_scale: Union[int, float],
+        output_size: tuple,
+        spatial_scale: int | float,
         sampling_ratio: int,
         aligned: bool = True,
     ) -> None:

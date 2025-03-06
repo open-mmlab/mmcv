@@ -31,30 +31,30 @@ def expand_rates(dilation: tuple, config: dict) -> list:
     small_rates = []
     for _ in range(config['num_branches'] // 2):
         large_rates.append(
-            tuple([
+            (
                 np.clip(
                     int(round((1 + exp_rate) * dilation[0])), config['mmin'],
                     config['mmax']).item(),
                 np.clip(
                     int(round((1 + exp_rate) * dilation[1])), config['mmin'],
                     config['mmax']).item()
-            ]))
+            ))
         small_rates.append(
-            tuple([
+            (
                 np.clip(
                     int(round((1 - exp_rate) * dilation[0])), config['mmin'],
                     config['mmax']).item(),
                 np.clip(
                     int(round((1 - exp_rate) * dilation[1])), config['mmin'],
                     config['mmax']).item()
-            ]))
+            ))
 
     small_rates.reverse()
 
     if config['num_branches'] % 2 == 0:
         rate_list = small_rates + large_rates
     else:
-        rate_list = small_rates + [dilation] + large_rates
+        rate_list = [*small_rates, dilation, *large_rates]
 
     unique_rate_list = list(set(rate_list))
     unique_rate_list.sort(key=rate_list.index)

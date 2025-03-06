@@ -1,10 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
+from mmcv.ops import filtered_lrelu
 from mmengine.utils import digit_version
 from mmengine.utils.dl_utils.parrots_wrapper import is_rocm_pytorch
-
-from mmcv.ops import filtered_lrelu
 
 
 class TestFilteredLrelu:

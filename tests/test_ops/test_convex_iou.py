@@ -2,7 +2,6 @@
 import numpy as np
 import pytest
 import torch
-
 from mmcv.ops import convex_giou, convex_iou
 
 np_pointsets = np.asarray([[

@@ -3,7 +3,6 @@ import os
 import os.path as osp
 import subprocess
 import tempfile
-from typing import List, Optional, Union
 
 from mmengine.utils import requires_executable
 
@@ -55,8 +54,8 @@ def convert_video(in_file: str,
 @requires_executable('ffmpeg')
 def resize_video(in_file: str,
                  out_file: str,
-                 size: Optional[tuple] = None,
-                 ratio: Union[tuple, float, None] = None,
+                 size: tuple | None = None,
+                 ratio: tuple | float | None = None,
                  keep_ar: bool = False,
                  log_level: str = 'info',
                  print_cmd: bool = False) -> None:
@@ -93,10 +92,10 @@ def resize_video(in_file: str,
 @requires_executable('ffmpeg')
 def cut_video(in_file: str,
               out_file: str,
-              start: Optional[float] = None,
-              end: Optional[float] = None,
-              vcodec: Optional[str] = None,
-              acodec: Optional[str] = None,
+              start: float | None = None,
+              end: float | None = None,
+              vcodec: str | None = None,
+              acodec: str | None = None,
               log_level: str = 'info',
               print_cmd: bool = False) -> None:
     """Cut a clip from a video.
@@ -126,10 +125,10 @@ def cut_video(in_file: str,
 
 
 @requires_executable('ffmpeg')
-def concat_video(video_list: List,
+def concat_video(video_list: list,
                  out_file: str,
-                 vcodec: Optional[str] = None,
-                 acodec: Optional[str] = None,
+                 vcodec: str | None = None,
+                 acodec: str | None = None,
                  log_level: str = 'info',
                  print_cmd: bool = False) -> None:
     """Concatenate multiple videos into a single one.

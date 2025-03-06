@@ -2,7 +2,6 @@
 import pytest
 import torch
 import torch.nn as nn
-
 from mmcv.cnn import get_model_complexity_info
 from mmcv.cnn.utils.flops_counter import flops_to_string, params_to_string
 
@@ -13,38 +12,38 @@ except ImportError:
 
 # yapf: disable
 gt_results = [
-    {'model': nn.Conv1d(3, 8, 3), 'input': (3, 16), 'flops': 1120.0, 'params': 80.0},  # noqa: E501
-    {'model': nn.Conv2d(3, 8, 3), 'input': (3, 16, 16), 'flops': 43904.0, 'params': 224.0},  # noqa: E501
-    {'model': nn.Conv3d(3, 8, 3), 'input': (3, 3, 16, 16), 'flops': 128576.0, 'params': 656.0},  # noqa: E501
-    {'model': nn.ReLU(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
-    {'model': nn.PReLU(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 1},  # noqa: E501
-    {'model': nn.ELU(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
-    {'model': nn.LeakyReLU(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
-    {'model': nn.ReLU6(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
-    {'model': nn.MaxPool1d(2), 'input': (3, 16), 'flops': 48.0, 'params': 0},  # noqa: E501
-    {'model': nn.MaxPool2d(2), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
-    {'model': nn.MaxPool3d(2), 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},  # noqa: E501
-    {'model': nn.AvgPool1d(2), 'input': (3, 16), 'flops': 48.0, 'params': 0},  # noqa: E501
-    {'model': nn.AvgPool2d(2), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
-    {'model': nn.AvgPool3d(2), 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},  # noqa: E501
-    {'model': nn.AdaptiveMaxPool1d(2), 'input': (3, 16), 'flops': 48.0, 'params': 0},  # noqa: E501
-    {'model': nn.AdaptiveMaxPool2d(2), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
-    {'model': nn.AdaptiveMaxPool3d(2), 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},  # noqa: E501
-    {'model': nn.AdaptiveAvgPool1d(2), 'input': (3, 16), 'flops': 48.0, 'params': 0},  # noqa: E501
-    {'model': nn.AdaptiveAvgPool2d(2), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
-    {'model': nn.AdaptiveAvgPool3d(2), 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},  # noqa: E501
-    {'model': nn.BatchNorm1d(3), 'input': (3, 16), 'flops': 96.0, 'params': 6.0},  # noqa: E501
-    {'model': nn.BatchNorm2d(3), 'input': (3, 16, 16), 'flops': 1536.0, 'params': 6.0},  # noqa: E501
-    {'model': nn.BatchNorm3d(3), 'input': (3, 3, 16, 16), 'flops': 4608.0, 'params': 6.0},  # noqa: E501
-    {'model': nn.GroupNorm(2, 6), 'input': (6, 16, 16), 'flops': 3072.0, 'params': 12.0},  # noqa: E501
-    {'model': nn.InstanceNorm1d(3, affine=True), 'input': (3, 16), 'flops': 96.0, 'params': 6.0},  # noqa: E501
-    {'model': nn.InstanceNorm2d(3, affine=True), 'input': (3, 16, 16), 'flops': 1536.0, 'params': 6.0},  # noqa: E501
-    {'model': nn.InstanceNorm3d(3, affine=True), 'input': (3, 3, 16, 16), 'flops': 4608.0, 'params': 6.0},  # noqa: E501
-    {'model': nn.LayerNorm((3, 16, 16)), 'input': (3, 16, 16), 'flops': 1536.0, 'params': 1536.0},  # noqa: E501
-    {'model': nn.LayerNorm((3, 16, 16), elementwise_affine=False), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},  # noqa: E501
-    {'model': nn.Linear(1024, 2), 'input': (1024, ), 'flops': 2048.0, 'params': 2050.0},  # noqa: E501
-    {'model': nn.ConvTranspose2d(3, 8, 3), 'input': (3, 16, 16), 'flops': 57888, 'params': 224.0},  # noqa: E501
-    {'model': nn.Upsample((32, 32)), 'input': (3, 16, 16), 'flops': 3072.0, 'params': 0}  # noqa: E501
+    {'model': nn.Conv1d(3, 8, 3), 'input': (3, 16), 'flops': 1120.0, 'params': 80.0},
+    {'model': nn.Conv2d(3, 8, 3), 'input': (3, 16, 16), 'flops': 43904.0, 'params': 224.0},
+    {'model': nn.Conv3d(3, 8, 3), 'input': (3, 3, 16, 16), 'flops': 128576.0, 'params': 656.0},
+    {'model': nn.ReLU(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},
+    {'model': nn.PReLU(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 1},
+    {'model': nn.ELU(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},
+    {'model': nn.LeakyReLU(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},
+    {'model': nn.ReLU6(), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},
+    {'model': nn.MaxPool1d(2), 'input': (3, 16), 'flops': 48.0, 'params': 0},
+    {'model': nn.MaxPool2d(2), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},
+    {'model': nn.MaxPool3d(2), 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},
+    {'model': nn.AvgPool1d(2), 'input': (3, 16), 'flops': 48.0, 'params': 0},
+    {'model': nn.AvgPool2d(2), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},
+    {'model': nn.AvgPool3d(2), 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},
+    {'model': nn.AdaptiveMaxPool1d(2), 'input': (3, 16), 'flops': 48.0, 'params': 0},
+    {'model': nn.AdaptiveMaxPool2d(2), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},
+    {'model': nn.AdaptiveMaxPool3d(2), 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},
+    {'model': nn.AdaptiveAvgPool1d(2), 'input': (3, 16), 'flops': 48.0, 'params': 0},
+    {'model': nn.AdaptiveAvgPool2d(2), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},
+    {'model': nn.AdaptiveAvgPool3d(2), 'input': (3, 3, 16, 16), 'flops': 2304.0, 'params': 0},
+    {'model': nn.BatchNorm1d(3), 'input': (3, 16), 'flops': 96.0, 'params': 6.0},
+    {'model': nn.BatchNorm2d(3), 'input': (3, 16, 16), 'flops': 1536.0, 'params': 6.0},
+    {'model': nn.BatchNorm3d(3), 'input': (3, 3, 16, 16), 'flops': 4608.0, 'params': 6.0},
+    {'model': nn.GroupNorm(2, 6), 'input': (6, 16, 16), 'flops': 3072.0, 'params': 12.0},
+    {'model': nn.InstanceNorm1d(3, affine=True), 'input': (3, 16), 'flops': 96.0, 'params': 6.0},
+    {'model': nn.InstanceNorm2d(3, affine=True), 'input': (3, 16, 16), 'flops': 1536.0, 'params': 6.0},
+    {'model': nn.InstanceNorm3d(3, affine=True), 'input': (3, 3, 16, 16), 'flops': 4608.0, 'params': 6.0},
+    {'model': nn.LayerNorm((3, 16, 16)), 'input': (3, 16, 16), 'flops': 1536.0, 'params': 1536.0},
+    {'model': nn.LayerNorm((3, 16, 16), elementwise_affine=False), 'input': (3, 16, 16), 'flops': 768.0, 'params': 0},
+    {'model': nn.Linear(1024, 2), 'input': (1024, ), 'flops': 2048.0, 'params': 2050.0},
+    {'model': nn.ConvTranspose2d(3, 8, 3), 'input': (3, 16, 16), 'flops': 57888, 'params': 224.0},
+    {'model': nn.Upsample((32, 32)), 'input': (3, 16, 16), 'flops': 3072.0, 'params': 0}
 ]
 # yapf: enable
 
@@ -61,7 +60,7 @@ class ExampleModel(nn.Module):
 
 
 def input_constructor(x):
-    return dict(imgs=x)
+    return {'imgs': x}
 
 
 def test_flops_counter():
@@ -74,7 +73,7 @@ def test_flops_counter():
     with pytest.raises(AssertionError):
         # len(input_res) >= 2
         model = nn.Conv2d(3, 8, 3)
-        input_res = tuple()
+        input_res = ()
         get_model_complexity_info(model, input_res)
 
     # test common layers
@@ -109,7 +108,7 @@ def test_flops_counter():
     out = StringIO()
     get_model_complexity_info(model, x, ost=out)
     assert out.getvalue() == \
-        'Conv1d(0.0 M, 100.000% Params, 0.0 GFLOPs, 100.000% FLOPs, 3, 8, kernel_size=(3,), stride=(1,))\n'  # noqa: E501
+        'Conv1d(0.0 M, 100.000% Params, 0.0 GFLOPs, 100.000% FLOPs, 3, 8, kernel_size=(3,), stride=(1,))\n'
 
     # test when model is not a common instance
     model = nn.Sequential(nn.Conv2d(3, 8, 3), nn.Flatten(), nn.Linear(1568, 2))

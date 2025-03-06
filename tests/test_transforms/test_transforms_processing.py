@@ -3,12 +3,10 @@ import copy
 import os.path as osp
 from unittest.mock import Mock
 
+import mmcv
 import numpy as np
 import pytest
-
-import mmcv
-from mmcv.transforms import (TRANSFORMS, Normalize, Pad, RandomFlip,
-                             RandomResize, Resize, TestTimeAug)
+from mmcv.transforms import TRANSFORMS, Normalize, Pad, RandomFlip, RandomResize, Resize, TestTimeAug
 from mmcv.transforms.base import BaseTransform
 
 try:
@@ -25,12 +23,12 @@ from PIL import Image
 class TestNormalize:
 
     def test_normalize(self):
-        img_norm_cfg = dict(
-            mean=[123.675, 116.28, 103.53],
-            std=[58.395, 57.12, 57.375],
-            to_rgb=True)
+        img_norm_cfg = {
+            'mean': [123.675, 116.28, 103.53],
+            'std': [58.395, 57.12, 57.375],
+            'to_rgb': True}
         transform = Normalize(**img_norm_cfg)
-        results = dict()
+        results = {}
         img = mmcv.imread(
             osp.join(osp.dirname(__file__), '../data/color.jpg'), 'color')
         original_img = copy.deepcopy(img)
@@ -42,10 +40,10 @@ class TestNormalize:
         assert np.allclose(results['img'], converted_img)
 
     def test_repr(self):
-        img_norm_cfg = dict(
-            mean=[123.675, 116.28, 103.53],
-            std=[58.395, 57.12, 57.375],
-            to_rgb=True)
+        img_norm_cfg = {
+            'mean': [123.675, 116.28, 103.53],
+            'std': [58.395, 57.12, 57.375],
+            'to_rgb': True}
         transform = Normalize(**img_norm_cfg)
         assert repr(transform) == ('Normalize(mean=[123.675 116.28  103.53 ], '
                                    'std=[58.395 57.12  57.375], to_rgb=True)')
@@ -54,11 +52,11 @@ class TestNormalize:
 class TestResize:
 
     def test_resize(self):
-        data_info = dict(
-            img=np.random.random((1333, 800, 3)),
-            gt_seg_map=np.random.random((1333, 800, 3)),
-            gt_bboxes=np.array([[0, 0, 112, 112]]),
-            gt_keypoints=np.array([[[20, 50, 1]]]))
+        data_info = {
+            'img': np.random.random((1333, 800, 3)),
+            'gt_seg_map': np.random.random((1333, 800, 3)),
+            'gt_bboxes': np.array([[0, 0, 112, 112]]),
+            'gt_keypoints': np.array([[[20, 50, 1]]])}
 
         with pytest.raises(AssertionError):
             transform = Resize(scale=None, scale_factor=None)
@@ -102,9 +100,9 @@ class TestResize:
         assert results['gt_seg_map'].shape[:2] == (2666, 1200)
 
         # test clip_object_border = False
-        data_info = dict(
-            img=np.random.random((300, 400, 3)),
-            gt_bboxes=np.array([[200, 150, 600, 450]]))
+        data_info = {
+            'img': np.random.random((300, 400, 3)),
+            'gt_bboxes': np.array([[200, 150, 600, 450]])}
         transform = Resize(scale=(200, 150), clip_object_border=False)
         results = transform(data_info)
         assert (results['gt_bboxes'] == np.array([100, 75, 300, 225])).all()
@@ -140,11 +138,11 @@ class TestPad:
         with pytest.raises(AssertionError):
             Pad(size=(10, 10), padding_mode='edg')
 
-        data_info = dict(
-            img=np.random.random((1333, 800, 3)),
-            gt_seg_map=np.random.random((1333, 800, 3)),
-            gt_bboxes=np.array([[0, 0, 112, 112]]),
-            gt_keypoints=np.array([[[20, 50, 1]]]))
+        data_info = {
+            'img': np.random.random((1333, 800, 3)),
+            'gt_seg_map': np.random.random((1333, 800, 3)),
+            'gt_bboxes': np.array([[0, 0, 112, 112]]),
+            'gt_keypoints': np.array([[[20, 50, 1]]])}
 
         # test pad img / gt_seg_map with size
         trans = Pad(size=(1200, 2000))
@@ -187,12 +185,12 @@ class TestPad:
         # test rgb image, size=(2000, 2000)
         trans = Pad(
             size=(2000, 2000),
-            pad_val=dict(img=(12, 12, 12), seg=(10, 10, 10)))
+            pad_val={'img': (12, 12, 12), 'seg': (10, 10, 10)})
         results = trans(copy.deepcopy(data_info))
         assert (results['img'][1333:2000, 800:2000, :] == 12).all()
         assert (results['gt_seg_map'][1333:2000, 800:2000, :] == 10).all()
 
-        trans = Pad(size=(2000, 2000), pad_val=dict(img=(12, 12, 12)))
+        trans = Pad(size=(2000, 2000), pad_val={'img': (12, 12, 12)})
         results = trans(copy.deepcopy(data_info))
         assert (results['img'][1333:2000, 800:2000, :] == 12).all()
         assert (results['gt_seg_map'][1333:2000, 800:2000, :] == 255).all()
@@ -200,12 +198,12 @@ class TestPad:
         # test rgb image, pad_to_square=True
         trans = Pad(
             pad_to_square=True,
-            pad_val=dict(img=(12, 12, 12), seg=(10, 10, 10)))
+            pad_val={'img': (12, 12, 12), 'seg': (10, 10, 10)})
         results = trans(copy.deepcopy(data_info))
         assert (results['img'][:, 800:1333, :] == 12).all()
         assert (results['gt_seg_map'][:, 800:1333, :] == 10).all()
 
-        trans = Pad(pad_to_square=True, pad_val=dict(img=(12, 12, 12)))
+        trans = Pad(pad_to_square=True, pad_val={'img': (12, 12, 12)})
         results = trans(copy.deepcopy(data_info))
         assert (results['img'][:, 800:1333, :] == 12).all()
         assert (results['gt_seg_map'][:, 800:1333, :] == 255).all()
@@ -258,27 +256,27 @@ class TestCenterCrop:
     def test_error(self):
         # test assertion if size is smaller than 0
         with pytest.raises(AssertionError):
-            transform = dict(type='CenterCrop', crop_size=-1)
+            transform = {'type': 'CenterCrop', 'crop_size': -1}
             TRANSFORMS.build(transform)
 
         # test assertion if size is tuple but one value is smaller than 0
         with pytest.raises(AssertionError):
-            transform = dict(type='CenterCrop', crop_size=(224, -1))
+            transform = {'type': 'CenterCrop', 'crop_size': (224, -1)}
             TRANSFORMS.build(transform)
 
         # test assertion if size is tuple and len(size) < 2
         with pytest.raises(AssertionError):
-            transform = dict(type='CenterCrop', crop_size=(224, ))
+            transform = {'type': 'CenterCrop', 'crop_size': (224, )}
             TRANSFORMS.build(transform)
 
         # test assertion if size is tuple len(size) > 2
         with pytest.raises(AssertionError):
-            transform = dict(type='CenterCrop', crop_size=(224, 224, 3))
+            transform = {'type': 'CenterCrop', 'crop_size': (224, 224, 3)}
             TRANSFORMS.build(transform)
 
     def test_repr(self):
         # test repr
-        transform = dict(type='CenterCrop', crop_size=224)
+        transform = {'type': 'CenterCrop', 'crop_size': 224}
         center_crop_module = TRANSFORMS.build(transform)
         assert isinstance(repr(center_crop_module), str)
 
@@ -287,7 +285,7 @@ class TestCenterCrop:
         self.reset_results(results, self.original_img, self.gt_semantic_map)
 
         # test CenterCrop when size is int
-        transform = dict(type='CenterCrop', crop_size=224)
+        transform = {'type': 'CenterCrop', 'crop_size': 224}
         center_crop_module = TRANSFORMS.build(transform)
         results = center_crop_module(results)
         assert results['img_shape'] == (224, 224)
@@ -302,7 +300,7 @@ class TestCenterCrop:
             np.array([[[0, 12, 0]], [[112, 112, 1]], [[212, 187, 1]]])).all()
 
         # test CenterCrop when size is tuple
-        transform = dict(type='CenterCrop', crop_size=(224, 224))
+        transform = {'type': 'CenterCrop', 'crop_size': (224, 224)}
         center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
@@ -319,7 +317,7 @@ class TestCenterCrop:
             np.array([[[0, 12, 0]], [[112, 112, 1]], [[212, 187, 1]]])).all()
 
         # test CenterCrop when crop_height != crop_width
-        transform = dict(type='CenterCrop', crop_size=(224, 256))
+        transform = {'type': 'CenterCrop', 'crop_size': (224, 256)}
         center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
@@ -337,7 +335,7 @@ class TestCenterCrop:
 
         # test CenterCrop when crop_size is equal to img.shape
         img_height, img_width, _ = self.original_img.shape
-        transform = dict(type='CenterCrop', crop_size=(img_width, img_height))
+        transform = {'type': 'CenterCrop', 'crop_size': (img_width, img_height)}
         center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
@@ -353,8 +351,8 @@ class TestCenterCrop:
             np.array([[[20, 50, 1]], [[200, 150, 1]], [[300, 225, 1]]])).all()
 
         # test CenterCrop when crop_size is larger than img.shape
-        transform = dict(
-            type='CenterCrop', crop_size=(img_width * 2, img_height * 2))
+        transform = {
+            'type': 'CenterCrop', 'crop_size': (img_width * 2, img_height * 2)}
         center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
@@ -370,11 +368,11 @@ class TestCenterCrop:
             np.array([[[20, 50, 1]], [[200, 150, 1]], [[300, 225, 1]]])).all()
 
         # test with padding
-        transform = dict(
-            type='CenterCrop',
-            crop_size=(img_width // 2, img_height * 2),
-            auto_pad=True,
-            pad_cfg=dict(type='Pad', padding_mode='constant', pad_val=12))
+        transform = {
+            'type': 'CenterCrop',
+            'crop_size': (img_width // 2, img_height * 2),
+            'auto_pad': True,
+            'pad_cfg': {'type': 'Pad', 'padding_mode': 'constant', 'pad_val': 12}}
         center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
@@ -390,14 +388,14 @@ class TestCenterCrop:
             results['gt_keypoints'],
             np.array([[[0, 50, 0]], [[100, 150, 1]], [[200, 225, 0]]])).all()
 
-        transform = dict(
-            type='CenterCrop',
-            crop_size=(img_width // 2, img_height * 2),
-            auto_pad=True,
-            pad_cfg=dict(
-                type='Pad',
-                padding_mode='constant',
-                pad_val=dict(img=13, seg=33)))
+        transform = {
+            'type': 'CenterCrop',
+            'crop_size': (img_width // 2, img_height * 2),
+            'auto_pad': True,
+            'pad_cfg': {
+                'type': 'Pad',
+                'padding_mode': 'constant',
+                'pad_val': {'img': 13, 'seg': 33}}}
         center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
@@ -413,8 +411,8 @@ class TestCenterCrop:
             np.array([[[0, 50, 0]], [[100, 150, 1]], [[200, 225, 0]]])).all()
 
         # test CenterCrop when crop_width is smaller than img_width
-        transform = dict(
-            type='CenterCrop', crop_size=(img_width // 2, img_height))
+        transform = {
+            'type': 'CenterCrop', 'crop_size': (img_width // 2, img_height)}
         center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
@@ -431,8 +429,8 @@ class TestCenterCrop:
             np.array([[[0, 50, 0]], [[100, 150, 1]], [[200, 225, 0]]])).all()
 
         # test CenterCrop when crop_height is smaller than img_height
-        transform = dict(
-            type='CenterCrop', crop_size=(img_width, img_height // 2))
+        transform = {
+            'type': 'CenterCrop', 'crop_size': (img_width, img_height // 2)}
         center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
@@ -453,7 +451,7 @@ class TestCenterCrop:
     def test_torchvision_compare(self):
         # compare results with torchvision
         results = {}
-        transform = dict(type='CenterCrop', crop_size=224)
+        transform = {'type': 'CenterCrop', 'crop_size': 224}
         center_crop_module = TRANSFORMS.build(transform)
         results = self.reset_results(results, self.original_img,
                                      self.gt_semantic_map)
@@ -477,28 +475,28 @@ class TestRandomGrayscale:
 
     def test_repr(self):
         # test repr
-        transform = dict(
-            type='RandomGrayscale',
-            prob=1.,
-            channel_weights=(0.299, 0.587, 0.114),
-            keep_channels=True)
+        transform = {
+            'type': 'RandomGrayscale',
+            'prob': 1.,
+            'channel_weights': (0.299, 0.587, 0.114),
+            'keep_channels': True}
         random_gray_scale_module = TRANSFORMS.build(transform)
         assert isinstance(repr(random_gray_scale_module), str)
 
     def test_error(self):
         # test invalid argument
-        transform = dict(type='RandomGrayscale', prob=2)
+        transform = {'type': 'RandomGrayscale', 'prob': 2}
         with pytest.raises(AssertionError):
             TRANSFORMS.build(transform)
 
     def test_transform(self):
-        results = dict()
+        results = {}
         # test rgb2gray, return the grayscale image with prob = 1.
-        transform = dict(
-            type='RandomGrayscale',
-            prob=1.,
-            channel_weights=(0.299, 0.587, 0.114),
-            keep_channels=True)
+        transform = {
+            'type': 'RandomGrayscale',
+            'prob': 1.,
+            'channel_weights': (0.299, 0.587, 0.114),
+            'keep_channels': True}
 
         random_gray_scale_module = TRANSFORMS.build(transform)
         results['img'] = copy.deepcopy(self.img)
@@ -511,7 +509,7 @@ class TestRandomGrayscale:
         assert img.shape == (10, 10, 3)
 
         # test rgb2gray, return the original image with p=0.
-        transform = dict(type='RandomGrayscale', prob=0.)
+        transform = {'type': 'RandomGrayscale', 'prob': 0.}
         random_gray_scale_module = TRANSFORMS.build(transform)
         results['img'] = copy.deepcopy(self.img)
         img = random_gray_scale_module(results)['img']
@@ -519,7 +517,7 @@ class TestRandomGrayscale:
         assert img.shape == (10, 10, 3)
 
         # test image with one channel
-        transform = dict(type='RandomGrayscale', prob=1.)
+        transform = {'type': 'RandomGrayscale', 'prob': 1.}
         results['img'] = self.img[:, :, 0:1]
         random_gray_scale_module = TRANSFORMS.build(transform)
         img = random_gray_scale_module(results)['img']
@@ -534,7 +532,7 @@ class MockPackTaskInputs(BaseTransform):
         super().__init__()
 
     def transform(self, results):
-        packed_results = dict(inputs=results['img'], data_sample=Mock())
+        packed_results = {'inputs': results['img'], 'data_sample': Mock()}
         return packed_results
 
 
@@ -549,112 +547,112 @@ class TestMultiScaleFlipAug:
     def test_error(self):
         # test assertion if scales is not tuple or list of tuple
         with pytest.raises(AssertionError):
-            transform = dict(
-                type='MultiScaleFlipAug', scales=[1333, 800], transforms=[])
+            transform = {
+                'type': 'MultiScaleFlipAug', 'scales': [1333, 800], 'transforms': []}
             TRANSFORMS.build(transform)
 
         # test assertion if flip_direction is not str or list of str
         with pytest.raises(AssertionError):
-            transform = dict(
-                type='MultiScaleFlipAug',
-                scales=[(1333, 800)],
-                flip_direction=1,
-                transforms=[])
+            transform = {
+                'type': 'MultiScaleFlipAug',
+                'scales': [(1333, 800)],
+                'flip_direction': 1,
+                'transforms': []}
             TRANSFORMS.build(transform)
 
     @pytest.mark.skipif(
         condition=torch is None, reason='No torch in current env')
     def test_multi_scale_flip_aug(self):
         # test with empty transforms
-        transform = dict(
-            type='MultiScaleFlipAug',
-            transforms=[dict(type='MockPackTaskInputs')],
-            scales=[(1333, 800), (800, 600), (640, 480)],
-            allow_flip=True,
-            flip_direction=['horizontal', 'vertical', 'diagonal'])
+        transform = {
+            'type': 'MultiScaleFlipAug',
+            'transforms': [{'type': 'MockPackTaskInputs'}],
+            'scales': [(1333, 800), (800, 600), (640, 480)],
+            'allow_flip': True,
+            'flip_direction': ['horizontal', 'vertical', 'diagonal']}
         multi_scale_flip_aug_module = TRANSFORMS.build(transform)
-        results = dict()
+        results = {}
         results['img'] = copy.deepcopy(self.original_img)
         packed_results = multi_scale_flip_aug_module(results)
         assert len(packed_results['inputs']) == 12
 
         # test with allow_flip=False
-        transform = dict(
-            type='MultiScaleFlipAug',
-            transforms=[dict(type='MockPackTaskInputs')],
-            scales=[(1333, 800), (800, 600), (640, 480)],
-            allow_flip=False,
-            flip_direction=['horizontal', 'vertical', 'diagonal'])
+        transform = {
+            'type': 'MultiScaleFlipAug',
+            'transforms': [{'type': 'MockPackTaskInputs'}],
+            'scales': [(1333, 800), (800, 600), (640, 480)],
+            'allow_flip': False,
+            'flip_direction': ['horizontal', 'vertical', 'diagonal']}
         multi_scale_flip_aug_module = TRANSFORMS.build(transform)
-        results = dict()
+        results = {}
         results['img'] = copy.deepcopy(self.original_img)
         packed_results = multi_scale_flip_aug_module(results)
         assert len(packed_results['inputs']) == 3
 
         # test with transforms
-        img_norm_cfg = dict(
-            mean=[123.675, 116.28, 103.53],
-            std=[58.395, 57.12, 57.375],
-            to_rgb=True)
+        img_norm_cfg = {
+            'mean': [123.675, 116.28, 103.53],
+            'std': [58.395, 57.12, 57.375],
+            'to_rgb': True}
         transforms_cfg = [
             dict(type='Normalize', **img_norm_cfg),
-            dict(type='Pad', size_divisor=32),
-            dict(type='ImageToTensor', keys=['img']),
-            dict(type='MockPackTaskInputs')
+            {'type': 'Pad', 'size_divisor': 32},
+            {'type': 'ImageToTensor', 'keys': ['img']},
+            {'type': 'MockPackTaskInputs'}
         ]
-        transform = dict(
-            type='MultiScaleFlipAug',
-            transforms=transforms_cfg,
-            scales=[(1333, 800), (800, 600), (640, 480)],
-            allow_flip=True,
-            flip_direction=['horizontal', 'vertical', 'diagonal'])
+        transform = {
+            'type': 'MultiScaleFlipAug',
+            'transforms': transforms_cfg,
+            'scales': [(1333, 800), (800, 600), (640, 480)],
+            'allow_flip': True,
+            'flip_direction': ['horizontal', 'vertical', 'diagonal']}
         multi_scale_flip_aug_module = TRANSFORMS.build(transform)
-        results = dict()
+        results = {}
         results['img'] = copy.deepcopy(self.original_img)
         packed_results = multi_scale_flip_aug_module(results)
         assert len(packed_results['inputs']) == 12
 
         # test with scale_factor
-        img_norm_cfg = dict(
-            mean=[123.675, 116.28, 103.53],
-            std=[58.395, 57.12, 57.375],
-            to_rgb=True)
+        img_norm_cfg = {
+            'mean': [123.675, 116.28, 103.53],
+            'std': [58.395, 57.12, 57.375],
+            'to_rgb': True}
         transforms_cfg = [
             dict(type='Normalize', **img_norm_cfg),
-            dict(type='Pad', size_divisor=32),
-            dict(type='ImageToTensor', keys=['img']),
-            dict(type='MockPackTaskInputs')
+            {'type': 'Pad', 'size_divisor': 32},
+            {'type': 'ImageToTensor', 'keys': ['img']},
+            {'type': 'MockPackTaskInputs'}
         ]
-        transform = dict(
-            type='MultiScaleFlipAug',
-            transforms=transforms_cfg,
-            scale_factor=[0.5, 1., 2.],
-            allow_flip=True,
-            flip_direction=['horizontal', 'vertical', 'diagonal'])
+        transform = {
+            'type': 'MultiScaleFlipAug',
+            'transforms': transforms_cfg,
+            'scale_factor': [0.5, 1., 2.],
+            'allow_flip': True,
+            'flip_direction': ['horizontal', 'vertical', 'diagonal']}
         multi_scale_flip_aug_module = TRANSFORMS.build(transform)
-        results = dict()
+        results = {}
         results['img'] = copy.deepcopy(self.original_img)
         packed_results = multi_scale_flip_aug_module(results)
         assert len(packed_results['inputs']) == 12
 
         # test no resize
-        img_norm_cfg = dict(
-            mean=[123.675, 116.28, 103.53],
-            std=[58.395, 57.12, 57.375],
-            to_rgb=True)
+        img_norm_cfg = {
+            'mean': [123.675, 116.28, 103.53],
+            'std': [58.395, 57.12, 57.375],
+            'to_rgb': True}
         transforms_cfg = [
             dict(type='Normalize', **img_norm_cfg),
-            dict(type='Pad', size_divisor=32),
-            dict(type='ImageToTensor', keys=['img']),
-            dict(type='MockPackTaskInputs')
+            {'type': 'Pad', 'size_divisor': 32},
+            {'type': 'ImageToTensor', 'keys': ['img']},
+            {'type': 'MockPackTaskInputs'}
         ]
-        transform = dict(
-            type='MultiScaleFlipAug',
-            transforms=transforms_cfg,
-            allow_flip=True,
-            flip_direction=['horizontal', 'vertical', 'diagonal'])
+        transform = {
+            'type': 'MultiScaleFlipAug',
+            'transforms': transforms_cfg,
+            'allow_flip': True,
+            'flip_direction': ['horizontal', 'vertical', 'diagonal']}
         multi_scale_flip_aug_module = TRANSFORMS.build(transform)
-        results = dict()
+        results = {}
         results['img'] = copy.deepcopy(self.original_img)
         packed_results = multi_scale_flip_aug_module(results)
         assert len(packed_results['inputs']) == 4
@@ -674,21 +672,21 @@ class TestRandomChoiceResize:
 
     def test_repr(self):
         # test repr
-        transform = dict(
-            type='RandomChoiceResize', scales=[(1333, 800), (1333, 600)])
+        transform = {
+            'type': 'RandomChoiceResize', 'scales': [(1333, 800), (1333, 600)]}
         random_multiscale_resize = TRANSFORMS.build(transform)
         assert isinstance(repr(random_multiscale_resize), str)
 
     def test_error(self):
         # test assertion if size is smaller than 0
         with pytest.raises(AssertionError):
-            transform = dict(type='RandomChoiceResize', scales=[0.5, 1, 2])
+            transform = {'type': 'RandomChoiceResize', 'scales': [0.5, 1, 2]}
             TRANSFORMS.build(transform)
 
     def test_random_multiscale_resize(self):
-        results = dict()
+        results = {}
         # test with one scale
-        transform = dict(type='RandomChoiceResize', scales=[(1333, 800)])
+        transform = {'type': 'RandomChoiceResize', 'scales': [(1333, 800)]}
         random_multiscale_resize = TRANSFORMS.build(transform)
         self.reset_results(results)
         results = random_multiscale_resize(results)
@@ -696,7 +694,7 @@ class TestRandomChoiceResize:
 
         # test with multi scales
         _scale_choice = [(1333, 800), (1333, 600)]
-        transform = dict(type='RandomChoiceResize', scales=_scale_choice)
+        transform = {'type': 'RandomChoiceResize', 'scales': _scale_choice}
         random_multiscale_resize = TRANSFORMS.build(transform)
         self.reset_results(results)
         results = random_multiscale_resize(results)
@@ -704,11 +702,11 @@ class TestRandomChoiceResize:
                 results['img'].shape[0]) in _scale_choice
 
         # test keep_ratio
-        transform = dict(
-            type='RandomChoiceResize',
-            scales=[(900, 600)],
-            resize_type='Resize',
-            keep_ratio=True)
+        transform = {
+            'type': 'RandomChoiceResize',
+            'scales': [(900, 600)],
+            'resize_type': 'Resize',
+            'keep_ratio': True}
         random_multiscale_resize = TRANSFORMS.build(transform)
         self.reset_results(results)
         _input_ratio = results['img'].shape[0] / results['img'].shape[1]
@@ -718,11 +716,11 @@ class TestRandomChoiceResize:
 
         # test clip_object_border
         gt_bboxes = [[200, 150, 600, 450]]
-        transform = dict(
-            type='RandomChoiceResize',
-            scales=[(200, 150)],
-            resize_type='Resize',
-            clip_object_border=True)
+        transform = {
+            'type': 'RandomChoiceResize',
+            'scales': [(200, 150)],
+            'resize_type': 'Resize',
+            'clip_object_border': True}
         random_multiscale_resize = TRANSFORMS.build(transform)
         self.reset_results(results)
         results['gt_bboxes'] = np.array(gt_bboxes)
@@ -731,11 +729,11 @@ class TestRandomChoiceResize:
         assert np.equal(results['gt_bboxes'], np.array([[100, 75, 200,
                                                          150]])).all()
 
-        transform = dict(
-            type='RandomChoiceResize',
-            scales=[(200, 150)],
-            resize_type='Resize',
-            clip_object_border=False)
+        transform = {
+            'type': 'RandomChoiceResize',
+            'scales': [(200, 150)],
+            'resize_type': 'Resize',
+            'clip_object_border': False}
         random_multiscale_resize = TRANSFORMS.build(transform)
         self.reset_results(results)
         results['gt_bboxes'] = np.array(gt_bboxes)
@@ -932,12 +930,12 @@ class TestTestTimeAug:
 
     def test_init(self):
         subroutines = [[
-            dict(type='Resize', scale=(1333, 800), keep_ratio=True),
-            dict(type='Resize', scale=(1333, 400), keep_ratio=True)
+            {'type': 'Resize', 'scale': (1333, 800), 'keep_ratio': True},
+            {'type': 'Resize', 'scale': (1333, 400), 'keep_ratio': True}
         ], [
-            dict(type='RandomFlip', prob=1.),
-            dict(type='RandomFlip', prob=0.)
-        ], [dict(type='Normalize', mean=(0, 0, 0), std=(1, 1, 1))]]
+            {'type': 'RandomFlip', 'prob': 1.},
+            {'type': 'RandomFlip', 'prob': 0.}
+        ], [{'type': 'Normalize', 'mean': (0, 0, 0), 'std': (1, 1, 1)}]]
 
         tta_transform = TestTimeAug(subroutines)
         subroutines = tta_transform.subroutines
@@ -959,12 +957,12 @@ class TestTestTimeAug:
         }
         input_results = copy.deepcopy(results)
         transforms = [[
-            dict(type='Resize', scale=(1333, 800), keep_ratio=True),
-            dict(type='Resize', scale=(1333, 400), keep_ratio=True)
+            {'type': 'Resize', 'scale': (1333, 800), 'keep_ratio': True},
+            {'type': 'Resize', 'scale': (1333, 400), 'keep_ratio': True}
         ], [
-            dict(type='RandomFlip', prob=0.),
-            dict(type='RandomFlip', prob=1.)
-        ], [dict(type='Normalize', mean=(0, 0, 0), std=(1, 1, 1))]]
+            {'type': 'RandomFlip', 'prob': 0.},
+            {'type': 'RandomFlip', 'prob': 1.}
+        ], [{'type': 'Normalize', 'mean': (0, 0, 0), 'std': (1, 1, 1)}]]
 
         tta_transform = TestTimeAug(transforms)
         results = tta_transform.transform(results)
@@ -997,12 +995,12 @@ class TestTestTimeAug:
 
     def test_repr(self):
         transforms = [[
-            dict(type='Resize', scale=(1333, 800), keep_ratio=True),
-            dict(type='Resize', scale=(1333, 400), keep_ratio=True)
+            {'type': 'Resize', 'scale': (1333, 800), 'keep_ratio': True},
+            {'type': 'Resize', 'scale': (1333, 400), 'keep_ratio': True}
         ], [
-            dict(type='RandomFlip', prob=0.),
-            dict(type='RandomFlip', prob=1.)
-        ], [dict(type='Normalize', mean=(0, 0, 0), std=(1, 1, 1))]]
+            {'type': 'RandomFlip', 'prob': 0.},
+            {'type': 'RandomFlip', 'prob': 1.}
+        ], [{'type': 'Normalize', 'mean': (0, 0, 0), 'std': (1, 1, 1)}]]
 
         tta_transform = TestTimeAug(transforms)
         repr_str = repr(tta_transform)

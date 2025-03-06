@@ -1,17 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Union
 
 import numpy as np
 import torch
+from typing import Union, List
 
-from .pure_pytorch_contour_expand.contour_expand import contour_expand_pytorch
-from .pure_pytorch_contour_expand.contour_expand import contour_expand_pytorch
+from mmcv.ops.pure_pytorch_contour_expand.contour_expand import contour_expand_pytorch
 
 
-
-def contour_expand(kernel_mask: Union[np.array, torch.Tensor],
-                   internal_kernel_label: Union[np.array, torch.Tensor],
-                   min_kernel_area: int, kernel_num: int) -> list:
+def contour_expand(kernel_mask: Union[np.ndarray, torch.Tensor],
+                   internal_kernel_label: Union[np.ndarray, torch.Tensor],
+                   min_kernel_area: int, kernel_num: int) -> List:
     """Expand kernel contours so that foreground pixels are assigned into
     instances.
 

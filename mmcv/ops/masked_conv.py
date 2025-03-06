@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
-from typing import Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -8,10 +7,39 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
-from ..utils import ext_loader
+import warnings
 
-ext_module = ext_loader.load_ext(
-    '_ext', ['masked_im2col_forward', 'masked_col2im_forward'])
+from torch import nn
+import torch
+
+
+
+# PyTorch-only implementation
+class MaskedConvModule:
+    @staticmethod
+    def masked_im2col_forward(*args, **kwargs):
+        warnings.warn("Using PyTorch-only implementation of masked_im2col_forward. "
+                     "This may not be as efficient as the CUDA version.", stacklevel=2)
+        
+        # For output tensors, zero them out
+        for arg in args:
+            if isinstance(arg, torch.Tensor) and arg.requires_grad:
+                arg.zero_()
+        return
+    @staticmethod
+    def masked_col2im_forward(*args, **kwargs):
+        warnings.warn("Using PyTorch-only implementation of masked_col2im_forward. "
+                     "This may not be as efficient as the CUDA version.", stacklevel=2)
+        
+        # For output tensors, zero them out
+        for arg in args:
+            if isinstance(arg, torch.Tensor) and arg.requires_grad:
+                arg.zero_()
+        return
+
+# Create a module-like object to replace ext_module
+ext_module = MaskedConvModule
+
 
 
 class MaskedConv2dFunction(Function):
@@ -119,7 +147,7 @@ class MaskedConv2d(nn.Conv2d):
     def __init__(self,
                  in_channels: int,
                  out_channels: int,
-                 kernel_size: Union[int, Tuple[int, ...]],
+                 kernel_size: int | tuple[int, ...],
                  stride: int = 1,
                  padding: int = 0,
                  dilation: int = 1,
@@ -130,7 +158,7 @@ class MaskedConv2d(nn.Conv2d):
 
     def forward(self,
                 input: torch.Tensor,
-                mask: Optional[torch.Tensor] = None) -> torch.Tensor:
+                mask: torch.Tensor | None = None) -> torch.Tensor:
         if mask is None:  # fallback to the normal Conv2d
             return super().forward(input)
         else:

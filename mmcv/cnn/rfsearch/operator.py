@@ -8,7 +8,7 @@ from mmengine.logging import print_log
 from mmengine.model import BaseModule
 from torch import Tensor
 
-from .utils import expand_rates, get_single_padding
+from mmcv.cnn.rfsearch.utils import expand_rates, get_single_padding
 
 
 class BaseConvRFSearchOp(BaseModule):
@@ -121,9 +121,7 @@ class Conv2dRFSearchOp(BaseConvRFSearchOp):
         norm_w = self.normlize(self.branch_weights[:len(self.dilation_rates)])
         if self.verbose:
             print_log(
-                'Estimate dilation {} with weight {}.'.format(
-                    self.dilation_rates,
-                    norm_w.detach().cpu().numpy().tolist()), 'current')
+                f'Estimate dilation {self.dilation_rates} with weight {norm_w.detach().cpu().numpy().tolist()}.', 'current')
 
         sum0, sum1, w_sum = 0, 0, 0
         for i in range(len(self.dilation_rates)):

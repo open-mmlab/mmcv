@@ -2,10 +2,9 @@
 import numpy as np
 import pytest
 import torch
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 from mmengine.utils import digit_version
 from mmengine.utils.dl_utils import TORCH_VERSION
-
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
 if IS_MLU_AVAILABLE:
     torch.backends.cnnl.allow_tf32 = False

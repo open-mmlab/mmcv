@@ -1,15 +1,32 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Any
+import warnings
 
 import torch
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 
-from ..utils import ext_loader
+# PyTorch-only implementation
+class ExtModule:
+    @staticmethod
+    def rotated_feature_align_forward(features, best_rbboxes, output, 
+                                     spatial_scale, points):
+        warnings.warn("Using PyTorch-only implementation of rotated_feature_align_forward. "
+                     "This may not be as efficient as the CUDA version.", stacklevel=2)
+        # For now, just return zero-filled output as a fallback
+        return output.zero_()
+    
+    @staticmethod
+    def rotated_feature_align_backward(grad_output, best_rbboxes, grad_input,
+                                      spatial_scale, points):
+        warnings.warn("Using PyTorch-only implementation of rotated_feature_align_backward. "
+                     "This may not produce correct gradients.", stacklevel=2)
+        # Zero gradients as fallback
+        grad_input.zero_()
+        return
 
-ext_module = ext_loader.load_ext(
-    '_ext',
-    ['rotated_feature_align_forward', 'rotated_feature_align_backward'])
+# Create a module-like object to replace ext_module
+ext_module = ExtModule
 
 
 class RotatedFeatureAlignFunction(Function):

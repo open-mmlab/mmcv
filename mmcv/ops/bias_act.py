@@ -9,17 +9,15 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-# source: https://github.com/open-mmlab/mmediting/blob/dev-1.x/mmedit/models/editors/stylegan3/stylegan3_ops/ops/bias_act.py # noqa
+# source: https://github.com/open-mmlab/mmediting/blob/dev-1.x/mmedit/models/editors/stylegan3/stylegan3_ops/ops/bias_act.py
 """Custom PyTorch ops for efficient bias and activation."""
 
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 import numpy as np
 import torch
 
-from .pure_pytorch_bias_act.bias_act import bias_act_pytorch
-from .pure_pytorch_bias_act.bias_act import bias_act_pytorch
-
+from mmcv.ops.pure_pytorch_bias_act.bias_act import bias_act_pytorch
 
 
 class EasyDict(dict):
@@ -118,12 +116,12 @@ _null_tensor = torch.empty([0])
 
 
 def bias_act(input: torch.Tensor,
-             bias: Optional[torch.Tensor] = None,
+             bias: torch.Tensor | None = None,
              dim: int = 1,
              act: str = 'linear',
-             alpha: Optional[Union[float, int]] = None,
-             gain: Optional[float] = None,
-             clamp: Optional[float] = None,
+             alpha: float | int | None = None,
+             gain: float | None = None,
+             clamp: float | None = None,
              use_custom_op: bool = True):
     r"""Fused bias and activation function.
 
@@ -178,12 +176,12 @@ def bias_act(input: torch.Tensor,
 
 
 def _bias_act_ref(input: torch.Tensor,
-                  bias: Optional[torch.Tensor] = None,
+                  bias: torch.Tensor | None = None,
                   dim: int = 1,
                   act: str = 'linear',
-                  alpha: Optional[Union[float, int]] = None,
-                  gain: Optional[float] = None,
-                  clamp: Optional[float] = None):
+                  alpha: float | int | None = None,
+                  gain: float | None = None,
+                  clamp: float | None = None):
     """Slow reference implementation of `bias_act()` using standard PyTorch
     ops.
 
@@ -252,14 +250,14 @@ def _bias_act_ref(input: torch.Tensor,
     return output
 
 
-_bias_act_cuda_cache: Dict = dict()
+_bias_act_cuda_cache: dict = {}
 
 
 def _bias_act_cuda(dim: int = 1,
                    act: str = 'linear',
-                   alpha: Optional[Union[float, int]] = None,
-                   gain: Optional[float] = None,
-                   clamp: Optional[float] = None):
+                   alpha: float | int | None = None,
+                   gain: float | None = None,
+                   clamp: float | None = None):
     """"Fast CUDA implementation of `bias_act()` using custom ops.
 
     Args:

@@ -3,7 +3,6 @@ import numpy as np
 import pytest
 import torch
 import torch.nn as nn
-
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
 
 

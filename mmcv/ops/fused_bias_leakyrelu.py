@@ -1,4 +1,4 @@
-# modified from https://github.com/rosinality/stylegan2-pytorch/blob/master/op/fused_act.py # noqa:E501
+# modified from https://github.com/rosinality/stylegan2-pytorch/blob/master/op/fused_act.py
 
 # Copyright (c) 2021, NVIDIA Corporation. All rights reserved.
 # NVIDIA Source Code License for StyleGAN2 with Adaptive Discriminator
@@ -100,9 +100,7 @@ import torch.nn.functional as F
 from torch import nn
 from torch.autograd import Function
 
-from .pure_pytorch_fused_bias_leakyrelu.fused_bias_leakyrelu import fused_bias_leakyrelu_pytorch
-from .pure_pytorch_fused_bias_leakyrelu.fused_bias_leakyrelu import fused_bias_leakyrelu_pytorch
-
+from mmcv.ops.pure_pytorch_fused_bias_leakyrelu.fused_bias_leakyrelu import fused_bias_leakyrelu_pytorch
 
 
 class FusedBiasLeakyReLUFunctionBackward(Function):

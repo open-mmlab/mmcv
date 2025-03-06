@@ -4,11 +4,9 @@ from unittest.mock import patch
 import pytest
 import torch
 import torch.nn as nn
+from mmcv.cnn.bricks import Conv2d, Conv3d, ConvTranspose2d, ConvTranspose3d, Linear, MaxPool2d, MaxPool3d
 from mmengine.utils import digit_version
 from mmengine.utils.dl_utils import TORCH_VERSION
-
-from mmcv.cnn.bricks import (Conv2d, Conv3d, ConvTranspose2d, ConvTranspose3d,
-                             Linear, MaxPool2d, MaxPool3d)
 
 if torch.__version__ != 'parrots':
     torch_version = '1.1'
@@ -75,7 +73,7 @@ def test_conv2d(in_w, in_h, in_channel, out_channel, kernel_size, stride,
 
 @patch('torch.__version__', torch_version)
 @pytest.mark.parametrize(
-    'in_w,in_h,in_t,in_channel,out_channel,kernel_size,stride,padding,dilation',  # noqa: E501
+    'in_w,in_h,in_t,in_channel,out_channel,kernel_size,stride,padding,dilation',
     [(10, 10, 10, 1, 1, 3, 1, 0, 1), (20, 20, 20, 3, 3, 5, 2, 1, 2)])
 def test_conv3d(in_w, in_h, in_t, in_channel, out_channel, kernel_size, stride,
                 padding, dilation):
@@ -192,7 +190,7 @@ def test_conv_transposed_2d(in_w, in_h, in_channel, out_channel, kernel_size,
 
 @patch('torch.__version__', torch_version)
 @pytest.mark.parametrize(
-    'in_w,in_h,in_t,in_channel,out_channel,kernel_size,stride,padding,dilation',  # noqa: E501
+    'in_w,in_h,in_t,in_channel,out_channel,kernel_size,stride,padding,dilation',
     [(10, 10, 10, 1, 1, 3, 1, 0, 1), (20, 20, 20, 3, 3, 5, 2, 1, 2)])
 def test_conv_transposed_3d(in_w, in_h, in_t, in_channel, out_channel,
                             kernel_size, stride, padding, dilation):
@@ -273,7 +271,7 @@ def test_max_pool_2d(in_w, in_h, in_channel, out_channel, kernel_size, stride,
 
 @patch('torch.__version__', torch_version)
 @pytest.mark.parametrize(
-    'in_w,in_h,in_t,in_channel,out_channel,kernel_size,stride,padding,dilation',  # noqa: E501
+    'in_w,in_h,in_t,in_channel,out_channel,kernel_size,stride,padding,dilation',
     [(10, 10, 10, 1, 1, 3, 1, 0, 1), (20, 20, 20, 3, 3, 5, 2, 1, 2)])
 @pytest.mark.skipif(
     torch.__version__ == 'parrots' and not torch.cuda.is_available(),
@@ -387,10 +385,10 @@ def test_fx_compatibility():
     # ensure the fx trace can pass the network
     for Net in (MaxPool2d, MaxPool3d):
         net = Net(1)
-        gm_module = fx.symbolic_trace(net)  # noqa: F841
+        gm_module = fx.symbolic_trace(net)
     for Net in (Linear, ):
         net = Net(1, 1)
-        gm_module = fx.symbolic_trace(net)  # noqa: F841
+        gm_module = fx.symbolic_trace(net)
     for Net in (Conv2d, ConvTranspose2d, Conv3d, ConvTranspose3d):
         net = Net(1, 1, 1)
         gm_module = fx.symbolic_trace(net)  # noqa: F841

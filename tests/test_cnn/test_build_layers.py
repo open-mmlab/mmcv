@@ -6,19 +6,27 @@ import numpy as np
 import pytest
 import torch
 import torch.nn as nn
-from mmengine.registry import MODELS
-from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
-from torch.nn import ReflectionPad2d, Upsample
-
-from mmcv.cnn.bricks import (ContextBlock, ConvModule, ConvTranspose2d,
-                             GeneralizedAttention, NonLocal2d,
-                             build_activation_layer, build_conv_layer,
-                             build_norm_layer, build_padding_layer,
-                             build_plugin_layer, build_upsample_layer, is_norm)
+from mmcv.cnn.bricks import (
+    ContextBlock,
+    ConvModule,
+    ConvTranspose2d,
+    GeneralizedAttention,
+    NonLocal2d,
+    build_activation_layer,
+    build_conv_layer,
+    build_norm_layer,
+    build_padding_layer,
+    build_plugin_layer,
+    build_upsample_layer,
+    is_norm,
+)
 from mmcv.cnn.bricks.activation import Clamp
 from mmcv.cnn.bricks.norm import infer_abbr as infer_norm_abbr
 from mmcv.cnn.bricks.plugin import infer_abbr as infer_plugin_abbr
 from mmcv.cnn.bricks.upsample import PixelShufflePack
+from mmengine.registry import MODELS
+from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
+from torch.nn import ReflectionPad2d, Upsample
 
 
 def test_build_conv_layer():
@@ -29,16 +37,16 @@ def test_build_conv_layer():
 
     with pytest.raises(KeyError):
         # `type` must be in cfg
-        cfg = dict(kernel_size=3)
+        cfg = {'kernel_size': 3}
         build_conv_layer(cfg)
 
     with pytest.raises(KeyError):
         # unsupported conv type
-        cfg = dict(type='FancyConv')
+        cfg = {'type': 'FancyConv'}
         build_conv_layer(cfg)
 
-    kwargs = dict(
-        in_channels=4, out_channels=8, kernel_size=3, groups=2, dilation=2)
+    kwargs = {
+        'in_channels': 4, 'out_channels': 8, 'kernel_size': 3, 'groups': 2, 'dilation': 2}
     cfg = None
     layer = build_conv_layer(cfg, **kwargs)
     assert isinstance(layer, nn.Conv2d)
@@ -48,7 +56,7 @@ def test_build_conv_layer():
     assert layer.groups == kwargs['groups']
     assert layer.dilation == (kwargs['dilation'], kwargs['dilation'])
 
-    cfg = dict(type='Conv')
+    cfg = {'type': 'Conv'}
     layer = build_conv_layer(cfg, **kwargs)
     assert isinstance(layer, nn.Conv2d)
     assert layer.in_channels == kwargs['in_channels']
@@ -57,7 +65,7 @@ def test_build_conv_layer():
     assert layer.groups == kwargs['groups']
     assert layer.dilation == (kwargs['dilation'], kwargs['dilation'])
 
-    cfg = dict(type='deconv')
+    cfg = {'type': 'deconv'}
     layer = build_conv_layer(cfg, **kwargs)
     assert isinstance(layer, nn.ConvTranspose2d)
     assert layer.in_channels == kwargs['in_channels']
@@ -71,7 +79,7 @@ def test_build_conv_layer():
 
     for type_name, module in MODELS.module_dict.items():
         for type_name_ in (type_name, module):
-            cfg = dict(type=type_name_)
+            cfg = {'type': type_name_}
             # SparseInverseConv2d and SparseInverseConv3d do not have the
             # argument 'dilation'
             if type_name == 'SparseInverseConv2d' or type_name == \
@@ -130,22 +138,22 @@ def test_build_norm_layer():
 
     with pytest.raises(KeyError):
         # `type` must be in cfg
-        cfg = dict()
+        cfg = {}
         build_norm_layer(cfg, 3)
 
     with pytest.raises(KeyError):
         # unsupported norm type
-        cfg = dict(type='FancyNorm')
+        cfg = {'type': 'FancyNorm'}
         build_norm_layer(cfg, 3)
 
     with pytest.raises(AssertionError):
         # postfix must be int or str
-        cfg = dict(type='BN')
+        cfg = {'type': 'BN'}
         build_norm_layer(cfg, 3, postfix=[1, 2])
 
     with pytest.raises(AssertionError):
         # `num_groups` must be in cfg when using 'GN'
-        cfg = dict(type='GN')
+        cfg = {'type': 'GN'}
         build_norm_layer(cfg, 3)
 
     # test each type of norm layer in norm_cfg
@@ -169,7 +177,7 @@ def test_build_norm_layer():
             continue
         for postfix in ['_test', 1]:
             for type_name_ in (type_name, module):
-                cfg = dict(type=type_name_)
+                cfg = {'type': type_name_}
                 if type_name == 'GN':
                     cfg['num_groups'] = 3
                 name, layer = build_norm_layer(cfg, 3, postfix=postfix)
@@ -201,12 +209,12 @@ def test_build_activation_layer():
 
     with pytest.raises(KeyError):
         # `type` must be in cfg
-        cfg = dict()
+        cfg = {}
         build_activation_layer(cfg)
 
     with pytest.raises(KeyError):
         # unsupported activation type
-        cfg = dict(type='FancyReLU')
+        cfg = {'type': 'FancyReLU'}
         build_activation_layer(cfg)
 
     # test each type of activation layer in activation_cfg
@@ -218,15 +226,15 @@ def test_build_activation_layer():
 
     # sanity check for Clamp
     for type_name in ('Clamp', Clamp):
-        act = build_activation_layer(dict(type='Clamp'))
+        act = build_activation_layer({'type': 'Clamp'})
         x = torch.randn(10) * 1000
         y = act(x)
         assert np.logical_and((y >= -1).numpy(), (y <= 1).numpy()).all()
 
-    act = build_activation_layer(dict(type='Clip', min=0))
+    act = build_activation_layer({'type': 'Clip', 'min': 0})
     y = act(x)
     assert np.logical_and((y >= 0).numpy(), (y <= 1).numpy()).all()
-    act = build_activation_layer(dict(type='Clamp', max=0))
+    act = build_activation_layer({'type': 'Clamp', 'max': 0})
     y = act(x)
     assert np.logical_and((y >= -1).numpy(), (y <= 0).numpy()).all()
 
@@ -246,12 +254,12 @@ def test_build_padding_layer():
 
     with pytest.raises(KeyError):
         # `type` must be in cfg
-        cfg = dict()
+        cfg = {}
         build_padding_layer(cfg)
 
     with pytest.raises(KeyError):
         # unsupported activation type
-        cfg = dict(type='FancyPad')
+        cfg = {'type': 'FancyPad'}
         build_padding_layer(cfg)
 
     for type_name, module in MODELS.module_dict.items():
@@ -261,7 +269,7 @@ def test_build_padding_layer():
             assert isinstance(layer, module)
     for type_name in (ReflectionPad2d, 'reflect'):
         input_x = torch.randn(1, 2, 5, 5)
-        cfg = dict(type=type_name)
+        cfg = {'type': type_name}
         padding_layer = build_padding_layer(cfg, 2)
         res = padding_layer(input_x)
         assert res.shape == (1, 2, 9, 9)
@@ -275,12 +283,12 @@ def test_upsample_layer():
 
     with pytest.raises(KeyError):
         # `type` must be in cfg
-        cfg = dict()
+        cfg = {}
         build_upsample_layer(cfg)
 
     with pytest.raises(KeyError):
         # unsupported activation type
-        cfg = dict(type='FancyUpsample')
+        cfg = {'type': 'FancyUpsample'}
         build_upsample_layer(cfg)
 
     for type_name in ['nearest', 'bilinear']:
@@ -289,20 +297,20 @@ def test_upsample_layer():
         assert isinstance(layer, nn.Upsample)
         assert layer.mode == type_name
 
-    cfg = dict()
+    cfg = {}
     cfg['type'] = Upsample
     layer_from_cls = build_upsample_layer(cfg)
     assert isinstance(layer_from_cls, nn.Upsample)
     assert layer_from_cls.mode == 'nearest'
 
-    cfg = dict(
-        type='deconv', in_channels=3, out_channels=3, kernel_size=3, stride=2)
+    cfg = {
+        'type': 'deconv', 'in_channels': 3, 'out_channels': 3, 'kernel_size': 3, 'stride': 2}
     layer = build_upsample_layer(cfg)
     assert isinstance(layer, nn.ConvTranspose2d)
 
     for type_name in ('deconv', ConvTranspose2d):
-        cfg = dict(type=ConvTranspose2d)
-        kwargs = dict(in_channels=3, out_channels=3, kernel_size=3, stride=2)
+        cfg = {'type': ConvTranspose2d}
+        kwargs = {'in_channels': 3, 'out_channels': 3, 'kernel_size': 3, 'stride': 2}
         layer = build_upsample_layer(cfg, **kwargs)
         assert isinstance(layer, nn.ConvTranspose2d)
         assert layer.in_channels == kwargs['in_channels']
@@ -320,12 +328,12 @@ def test_upsample_layer():
         assert layer.stride == (kwargs['stride'], kwargs['stride'])
 
     for type_name in ('pixel_shuffle', PixelShufflePack):
-        cfg = dict(
-            type=type_name,
-            in_channels=3,
-            out_channels=3,
-            scale_factor=2,
-            upsample_kernel=3)
+        cfg = {
+            'type': type_name,
+            'in_channels': 3,
+            'out_channels': 3,
+            'scale_factor': 2,
+            'upsample_kernel': 3}
         layer = build_upsample_layer(cfg)
 
         assert isinstance(layer, PixelShufflePack)
@@ -401,23 +409,23 @@ def test_build_plugin_layer():
 
     with pytest.raises(KeyError):
         # `type` must be in cfg
-        cfg = dict()
+        cfg = {}
         build_plugin_layer(cfg)
 
     with pytest.raises(KeyError):
         # unsupported plugin type
-        cfg = dict(type='FancyPlugin')
+        cfg = {'type': 'FancyPlugin'}
         build_plugin_layer(cfg)
 
     with pytest.raises(AssertionError):
         # postfix must be int or str
-        cfg = dict(type='ConvModule')
+        cfg = {'type': 'ConvModule'}
         build_plugin_layer(cfg, postfix=[1, 2])
 
     # test ContextBlock
     for type_name in ('ContextBlock', ContextBlock):
         for postfix in ['', '_test', 1]:
-            cfg = dict(type=type_name)
+            cfg = {'type': type_name}
             name, layer = build_plugin_layer(
                 cfg, postfix=postfix, in_channels=16, ratio=1. / 4)
             assert name == 'context_block' + str(postfix)
@@ -426,7 +434,7 @@ def test_build_plugin_layer():
     # test GeneralizedAttention
     for type_name in ('GeneralizedAttention', GeneralizedAttention):
         for postfix in ['', '_test', 1]:
-            cfg = dict(type=type_name)
+            cfg = {'type': type_name}
             name, layer = build_plugin_layer(
                 cfg, postfix=postfix, in_channels=16)
             assert name == 'gen_attention_block' + str(postfix)
@@ -436,7 +444,7 @@ def test_build_plugin_layer():
     # test NonLocal2d
     for type_name in ('NonLocal2d', NonLocal2d):
         for postfix in ['', '_test', 1]:
-            cfg = dict(type='NonLocal2d')
+            cfg = {'type': 'NonLocal2d'}
             name, layer = build_plugin_layer(
                 cfg, postfix=postfix, in_channels=16)
             assert name == 'nonlocal_block' + str(postfix)
@@ -445,7 +453,7 @@ def test_build_plugin_layer():
     # test ConvModule
     for postfix in ['', '_test', 1]:
         for type_name in ('ConvModule', ConvModule):
-            cfg = dict(type=type_name)
+            cfg = {'type': type_name}
             name, layer = build_plugin_layer(
                 cfg,
                 postfix=postfix,

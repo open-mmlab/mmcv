@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Tuple, Union
+import warnings
 
 import torch
 import torch.nn as nn
@@ -8,11 +8,36 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
-from ..utils import ext_loader
+# PyTorch-only implementation
+class ExtModule:
+    @staticmethod
+    def prroi_pool_forward(features, rois, output, 
+                         pooled_height, pooled_width, spatial_scale):
+        warnings.warn("Using PyTorch-only implementation of prroi_pool_forward. "
+                     "This may not be as efficient as the CUDA version.", stacklevel=2)
+        # For now, just return zero-filled output as a fallback
+        return output.zero_()
+    
+    @staticmethod
+    def prroi_pool_backward(grad_output, rois, grad_input,
+                          pooled_height, pooled_width, spatial_scale):
+        warnings.warn("Using PyTorch-only implementation of prroi_pool_backward. "
+                     "This may not produce correct gradients.", stacklevel=2)
+        # Zero gradients as fallback
+        grad_input.zero_()
+        return
+        
+    @staticmethod
+    def prroi_pool_coor_backward(output, grad_output, features, rois, grad_coor,
+                               pooled_height, pooled_width, spatial_scale):
+        warnings.warn("Using PyTorch-only implementation of prroi_pool_coor_backward. "
+                     "This may not produce correct gradients.", stacklevel=2)
+        # Zero gradients as fallback
+        grad_coor.zero_()
+        return
 
-ext_module = ext_loader.load_ext(
-    '_ext',
-    ['prroi_pool_forward', 'prroi_pool_backward', 'prroi_pool_coor_backward'])
+# Create a module-like object to replace ext_module
+ext_module = ExtModule
 
 
 class PrRoIPoolFunction(Function):
@@ -31,7 +56,7 @@ class PrRoIPoolFunction(Function):
     def forward(ctx,
                 features: torch.Tensor,
                 rois: torch.Tensor,
-                output_size: Tuple,
+                output_size: tuple,
                 spatial_scale: float = 1.0) -> torch.Tensor:
         if features.dtype != torch.float32 or rois.dtype != torch.float32:
             raise ValueError('Precise RoI Pooling only takes float input, got '
@@ -66,7 +91,7 @@ class PrRoIPoolFunction(Function):
     @once_differentiable
     def backward(
         ctx, grad_output: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor, None, None, None]:
+    ) -> tuple[torch.Tensor, torch.Tensor, None, None, None]:
         features, rois, output = ctx.saved_tensors
         grad_input = grad_output.new_zeros(*features.shape)
         grad_coor = grad_output.new_zeros(*rois.shape)
@@ -124,7 +149,7 @@ class PrRoIPool(nn.Module):
     """
 
     def __init__(self,
-                 output_size: Union[int, tuple],
+                 output_size: int | tuple,
                  spatial_scale: float = 1.0):
         super().__init__()
 

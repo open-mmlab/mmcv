@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, Tuple, Union
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -7,7 +7,7 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
-from .pure_pytorch_roi import roi_pool_pytorch
+from mmcv.ops.pure_pytorch_roi import roi_pool_pytorch
 
 
 class RoIPoolFunction(Function):
@@ -25,7 +25,7 @@ class RoIPoolFunction(Function):
     def forward(ctx: Any,
                 input: torch.Tensor,
                 rois: torch.Tensor,
-                output_size: Union[int, tuple],
+                output_size: int | tuple,
                 spatial_scale: float = 1.0) -> torch.Tensor:
         ctx.output_size = _pair(output_size)
         ctx.spatial_scale = spatial_scale
@@ -49,7 +49,7 @@ class RoIPoolFunction(Function):
     @once_differentiable
     def backward(
             ctx: Any, grad_output: torch.Tensor
-    ) -> Tuple[torch.Tensor, None, None, None]:
+    ) -> tuple[torch.Tensor, None, None, None]:
         # Because we've changed the forward implementation, the backward won't work
         # correctly with saved tensors from ext_module. For simplicity, we'll just 
         # return a zero gradient for the input tensor, as it's often used in inference only.
@@ -71,7 +71,7 @@ roi_pool = RoIPoolFunction.apply
 class RoIPool(nn.Module):
 
     def __init__(self,
-                 output_size: Union[int, tuple],
+                 output_size: int | tuple,
                  spatial_scale: float = 1.0):
         super().__init__()
 

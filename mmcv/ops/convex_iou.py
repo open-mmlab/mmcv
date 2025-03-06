@@ -1,17 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Tuple
 
 import torch
 
-from .pure_pytorch_convex_iou.convex_iou import convex_iou_pytorch
-from .pure_pytorch_convex_iou.convex_giou import convex_giou_pytorch
-from .pure_pytorch_convex_iou.convex_iou import convex_iou_pytorch
-from .pure_pytorch_convex_iou.convex_giou import convex_giou_pytorch
-
+from mmcv.ops.pure_pytorch_convex_iou.convex_giou import convex_giou_pytorch
+from mmcv.ops.pure_pytorch_convex_iou.convex_iou import convex_iou_pytorch
 
 
 def convex_giou(pointsets: torch.Tensor,
-                polygons: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+                polygons: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
     """Return generalized intersection-over-union (Jaccard index) between point
     sets and polygons.
 

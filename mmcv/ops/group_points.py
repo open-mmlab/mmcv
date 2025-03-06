@@ -5,15 +5,15 @@ import torch
 from torch import nn as nn
 from torch.autograd import Function
 
-from .pure_pytorch_group_points.group_points_forward import group_points_forward_pytorch
-from .pure_pytorch_group_points.group_points_backward import group_points_backward_pytorch
-from .pure_pytorch_group_points.stack_group_points_forward import stack_group_points_forward_pytorch
-from .pure_pytorch_group_points.stack_group_points_backward import stack_group_points_backward_pytorch
-from .pure_pytorch_group_points.group_points_forward import group_points_forward_pytorch
-from .pure_pytorch_group_points.group_points_backward import group_points_backward_pytorch
-from .pure_pytorch_group_points.stack_group_points_forward import stack_group_points_forward_pytorch
-from .pure_pytorch_group_points.stack_group_points_backward import stack_group_points_backward_pytorch
-from .knn import knn
+from mmcv.ops.pure_pytorch_group_points.group_points_forward import group_points_forward_pytorch
+from mmcv.ops.pure_pytorch_group_points.group_points_backward import group_points_backward_pytorch
+from mmcv.ops.pure_pytorch_group_points.stack_group_points_forward import stack_group_points_forward_pytorch
+from mmcv.ops.pure_pytorch_group_points.stack_group_points_backward import stack_group_points_backward_pytorch
+from mmcv.ops.pure_pytorch_group_points.group_points_forward import group_points_forward_pytorch
+from mmcv.ops.pure_pytorch_group_points.group_points_backward import group_points_backward_pytorch
+from mmcv.ops.pure_pytorch_group_points.stack_group_points_forward import stack_group_points_forward_pytorch
+from mmcv.ops.pure_pytorch_group_points.stack_group_points_backward import stack_group_points_backward_pytorch
+from mmcv.ops.knn import knn
 
     'group_points_forward', 'group_points_backward',
     'stack_group_points_forward', 'stack_group_points_backward'

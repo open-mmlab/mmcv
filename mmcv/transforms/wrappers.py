@@ -1,16 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from typing import Any, Callable, Dict, List, Optional, Sequence, Union
+from collections.abc import Callable, Sequence
+from typing import Any, Union
 
 import mmengine
 import numpy as np
 
-from .base import BaseTransform
-from .builder import TRANSFORMS
-from .utils import cache_random_params, cache_randomness
+from mmcv.transforms.base import BaseTransform
+from mmcv.transforms.builder import TRANSFORMS
+from mmcv.transforms.utils import cache_random_params, cache_randomness
 
 # Define type of transform or transform config
-Transform = Union[Dict, Callable[[Dict], Dict]]
+Transform = Union[dict, Callable[[dict], dict]]
 
 # Indicator of keys marked by KeyMapper._map_input, which means ignoring the
 # marked keys in KeyMapper._apply_transform so they will be invisible to
@@ -55,12 +56,12 @@ class Compose(BaseTransform):
         >>> ]
     """
 
-    def __init__(self, transforms: Union[Transform, Sequence[Transform]]):
+    def __init__(self, transforms: Transform | Sequence[Transform]):
         super().__init__()
 
         if not isinstance(transforms, Sequence):
             transforms = [transforms]
-        self.transforms: List = []
+        self.transforms: list = []
         for transform in transforms:
             if isinstance(transform, dict):
                 transform = TRANSFORMS.build(transform)
@@ -75,7 +76,7 @@ class Compose(BaseTransform):
         """Allow easy iteration over the transform sequence."""
         return iter(self.transforms)
 
-    def transform(self, results: Dict) -> Optional[Dict]:
+    def transform(self, results: dict) -> dict | None:
         """Call function to apply transforms sequentially.
 
         Args:
@@ -177,10 +178,10 @@ class KeyMapper(BaseTransform):
     """
 
     def __init__(self,
-                 transforms: Union[Transform, List[Transform], None] = None,
-                 mapping: Optional[Dict] = None,
-                 remapping: Optional[Dict] = None,
-                 auto_remap: Optional[bool] = None,
+                 transforms: Transform | list[Transform] | None = None,
+                 mapping: dict | None = None,
+                 remapping: dict | None = None,
+                 auto_remap: bool | None = None,
                  allow_nonexist_keys: bool = False):
 
         super().__init__()
@@ -208,8 +209,8 @@ class KeyMapper(BaseTransform):
         """Allow easy iteration over the transform sequence."""
         return iter(self.transforms)
 
-    def _map_input(self, data: Dict,
-                   mapping: Optional[Dict]) -> Dict[str, Any]:
+    def _map_input(self, data: dict,
+                   mapping: dict | None) -> dict[str, Any]:
         """KeyMapper inputs for the wrapped transforms by gathering and
         renaming data items according to the mapping.
 
@@ -231,7 +232,7 @@ class KeyMapper(BaseTransform):
             if isinstance(m, dict):
                 # m is a dict {inner_key:outer_key, ...}
                 return {k_in: _map(data, k_out) for k_in, k_out in m.items()}
-            if isinstance(m, (tuple, list)):
+            if isinstance(m, tuple | list):
                 # m is a list or tuple [outer_key1, outer_key2, ...]
                 # This is the case when we collect items from the original
                 # data to form a list or tuple to feed to the wrapped
@@ -256,8 +257,8 @@ class KeyMapper(BaseTransform):
 
         return inputs
 
-    def _map_output(self, data: Dict,
-                    remapping: Optional[Dict]) -> Dict[str, Any]:
+    def _map_output(self, data: dict,
+                    remapping: dict | None) -> dict[str, Any]:
         """KeyMapper outputs from the wrapped transforms by gathering and
         renaming data items according to the remapping.
 
@@ -284,11 +285,11 @@ class KeyMapper(BaseTransform):
                     assert k_in in data
                     results.update(_map(data[k_in], k_out))
                 return results
-            if isinstance(m, (list, tuple)):
-                assert isinstance(data, (list, tuple))
+            if isinstance(m, list | tuple):
+                assert isinstance(data, list | tuple)
                 assert len(data) == len(m)
                 results = {}
-                for m_i, d_i in zip(m, data):
+                for m_i, d_i in zip(m, data, strict=False):
                     results.update(_map(d_i, m_i))
                 return results
 
@@ -308,7 +309,7 @@ class KeyMapper(BaseTransform):
         # being overwritten by intermediate namesakes
         return _map(data, remapping)
 
-    def _apply_transforms(self, inputs: Dict) -> Dict:
+    def _apply_transforms(self, inputs: dict) -> dict:
         """Apply ``self.transforms``.
 
         Note that the special token ``IgnoreKey`` will be invisible to
@@ -327,7 +328,7 @@ class KeyMapper(BaseTransform):
         results.update(outputs)  # type: ignore
         return results
 
-    def transform(self, results: Dict) -> Dict:
+    def transform(self, results: dict) -> dict:
         """Apply mapping, wrapped transforms and remapping."""
 
         # Apply mapping
@@ -447,10 +448,10 @@ class TransformBroadcaster(KeyMapper):
     """
 
     def __init__(self,
-                 transforms: List[Union[Dict, Callable[[Dict], Dict]]],
-                 mapping: Optional[Dict] = None,
-                 remapping: Optional[Dict] = None,
-                 auto_remap: Optional[bool] = None,
+                 transforms: list[dict | Callable[[dict], dict]],
+                 mapping: dict | None = None,
+                 remapping: dict | None = None,
+                 auto_remap: bool | None = None,
                  allow_nonexist_keys: bool = False,
                  share_random_params: bool = False):
         super().__init__(transforms, mapping, remapping, auto_remap,
@@ -458,7 +459,7 @@ class TransformBroadcaster(KeyMapper):
 
         self.share_random_params = share_random_params
 
-    def scatter_sequence(self, data: Dict) -> List[Dict]:
+    def scatter_sequence(self, data: dict) -> list[dict]:
         """Scatter the broadcasting targets to a list of inputs of the wrapped
         transforms."""
 
@@ -492,7 +493,7 @@ class TransformBroadcaster(KeyMapper):
             scatters.append(scatter)
         return scatters
 
-    def transform(self, results: Dict):
+    def transform(self, results: dict):
         """Broadcast wrapped transforms to multiple targets."""
 
         # Apply input remapping
@@ -564,8 +565,8 @@ class RandomChoice(BaseTransform):
     """
 
     def __init__(self,
-                 transforms: List[Union[Transform, List[Transform]]],
-                 prob: Optional[List[float]] = None):
+                 transforms: list[Transform | list[Transform]],
+                 prob: list[float] | None = None):
 
         super().__init__()
 
@@ -588,7 +589,7 @@ class RandomChoice(BaseTransform):
         indices = np.arange(len(self.transforms))
         return np.random.choice(indices, p=self.prob)
 
-    def transform(self, results: Dict) -> Optional[Dict]:
+    def transform(self, results: dict) -> dict | None:
         """Randomly choose a transform to apply."""
         idx = self.random_pipeline_index()
         return self.transforms[idx](results)
@@ -619,7 +620,7 @@ class RandomApply(BaseTransform):
     """
 
     def __init__(self,
-                 transforms: Union[Transform, List[Transform]],
+                 transforms: Transform | list[Transform],
                  prob: float = 0.5):
 
         super().__init__()
@@ -635,7 +636,7 @@ class RandomApply(BaseTransform):
         transform."""
         return np.random.rand() < self.prob
 
-    def transform(self, results: Dict) -> Optional[Dict]:
+    def transform(self, results: dict) -> dict | None:
         """Randomly apply the transform."""
         if self.random_apply():
             return self.transforms(results)  # type: ignore

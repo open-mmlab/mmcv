@@ -2,9 +2,8 @@
 import pytest
 import torch
 import torch.nn as nn
-from torch.autograd import gradcheck, gradgradcheck
-
 from mmcv.ops import conv2d, conv_transpose2d
+from torch.autograd import gradcheck, gradgradcheck
 
 
 class TestCond2d:

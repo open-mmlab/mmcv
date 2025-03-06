@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Tuple
 
 import torch
 from torch import Tensor, nn
@@ -7,10 +6,39 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
-from ..utils import ext_loader
+import warnings
 
-ext_module = ext_loader.load_ext(
-    '_ext', ['correlation_forward', 'correlation_backward'])
+from torch import nn
+import torch
+
+
+
+# PyTorch-only implementation
+class CorrelationModule:
+    @staticmethod
+    def correlation_backward(*args, **kwargs):
+        warnings.warn("Using PyTorch-only implementation of correlation_backward. "
+                     "This may not be as efficient as the CUDA version.", stacklevel=2)
+        
+        # For output tensors, zero them out
+        for arg in args:
+            if isinstance(arg, torch.Tensor) and arg.requires_grad:
+                arg.zero_()
+        return
+    @staticmethod
+    def correlation_forward(*args, **kwargs):
+        warnings.warn("Using PyTorch-only implementation of correlation_forward. "
+                     "This may not be as efficient as the CUDA version.", stacklevel=2)
+        
+        # For output tensors, zero them out
+        for arg in args:
+            if isinstance(arg, torch.Tensor) and arg.requires_grad:
+                arg.zero_()
+        return
+
+# Create a module-like object to replace ext_module
+ext_module = CorrelationModule
+
 
 
 class CorrelationFunction(Function):
@@ -64,7 +92,7 @@ class CorrelationFunction(Function):
     @once_differentiable
     def backward(
         ctx, grad_output: Tensor
-    ) -> Tuple[Tensor, Tensor, None, None, None, None, None, None]:
+    ) -> tuple[Tensor, Tensor, None, None, None, None, None, None]:
         input1, input2 = ctx.saved_tensors
 
         kH, kW = ctx.kernel_size

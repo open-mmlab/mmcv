@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
-from typing import Dict
 
 import torch.nn as nn
 from mmengine.registry import MODELS
@@ -10,7 +9,7 @@ MODELS.register_module('reflect', module=nn.ReflectionPad2d)
 MODELS.register_module('replicate', module=nn.ReplicationPad2d)
 
 
-def build_padding_layer(cfg: Dict, *args, **kwargs) -> nn.Module:
+def build_padding_layer(cfg: dict, *args, **kwargs) -> nn.Module:
     """Build padding layer.
 
     Args:

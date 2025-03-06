@@ -1,14 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
-from typing import Optional
 
 import cv2
 import numpy as np
 from mmengine.utils import is_tuple_of
 from PIL import Image, ImageEnhance
 
-from .colorspace import bgr2gray, gray2bgr
-from .io import imread_backend
+from mmcv.image.colorspace import bgr2gray, gray2bgr
+from mmcv.image.io import imread_backend
 
 
 def imnormalize(img, mean, std, to_rgb=True):
@@ -131,7 +130,7 @@ def adjust_color(img, alpha=1, beta=None, gamma=0, backend=None):
 
     if backend == 'pillow':
         assert img.dtype == np.uint8, 'Pillow backend only support uint8 type'
-        warnings.warn("Only use 'alpha' for pillow backend.")
+        warnings.warn("Only use 'alpha' for pillow backend.", stacklevel=2)
         # Image.fromarray defaultly supports RGB, not BGR.
         pil_image = Image.fromarray(img[..., ::-1], mode='RGB')
         enhancer = ImageEnhance.Color(pil_image)
@@ -337,7 +336,7 @@ def auto_contrast(img, cutoff=0):
         lut = np.clip(lut, 0, 255)
         return lut[im]
 
-    if isinstance(cutoff, (int, float)):
+    if isinstance(cutoff, int | float):
         cutoff = (cutoff, cutoff)
     else:
         assert isinstance(cutoff, tuple), 'cutoff must be of type int, ' \
@@ -480,7 +479,7 @@ def clahe(img, clip_limit=40.0, tile_grid_size=(8, 8)):
     """
     assert isinstance(img, np.ndarray)
     assert img.ndim == 2
-    assert isinstance(clip_limit, (float, int))
+    assert isinstance(clip_limit, float | int)
     assert is_tuple_of(tile_grid_size, int)
     assert len(tile_grid_size) == 2
 
@@ -490,7 +489,7 @@ def clahe(img, clip_limit=40.0, tile_grid_size=(8, 8)):
 
 def adjust_hue(img: np.ndarray,
                hue_factor: float,
-               backend: Optional[str] = None) -> np.ndarray:
+               backend: str | None = None) -> np.ndarray:
     """Adjust hue of an image.
 
     The image hue is adjusted by converting the image to HSV and cyclically

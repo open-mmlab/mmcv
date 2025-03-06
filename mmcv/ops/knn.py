@@ -1,11 +1,8 @@
-from typing import Optional
 
 import torch
 from torch.autograd import Function
 
-from .pure_pytorch_knn.knn_forward import knn_forward_pytorch
-from .pure_pytorch_knn.knn_forward import knn_forward_pytorch
-
+from mmcv.ops.pure_pytorch_knn.knn_forward import knn_forward_pytorch
 
 
 class KNN(Function):
@@ -21,7 +18,7 @@ class KNN(Function):
     def forward(ctx,
                 k: int,
                 xyz: torch.Tensor,
-                center_xyz: Optional[torch.Tensor] = None,
+                center_xyz: torch.Tensor | None = None,
                 transposed: bool = False) -> torch.Tensor:
         """
         Args:

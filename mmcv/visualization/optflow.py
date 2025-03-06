@@ -1,14 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Union
 
 import numpy as np
 
 from mmcv.image import rgb2bgr
 from mmcv.video import flowread
-from .image import imshow
+
+from mmcv.visualization.image import imshow
 
 
-def flowshow(flow: Union[np.ndarray, str],
+def flowshow(flow: np.ndarray | str,
              win_name: str = '',
              wait_time: int = 0) -> None:
     """Show optical flow.
@@ -24,7 +24,7 @@ def flowshow(flow: Union[np.ndarray, str],
 
 
 def flow2rgb(flow: np.ndarray,
-             color_wheel: Optional[np.ndarray] = None,
+             color_wheel: np.ndarray | None = None,
              unknown_thr: float = 1e6) -> np.ndarray:
     """Convert flow map to RGB image.
 
@@ -77,7 +77,7 @@ def flow2rgb(flow: np.ndarray,
     return flow_img
 
 
-def make_color_wheel(bins: Optional[Union[list, tuple]] = None) -> np.ndarray:
+def make_color_wheel(bins: list | tuple | None = None) -> np.ndarray:
     """Build a color wheel.
 
     Args:

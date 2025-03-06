@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional
 
 import numpy as np
 
@@ -12,8 +11,8 @@ except ImportError:
 
 
 def tensor2imgs(tensor,
-                mean: Optional[tuple] = None,
-                std: Optional[tuple] = None,
+                mean: tuple | None = None,
+                std: tuple | None = None,
                 to_rgb: bool = True) -> list:
     """Convert tensor to 3-channel images or 1-channel gray images.
 

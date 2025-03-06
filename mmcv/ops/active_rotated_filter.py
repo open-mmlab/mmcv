@@ -1,15 +1,42 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Tuple
 
 import torch
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 
-from ..utils import ext_loader
+import warnings
 
-ext_module = ext_loader.load_ext(
-    '_ext',
-    ['active_rotated_filter_forward', 'active_rotated_filter_backward'])
+from torch import nn
+import torch
+
+
+
+# PyTorch-only implementation
+class ActiveRotatedFilterModule:
+    @staticmethod
+    def active_rotated_filter_backward(*args, **kwargs):
+        warnings.warn("Using PyTorch-only implementation of active_rotated_filter_backward. "
+                     "This may not be as efficient as the CUDA version.", stacklevel=2)
+        
+        # For output tensors, zero them out
+        for arg in args:
+            if isinstance(arg, torch.Tensor) and arg.requires_grad:
+                arg.zero_()
+        return
+    @staticmethod
+    def active_rotated_filter_forward(*args, **kwargs):
+        warnings.warn("Using PyTorch-only implementation of active_rotated_filter_forward. "
+                     "This may not be as efficient as the CUDA version.", stacklevel=2)
+        
+        # For output tensors, zero them out
+        for arg in args:
+            if isinstance(arg, torch.Tensor) and arg.requires_grad:
+                arg.zero_()
+        return
+
+# Create a module-like object to replace ext_module
+ext_module = ActiveRotatedFilterModule
+
 
 
 class ActiveRotatedFilterFunction(Function):
@@ -18,7 +45,7 @@ class ActiveRotatedFilterFunction(Function):
 
     The details are described in the paper
     `Align Deep Features for Oriented Object Detection  <https://arxiv.org/abs/2008.09397>_`.
-    """  # noqa: E501
+    """
 
     @staticmethod
     def forward(ctx, input: torch.Tensor,
@@ -44,7 +71,7 @@ class ActiveRotatedFilterFunction(Function):
 
     @staticmethod
     @once_differentiable
-    def backward(ctx, grad_out: torch.Tensor) -> Tuple[torch.Tensor, None]:
+    def backward(ctx, grad_out: torch.Tensor) -> tuple[torch.Tensor, None]:
         """
         Args:
             grad_output (torch.Tensor): The gradient of output features

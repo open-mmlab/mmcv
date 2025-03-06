@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
-from typing import List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
 
 import torch.nn as nn
 from mmengine.model import constant_init, kaiming_init, normal_init
@@ -23,7 +23,7 @@ def make_vgg_layer(inplanes: int,
                    num_blocks: int,
                    dilation: int = 1,
                    with_bn: bool = False,
-                   ceil_mode: bool = False) -> List[nn.Module]:
+                   ceil_mode: bool = False) -> list[nn.Module]:
     layers = []
     for _ in range(num_blocks):
         layers.append(conv3x3(inplanes, planes, dilation))
@@ -124,7 +124,7 @@ class VGG(nn.Module):
                 nn.Linear(4096, num_classes),
             )
 
-    def init_weights(self, pretrained: Optional[str] = None) -> None:
+    def init_weights(self, pretrained: str | None = None) -> None:
         if isinstance(pretrained, str):
             logger = logging.getLogger()
             load_checkpoint(self, pretrained, strict=False, logger=logger)
@@ -139,7 +139,7 @@ class VGG(nn.Module):
         else:
             raise TypeError('pretrained must be a str or None')
 
-    def forward(self, x: Tensor) -> Union[Tensor, Tuple[Tensor, ...]]:
+    def forward(self, x: Tensor) -> Tensor | tuple[Tensor, ...]:
         outs = []
         vgg_layers = getattr(self, self.module_name)
         for i in range(len(self.stage_blocks)):

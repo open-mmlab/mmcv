@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from enum import Enum
-from typing import Union
 
 import numpy as np
 from mmengine.utils import is_str
@@ -21,7 +20,7 @@ class Color(Enum):
     black = (0, 0, 0)
 
 
-def color_val(color: Union[Color, str, tuple, int, np.ndarray]) -> tuple:
+def color_val(color: Color | str | tuple | int | np.ndarray) -> tuple:
     """Convert various input to color tuples.
 
     Args:

@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
-from typing import Tuple, Union
 
 import cv2
 import numpy as np
@@ -10,7 +9,7 @@ from mmcv.arraymisc import dequantize, quantize
 from mmcv.image import imread, imwrite
 
 
-def flowread(flow_or_path: Union[np.ndarray, str],
+def flowread(flow_or_path: np.ndarray | str,
              quantize: bool = False,
              concat_axis: int = 0,
              *args,
@@ -172,7 +171,7 @@ def flow_warp(img: np.ndarray,
         ndarray: Warped image with the same shape of img
     """
     warnings.warn('This function is just for prototyping and cannot '
-                  'guarantee the computational efficiency.')
+                  'guarantee the computational efficiency.', stacklevel=2)
     assert flow.ndim == 3, 'Flow must be in 3D arrays.'
     height = flow.shape[0]
     width = flow.shape[1]
@@ -249,7 +248,7 @@ def flow_from_bytes(content: bytes) -> np.ndarray:
     return flow
 
 
-def sparse_flow_from_bytes(content: bytes) -> Tuple[np.ndarray, np.ndarray]:
+def sparse_flow_from_bytes(content: bytes) -> tuple[np.ndarray, np.ndarray]:
     """Read the optical flow in KITTI datasets from bytes.
 
     This function is modified from RAFT load the `KITTI datasets

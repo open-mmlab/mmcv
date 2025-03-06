@@ -10,16 +10,16 @@ from torch.autograd.function import once_differentiable
 from torch.nn.modules.module import Module
 from torch.nn.parameter import Parameter
 
-from .pure_pytorch_sync_bn.sync_bn_forward_mean import sync_bn_forward_mean_pytorch
-from .pure_pytorch_sync_bn.sync_bn_forward_var import sync_bn_forward_var_pytorch
-from .pure_pytorch_sync_bn.sync_bn_forward_output import sync_bn_forward_output_pytorch
-from .pure_pytorch_sync_bn.sync_bn_backward_param import sync_bn_backward_param_pytorch
-from .pure_pytorch_sync_bn.sync_bn_backward_data import sync_bn_backward_data_pytorch
-from .pure_pytorch_sync_bn.sync_bn_forward_mean import sync_bn_forward_mean_pytorch
-from .pure_pytorch_sync_bn.sync_bn_forward_var import sync_bn_forward_var_pytorch
-from .pure_pytorch_sync_bn.sync_bn_forward_output import sync_bn_forward_output_pytorch
-from .pure_pytorch_sync_bn.sync_bn_backward_param import sync_bn_backward_param_pytorch
-from .pure_pytorch_sync_bn.sync_bn_backward_data import sync_bn_backward_data_pytorch
+from mmcv.ops.pure_pytorch_sync_bn.sync_bn_forward_mean import sync_bn_forward_mean_pytorch
+from mmcv.ops.pure_pytorch_sync_bn.sync_bn_forward_var import sync_bn_forward_var_pytorch
+from mmcv.ops.pure_pytorch_sync_bn.sync_bn_forward_output import sync_bn_forward_output_pytorch
+from mmcv.ops.pure_pytorch_sync_bn.sync_bn_backward_param import sync_bn_backward_param_pytorch
+from mmcv.ops.pure_pytorch_sync_bn.sync_bn_backward_data import sync_bn_backward_data_pytorch
+from mmcv.ops.pure_pytorch_sync_bn.sync_bn_forward_mean import sync_bn_forward_mean_pytorch
+from mmcv.ops.pure_pytorch_sync_bn.sync_bn_forward_var import sync_bn_forward_var_pytorch
+from mmcv.ops.pure_pytorch_sync_bn.sync_bn_forward_output import sync_bn_forward_output_pytorch
+from mmcv.ops.pure_pytorch_sync_bn.sync_bn_backward_param import sync_bn_backward_param_pytorch
+from mmcv.ops.pure_pytorch_sync_bn.sync_bn_backward_data import sync_bn_backward_data_pytorch
 
     'sync_bn_forward_mean', 'sync_bn_forward_var', 'sync_bn_forward_output',
     'sync_bn_backward_param', 'sync_bn_backward_data'

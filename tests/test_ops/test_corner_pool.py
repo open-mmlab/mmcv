@@ -5,7 +5,6 @@ CommandLine:
 """
 import pytest
 import torch
-
 from mmcv.ops import CornerPool
 
 

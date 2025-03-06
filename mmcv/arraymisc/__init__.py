@@ -1,4 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .quantization import dequantize, quantize
+from mmcv.arraymisc.quantization import dequantize, quantize
 
-__all__ = ['quantize', 'dequantize']
+__all__ = ['dequantize', 'quantize']

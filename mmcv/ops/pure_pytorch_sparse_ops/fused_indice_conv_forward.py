@@ -1,5 +1,7 @@
-import torch
 import warnings
+
+import torch
+
 
 def fused_indice_conv_forward_pytorch(*args, **kwargs):
     """
@@ -9,8 +11,8 @@ def fused_indice_conv_forward_pytorch(*args, **kwargs):
     
     For production use, a proper PyTorch implementation is needed.
     """
-    warnings.warn(f"Using stub implementation of fused_indice_conv_forward. "
-                 f"This is not a complete implementation and may cause incorrect results.")
+    warnings.warn("Using stub implementation of fused_indice_conv_forward. "
+                 "This is not a complete implementation and may cause incorrect results.", stacklevel=2)
     
     # Basic handling depending on the expected output shape
     if len(args) > 0:

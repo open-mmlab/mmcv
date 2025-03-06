@@ -2,7 +2,6 @@
 import numpy as np
 import pytest
 import torch
-
 from mmcv.ops import min_area_polygons
 
 np_pointsets = np.asarray([[

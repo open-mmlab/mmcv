@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Union
 
 import torch
 from mmengine.model import constant_init, kaiming_init
@@ -7,7 +6,7 @@ from mmengine.registry import MODELS
 from torch import nn
 
 
-def last_zero_init(m: Union[nn.Module, nn.Sequential]) -> None:
+def last_zero_init(m: nn.Module | nn.Sequential) -> None:
     if isinstance(m, nn.Sequential):
         constant_init(m[-1], val=0)
     else:
@@ -41,9 +40,9 @@ class ContextBlock(nn.Module):
                  fusion_types: tuple = ('channel_add', )):
         super().__init__()
         assert pooling_type in ['avg', 'att']
-        assert isinstance(fusion_types, (list, tuple))
+        assert isinstance(fusion_types, list | tuple)
         valid_fusion_types = ['channel_add', 'channel_mul']
-        assert all([f in valid_fusion_types for f in fusion_types])
+        assert all(f in valid_fusion_types for f in fusion_types)
         assert len(fusion_types) > 0, 'at least one fusion should be used'
         self.in_channels = in_channels
         self.ratio = ratio

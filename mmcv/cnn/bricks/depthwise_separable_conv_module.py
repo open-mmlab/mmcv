@@ -1,10 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
 
-from .conv_module import ConvModule
+from mmcv.cnn.bricks.conv_module import ConvModule
 
 
 class DepthwiseSeparableConvModule(nn.Module):
@@ -51,25 +50,27 @@ class DepthwiseSeparableConvModule(nn.Module):
     def __init__(self,
                  in_channels: int,
                  out_channels: int,
-                 kernel_size: Union[int, Tuple[int, int]],
-                 stride: Union[int, Tuple[int, int]] = 1,
-                 padding: Union[int, Tuple[int, int]] = 0,
-                 dilation: Union[int, Tuple[int, int]] = 1,
-                 norm_cfg: Optional[Dict] = None,
-                 act_cfg: Dict = dict(type='ReLU'),
-                 dw_norm_cfg: Union[Dict, str] = 'default',
-                 dw_act_cfg: Union[Dict, str] = 'default',
-                 pw_norm_cfg: Union[Dict, str] = 'default',
-                 pw_act_cfg: Union[Dict, str] = 'default',
+                 kernel_size: int | tuple[int, int],
+                 stride: int | tuple[int, int] = 1,
+                 padding: int | tuple[int, int] = 0,
+                 dilation: int | tuple[int, int] = 1,
+                 norm_cfg: dict | None = None,
+                 act_cfg: dict | None = None,
+                 dw_norm_cfg: dict | str = 'default',
+                 dw_act_cfg: dict | str = 'default',
+                 pw_norm_cfg: dict | str = 'default',
+                 pw_act_cfg: dict | str = 'default',
                  **kwargs):
+        if act_cfg is None:
+            act_cfg = {'type': 'ReLU'}
         super().__init__()
         assert 'groups' not in kwargs, 'groups should not be specified'
 
         # if norm/activation config of depthwise/pointwise ConvModule is not
         # specified, use default config.
-        dw_norm_cfg = dw_norm_cfg if dw_norm_cfg != 'default' else norm_cfg  # type: ignore # noqa E501
+        dw_norm_cfg = dw_norm_cfg if dw_norm_cfg != 'default' else norm_cfg  # type: ignore
         dw_act_cfg = dw_act_cfg if dw_act_cfg != 'default' else act_cfg
-        pw_norm_cfg = pw_norm_cfg if pw_norm_cfg != 'default' else norm_cfg  # type: ignore # noqa E501
+        pw_norm_cfg = pw_norm_cfg if pw_norm_cfg != 'default' else norm_cfg  # type: ignore
         pw_act_cfg = pw_act_cfg if pw_act_cfg != 'default' else act_cfg
 
         # depthwise convolution

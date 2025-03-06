@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
-
 from mmcv.ops import bias_act
 from mmcv.ops.bias_act import EasyDict
 

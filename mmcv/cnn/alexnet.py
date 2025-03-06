@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
-from typing import Optional
 
 import torch
 import torch.nn as nn
@@ -43,7 +42,7 @@ class AlexNet(nn.Module):
                 nn.Linear(4096, num_classes),
             )
 
-    def init_weights(self, pretrained: Optional[str] = None) -> None:
+    def init_weights(self, pretrained: str | None = None) -> None:
         if isinstance(pretrained, str):
             logger = logging.getLogger()
             load_checkpoint(self, pretrained, strict=False, logger=logger)

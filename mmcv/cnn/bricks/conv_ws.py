@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from collections import OrderedDict
-from typing import Dict, List, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -10,10 +9,10 @@ from mmengine.registry import MODELS
 
 def conv_ws_2d(input: torch.Tensor,
                weight: torch.Tensor,
-               bias: Optional[torch.Tensor] = None,
-               stride: Union[int, Tuple[int, int]] = 1,
-               padding: Union[int, Tuple[int, int]] = 0,
-               dilation: Union[int, Tuple[int, int]] = 1,
+               bias: torch.Tensor | None = None,
+               stride: int | tuple[int, int] = 1,
+               padding: int | tuple[int, int] = 0,
+               dilation: int | tuple[int, int] = 1,
                groups: int = 1,
                eps: float = 1e-5) -> torch.Tensor:
     c_in = weight.size(0)
@@ -30,10 +29,10 @@ class ConvWS2d(nn.Conv2d):
     def __init__(self,
                  in_channels: int,
                  out_channels: int,
-                 kernel_size: Union[int, Tuple[int, int]],
-                 stride: Union[int, Tuple[int, int]] = 1,
-                 padding: Union[int, Tuple[int, int]] = 0,
-                 dilation: Union[int, Tuple[int, int]] = 1,
+                 kernel_size: int | tuple[int, int],
+                 stride: int | tuple[int, int] = 1,
+                 padding: int | tuple[int, int] = 0,
+                 dilation: int | tuple[int, int] = 1,
                  groups: int = 1,
                  bias: bool = True,
                  eps: float = 1e-5):
@@ -80,10 +79,10 @@ class ConvAWS2d(nn.Conv2d):
     def __init__(self,
                  in_channels: int,
                  out_channels: int,
-                 kernel_size: Union[int, Tuple[int, int]],
-                 stride: Union[int, Tuple[int, int]] = 1,
-                 padding: Union[int, Tuple[int, int]] = 0,
-                 dilation: Union[int, Tuple[int, int]] = 1,
+                 kernel_size: int | tuple[int, int],
+                 stride: int | tuple[int, int] = 1,
+                 padding: int | tuple[int, int] = 0,
+                 dilation: int | tuple[int, int] = 1,
                  groups: int = 1,
                  bias: bool = True):
         super().__init__(
@@ -114,10 +113,10 @@ class ConvAWS2d(nn.Conv2d):
                         self.dilation, self.groups)
 
     def _load_from_state_dict(self, state_dict: OrderedDict, prefix: str,
-                              local_metadata: Dict, strict: bool,
-                              missing_keys: List[str],
-                              unexpected_keys: List[str],
-                              error_msgs: List[str]) -> None:
+                              local_metadata: dict, strict: bool,
+                              missing_keys: list[str],
+                              unexpected_keys: list[str],
+                              error_msgs: list[str]) -> None:
         """Override default load function.
 
         AWS overrides the function _load_from_state_dict to recover
@@ -129,7 +128,7 @@ class ConvAWS2d(nn.Conv2d):
         """
 
         self.weight_gamma.data.fill_(-1)
-        local_missing_keys: List = []
+        local_missing_keys: list = []
         super()._load_from_state_dict(state_dict, prefix, local_metadata,
                                       strict, local_missing_keys,
                                       unexpected_keys, error_msgs)

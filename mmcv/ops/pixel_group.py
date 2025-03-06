@@ -1,24 +1,21 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List, Union
 
 import numpy as np
 import torch
 from torch import Tensor
 
-from .pure_pytorch_pixel_group.pixel_group import pixel_group_pytorch
-from .pure_pytorch_pixel_group.pixel_group import pixel_group_pytorch
-
+from mmcv.ops.pure_pytorch_pixel_group.pixel_group import pixel_group_pytorch
 
 
 def pixel_group(
-    score: Union[np.ndarray, Tensor],
-    mask: Union[np.ndarray, Tensor],
-    embedding: Union[np.ndarray, Tensor],
-    kernel_label: Union[np.ndarray, Tensor],
-    kernel_contour: Union[np.ndarray, Tensor],
+    score: np.ndarray | Tensor,
+    mask: np.ndarray | Tensor,
+    embedding: np.ndarray | Tensor,
+    kernel_label: np.ndarray | Tensor,
+    kernel_contour: np.ndarray | Tensor,
     kernel_region_num: int,
     distance_threshold: float,
-) -> List[List[float]]:
+) -> list[list[float]]:
     """Group pixels into text instances, which is widely used text detection
     methods.
 
@@ -40,11 +37,11 @@ def pixel_group(
         element consists of averaged confidence, pixel number, and coordinates
         (x_i, y_i for all pixels) in order.
     """
-    assert isinstance(score, (torch.Tensor, np.ndarray))
-    assert isinstance(mask, (torch.Tensor, np.ndarray))
-    assert isinstance(embedding, (torch.Tensor, np.ndarray))
-    assert isinstance(kernel_label, (torch.Tensor, np.ndarray))
-    assert isinstance(kernel_contour, (torch.Tensor, np.ndarray))
+    assert isinstance(score, torch.Tensor | np.ndarray)
+    assert isinstance(mask, torch.Tensor | np.ndarray)
+    assert isinstance(embedding, torch.Tensor | np.ndarray)
+    assert isinstance(kernel_label, torch.Tensor | np.ndarray)
+    assert isinstance(kernel_contour, torch.Tensor | np.ndarray)
     assert isinstance(kernel_region_num, int)
     assert isinstance(distance_threshold, float)
 

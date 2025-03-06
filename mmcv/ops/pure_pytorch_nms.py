@@ -1,6 +1,7 @@
-import torch
+from typing import Union
+
 import numpy as np
-from typing import Tuple, List, Union, Optional, Dict, Any
+import torch
 
 array_like_type = Union[torch.Tensor, np.ndarray]
 
@@ -60,7 +61,7 @@ def soft_nms_pytorch(boxes: torch.Tensor,
                     iou_threshold: float = 0.3, 
                     sigma: float = 0.5, 
                     min_score: float = 1e-3, 
-                    method: str = 'linear') -> Tuple[torch.Tensor, torch.Tensor]:
+                    method: str = 'linear') -> tuple[torch.Tensor, torch.Tensor]:
     """
     Pure PyTorch implementation of Soft-NMS without CUDA dependencies.
     
@@ -95,7 +96,7 @@ def soft_nms_pytorch(boxes: torch.Tensor,
     while i < scores_modified.shape[0]:
         # Pick the box with highest score
         max_score_idx = torch.argmax(scores_modified)
-        current_box = boxes[max_score_idx:max_score_idx+1]
+        boxes[max_score_idx:max_score_idx+1]
         
         # Swap the box with the first position
         if max_score_idx != i:
@@ -160,7 +161,7 @@ def soft_nms_pytorch(boxes: torch.Tensor,
     return dets[keep], indices[keep]
 
 
-def nms_match_pytorch(dets: torch.Tensor, iou_threshold: float) -> List[torch.Tensor]:
+def nms_match_pytorch(dets: torch.Tensor, iou_threshold: float) -> list[torch.Tensor]:
     """
     Pure PyTorch implementation of NMS match without CUDA dependencies.
     
@@ -241,7 +242,7 @@ def nms_match_pytorch(dets: torch.Tensor, iou_threshold: float) -> List[torch.Te
 def nms_quadri_pytorch(dets: torch.Tensor, 
                        scores: torch.Tensor, 
                        iou_threshold: float, 
-                       labels: Optional[torch.Tensor] = None) -> Tuple[torch.Tensor, torch.Tensor]:
+                       labels: torch.Tensor | None = None) -> tuple[torch.Tensor, torch.Tensor]:
     """
     Pure PyTorch implementation of Quadrilateral NMS without CUDA dependencies.
     
@@ -269,7 +270,7 @@ def nms_quadri_pytorch(dets: torch.Tensor,
     
     # Sort scores
     _, order = scores.sort(0, descending=True)
-    dets_sorted = dets_with_labels.index_select(0, order)
+    dets_with_labels.index_select(0, order)
     
     # Convert quadrilaterals to polygons for IoU computation
     num_dets = dets.shape[0]

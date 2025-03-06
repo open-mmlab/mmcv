@@ -14,10 +14,10 @@
 
 # import sparse_functional as Fsp
 # import sparse_ops as ops
-from .sparse_functional import indice_maxpool
-from .sparse_modules import SparseModule
-from .sparse_ops import get_conv_output_size, get_indice_pairs
-from .sparse_structure import SparseConvTensor
+from mmcv.ops.sparse_functional import indice_maxpool
+from mmcv.ops.sparse_modules import SparseModule
+from mmcv.ops.sparse_ops import get_conv_output_size, get_indice_pairs
+from mmcv.ops.sparse_structure import SparseConvTensor
 
 
 class SparseMaxPool(SparseModule):
@@ -30,13 +30,13 @@ class SparseMaxPool(SparseModule):
                  dilation=1,
                  subm=False):
         super().__init__()
-        if not isinstance(kernel_size, (list, tuple)):
+        if not isinstance(kernel_size, list | tuple):
             kernel_size = [kernel_size] * ndim
-        if not isinstance(stride, (list, tuple)):
+        if not isinstance(stride, list | tuple):
             stride = [stride] * ndim
-        if not isinstance(padding, (list, tuple)):
+        if not isinstance(padding, list | tuple):
             padding = [padding] * ndim
-        if not isinstance(dilation, (list, tuple)):
+        if not isinstance(dilation, list | tuple):
             dilation = [dilation] * ndim
 
         self.ndim = ndim

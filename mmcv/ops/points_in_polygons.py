@@ -1,9 +1,7 @@
 import torch
 from torch import Tensor
 
-from .pure_pytorch_points_in_polygons.points_in_polygons_forward import points_in_polygons_forward_pytorch
-from .pure_pytorch_points_in_polygons.points_in_polygons_forward import points_in_polygons_forward_pytorch
-
+from mmcv.ops.pure_pytorch_points_in_polygons.points_in_polygons_forward import points_in_polygons_forward_pytorch
 
 
 def points_in_polygons(points: Tensor, polygons: Tensor) -> Tensor:

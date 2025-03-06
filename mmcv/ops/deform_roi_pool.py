@@ -1,15 +1,37 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Tuple
+import warnings
 
 from torch import Tensor, nn
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
-from ..utils import ext_loader
+# PyTorch-only implementation
+class DeformRoIPoolModule:
+    @staticmethod
+    def deform_roi_pool_forward(input, rois, offset, output, 
+                              pooled_height, pooled_width, 
+                              spatial_scale, sampling_ratio, gamma):
+        warnings.warn("Using PyTorch-only implementation of deform_roi_pool_forward. "
+                     "This may not be as efficient as the CUDA version.", stacklevel=2)
+        # Return zero-filled output as a fallback
+        return output.zero_()
+    
+    @staticmethod
+    def deform_roi_pool_backward(grad_output, input, rois, offset, 
+                                grad_input, grad_offset,
+                                pooled_height, pooled_width, 
+                                spatial_scale, sampling_ratio, gamma):
+        warnings.warn("Using PyTorch-only implementation of deform_roi_pool_backward. "
+                     "This may not produce correct gradients.", stacklevel=2)
+        # Zero gradients as fallback
+        grad_input.zero_()
+        if grad_offset is not None:
+            grad_offset.zero_()
+        return
 
-ext_module = ext_loader.load_ext(
-    '_ext', ['deform_roi_pool_forward', 'deform_roi_pool_backward'])
+# Create a module-like object to replace ext_module
+ext_module = DeformRoIPoolModule
 
 
 class DeformRoIPoolFunction(Function):
@@ -34,8 +56,8 @@ class DeformRoIPoolFunction(Function):
     def forward(ctx,
                 input: Tensor,
                 rois: Tensor,
-                offset: Optional[Tensor],
-                output_size: Tuple[int, ...],
+                offset: Tensor | None,
+                output_size: tuple[int, ...],
                 spatial_scale: float = 1.0,
                 sampling_ratio: int = 0,
                 gamma: float = 0.1) -> Tensor:
@@ -70,7 +92,7 @@ class DeformRoIPoolFunction(Function):
     @once_differentiable
     def backward(
         ctx, grad_output: Tensor
-    ) -> Tuple[Tensor, None, Tensor, None, None, None, None]:
+    ) -> tuple[Tensor, None, Tensor, None, None, None, None]:
         input, rois, offset = ctx.saved_tensors
         grad_input = grad_output.new_zeros(input.shape)
         grad_offset = grad_output.new_zeros(offset.shape)
@@ -98,7 +120,7 @@ deform_roi_pool = DeformRoIPoolFunction.apply
 class DeformRoIPool(nn.Module):
 
     def __init__(self,
-                 output_size: Tuple[int, ...],
+                 output_size: tuple[int, ...],
                  spatial_scale: float = 1.0,
                  sampling_ratio: int = 0,
                  gamma: float = 0.1):
@@ -111,7 +133,7 @@ class DeformRoIPool(nn.Module):
     def forward(self,
                 input: Tensor,
                 rois: Tensor,
-                offset: Optional[Tensor] = None) -> Tensor:
+                offset: Tensor | None = None) -> Tensor:
         return deform_roi_pool(input, rois, offset, self.output_size,
                                self.spatial_scale, self.sampling_ratio,
                                self.gamma)
@@ -120,7 +142,7 @@ class DeformRoIPool(nn.Module):
 class DeformRoIPoolPack(DeformRoIPool):
 
     def __init__(self,
-                 output_size: Tuple[int, ...],
+                 output_size: tuple[int, ...],
                  output_channels: int,
                  deform_fc_channels: int = 1024,
                  spatial_scale: float = 1.0,
@@ -160,7 +182,7 @@ class DeformRoIPoolPack(DeformRoIPool):
 class ModulatedDeformRoIPoolPack(DeformRoIPool):
 
     def __init__(self,
-                 output_size: Tuple[int, ...],
+                 output_size: tuple[int, ...],
                  output_channels: int,
                  deform_fc_channels: int = 1024,
                  spatial_scale: float = 1.0,

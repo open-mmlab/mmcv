@@ -4,7 +4,6 @@ import os.path as osp
 
 import numpy as np
 import pytest
-
 from mmcv.transforms import LoadAnnotations, LoadImageFromFile
 
 
@@ -20,7 +19,7 @@ class TestLoadImageFromFile:
                 backend_args={'backend': 'disk'})
         data_prefix = osp.join(osp.dirname(__file__), '../data')
 
-        results = dict(img_path=osp.join(data_prefix, 'color.jpg'))
+        results = {'img_path': osp.join(data_prefix, 'color.jpg')}
         transform = LoadImageFromFile()
         results = transform(copy.deepcopy(results))
         assert results['img_path'] == osp.join(data_prefix, 'color.jpg')
@@ -38,7 +37,7 @@ class TestLoadImageFromFile:
         assert results['img'].dtype == np.float32
 
         # gray image
-        results = dict(img_path=osp.join(data_prefix, 'grayscale.jpg'))
+        results = {'img_path': osp.join(data_prefix, 'grayscale.jpg')}
         transform = LoadImageFromFile()
         results = transform(copy.deepcopy(results))
         assert results['img'].shape == (300, 400, 3)
@@ -61,10 +60,10 @@ class TestLoadImageFromFile:
 
 class TestLoadAnnotations:
 
-    def setup_class(cls):
+    def setup_class(self):
         data_prefix = osp.join(osp.dirname(__file__), '../data')
         seg_map = osp.join(data_prefix, 'grayscale.jpg')
-        cls.results = {
+        self.results = {
             'seg_map_path':
             seg_map,
             'instances': [{

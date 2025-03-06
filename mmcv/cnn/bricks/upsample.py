@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
-from typing import Dict
 
 import torch
 import torch.nn as nn
@@ -50,7 +49,7 @@ class PixelShufflePack(nn.Module):
         return x
 
 
-def build_upsample_layer(cfg: Dict, *args, **kwargs) -> nn.Module:
+def build_upsample_layer(cfg: dict, *args, **kwargs) -> nn.Module:
     """Build upsample layer.
 
     Args:

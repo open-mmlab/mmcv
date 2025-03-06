@@ -1,11 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
-from torch import nn
-
 from mmcv.cnn import build_conv_layer, build_norm_layer
-from mmcv.ops import (SparseConvTensor, SparseInverseConv3d, SparseSequential,
-                      SubMConv3d)
+from mmcv.ops import SparseConvTensor, SparseInverseConv3d, SparseSequential, SubMConv3d
+from torch import nn
 
 if torch.__version__ == 'parrots':
     pytest.skip('not supported in parrots now', allow_module_level=True)
@@ -43,9 +41,9 @@ def make_sparse_convmodule(in_channels,
     assert isinstance(order, tuple) and len(order) <= 3
     assert set(order) | {'conv', 'norm', 'act'} == {'conv', 'norm', 'act'}
 
-    conv_cfg = dict(type=conv_type, indice_key=indice_key)
+    conv_cfg = {'type': conv_type, 'indice_key': indice_key}
 
-    layers = list()
+    layers = []
     for layer in order:
         if layer == 'conv':
             if conv_type not in [
@@ -114,7 +112,7 @@ def test_make_sparse_convmodule(device):
         stride=1,
         padding=0,
         conv_type='SubMConv3d',
-        norm_cfg=dict(type='BN1d', eps=1e-3, momentum=0.01),
+        norm_cfg={'type': 'BN1d', 'eps': 1e-3, 'momentum': 0.01},
         order=('conv', 'norm', 'act')).to(device)
     assert isinstance(sparse_block0[0], SubMConv3d)
     assert sparse_block0[0].in_channels == 4
@@ -138,7 +136,7 @@ def test_make_sparse_convmodule(device):
             stride=1,
             padding=0,
             conv_type='SparseInverseConv3d',
-            norm_cfg=dict(type='BN1d', eps=1e-3, momentum=0.01),
+            norm_cfg={'type': 'BN1d', 'eps': 1e-3, 'momentum': 0.01},
             order=('norm', 'act', 'conv')).to(device)
         assert isinstance(sparse_block1[2], SparseInverseConv3d)
         assert isinstance(sparse_block1[0], torch.nn.BatchNorm1d)

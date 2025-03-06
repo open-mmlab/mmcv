@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict
 
 import torch
 import torch.nn as nn
@@ -99,7 +98,7 @@ else:
     MODELS.register_module(module=nn.GELU)
 
 
-def build_activation_layer(cfg: Dict) -> nn.Module:
+def build_activation_layer(cfg: dict) -> nn.Module:
     """Build activation layer.
 
     Args:

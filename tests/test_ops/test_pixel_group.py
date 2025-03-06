@@ -42,7 +42,7 @@ def test_pixel_group():
                                   [0, 0, 0, 0, 0, 0, 0, 0, 0,
                                    0]]).astype(np.uint8)
     kernel_region_num = 3
-    distance_threshold = float(0.8)
+    distance_threshold = 0.8
     result = pixel_group(np_score, np_mask, np_embedding, np_kernel_label,
                          np_kernel_contour, kernel_region_num,
                          distance_threshold)

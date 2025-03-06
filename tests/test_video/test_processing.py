@@ -3,8 +3,6 @@ import os
 import os.path as osp
 import tempfile
 
-import pytest
-
 import mmcv
 
 

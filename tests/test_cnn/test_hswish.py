@@ -1,8 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
-from torch.nn.functional import relu6
-
 from mmcv.cnn.bricks import HSwish
+from torch.nn.functional import relu6
 
 
 def test_hswish():

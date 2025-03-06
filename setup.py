@@ -1,8 +1,6 @@
-import glob
-import os
-import platform
 import re
-from pkg_resources import DistributionNotFound, get_distribution, parse_version
+
+from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import find_namespace_packages, setup
 
 EXT_TYPE = ''
@@ -80,7 +78,7 @@ def parse_requirements(fname='requirements/runtime.txt', with_version=True):
                                                      rest.split(';'))
                         info['platform_deps'] = platform_deps
                     else:
-                        version = rest  # NOQA
+                        version = rest
                     info['version'] = (op, version)
             yield info
 
@@ -113,7 +111,7 @@ install_requires = parse_requirements()
 
 try:
     # OpenCV installed via conda.
-    import cv2  # NOQA: F401
+    import cv2
     major, minor, *rest = cv2.__version__.split('.')
     if int(major) < 3:
         raise RuntimeError(

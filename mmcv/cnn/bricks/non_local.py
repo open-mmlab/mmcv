@@ -1,13 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from abc import ABCMeta
-from typing import Dict, Optional
 
 import torch
 import torch.nn as nn
 from mmengine.model import constant_init, normal_init
 from mmengine.registry import MODELS
 
-from .conv_module import ConvModule
+from mmcv.cnn.bricks.conv_module import ConvModule
 
 
 class _NonLocalNd(nn.Module, metaclass=ABCMeta):
@@ -37,8 +36,8 @@ class _NonLocalNd(nn.Module, metaclass=ABCMeta):
                  in_channels: int,
                  reduction: int = 2,
                  use_scale: bool = True,
-                 conv_cfg: Optional[Dict] = None,
-                 norm_cfg: Optional[Dict] = None,
+                 conv_cfg: dict | None = None,
+                 norm_cfg: dict | None = None,
                  mode: str = 'embedded_gaussian',
                  **kwargs):
         super().__init__()
@@ -93,7 +92,7 @@ class _NonLocalNd(nn.Module, metaclass=ABCMeta):
                 stride=1,
                 padding=0,
                 bias=False,
-                act_cfg=dict(type='ReLU'))
+                act_cfg={'type': 'ReLU'})
 
         self.init_weights(**kwargs)
 
@@ -231,8 +230,10 @@ class NonLocal1d(_NonLocalNd):
     def __init__(self,
                  in_channels: int,
                  sub_sample: bool = False,
-                 conv_cfg: Dict = dict(type='Conv1d'),
+                 conv_cfg: dict | None = None,
                  **kwargs):
+        if conv_cfg is None:
+            conv_cfg = {'type': 'Conv1d'}
         super().__init__(in_channels, conv_cfg=conv_cfg, **kwargs)
 
         self.sub_sample = sub_sample
@@ -264,8 +265,10 @@ class NonLocal2d(_NonLocalNd):
     def __init__(self,
                  in_channels: int,
                  sub_sample: bool = False,
-                 conv_cfg: Dict = dict(type='Conv2d'),
+                 conv_cfg: dict | None = None,
                  **kwargs):
+        if conv_cfg is None:
+            conv_cfg = {'type': 'Conv2d'}
         super().__init__(in_channels, conv_cfg=conv_cfg, **kwargs)
 
         self.sub_sample = sub_sample
@@ -294,8 +297,10 @@ class NonLocal3d(_NonLocalNd):
     def __init__(self,
                  in_channels: int,
                  sub_sample: bool = False,
-                 conv_cfg: Dict = dict(type='Conv3d'),
+                 conv_cfg: dict | None = None,
                  **kwargs):
+        if conv_cfg is None:
+            conv_cfg = {'type': 'Conv3d'}
         super().__init__(in_channels, conv_cfg=conv_cfg, **kwargs)
         self.sub_sample = sub_sample
 

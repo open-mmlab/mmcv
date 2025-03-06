@@ -3,13 +3,10 @@ import warnings
 
 import numpy as np
 import pytest
-
 from mmcv.transforms.base import BaseTransform
 from mmcv.transforms.builder import TRANSFORMS
-from mmcv.transforms.utils import (avoid_cache_randomness, cache_random_params,
-                                   cache_randomness)
-from mmcv.transforms.wrappers import (Compose, KeyMapper, RandomApply,
-                                      RandomChoice, TransformBroadcaster)
+from mmcv.transforms.utils import avoid_cache_randomness, cache_random_params, cache_randomness
+from mmcv.transforms.wrappers import Compose, KeyMapper, RandomApply, RandomChoice, TransformBroadcaster
 
 
 @TRANSFORMS.register_module()
@@ -24,9 +21,9 @@ class AddToValue(BaseTransform):
         augend = results['value']
 
         if isinstance(augend, list):
-            warnings.warn('value is a list', UserWarning)
+            warnings.warn('value is a list', UserWarning, stacklevel=2)
         if isinstance(augend, dict):
-            warnings.warn('value is a dict', UserWarning)
+            warnings.warn('value is a dict', UserWarning, stacklevel=2)
 
         def _add_to_value(augend, addend):
             if isinstance(augend, list):
@@ -93,7 +90,7 @@ class SumTwoValues(BaseTransform):
 def test_compose():
 
     # Case 1: build from cfg
-    pipeline = [dict(type='AddToValue')]
+    pipeline = [{'type': 'AddToValue'}]
     pipeline = Compose(pipeline)
     _ = str(pipeline)
 
@@ -102,7 +99,7 @@ def test_compose():
     pipeline = Compose(pipeline)
 
     # Case 3: invalid build arguments
-    pipeline = [[dict(type='AddToValue')]]
+    pipeline = [[{'type': 'AddToValue'}]]
     with pytest.raises(TypeError):
         pipeline = Compose(pipeline)
 
@@ -126,32 +123,32 @@ def test_cache_random_parameters():
     assert 'get_random_addend' in RandomAddToValue._methods_with_randomness
 
     with cache_random_params(transform):
-        results_1 = transform(dict(value=0))
-        results_2 = transform(dict(value=0))
+        results_1 = transform({'value': 0})
+        results_2 = transform({'value': 0})
         np.testing.assert_equal(results_1['value'], results_2['value'])
 
     # Case 2: do not cache random parameters
-    results_1 = transform(dict(value=0))
-    results_2 = transform(dict(value=0))
+    results_1 = transform({'value': 0})
+    results_2 = transform({'value': 0})
     with pytest.raises(AssertionError):
         np.testing.assert_equal(results_1['value'], results_2['value'])
 
     # Case 3: allow to invoke random method 0 times
     transform = RandomAddToValue(repeat=0)
     with cache_random_params(transform):
-        _ = transform(dict(value=0))
+        _ = transform({'value': 0})
 
     # Case 4: NOT allow to invoke random method >1 times
     transform = RandomAddToValue(repeat=2)
     with pytest.raises(RuntimeError):
         with cache_random_params(transform):
-            _ = transform(dict(value=0))
+            _ = transform({'value': 0})
 
     # Case 5: apply on nested transforms
     transform = Compose([RandomAddToValue()])
     with cache_random_params(transform):
-        results_1 = transform(dict(value=0))
-        results_2 = transform(dict(value=0))
+        results_1 = transform({'value': 0})
+        results_2 = transform({'value': 0})
         np.testing.assert_equal(results_1['value'], results_2['value'])
 
 
@@ -160,7 +157,7 @@ def test_key_mapper():
     pipeline = KeyMapper(
         transforms=[AddToValue(addend=1)], remapping={'value': 'v_out'})
 
-    results = dict(value=0)
+    results = {'value': 0}
     results = pipeline(results)
 
     np.testing.assert_equal(results['value'], 0)  # should be unchanged
@@ -172,7 +169,7 @@ def test_key_mapper():
         mapping={'value': 'v_in'},
         remapping={'value': 'v_out'})
 
-    results = dict(value=0, v_in=1)
+    results = {'value': 0, 'v_in': 1}
     results = pipeline(results)
 
     np.testing.assert_equal(results['value'], 0)  # should be unchanged
@@ -184,7 +181,7 @@ def test_key_mapper():
         transforms=[AddToValue(addend=2)],
         mapping={'value': ['v_in_1', 'v_in_2']},
         remapping={'value': ['v_out_1', 'v_out_2']})
-    results = dict(value=0, v_in_1=1, v_in_2=2)
+    results = {'value': 0, 'v_in_1': 1, 'v_in_2': 2}
 
     with pytest.warns(UserWarning, match='value is a list'):
         results = pipeline(results)
@@ -206,7 +203,7 @@ def test_key_mapper():
             'v1': 'v_out_1',
             'v2': 'v_out_2'
         }})
-    results = dict(value=0, v_in_1=1, v_in_2=2)
+    results = {'value': 0, 'v_in_1': 1, 'v_in_2': 2}
 
     with pytest.warns(UserWarning, match='value is a dict'):
         results = pipeline(results)
@@ -220,9 +217,9 @@ def test_key_mapper():
     # Case 4: collecting list with auto_remap mode
     pipeline = KeyMapper(
         transforms=[AddToValue(addend=2)],
-        mapping=dict(value=['v_in_1', 'v_in_2']),
+        mapping={'value': ['v_in_1', 'v_in_2']},
         auto_remap=True)
-    results = dict(value=0, v_in_1=1, v_in_2=2)
+    results = {'value': 0, 'v_in_1': 1, 'v_in_2': 2}
 
     with pytest.warns(UserWarning, match='value is a list'):
         results = pipeline(results)
@@ -234,9 +231,9 @@ def test_key_mapper():
     # Case 5: collecting dict with auto_remap mode
     pipeline = KeyMapper(
         transforms=[AddToValue(addend=2)],
-        mapping=dict(value=dict(v1='v_in_1', v2='v_in_2')),
+        mapping={'value': {'v1': 'v_in_1', 'v2': 'v_in_2'}},
         auto_remap=True)
-    results = dict(value=0, v_in_1=1, v_in_2=2)
+    results = {'value': 0, 'v_in_1': 1, 'v_in_2': 2}
 
     with pytest.warns(UserWarning, match='value is a dict'):
         results = pipeline(results)
@@ -248,9 +245,9 @@ def test_key_mapper():
     # Case 6: nested collection with auto_remap mode
     pipeline = KeyMapper(
         transforms=[AddToValue(addend=2)],
-        mapping=dict(value=['v1', dict(v2=['v21', 'v22'], v3='v3')]),
+        mapping={'value': ['v1', {'v2': ['v21', 'v22'], 'v3': 'v3'}]},
         auto_remap=True)
-    results = dict(value=0, v1=1, v21=2, v22=3, v3=4)
+    results = {'value': 0, 'v1': 1, 'v21': 2, 'v22': 3, 'v3': 4}
 
     with pytest.warns(UserWarning, match='value is a list'):
         results = pipeline(results)
@@ -265,45 +262,45 @@ def test_key_mapper():
     with pytest.raises(ValueError):
         pipeline = KeyMapper(
             transforms=[AddToValue(addend=1)],
-            mapping=dict(value='v_in'),
-            remapping=dict(value='v_out'),
+            mapping={'value': 'v_in'},
+            remapping={'value': 'v_out'},
             auto_remap=True)
 
     # Case 8: allow_nonexist_keys8
     pipeline = KeyMapper(
         transforms=[SumTwoValues()],
-        mapping=dict(num_1='a', num_2='b'),
+        mapping={'num_1': 'a', 'num_2': 'b'},
         auto_remap=False,
         allow_nonexist_keys=True)
 
-    results = pipeline(dict(a=1, b=2))
+    results = pipeline({'a': 1, 'b': 2})
     np.testing.assert_equal(results['sum'], 3)
 
-    results = pipeline(dict(a=1))
+    results = pipeline({'a': 1})
     np.testing.assert_equal(results['sum'], 1)
 
     # Case 9: use wrapper as a transform
-    transform = KeyMapper(mapping=dict(b='a'), auto_remap=False)
-    results = transform(dict(a=1))
+    transform = KeyMapper(mapping={'b': 'a'}, auto_remap=False)
+    results = transform({'a': 1})
     # note that the original key 'a' will not be removed
-    assert results == dict(a=1, b=1)
+    assert results == {'a': 1, 'b': 1}
 
     # Case 10: manually set keys ignored
     pipeline = KeyMapper(
         transforms=[SumTwoValues()],
-        mapping=dict(num_1='a', num_2=...),  # num_2 (b) will be ignored
+        mapping={'num_1': 'a', 'num_2': ...},  # num_2 (b) will be ignored
         auto_remap=False,
         # allow_nonexist_keys will not affect manually ignored keys
         allow_nonexist_keys=False)
 
-    results = pipeline(dict(a=1, b=2))
+    results = pipeline({'a': 1, 'b': 2})
     np.testing.assert_equal(results['sum'], 1)
 
     # Test basic functions
     pipeline = KeyMapper(
         transforms=[AddToValue(addend=1)],
-        mapping=dict(value='v_in'),
-        remapping=dict(value='v_out'))
+        mapping={'value': 'v_in'},
+        remapping={'value': 'v_out'})
 
     # __iter__
     for _ in pipeline:
@@ -322,9 +319,9 @@ def test_transform_broadcaster():
     # Case 1: apply to list in results
     pipeline = TransformBroadcaster(
         transforms=[AddToValue(addend=1)],
-        mapping=dict(value='values'),
+        mapping={'value': 'values'},
         auto_remap=True)
-    results = dict(values=[1, 2])
+    results = {'values': [1, 2]}
 
     results = pipeline(results)
 
@@ -333,9 +330,9 @@ def test_transform_broadcaster():
     # Case 2: apply to multiple keys
     pipeline = TransformBroadcaster(
         transforms=[AddToValue(addend=1)],
-        mapping=dict(value=['v_1', 'v_2']),
+        mapping={'value': ['v_1', 'v_2']},
         auto_remap=True)
-    results = dict(v_1=1, v_2=2)
+    results = {'v_1': 1, 'v_2': 2}
 
     results = pipeline(results)
 
@@ -345,11 +342,11 @@ def test_transform_broadcaster():
     # Case 3: apply to multiple groups of keys
     pipeline = TransformBroadcaster(
         transforms=[SumTwoValues()],
-        mapping=dict(num_1=['a_1', 'b_1'], num_2=['a_2', 'b_2']),
-        remapping=dict(sum=['a', 'b']),
+        mapping={'num_1': ['a_1', 'b_1'], 'num_2': ['a_2', 'b_2']},
+        remapping={'sum': ['a', 'b']},
         auto_remap=False)
 
-    results = dict(a_1=1, a_2=2, b_1=3, b_2=4)
+    results = {'a_1': 1, 'a_2': 2, 'b_1': 3, 'b_2': 4}
     results = pipeline(results)
 
     np.testing.assert_equal(results['a'], 3)
@@ -358,7 +355,7 @@ def test_transform_broadcaster():
     # Case 3: apply to all keys
     pipeline = TransformBroadcaster(
         transforms=[SumTwoValues()], mapping=None, remapping=None)
-    results = dict(num_1=[1, 2, 3], num_2=[4, 5, 6])
+    results = {'num_1': [1, 2, 3], 'num_2': [4, 5, 6]}
 
     results = pipeline(results)
 
@@ -368,20 +365,20 @@ def test_transform_broadcaster():
     with pytest.raises(ValueError):
         pipeline = TransformBroadcaster(
             transforms=[SumTwoValues()],
-            mapping=dict(num_1='list_1', num_2='list_2'),
+            mapping={'num_1': 'list_1', 'num_2': 'list_2'},
             auto_remap=False)
 
-        results = dict(list_1=[1, 2], list_2=[1, 2, 3])
+        results = {'list_1': [1, 2], 'list_2': [1, 2, 3]}
         _ = pipeline(results)
 
     # Case 5: share random parameter
     pipeline = TransformBroadcaster(
         transforms=[RandomAddToValue()],
-        mapping=dict(value='values'),
+        mapping={'value': 'values'},
         auto_remap=True,
         share_random_params=True)
 
-    results = dict(values=[0, 0])
+    results = {'values': [0, 0]}
     results = pipeline(results)
 
     np.testing.assert_equal(results['values'][0], results['values'][1])
@@ -389,11 +386,11 @@ def test_transform_broadcaster():
     # Case 6: partial broadcasting
     pipeline = TransformBroadcaster(
         transforms=[SumTwoValues()],
-        mapping=dict(num_1=['a_1', 'b_1'], num_2=['a_2', ...]),
-        remapping=dict(sum=['a', 'b']),
+        mapping={'num_1': ['a_1', 'b_1'], 'num_2': ['a_2', ...]},
+        remapping={'sum': ['a', 'b']},
         auto_remap=False)
 
-    results = dict(a_1=1, a_2=2, b_1=3, b_2=4)
+    results = {'a_1': 1, 'a_2': 2, 'b_1': 3, 'b_2': 4}
     results = pipeline(results)
 
     np.testing.assert_equal(results['a'], 3)
@@ -401,11 +398,11 @@ def test_transform_broadcaster():
 
     pipeline = TransformBroadcaster(
         transforms=[SumTwoValues()],
-        mapping=dict(num_1=['a_1', 'b_1'], num_2=['a_2', 'b_2']),
-        remapping=dict(sum=['a', ...]),
+        mapping={'num_1': ['a_1', 'b_1'], 'num_2': ['a_2', 'b_2']},
+        remapping={'sum': ['a', ...]},
         auto_remap=False)
 
-    results = dict(a_1=1, a_2=2, b_1=3, b_2=4)
+    results = {'a_1': 1, 'a_2': 2, 'b_1': 3, 'b_2': 4}
     results = pipeline(results)
 
     np.testing.assert_equal(results['a'], 3)
@@ -427,14 +424,14 @@ def test_random_choice():
         transforms=[[AddToValue(addend=1.0)], [AddToValue(addend=2.0)]],
         prob=[1.0, 0.0])
 
-    results = pipeline(dict(value=1))
+    results = pipeline({'value': 1})
     np.testing.assert_equal(results['value'], 2.0)
 
     # Case 2: default probability
     pipeline = RandomChoice(transforms=[[AddToValue(
         addend=1.0)], [AddToValue(addend=2.0)]])
 
-    _ = pipeline(dict(value=1))
+    _ = pipeline({'value': 1})
 
     # Case 3: nested RandomChoice in TransformBroadcaster
     pipeline = TransformBroadcaster(
@@ -447,11 +444,11 @@ def test_random_choice():
         auto_remap=True,
         share_random_params=True)
 
-    results = dict(values=[0 for _ in range(10)])
+    results = {'values': [0 for _ in range(10)]}
     results = pipeline(results)
     # check share_random_params=True works so that all values are same
     values = results['values']
-    assert all(map(lambda x: x == values[0], values))
+    assert all(x == values[0] for x in values)
 
     # repr
     assert repr(pipeline) == (
@@ -468,11 +465,11 @@ def test_random_apply():
 
     # Case 1: simple use
     pipeline = RandomApply(transforms=[AddToValue(addend=1.0)], prob=1.0)
-    results = pipeline(dict(value=1))
+    results = pipeline({'value': 1})
     np.testing.assert_equal(results['value'], 2.0)
 
     pipeline = RandomApply(transforms=[AddToValue(addend=1.0)], prob=0.0)
-    results = pipeline(dict(value=1))
+    results = pipeline({'value': 1})
     np.testing.assert_equal(results['value'], 1.0)
 
     # Case 2: nested RandomApply in TransformBroadcaster
@@ -482,11 +479,11 @@ def test_random_apply():
         auto_remap=True,
         share_random_params=True)
 
-    results = dict(values=[0 for _ in range(10)])
+    results = {'values': [0 for _ in range(10)]}
     results = pipeline(results)
     # check share_random_params=True works so that all values are same
     values = results['values']
-    assert all(map(lambda x: x == values[0], values))
+    assert all(x == values[0] for x in values)
 
     # __iter__
     for _ in pipeline:
@@ -538,7 +535,7 @@ def test_utils():
         class DummyTransform(BaseTransform):
 
             @cache_randomness
-            def func(cls):
+            def func(self):
                 return np.random.rand()
 
             def transform(self, results):

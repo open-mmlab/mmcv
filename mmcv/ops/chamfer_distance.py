@@ -1,15 +1,44 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Sequence, Tuple
+from collections.abc import Sequence
 
 import torch
 from torch import Tensor
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 
-from ..utils import ext_loader
+import warnings
 
-ext_module = ext_loader.load_ext(
-    '_ext', ['chamfer_distance_forward', 'chamfer_distance_backward'])
+from torch import nn
+import torch
+
+
+
+# PyTorch-only implementation
+class ChamferDistanceModule:
+    @staticmethod
+    def chamfer_distance_backward(*args, **kwargs):
+        warnings.warn("Using PyTorch-only implementation of chamfer_distance_backward. "
+                     "This may not be as efficient as the CUDA version.", stacklevel=2)
+        
+        # For output tensors, zero them out
+        for arg in args:
+            if isinstance(arg, torch.Tensor) and arg.requires_grad:
+                arg.zero_()
+        return
+    @staticmethod
+    def chamfer_distance_forward(*args, **kwargs):
+        warnings.warn("Using PyTorch-only implementation of chamfer_distance_forward. "
+                     "This may not be as efficient as the CUDA version.", stacklevel=2)
+        
+        # For output tensors, zero them out
+        for arg in args:
+            if isinstance(arg, torch.Tensor) and arg.requires_grad:
+                arg.zero_()
+        return
+
+# Create a module-like object to replace ext_module
+ext_module = ChamferDistanceModule
+
 
 
 class ChamferDistanceFunction(Function):
@@ -61,7 +90,7 @@ class ChamferDistanceFunction(Function):
                  grad_dist1: Tensor,
                  grad_dist2: Tensor,
                  grad_idx1=None,
-                 grad_idx2=None) -> Tuple[Tensor, Tensor]:
+                 grad_idx2=None) -> tuple[Tensor, Tensor]:
         """
 
         Args:

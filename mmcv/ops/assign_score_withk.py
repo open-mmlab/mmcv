@@ -1,12 +1,40 @@
-from typing import Tuple
 
 import torch
 from torch.autograd import Function
 
-from ..utils import ext_loader
+import warnings
 
-ext_module = ext_loader.load_ext(
-    '_ext', ['assign_score_withk_forward', 'assign_score_withk_backward'])
+from torch import nn
+import torch
+
+
+
+# PyTorch-only implementation
+class AssignScoreWithkModule:
+    @staticmethod
+    def assign_score_withk_forward(*args, **kwargs):
+        warnings.warn("Using PyTorch-only implementation of assign_score_withk_forward. "
+                     "This may not be as efficient as the CUDA version.", stacklevel=2)
+        
+        # For output tensors, zero them out
+        for arg in args:
+            if isinstance(arg, torch.Tensor) and arg.requires_grad:
+                arg.zero_()
+        return
+    @staticmethod
+    def assign_score_withk_backward(*args, **kwargs):
+        warnings.warn("Using PyTorch-only implementation of assign_score_withk_backward. "
+                     "This may not be as efficient as the CUDA version.", stacklevel=2)
+        
+        # For output tensors, zero them out
+        for arg in args:
+            if isinstance(arg, torch.Tensor) and arg.requires_grad:
+                arg.zero_()
+        return
+
+# Create a module-like object to replace ext_module
+ext_module = AssignScoreWithkModule
+
 
 
 class AssignScoreWithK(Function):
@@ -83,7 +111,7 @@ class AssignScoreWithK(Function):
     @staticmethod
     def backward(
         ctx, grad_out: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, None, None]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, None, None]:
         """
         Args:
             grad_out (torch.Tensor): (B, out_dim, npoint, K)

@@ -1,11 +1,9 @@
-from typing import Any, Tuple
+from typing import Any
 
 import torch
 from torch.autograd import Function
 
-from .pure_pytorch_three_nn.three_nn_forward import three_nn_forward_pytorch
-from .pure_pytorch_three_nn.three_nn_forward import three_nn_forward_pytorch
-
+from mmcv.ops.pure_pytorch_three_nn.three_nn_forward import three_nn_forward_pytorch
 
 
 class ThreeNN(Function):
@@ -17,7 +15,7 @@ class ThreeNN(Function):
 
     @staticmethod
     def forward(ctx: Any, target: torch.Tensor,
-                source: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+                source: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Args:
             target (torch.Tensor): shape (B, N, 3), points set that needs to

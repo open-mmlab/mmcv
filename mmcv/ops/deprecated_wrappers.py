@@ -3,7 +3,7 @@
 # Module wrappers for empty tensor have been moved to mmcv.cnn.bricks.
 import warnings
 
-from ..cnn.bricks.wrappers import Conv2d, ConvTranspose2d, Linear, MaxPool2d
+from mmcv.cnn.bricks.wrappers import Conv2d, ConvTranspose2d, Linear, MaxPool2d
 
 
 class Conv2d_deprecated(Conv2d):
@@ -13,7 +13,7 @@ class Conv2d_deprecated(Conv2d):
         warnings.warn(
             'Importing Conv2d wrapper from "mmcv.ops" will be deprecated in'
             ' the future. Please import them from "mmcv.cnn" instead',
-            DeprecationWarning)
+            DeprecationWarning, stacklevel=2)
 
 
 class ConvTranspose2d_deprecated(ConvTranspose2d):
@@ -23,7 +23,7 @@ class ConvTranspose2d_deprecated(ConvTranspose2d):
         warnings.warn(
             'Importing ConvTranspose2d wrapper from "mmcv.ops" will be '
             'deprecated in the future. Please import them from "mmcv.cnn" '
-            'instead', DeprecationWarning)
+            'instead', DeprecationWarning, stacklevel=2)
 
 
 class MaxPool2d_deprecated(MaxPool2d):
@@ -33,7 +33,7 @@ class MaxPool2d_deprecated(MaxPool2d):
         warnings.warn(
             'Importing MaxPool2d wrapper from "mmcv.ops" will be deprecated in'
             ' the future. Please import them from "mmcv.cnn" instead',
-            DeprecationWarning)
+            DeprecationWarning, stacklevel=2)
 
 
 class Linear_deprecated(Linear):
@@ -43,4 +43,4 @@ class Linear_deprecated(Linear):
         warnings.warn(
             'Importing Linear wrapper from "mmcv.ops" will be deprecated in'
             ' the future. Please import them from "mmcv.cnn" instead',
-            DeprecationWarning)
+            DeprecationWarning, stacklevel=2)

@@ -13,12 +13,12 @@ from typing import Dict, Optional, Union
 import numpy as np
 import torch
 
-from .pure_pytorch_filtered_lrelu.filtered_lrelu import filtered_lrelu_pytorch
-from .pure_pytorch_filtered_lrelu.filtered_lrelu_act_ import filtered_lrelu_act__pytorch
-from .pure_pytorch_filtered_lrelu.filtered_lrelu import filtered_lrelu_pytorch
-from .pure_pytorch_filtered_lrelu.filtered_lrelu_act_ import filtered_lrelu_act__pytorch
-from .bias_act import bias_act
-from .upfirdn2d import _get_filter_size, _parse_padding, upfirdn2d
+from mmcv.ops.pure_pytorch_filtered_lrelu.filtered_lrelu import filtered_lrelu_pytorch
+from mmcv.ops.pure_pytorch_filtered_lrelu.filtered_lrelu_act_ import filtered_lrelu_act__pytorch
+from mmcv.ops.pure_pytorch_filtered_lrelu.filtered_lrelu import filtered_lrelu_pytorch
+from mmcv.ops.pure_pytorch_filtered_lrelu.filtered_lrelu_act_ import filtered_lrelu_act__pytorch
+from mmcv.ops.bias_act import bias_act
+from mmcv.ops.upfirdn2d import _get_filter_size, _parse_padding, upfirdn2d
 
                                  ['filtered_lrelu', 'filtered_lrelu_act_'])
 

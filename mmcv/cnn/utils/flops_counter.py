@@ -25,22 +25,22 @@
 
 import sys
 import warnings
+from collections.abc import Callable
 from functools import partial
-from typing import Any, Callable, Dict, Optional, TextIO, Tuple
+from typing import Any, TextIO
 
 import numpy as np
 import torch
 import torch.nn as nn
 
-from mmcv.cnn.bricks import (Conv2d, Conv3d, ConvTranspose2d, Linear,
-                             MaxPool2d, MaxPool3d)
+from mmcv.cnn.bricks import Conv2d, Conv3d, ConvTranspose2d, Linear, MaxPool2d, MaxPool3d
 
 
 def get_model_complexity_info(model: nn.Module,
                               input_shape: tuple,
                               print_per_layer_stat: bool = True,
                               as_strings: bool = True,
-                              input_constructor: Optional[Callable] = None,
+                              input_constructor: Callable | None = None,
                               flush: bool = False,
                               ost: TextIO = sys.stdout) -> tuple:
     """Get complexity information of a model.
@@ -119,7 +119,7 @@ def get_model_complexity_info(model: nn.Module,
 
 
 def flops_to_string(flops: float,
-                    units: Optional[str] = 'GFLOPs',
+                    units: str | None = 'GFLOPs',
                     precision: int = 2) -> str:
     """Convert FLOPs number into a string.
 
@@ -164,7 +164,7 @@ def flops_to_string(flops: float,
 
 
 def params_to_string(num_params: float,
-                     units: Optional[str] = None,
+                     units: str | None = None,
                      precision: int = 2) -> str:
     """Convert parameter number into a string.
 
@@ -205,7 +205,7 @@ def params_to_string(num_params: float,
 def print_model_with_flops(model: nn.Module,
                            total_flops: float,
                            total_params: float,
-                           units: Optional[str] = 'GFLOPs',
+                           units: str | None = 'GFLOPs',
                            precision: int = 3,
                            ost: TextIO = sys.stdout,
                            flush: bool = False) -> None:
@@ -327,13 +327,13 @@ def get_model_parameters_number(model: nn.Module) -> float:
 def add_flops_counting_methods(net_main_module: nn.Module) -> nn.Module:
     # adding additional methods to the existing module object,
     # this is done this way so that each function has access to self object
-    net_main_module.start_flops_count = start_flops_count.__get__(  # type: ignore # noqa E501
+    net_main_module.start_flops_count = start_flops_count.__get__(  # type: ignore
         net_main_module)
-    net_main_module.stop_flops_count = stop_flops_count.__get__(  # type: ignore # noqa E501
+    net_main_module.stop_flops_count = stop_flops_count.__get__(  # type: ignore
         net_main_module)
-    net_main_module.reset_flops_count = reset_flops_count.__get__(  # type: ignore # noqa E501
+    net_main_module.reset_flops_count = reset_flops_count.__get__(  # type: ignore
         net_main_module)
-    net_main_module.compute_average_flops_cost = compute_average_flops_cost.__get__(  # type: ignore # noqa E501
+    net_main_module.compute_average_flops_cost = compute_average_flops_cost.__get__(  # type: ignore
         net_main_module)
 
     net_main_module.reset_flops_count()
@@ -341,7 +341,7 @@ def add_flops_counting_methods(net_main_module: nn.Module) -> nn.Module:
     return net_main_module
 
 
-def compute_average_flops_cost(self) -> Tuple[float, float]:
+def compute_average_flops_cost(self) -> tuple[float, float]:
     """Compute average FLOPs cost.
 
     A method to compute average FLOPs cost, which will be available after
@@ -509,7 +509,7 @@ def batch_counter_hook(module: nn.Module, input: tuple, output: Any) -> None:
         batch_size = len(input[0])
     else:
         warnings.warn('No positional inputs found for a module, '
-                      'assuming batch size is 1.')
+                      'assuming batch size is 1.', stacklevel=2)
     module.__batch_counter__ += batch_size
 
 
@@ -537,7 +537,7 @@ def add_flops_counter_variable_or_reset(module: nn.Module) -> None:
         if hasattr(module, '__flops__') or hasattr(module, '__params__'):
             warnings.warn('variables __flops__ or __params__ are already '
                           'defined for the module' + type(module).__name__ +
-                          ' ptflops can affect your code!')
+                          ' ptflops can affect your code!', stacklevel=2)
         module.__flops__ = 0
         module.__params__ = get_model_parameters_number(module)
 
@@ -555,7 +555,7 @@ def remove_flops_counter_hook_function(module: nn.Module) -> None:
             del module.__flops_handle__
 
 
-def get_modules_mapping() -> Dict:
+def get_modules_mapping() -> dict:
     return {
         # convolutions
         nn.Conv1d: conv_flops_counter_hook,

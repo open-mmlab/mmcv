@@ -2,7 +2,6 @@
 import numpy as np
 import pytest
 import torch
-
 from mmcv.utils import IS_CUDA_AVAILABLE
 
 
@@ -96,7 +95,7 @@ class TestNMSQuadri:
                                   dtype=np.float32)
         np_expect_keep_inds = np.array([3, 1, 0, 2], dtype=np.int64)
 
-        nms_cfg = dict(type='nms_quadri', iou_threshold=0.3)
+        nms_cfg = {'type': 'nms_quadri', 'iou_threshold': 0.3}
 
         # test class_agnostic is True
         boxes, keep = batched_nms(

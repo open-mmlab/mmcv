@@ -1,4 +1,3 @@
-from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -26,9 +25,9 @@ class SparseConvTensor:
     def __init__(self,
                  features: torch.Tensor,
                  indices: torch.Tensor,
-                 spatial_shape: Union[List, Tuple],
+                 spatial_shape: list | tuple,
                  batch_size: int,
-                 grid: Optional[torch.Tensor] = None):
+                 grid: torch.Tensor | None = None):
         self.features = features
         self.indices = indices
         if self.indices.dtype != torch.int32:
@@ -50,8 +49,7 @@ class SparseConvTensor:
         return None
 
     def dense(self, channels_first: bool = True) -> torch.Tensor:
-        output_shape = [self.batch_size] + list(
-            self.spatial_shape) + [self.features.shape[1]]
+        output_shape = [self.batch_size, *list(self.spatial_shape), self.features.shape[1]]
         res = scatter_nd(self.indices.long(), self.features, output_shape)
         if not channels_first:
             return res

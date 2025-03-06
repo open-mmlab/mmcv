@@ -1,9 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 
-from .pure_pytorch_bbox.bbox_overlaps import bbox_overlaps_pytorch
-from .pure_pytorch_bbox.bbox_overlaps import bbox_overlaps_pytorch
-
+from mmcv.ops.pure_pytorch_bbox.bbox_overlaps import bbox_overlaps_pytorch
 
 
 def _bbox_overlaps_cpu(bboxes1: torch.Tensor,

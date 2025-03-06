@@ -1,9 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 
-from .pure_pytorch_box_iou_quadri.box_iou_quadri import box_iou_quadri_pytorch
-from .pure_pytorch_box_iou_quadri.box_iou_quadri import box_iou_quadri_pytorch
-
+from mmcv.ops.pure_pytorch_box_iou_quadri.box_iou_quadri import box_iou_quadri_pytorch
 
 
 def box_iou_quadri(bboxes1: torch.Tensor,

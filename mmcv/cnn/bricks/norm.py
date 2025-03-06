@@ -1,12 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
-from typing import Dict, Tuple, Union
 
 import torch.nn as nn
 from mmengine.registry import MODELS
 from mmengine.utils import is_tuple_of
-from mmengine.utils.dl_utils.parrots_wrapper import (SyncBatchNorm, _BatchNorm,
-                                                     _InstanceNorm)
+from mmengine.utils.dl_utils.parrots_wrapper import SyncBatchNorm, _BatchNorm, _InstanceNorm
 
 MODELS.register_module('BN', module=nn.BatchNorm2d)
 MODELS.register_module('BN1d', module=nn.BatchNorm1d)
@@ -70,9 +68,9 @@ def infer_abbr(class_type):
             return 'norm_layer'
 
 
-def build_norm_layer(cfg: Dict,
+def build_norm_layer(cfg: dict,
                      num_features: int,
-                     postfix: Union[int, str] = '') -> Tuple[str, nn.Module]:
+                     postfix: int | str = '') -> tuple[str, nn.Module]:
     """Build normalization layer.
 
     Args:
@@ -111,7 +109,7 @@ def build_norm_layer(cfg: Dict,
                            f'scope name {registry.scope}')
     abbr = infer_abbr(norm_layer)
 
-    assert isinstance(postfix, (int, str))
+    assert isinstance(postfix, int | str)
     name = abbr + str(postfix)
 
     requires_grad = cfg_.pop('requires_grad', True)
@@ -131,7 +129,7 @@ def build_norm_layer(cfg: Dict,
 
 
 def is_norm(layer: nn.Module,
-            exclude: Union[type, tuple, None] = None) -> bool:
+            exclude: type | tuple | None = None) -> bool:
     """Check if a layer is a normalization layer.
 
     Args:

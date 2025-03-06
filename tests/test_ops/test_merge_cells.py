@@ -8,9 +8,7 @@ import math
 import pytest
 import torch
 import torch.nn.functional as F
-
-from mmcv.ops.merge_cells import (BaseMergeCell, ConcatCell, GlobalPoolingCell,
-                                  SumCell)
+from mmcv.ops.merge_cells import BaseMergeCell, ConcatCell, GlobalPoolingCell, SumCell
 
 
 # All size (14, 7) below is to test the situation that

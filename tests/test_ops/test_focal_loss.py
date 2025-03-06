@@ -2,7 +2,6 @@
 import numpy as np
 import pytest
 import torch
-
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
 
 _USING_PARROTS = True
@@ -45,7 +44,7 @@ class Testfocalloss:
         from mmcv.ops import softmax_focal_loss
         alpha = 0.25
         gamma = 2.0
-        for case, output in zip(inputs, softmax_outputs):
+        for case, output in zip(inputs, softmax_outputs, strict=False):
             np_x = np.array(case[0])
             np_y = np.array(case[1])
             np_x_grad = np.array(output[1])
@@ -64,7 +63,7 @@ class Testfocalloss:
         from mmcv.ops import sigmoid_focal_loss
         alpha = 0.25
         gamma = 2.0
-        for case, output in zip(inputs, sigmoid_outputs):
+        for case, output in zip(inputs, sigmoid_outputs, strict=False):
             np_x = np.array(case[0])
             np_y = np.array(case[1])
             np_x_grad = np.array(output[1])

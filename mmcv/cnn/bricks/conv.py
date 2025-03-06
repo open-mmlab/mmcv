@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
-from typing import Dict, Optional
 
 from mmengine.registry import MODELS
 from torch import nn
@@ -11,7 +10,7 @@ MODELS.register_module('Conv3d', module=nn.Conv3d)
 MODELS.register_module('Conv', module=nn.Conv2d)
 
 
-def build_conv_layer(cfg: Optional[Dict], *args, **kwargs) -> nn.Module:
+def build_conv_layer(cfg: dict | None, *args, **kwargs) -> nn.Module:
     """Build convolution layer.
 
     Args:
@@ -27,7 +26,7 @@ def build_conv_layer(cfg: Optional[Dict], *args, **kwargs) -> nn.Module:
         nn.Module: Created conv layer.
     """
     if cfg is None:
-        cfg_ = dict(type='Conv2d')
+        cfg_ = {'type': 'Conv2d'}
     else:
         if not isinstance(cfg, dict):
             raise TypeError('cfg must be a dict')

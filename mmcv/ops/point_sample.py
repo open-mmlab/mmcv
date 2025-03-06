@@ -1,6 +1,5 @@
-# Modified from https://github.com/facebookresearch/detectron2/tree/master/projects/PointRend  # noqa
+# Modified from https://github.com/facebookresearch/detectron2/tree/master/projects/PointRend
 
-from typing import Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -113,7 +112,7 @@ def denormalize(grid: Tensor) -> Tensor:
     return grid * 2.0 - 1.0
 
 
-def generate_grid(num_grid: int, size: Tuple[int, int],
+def generate_grid(num_grid: int, size: tuple[int, int],
                   device: torch.device) -> Tensor:
     """Generate regular square grid of points in [0, 1] x [0, 1] coordinate
     space.
@@ -183,7 +182,7 @@ def get_shape_from_feature_map(x: Tensor) -> Tensor:
 
 
 def abs_img_point_to_rel_img_point(abs_img_points: Tensor,
-                                   img: Union[tuple, Tensor],
+                                   img: tuple | Tensor,
                                    spatial_scale: float = 1.) -> Tensor:
     """Convert image based absolute point coordinates to image based relative
     coordinates for sampling.
@@ -217,7 +216,7 @@ def abs_img_point_to_rel_img_point(abs_img_points: Tensor,
 
 def rel_roi_point_to_rel_img_point(rois: Tensor,
                                    rel_roi_points: Tensor,
-                                   img: Union[tuple, Tensor],
+                                   img: tuple | Tensor,
                                    spatial_scale: float = 1.) -> Tensor:
     """Convert roi based relative point coordinates to image based absolute
     point coordinates.
@@ -277,7 +276,7 @@ def point_sample(input: Tensor,
 class SimpleRoIAlign(nn.Module):
 
     def __init__(self,
-                 output_size: Tuple[int],
+                 output_size: tuple[int],
                  spatial_scale: float,
                  aligned: bool = True) -> None:
         """Simple RoI align in PointRend, faster than standard RoIAlign.
@@ -327,6 +326,5 @@ class SimpleRoIAlign(nn.Module):
 
     def __repr__(self) -> str:
         format_str = self.__class__.__name__
-        format_str += '(output_size={}, spatial_scale={}'.format(
-            self.output_size, self.spatial_scale)
+        format_str += f'(output_size={self.output_size}, spatial_scale={self.spatial_scale}'
         return format_str

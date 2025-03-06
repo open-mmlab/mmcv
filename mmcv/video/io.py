@@ -3,11 +3,16 @@ import os.path as osp
 from collections import OrderedDict
 
 import cv2
-from cv2 import (CAP_PROP_FOURCC, CAP_PROP_FPS, CAP_PROP_FRAME_COUNT,
-                 CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH,
-                 CAP_PROP_POS_FRAMES, VideoWriter_fourcc)
-from mmengine.utils import (check_file_exist, mkdir_or_exist, scandir,
-                            track_progress)
+from cv2 import (
+    CAP_PROP_FOURCC,
+    CAP_PROP_FPS,
+    CAP_PROP_FRAME_COUNT,
+    CAP_PROP_FRAME_HEIGHT,
+    CAP_PROP_FRAME_WIDTH,
+    CAP_PROP_POS_FRAMES,
+    VideoWriter_fourcc,
+)
+from mmengine.utils import check_file_exist, mkdir_or_exist, scandir, track_progress
 
 
 class Cache:
@@ -294,7 +299,7 @@ def frames2video(frame_dir: str,
     """
     if end == 0:
         ext = filename_tmpl.split('.')[-1]
-        end = len([name for name in scandir(frame_dir, ext)])
+        end = len(list(scandir(frame_dir, ext)))
     first_file = osp.join(frame_dir, filename_tmpl.format(start))
     check_file_exist(first_file, 'The start frame not found: ' + first_file)
     img = cv2.imread(first_file)

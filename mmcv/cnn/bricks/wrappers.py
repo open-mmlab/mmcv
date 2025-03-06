@@ -41,7 +41,7 @@ class Conv2d(nn.Conv2d):
         if obsolete_torch_version(TORCH_VERSION, (1, 4)) and x.numel() == 0:
             out_shape = [x.shape[0], self.out_channels]
             for i, k, p, s, d in zip(x.shape[-2:], self.kernel_size,
-                                     self.padding, self.stride, self.dilation):
+                                     self.padding, self.stride, self.dilation, strict=False):
                 o = (i + 2 * p - (d * (k - 1) + 1)) // s + 1
                 out_shape.append(o)
             empty = NewEmptyTensorOp.apply(x, out_shape)
@@ -62,7 +62,7 @@ class Conv3d(nn.Conv3d):
         if obsolete_torch_version(TORCH_VERSION, (1, 4)) and x.numel() == 0:
             out_shape = [x.shape[0], self.out_channels]
             for i, k, p, s, d in zip(x.shape[-3:], self.kernel_size,
-                                     self.padding, self.stride, self.dilation):
+                                     self.padding, self.stride, self.dilation, strict=False):
                 o = (i + 2 * p - (d * (k - 1) + 1)) // s + 1
                 out_shape.append(o)
             empty = NewEmptyTensorOp.apply(x, out_shape)
@@ -85,7 +85,7 @@ class ConvTranspose2d(nn.ConvTranspose2d):
             out_shape = [x.shape[0], self.out_channels]
             for i, k, p, s, d, op in zip(x.shape[-2:], self.kernel_size,
                                          self.padding, self.stride,
-                                         self.dilation, self.output_padding):
+                                         self.dilation, self.output_padding, strict=False):
                 out_shape.append((i - 1) * s - 2 * p + (d * (k - 1) + 1) + op)
             empty = NewEmptyTensorOp.apply(x, out_shape)
             if self.training:
@@ -107,7 +107,7 @@ class ConvTranspose3d(nn.ConvTranspose3d):
             out_shape = [x.shape[0], self.out_channels]
             for i, k, p, s, d, op in zip(x.shape[-3:], self.kernel_size,
                                          self.padding, self.stride,
-                                         self.dilation, self.output_padding):
+                                         self.dilation, self.output_padding, strict=False):
                 out_shape.append((i - 1) * s - 2 * p + (d * (k - 1) + 1) + op)
             empty = NewEmptyTensorOp.apply(x, out_shape)
             if self.training:
@@ -128,7 +128,7 @@ class MaxPool2d(nn.MaxPool2d):
             out_shape = list(x.shape[:2])
             for i, k, p, s, d in zip(x.shape[-2:], _pair(self.kernel_size),
                                      _pair(self.padding), _pair(self.stride),
-                                     _pair(self.dilation)):
+                                     _pair(self.dilation), strict=False):
                 o = (i + 2 * p - (d * (k - 1) + 1)) / s + 1
                 o = math.ceil(o) if self.ceil_mode else math.floor(o)
                 out_shape.append(o)
@@ -147,7 +147,7 @@ class MaxPool3d(nn.MaxPool3d):
             for i, k, p, s, d in zip(x.shape[-3:], _triple(self.kernel_size),
                                      _triple(self.padding),
                                      _triple(self.stride),
-                                     _triple(self.dilation)):
+                                     _triple(self.dilation), strict=False):
                 o = (i + 2 * p - (d * (k - 1) + 1)) / s + 1
                 o = math.ceil(o) if self.ceil_mode else math.floor(o)
                 out_shape.append(o)

@@ -1,10 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
-
-from mmcv.ops.multi_scale_deform_attn import (
-    MultiScaleDeformableAttention, MultiScaleDeformableAttnFunction,
-    multi_scale_deformable_attn_pytorch)
+from mmcv.ops.multi_scale_deform_attn import MultiScaleDeformableAttention, MultiScaleDeformableAttnFunction, multi_scale_deformable_attn_pytorch
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
 
 _USING_PARROTS = True

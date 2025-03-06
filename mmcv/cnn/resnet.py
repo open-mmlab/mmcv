@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
-from typing import Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
 
 import torch.nn as nn
 import torch.utils.checkpoint as cp
@@ -32,7 +32,7 @@ class BasicBlock(nn.Module):
                  planes: int,
                  stride: int = 1,
                  dilation: int = 1,
-                 downsample: Optional[nn.Module] = None,
+                 downsample: nn.Module | None = None,
                  style: str = 'pytorch',
                  with_cp: bool = False):
         super().__init__()
@@ -74,7 +74,7 @@ class Bottleneck(nn.Module):
                  planes: int,
                  stride: int = 1,
                  dilation: int = 1,
-                 downsample: Optional[nn.Module] = None,
+                 downsample: nn.Module | None = None,
                  style: str = 'pytorch',
                  with_cp: bool = False):
         """Bottleneck block.
@@ -268,7 +268,7 @@ class ResNet(nn.Module):
         self.feat_dim = block.expansion * 64 * 2**(  # type: ignore
             len(stage_blocks) - 1)
 
-    def init_weights(self, pretrained: Optional[str] = None) -> None:
+    def init_weights(self, pretrained: str | None = None) -> None:
         if isinstance(pretrained, str):
             logger = logging.getLogger()
             load_checkpoint(self, pretrained, strict=False, logger=logger)
@@ -281,7 +281,7 @@ class ResNet(nn.Module):
         else:
             raise TypeError('pretrained must be a str or None')
 
-    def forward(self, x: Tensor) -> Union[Tensor, Tuple[Tensor]]:
+    def forward(self, x: Tensor) -> Tensor | tuple[Tensor]:
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)

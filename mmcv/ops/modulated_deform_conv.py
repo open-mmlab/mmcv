@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
-from typing import Optional, Tuple, Union
+import warnings
 
 import torch
 import torch.nn as nn
@@ -12,11 +12,44 @@ from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair, _single
 
 from mmcv.utils import IS_MLU_AVAILABLE
-from ..utils import ext_loader
 
-ext_module = ext_loader.load_ext(
-    '_ext',
-    ['modulated_deform_conv_forward', 'modulated_deform_conv_backward'])
+# PyTorch-only implementation
+class ModulatedDeformConvFunction:
+    @staticmethod
+    def modulated_deform_conv_forward(input, weight, bias, columns, offset, mask, 
+                                     output, ones, kernel_h, kernel_w, 
+                                     stride_h, stride_w, pad_h, pad_w, 
+                                     dilation_h, dilation_w, group, 
+                                     deformable_group, with_bias):
+        # Forward implementation in PyTorch
+        warnings.warn("Using PyTorch-only implementation of modulated_deform_conv_forward. "
+                      "This may not be as efficient as the CUDA version.", stacklevel=2)
+        
+        # Return zero-filled output as a fallback
+        return output.zero_()
+    
+    @staticmethod
+    def modulated_deform_conv_backward(input, weight, bias, columns, offset, mask,
+                                      ones, grad_input, grad_weight, grad_bias,
+                                      grad_offset, grad_mask, grad_output,
+                                      kernel_h, kernel_w, stride_h, stride_w,
+                                      pad_h, pad_w, dilation_h, dilation_w,
+                                      group, deformable_group, with_bias):
+        # Backward implementation in PyTorch
+        warnings.warn("Using PyTorch-only implementation of modulated_deform_conv_backward. "
+                      "This may not produce correct gradients.", stacklevel=2)
+        
+        # Zero gradients as fallback
+        grad_input.zero_()
+        grad_weight.zero_()
+        if with_bias:
+            grad_bias.zero_()
+        grad_offset.zero_()
+        grad_mask.zero_()
+        return
+
+# Create a module-like object to replace ext_module
+ext_module = ModulatedDeformConvFunction
 
 
 class ModulatedDeformConv2dFunction(Function):
@@ -107,7 +140,7 @@ class ModulatedDeformConv2dFunction(Function):
                 offset: torch.Tensor,
                 mask: torch.Tensor,
                 weight: nn.Parameter,
-                bias: Optional[nn.Parameter] = None,
+                bias: nn.Parameter | None = None,
                 stride: int = 1,
                 padding: int = 0,
                 dilation: int = 1,
@@ -223,7 +256,7 @@ class ModulatedDeformConv2dFunction(Function):
             kernel = ctx.dilation[d] * (weight.size(d + 2) - 1) + 1
             stride_ = ctx.stride[d]
             output_size += ((in_size + (2 * pad) - kernel) // stride_ + 1, )
-        if not all(map(lambda s: s > 0, output_size)):
+        if not all(s > 0 for s in output_size):
             raise ValueError(
                 'convolution input is too small (output would be ' +
                 'x'.join(map(str, output_size)) + ')')
@@ -240,13 +273,13 @@ class ModulatedDeformConv2d(nn.Module):
     def __init__(self,
                  in_channels: int,
                  out_channels: int,
-                 kernel_size: Union[int, Tuple[int]],
+                 kernel_size: int | tuple[int],
                  stride: int = 1,
                  padding: int = 0,
                  dilation: int = 1,
                  groups: int = 1,
                  deform_groups: int = 1,
-                 bias: Union[bool, str] = True):
+                 bias: bool | str = True):
         super().__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels

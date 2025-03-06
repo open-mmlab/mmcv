@@ -16,7 +16,7 @@ from typing import Any
 import torch
 from torch.autograd import Function
 
-from . import sparse_ops as ops
+from mmcv.ops import sparse_ops as ops
 
 
 class SparseConvFunction(Function):

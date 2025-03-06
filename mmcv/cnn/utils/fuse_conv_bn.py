@@ -43,7 +43,7 @@ def fuse_conv_bn(module: nn.Module) -> nn.Module:
 
     for name, child in module.named_children():
         if isinstance(child,
-                      (nn.modules.batchnorm._BatchNorm, nn.SyncBatchNorm)):
+                      nn.modules.batchnorm._BatchNorm | nn.SyncBatchNorm):
             if last_conv is None:  # only fuse BN that is after Conv
                 continue
             fused_conv = _fuse_conv_bn(last_conv, child)

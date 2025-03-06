@@ -8,10 +8,10 @@ import torch
 import torch.nn as nn
 from torch.autograd import Function
 
-from .pure_pytorch_tin_shift.tin_shift_forward import tin_shift_forward_pytorch
-from .pure_pytorch_tin_shift.tin_shift_backward import tin_shift_backward_pytorch
-from .pure_pytorch_tin_shift.tin_shift_forward import tin_shift_forward_pytorch
-from .pure_pytorch_tin_shift.tin_shift_backward import tin_shift_backward_pytorch
+from mmcv.ops.pure_pytorch_tin_shift.tin_shift_forward import tin_shift_forward_pytorch
+from mmcv.ops.pure_pytorch_tin_shift.tin_shift_backward import tin_shift_backward_pytorch
+from mmcv.ops.pure_pytorch_tin_shift.tin_shift_forward import tin_shift_forward_pytorch
+from mmcv.ops.pure_pytorch_tin_shift.tin_shift_backward import tin_shift_backward_pytorch
 
                                  ['tin_shift_forward', 'tin_shift_backward'])
 

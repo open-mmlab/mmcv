@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
 import platform
-from typing import Dict, Tuple, Union
 
 import torch.nn as nn
 from mmengine.registry import MODELS
@@ -55,9 +54,9 @@ def infer_abbr(class_type: type) -> str:
         return camel2snack(class_type.__name__)
 
 
-def build_plugin_layer(cfg: Dict,
-                       postfix: Union[int, str] = '',
-                       **kwargs) -> Tuple[str, nn.Module]:
+def build_plugin_layer(cfg: dict,
+                       postfix: int | str = '',
+                       **kwargs) -> tuple[str, nn.Module]:
     """Build plugin layer.
 
     Args:
@@ -93,7 +92,7 @@ def build_plugin_layer(cfg: Dict,
                 f'name {registry.scope}')
     abbr = infer_abbr(plugin_layer)
 
-    assert isinstance(postfix, (int, str))
+    assert isinstance(postfix, int | str)
     name = abbr + str(postfix)
 
     layer = plugin_layer(**kwargs, **cfg_)

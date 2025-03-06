@@ -1,12 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
+import re
 
 import numpy as np
 import pytest
 import torch
 import torch.distributed as dist
 import torch.nn as nn
-import re
 
 
 class TestSyncBN:

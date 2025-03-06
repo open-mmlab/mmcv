@@ -1,9 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 
-from .pure_pytorch_min_area_polygons.min_area_polygons import min_area_polygons_pytorch
-from .pure_pytorch_min_area_polygons.min_area_polygons import min_area_polygons_pytorch
-
+from mmcv.ops.pure_pytorch_min_area_polygons.min_area_polygons import min_area_polygons_pytorch
 
 
 def min_area_polygons(pointsets: torch.Tensor) -> torch.Tensor:

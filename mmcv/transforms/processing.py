@@ -2,18 +2,20 @@
 import copy
 import random
 import warnings
+from collections.abc import Iterable, Sequence
 from itertools import product
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
+from typing import Union
 
 import mmengine
 import numpy as np
 
 import mmcv
 from mmcv.image.geometric import _scale_size
-from .base import BaseTransform
-from .builder import TRANSFORMS
-from .utils import cache_randomness
-from .wrappers import Compose
+
+from mmcv.transforms.base import BaseTransform
+from mmcv.transforms.builder import TRANSFORMS
+from mmcv.transforms.utils import cache_randomness
+from mmcv.transforms.wrappers import Compose
 
 Number = Union[int, float]
 
@@ -69,8 +71,8 @@ class Normalize(BaseTransform):
 
         results['img'] = mmcv.imnormalize(results['img'], self.mean, self.std,
                                           self.to_rgb)
-        results['img_norm_cfg'] = dict(
-            mean=self.mean, std=self.std, to_rgb=self.to_rgb)
+        results['img_norm_cfg'] = {
+            'mean': self.mean, 'std': self.std, 'to_rgb': self.to_rgb}
         return results
 
     def __repr__(self) -> str:
@@ -130,9 +132,8 @@ class Resize(BaseTransform):
     """
 
     def __init__(self,
-                 scale: Optional[Union[int, Tuple[int, int]]] = None,
-                 scale_factor: Optional[Union[float, Tuple[float,
-                                                           float]]] = None,
+                 scale: int | tuple[int, int] | None = None,
+                 scale_factor: float | tuple[float, float] | None = None,
                  keep_ratio: bool = False,
                  clip_object_border: bool = True,
                  backend: str = 'cv2',
@@ -331,15 +332,17 @@ class Pad(BaseTransform):
     """
 
     def __init__(self,
-                 size: Optional[Tuple[int, int]] = None,
-                 size_divisor: Optional[int] = None,
+                 size: tuple[int, int] | None = None,
+                 size_divisor: int | None = None,
                  pad_to_square: bool = False,
-                 pad_val: Union[Number, dict] = dict(img=0, seg=255),
+                 pad_val: Number | dict = None,
                  padding_mode: str = 'constant') -> None:
+        if pad_val is None:
+            pad_val = {'img': 0, 'seg': 255}
         self.size = size
         self.size_divisor = size_divisor
         if isinstance(pad_val, int):
-            pad_val = dict(img=pad_val, seg=255)
+            pad_val = {'img': pad_val, 'seg': 255}
         assert isinstance(pad_val, dict), 'pad_val '
         self.pad_val = pad_val
         self.pad_to_square = pad_to_square
@@ -466,10 +469,12 @@ class CenterCrop(BaseTransform):
     """
 
     def __init__(self,
-                 crop_size: Union[int, Tuple[int, int]],
+                 crop_size: int | tuple[int, int],
                  auto_pad: bool = False,
-                 pad_cfg: dict = dict(type='Pad'),
+                 pad_cfg: dict | None = None,
                  clip_object_border: bool = True) -> None:
+        if pad_cfg is None:
+            pad_cfg = {'type': 'Pad'}
         super().__init__()
         assert isinstance(crop_size, int) or (
             isinstance(crop_size, tuple) and len(crop_size) == 2
@@ -487,7 +492,7 @@ class CenterCrop(BaseTransform):
         if 'size' in self.pad_cfg and auto_pad:
             warnings.warn('``size`` is set in ``pad_cfg``,'
                           'however this argument will be overwritten'
-                          ' according to crop size and image size')
+                          ' according to crop size and image size', stacklevel=2)
 
         self.clip_object_border = clip_object_border
 
@@ -590,7 +595,7 @@ class CenterCrop(BaseTransform):
                 img_width = max(img_width, crop_width)
                 pad_size = (img_width, img_height)
                 _pad_cfg = self.pad_cfg.copy()
-                _pad_cfg.update(dict(size=pad_size))
+                _pad_cfg.update({'size': pad_size})
                 pad_transform = TRANSFORMS.build(_pad_cfg)
                 results = pad_transform(results)
             else:
@@ -788,14 +793,18 @@ class MultiScaleFlipAug(BaseTransform):
 
     def __init__(
         self,
-        transforms: List[dict],
-        scales: Optional[Union[Tuple, List[Tuple]]] = None,
-        scale_factor: Optional[Union[float, List[float]]] = None,
+        transforms: list[dict],
+        scales: tuple | list[tuple] | None = None,
+        scale_factor: float | list[float] | None = None,
         allow_flip: bool = False,
-        flip_direction: Union[str, List[str]] = 'horizontal',
-        resize_cfg: dict = dict(type='Resize', keep_ratio=True),
-        flip_cfg: dict = dict(type='RandomFlip')
+        flip_direction: str | list[str] = 'horizontal',
+        resize_cfg: dict | None = None,
+        flip_cfg: dict | None = None
     ) -> None:
+        if flip_cfg is None:
+            flip_cfg = {'type': 'RandomFlip'}
+        if resize_cfg is None:
+            resize_cfg = {'type': 'Resize', 'keep_ratio': True}
         super().__init__()
         self.transforms = Compose(transforms)  # type: ignore
 
@@ -820,11 +829,11 @@ class MultiScaleFlipAug(BaseTransform):
         assert mmengine.is_list_of(self.flip_direction, str)
         if not self.allow_flip and self.flip_direction != ['horizontal']:
             warnings.warn(
-                'flip_direction has no effect when flip is set to False')
+                'flip_direction has no effect when flip is set to False', stacklevel=2)
         self.resize_cfg = resize_cfg.copy()
         self.flip_cfg = flip_cfg
 
-    def transform(self, results: dict) -> Dict:
+    def transform(self, results: dict) -> dict:
         """Apply test time augment transforms on results.
 
         Args:
@@ -862,7 +871,7 @@ class MultiScaleFlipAug(BaseTransform):
                 inputs.append(packed_results['inputs'])  # type: ignore
                 data_samples.append(
                     packed_results['data_sample'])  # type: ignore
-        return dict(inputs=inputs, data_sample=data_samples)
+        return {'inputs': inputs, 'data_sample': data_samples}
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
@@ -993,7 +1002,7 @@ class TestTimeAug(BaseTransform):
         repr_str = self.__class__.__name__
         repr_str += 'transforms=\n'
         for subroutine in self.subroutines:
-            repr_str += f'{repr(subroutine)}\n'
+            repr_str += f'{subroutine!r}\n'
         return repr_str
 
 
@@ -1054,7 +1063,7 @@ class RandomChoiceResize(BaseTransform):
 
     def __init__(
         self,
-        scales: Sequence[Union[int, Tuple]],
+        scales: Sequence[int | tuple],
         resize_type: str = 'Resize',
         **resize_kwargs,
     ) -> None:
@@ -1070,7 +1079,7 @@ class RandomChoiceResize(BaseTransform):
         self.resize = TRANSFORMS.build({'scale': 0, **self.resize_cfg})
 
     @cache_randomness
-    def _random_select(self) -> Tuple[int, int]:
+    def _random_select(self) -> tuple[int, int]:
         """Randomly select an scale from given candidates.
 
         Returns:
@@ -1167,9 +1176,9 @@ class RandomFlip(BaseTransform):
     """
 
     def __init__(self,
-                 prob: Optional[Union[float, Iterable[float]]] = None,
-                 direction: Union[str, Sequence[Optional[str]]] = 'horizontal',
-                 swap_seg_labels: Optional[Sequence] = None) -> None:
+                 prob: float | Iterable[float] | None = None,
+                 direction: str | Sequence[str | None] = 'horizontal',
+                 swap_seg_labels: Sequence | None = None) -> None:
         if isinstance(prob, list):
             assert mmengine.is_list_of(prob, float)
             assert 0 <= sum(prob) <= 1
@@ -1195,7 +1204,7 @@ class RandomFlip(BaseTransform):
         if isinstance(prob, list):
             assert len(prob) == len(self.direction)
 
-    def _flip_bbox(self, bboxes: np.ndarray, img_shape: Tuple[int, int],
+    def _flip_bbox(self, bboxes: np.ndarray, img_shape: tuple[int, int],
                    direction: str) -> np.ndarray:
         """Flip bboxes horizontally.
 
@@ -1231,7 +1240,7 @@ class RandomFlip(BaseTransform):
     def _flip_keypoints(
         self,
         keypoints: np.ndarray,
-        img_shape: Tuple[int, int],
+        img_shape: tuple[int, int],
         direction: str,
     ) -> np.ndarray:
         """Flip keypoints horizontally, vertically or diagonally.
@@ -1279,12 +1288,12 @@ class RandomFlip(BaseTransform):
         if self.swap_seg_labels is not None:
             # to handle datasets with left/right annotations
             # like 'Left-arm' and 'Right-arm' in LIP dataset
-            # Modified from https://github.com/openseg-group/openseg.pytorch/blob/master/lib/datasets/tools/cv2_aug_transforms.py # noqa:E501
+            # Modified from https://github.com/openseg-group/openseg.pytorch/blob/master/lib/datasets/tools/cv2_aug_transforms.py
             # Licensed under MIT license
             temp = seg_map.copy()
-            assert isinstance(self.swap_seg_labels, (tuple, list))
+            assert isinstance(self.swap_seg_labels, tuple | list)
             for pair in self.swap_seg_labels:
-                assert isinstance(pair, (tuple, list)) and len(pair) == 2, \
+                assert isinstance(pair, tuple | list) and len(pair) == 2, \
                     'swap_seg_labels must be a sequence with pair, but got ' \
                     f'{self.swap_seg_labels}.'
                 seg_map[temp == pair[0]] = pair[1]
@@ -1297,14 +1306,14 @@ class RandomFlip(BaseTransform):
         if isinstance(self.direction,
                       Sequence) and not isinstance(self.direction, str):
             # None means non-flip
-            direction_list: list = list(self.direction) + [None]
+            direction_list: list = [*list(self.direction), None]
         elif isinstance(self.direction, str):
             # None means non-flip
             direction_list = [self.direction, None]
 
         if isinstance(self.prob, list):
             non_prob: float = 1 - sum(self.prob)
-            prob_list = self.prob + [non_prob]
+            prob_list = [*self.prob, non_prob]
         elif isinstance(self.prob, float):
             non_prob = 1. - self.prob
             # exclude non-flip
@@ -1456,8 +1465,8 @@ class RandomResize(BaseTransform):
 
     def __init__(
         self,
-        scale: Union[Tuple[int, int], Sequence[Tuple[int, int]]],
-        ratio_range: Optional[Tuple[float, float]] = None,
+        scale: tuple[int, int] | Sequence[tuple[int, int]],
+        ratio_range: tuple[float, float] | None = None,
         resize_type: str = 'Resize',
         **resize_kwargs,
     ) -> None:
@@ -1470,7 +1479,7 @@ class RandomResize(BaseTransform):
         self.resize = TRANSFORMS.build({'scale': 0, **self.resize_cfg})
 
     @staticmethod
-    def _random_sample(scales: Sequence[Tuple[int, int]]) -> tuple:
+    def _random_sample(scales: Sequence[tuple[int, int]]) -> tuple:
         """Private function to randomly sample a scale from a list of tuples.
 
         Args:
@@ -1491,7 +1500,7 @@ class RandomResize(BaseTransform):
         return scale
 
     @staticmethod
-    def _random_sample_ratio(scale: tuple, ratio_range: Tuple[float,
+    def _random_sample_ratio(scale: tuple, ratio_range: tuple[float,
                                                               float]) -> tuple:
         """Private function to randomly sample a scale from a tuple.
 

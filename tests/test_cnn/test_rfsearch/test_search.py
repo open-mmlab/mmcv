@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 import torch.nn as nn
-
 from mmcv.cnn.rfsearch import Conv2dRFSearchOp, RFSearchHook
 
 
@@ -39,23 +38,23 @@ def test_rfsearchhook():
             return x6
 
         def train_step(self, x, optimizer, **kwargs):
-            return dict(loss=self(x).mean(), num_samples=x.shape[0])
+            return {'loss': self(x).mean(), 'num_samples': x.shape[0]}
 
-    rfsearch_cfg = dict(
-        mode='search',
-        rfstructure_file=None,
-        config=dict(
-            search=dict(
-                step=0,
-                max_step=12,
-                search_interval=1,
-                exp_rate=0.5,
-                init_alphas=0.01,
-                mmin=1,
-                mmax=24,
-                num_branches=2,
-                skip_layer=['stem', 'conv0', 'layer0.1'])),
-    )
+    rfsearch_cfg = {
+        'mode': 'search',
+        'rfstructure_file': None,
+        'config': {
+            'search': {
+                'step': 0,
+                'max_step': 12,
+                'search_interval': 1,
+                'exp_rate': 0.5,
+                'init_alphas': 0.01,
+                'mmin': 1,
+                'mmax': 24,
+                'num_branches': 2,
+                'skip_layer': ['stem', 'conv0', 'layer0.1']}},
+    }
 
     # hook for search
     rfsearchhook_search = RFSearchHook(

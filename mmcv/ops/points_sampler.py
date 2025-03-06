@@ -1,11 +1,9 @@
-from typing import List
 
 import torch
 from torch import Tensor
 from torch import nn as nn
 
-from .furthest_point_sample import (furthest_point_sample,
-                                    furthest_point_sample_with_dist)
+from mmcv.ops.furthest_point_sample import furthest_point_sample, furthest_point_sample_with_dist
 
 
 def calc_square_dist(point_feat_a: Tensor,
@@ -69,9 +67,13 @@ class PointsSampler(nn.Module):
     """
 
     def __init__(self,
-                 num_point: List[int],
-                 fps_mod_list: List[str] = ['D-FPS'],
-                 fps_sample_range_list: List[int] = [-1]) -> None:
+                 num_point: list[int],
+                 fps_mod_list: list[str] | None = None,
+                 fps_sample_range_list: list[int] | None = None) -> None:
+        if fps_sample_range_list is None:
+            fps_sample_range_list = [-1]
+        if fps_mod_list is None:
+            fps_mod_list = ['D-FPS']
         super().__init__()
         # FPS would be applied to different fps_mod in the list,
         # so the length of the num_point should be equal to
@@ -103,7 +105,7 @@ class PointsSampler(nn.Module):
         indices = []
         last_fps_end_index = 0
         for fps_sample_range, sampler, npoint in zip(
-                self.fps_sample_range_list, self.samplers, self.num_point):
+                self.fps_sample_range_list, self.samplers, self.num_point, strict=False):
             assert fps_sample_range < points_xyz.shape[1]
 
             if fps_sample_range == -1:

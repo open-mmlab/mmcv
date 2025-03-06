@@ -2,7 +2,6 @@
 import pytest
 import torch
 import torch.nn as nn
-
 from mmcv.cnn import NonLocal1d, NonLocal2d, NonLocal3d
 from mmcv.cnn.bricks.non_local import _NonLocalNd
 
@@ -14,11 +13,11 @@ def test_nonlocal():
 
     # _NonLocalNd with zero initialization
     _NonLocalNd(3)
-    _NonLocalNd(3, norm_cfg=dict(type='BN'))
+    _NonLocalNd(3, norm_cfg={'type': 'BN'})
 
     # _NonLocalNd without zero initialization
     _NonLocalNd(3, zeros_init=False)
-    _NonLocalNd(3, norm_cfg=dict(type='BN'), zeros_init=False)
+    _NonLocalNd(3, norm_cfg={'type': 'BN'}, zeros_init=False)
 
 
 def test_nonlocal3d():

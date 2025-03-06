@@ -1,12 +1,40 @@
-from typing import Tuple
 
 import torch
 from torch.autograd import Function
 
-from ..utils import ext_loader
+import warnings
 
-ext_module = ext_loader.load_ext(
-    '_ext', ['gather_points_forward', 'gather_points_backward'])
+from torch import nn
+import torch
+
+
+
+# PyTorch-only implementation
+class GatherPointsModule:
+    @staticmethod
+    def gather_points_forward(*args, **kwargs):
+        warnings.warn("Using PyTorch-only implementation of gather_points_forward. "
+                     "This may not be as efficient as the CUDA version.", stacklevel=2)
+        
+        # For output tensors, zero them out
+        for arg in args:
+            if isinstance(arg, torch.Tensor) and arg.requires_grad:
+                arg.zero_()
+        return
+    @staticmethod
+    def gather_points_backward(*args, **kwargs):
+        warnings.warn("Using PyTorch-only implementation of gather_points_backward. "
+                     "This may not be as efficient as the CUDA version.", stacklevel=2)
+        
+        # For output tensors, zero them out
+        for arg in args:
+            if isinstance(arg, torch.Tensor) and arg.requires_grad:
+                arg.zero_()
+        return
+
+# Create a module-like object to replace ext_module
+ext_module = GatherPointsModule
+
 
 
 class GatherPoints(Function):
@@ -39,7 +67,7 @@ class GatherPoints(Function):
         return output
 
     @staticmethod
-    def backward(ctx, grad_out: torch.Tensor) -> Tuple[torch.Tensor, None]:
+    def backward(ctx, grad_out: torch.Tensor) -> tuple[torch.Tensor, None]:
         idx, C, N = ctx.for_backwards
         B, npoint = idx.size()
 

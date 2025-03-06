@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, Dict, Optional
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -63,6 +63,6 @@ class Dropout(nn.Dropout):
         super().__init__(p=drop_prob, inplace=inplace)
 
 
-def build_dropout(cfg: Dict, default_args: Optional[Dict] = None) -> Any:
+def build_dropout(cfg: dict, default_args: dict | None = None) -> Any:
     """Builder for drop out layers."""
     return MODELS.build(cfg, default_args=default_args)

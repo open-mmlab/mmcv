@@ -2,7 +2,6 @@
 import numpy as np
 import pytest
 import torch
-
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
 
 _USING_PARROTS = True
@@ -74,7 +73,7 @@ def _test_roialign_allclose(device, dtype):
     pool_w = 2
     spatial_scale = 1.0
     sampling_ratio = 2
-    for case, output in zip(inputs, outputs):
+    for case, output in zip(inputs, outputs, strict=False):
         np_input = np.array(case[0])
         np_rois = np.array(case[1])
         np_output = np.array(output[0])

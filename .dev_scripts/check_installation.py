@@ -1,6 +1,5 @@
 import numpy as np
 import torch
-
 from mmcv.ops import box_iou_rotated
 from mmcv.utils import collect_env
 

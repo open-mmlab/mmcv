@@ -1,12 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Union
 
 import numpy as np
 
 
 def quantize(arr: np.ndarray,
-             min_val: Union[int, float],
-             max_val: Union[int, float],
+             min_val: int | float,
+             max_val: int | float,
              levels: int,
              dtype=np.int64) -> tuple:
     """Quantize an array of (-inf, inf) to [0, levels-1].
@@ -36,8 +35,8 @@ def quantize(arr: np.ndarray,
 
 
 def dequantize(arr: np.ndarray,
-               min_val: Union[int, float],
-               max_val: Union[int, float],
+               min_val: int | float,
+               max_val: int | float,
                levels: int,
                dtype=np.float64) -> tuple:
     """Dequantize an array.

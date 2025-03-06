@@ -2,7 +2,7 @@
 import copy
 import math
 import warnings
-from typing import Sequence
+from collections.abc import Sequence
 
 import torch
 import torch.nn as nn
@@ -12,10 +12,10 @@ from mmengine.model import BaseModule, ModuleList, Sequential
 from mmengine.registry import MODELS
 from mmengine.utils import deprecated_api_warning, to_2tuple
 
-from mmcv.cnn import (Linear, build_activation_layer, build_conv_layer,
-                      build_norm_layer)
-from .drop import build_dropout
-from .scale import LayerScale
+from mmcv.cnn import Linear, build_activation_layer, build_conv_layer, build_norm_layer
+
+from mmcv.cnn.bricks.drop import build_dropout
+from mmcv.cnn.bricks.scale import LayerScale
 
 # Avoid BC-breaking of importing MultiScaleDeformableAttention from this file
 try:
@@ -24,16 +24,16 @@ try:
     warnings.warn(
         ImportWarning(
             '``MultiScaleDeformableAttention`` has been moved to '
-            '``mmcv.ops.multi_scale_deform_attn``, please change original path '  # noqa E501
-            '``from mmcv.cnn.bricks.transformer import MultiScaleDeformableAttention`` '  # noqa E501
-            'to ``from mmcv.ops.multi_scale_deform_attn import MultiScaleDeformableAttention`` '  # noqa E501
-        ))
+            '``mmcv.ops.multi_scale_deform_attn``, please change original path '
+            '``from mmcv.cnn.bricks.transformer import MultiScaleDeformableAttention`` '
+            'to ``from mmcv.ops.multi_scale_deform_attn import MultiScaleDeformableAttention`` '
+        ), stacklevel=2)
 
 except ImportError:
     warnings.warn('Fail to import ``MultiScaleDeformableAttention`` from '
                   '``mmcv.ops.multi_scale_deform_attn``, '
                   'You should install ``mmcv`` rather than ``mmcv-lite`` '
-                  'if you need this module. ')
+                  'if you need this module. ', stacklevel=2)
 
 
 def build_positional_encoding(cfg, default_args=None):
@@ -214,7 +214,7 @@ class PatchEmbed(BaseModule):
         padding = to_2tuple(padding)
 
         self.projection = build_conv_layer(
-            dict(type=conv_type),
+            {'type': conv_type},
             in_channels=in_channels,
             out_channels=embed_dims,
             kernel_size=kernel_size,
@@ -315,8 +315,10 @@ class PatchMerging(BaseModule):
                  padding='corner',
                  dilation=1,
                  bias=False,
-                 norm_cfg=dict(type='LN'),
+                 norm_cfg=None,
                  init_cfg=None):
+        if norm_cfg is None:
+            norm_cfg = {'type': 'LN'}
         super().__init__(init_cfg=init_cfg)
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -432,17 +434,19 @@ class MultiheadAttention(BaseModule):
                  num_heads,
                  attn_drop=0.,
                  proj_drop=0.,
-                 dropout_layer=dict(type='Dropout', drop_prob=0.),
+                 dropout_layer=None,
                  init_cfg=None,
                  batch_first=False,
                  **kwargs):
+        if dropout_layer is None:
+            dropout_layer = {'type': 'Dropout', 'drop_prob': 0.0}
         super().__init__(init_cfg)
         if 'dropout' in kwargs:
             warnings.warn(
                 'The arguments `dropout` in MultiheadAttention '
                 'has been deprecated, now you can separately '
                 'set `attn_drop`(float), proj_drop(float), '
-                'and `dropout_layer`(dict) ', DeprecationWarning)
+                'and `dropout_layer`(dict) ', DeprecationWarning, stacklevel=2)
             attn_drop = kwargs['dropout']
             dropout_layer['drop_prob'] = kwargs.pop('dropout')
 
@@ -522,7 +526,7 @@ class MultiheadAttention(BaseModule):
                     key_pos = query_pos
                 else:
                     warnings.warn(f'position encoding of key is'
-                                  f'missing in {self.__class__.__name__}.')
+                                  f'missing in {self.__class__.__name__}.', stacklevel=2)
         if query_pos is not None:
             query = query + query_pos
         if key_pos is not None:
@@ -587,12 +591,14 @@ class FFN(BaseModule):
                  embed_dims=256,
                  feedforward_channels=1024,
                  num_fcs=2,
-                 act_cfg=dict(type='ReLU', inplace=True),
+                 act_cfg=None,
                  ffn_drop=0.,
                  dropout_layer=None,
                  add_identity=True,
                  init_cfg=None,
                  layer_scale_init_value=0.):
+        if act_cfg is None:
+            act_cfg = {'type': 'ReLU', 'inplace': True}
         super().__init__(init_cfg)
         assert num_fcs >= 2, 'num_fcs should be no less ' \
             f'than 2. got {num_fcs}.'
@@ -674,31 +680,28 @@ class BaseTransformerLayer(BaseModule):
 
     def __init__(self,
                  attn_cfgs=None,
-                 ffn_cfgs=dict(
-                     type='FFN',
-                     embed_dims=256,
-                     feedforward_channels=1024,
-                     num_fcs=2,
-                     ffn_drop=0.,
-                     act_cfg=dict(type='ReLU', inplace=True),
-                 ),
+                 ffn_cfgs=None,
                  operation_order=None,
-                 norm_cfg=dict(type='LN'),
+                 norm_cfg=None,
                  init_cfg=None,
                  batch_first=False,
                  **kwargs):
 
-        deprecated_args = dict(
-            feedforward_channels='feedforward_channels',
-            ffn_dropout='ffn_drop',
-            ffn_num_fcs='num_fcs')
+        if norm_cfg is None:
+            norm_cfg = {'type': 'LN'}
+        if ffn_cfgs is None:
+            ffn_cfgs = {'type': 'FFN', 'embed_dims': 256, 'feedforward_channels': 1024, 'num_fcs': 2, 'ffn_drop': 0.0, 'act_cfg': {'type': 'ReLU', 'inplace': True}}
+        deprecated_args = {
+            'feedforward_channels': 'feedforward_channels',
+            'ffn_dropout': 'ffn_drop',
+            'ffn_num_fcs': 'num_fcs'}
         for ori_name, new_name in deprecated_args.items():
             if ori_name in kwargs:
                 warnings.warn(
                     f'The arguments `{ori_name}` in BaseTransformerLayer '
                     f'has been deprecated, now you should set `{new_name}` '
                     f'and other FFN related arguments '
-                    f'to a dict named `ffn_cfgs`. ', DeprecationWarning)
+                    f'to a dict named `ffn_cfgs`. ', DeprecationWarning, stacklevel=2)
                 ffn_cfgs[new_name] = kwargs[ori_name]
 
         super().__init__(init_cfg)
@@ -758,7 +761,7 @@ class BaseTransformerLayer(BaseModule):
                 assert ffn_cfgs[ffn_index]['embed_dims'] == self.embed_dims
             self.ffns.append(
                 build_feedforward_network(ffn_cfgs[ffn_index],
-                                          dict(type='FFN')))
+                                          {'type': 'FFN'}))
 
         self.norms = ModuleList()
         num_norms = operation_order.count('norm')
@@ -817,7 +820,7 @@ class BaseTransformerLayer(BaseModule):
                 copy.deepcopy(attn_masks) for _ in range(self.num_attn)
             ]
             warnings.warn(f'Use same attn_mask in all attentions in '
-                          f'{self.__class__.__name__} ')
+                          f'{self.__class__.__name__} ', stacklevel=2)
         else:
             assert len(attn_masks) == self.num_attn, f'The length of ' \
                         f'attn_masks {len(attn_masks)} must be equal ' \

@@ -5,11 +5,10 @@ from unittest.mock import patch
 import pytest
 import torch
 import torch.nn as nn
+from mmcv.cnn.bricks import ConvModule, HSigmoid, HSwish
 from mmengine.registry import MODELS
 from mmengine.utils import digit_version
 from mmengine.utils.dl_utils import TORCH_VERSION
-
-from mmcv.cnn.bricks import ConvModule, HSigmoid, HSwish
 
 
 @MODELS.register_module()
@@ -62,11 +61,11 @@ def test_conv_module():
 
     with pytest.raises(KeyError):
         # softmax is not supported
-        act_cfg = dict(type='softmax')
+        act_cfg = {'type': 'softmax'}
         ConvModule(3, 8, 2, act_cfg=act_cfg)
 
     # conv + norm + act
-    conv = ConvModule(3, 8, 2, norm_cfg=dict(type='BN'))
+    conv = ConvModule(3, 8, 2, norm_cfg={'type': 'BN'})
     assert conv.with_activation
     assert hasattr(conv, 'activate')
     assert conv.with_norm
@@ -77,13 +76,13 @@ def test_conv_module():
 
     # conv + norm with efficient mode
     efficient_conv = ConvModule(
-        3, 8, 2, norm_cfg=dict(type='BN'), efficient_conv_bn_eval=True).eval()
+        3, 8, 2, norm_cfg={'type': 'BN'}, efficient_conv_bn_eval=True).eval()
     plain_conv = ConvModule(
-        3, 8, 2, norm_cfg=dict(type='BN'),
+        3, 8, 2, norm_cfg={'type': 'BN'},
         efficient_conv_bn_eval=False).eval()
     for efficient_param, plain_param in zip(
             efficient_conv.state_dict().values(),
-            plain_conv.state_dict().values()):
+            plain_conv.state_dict().values(), strict=False):
         plain_param.copy_(efficient_param)
 
     efficient_mode_output = efficient_conv(x)
@@ -92,7 +91,7 @@ def test_conv_module():
 
     # `conv` attribute can be dynamically modified in efficient mode
     efficient_conv = ConvModule(
-        3, 8, 2, norm_cfg=dict(type='BN'), efficient_conv_bn_eval=True).eval()
+        3, 8, 2, norm_cfg={'type': 'BN'}, efficient_conv_bn_eval=True).eval()
     new_conv = nn.Conv2d(3, 8, 2).eval()
     efficient_conv.conv = new_conv
     efficient_mode_output = efficient_conv(x)
@@ -122,7 +121,7 @@ def test_conv_module():
 
     # conv with its own `init_weights` method
     conv_module = ConvModule(
-        3, 8, 2, conv_cfg=dict(type='ExampleConv'), act_cfg=None)
+        3, 8, 2, conv_cfg={'type': 'ExampleConv'}, act_cfg=None)
     assert torch.equal(conv_module.conv.conv0.weight, torch.zeros(8, 3, 2, 2))
 
     # with_spectral_norm=True
@@ -142,31 +141,31 @@ def test_conv_module():
         conv = ConvModule(3, 8, 3, padding=1, padding_mode='non_exists')
 
     # leaky relu
-    conv = ConvModule(3, 8, 3, padding=1, act_cfg=dict(type='LeakyReLU'))
+    conv = ConvModule(3, 8, 3, padding=1, act_cfg={'type': 'LeakyReLU'})
     assert isinstance(conv.activate, nn.LeakyReLU)
     output = conv(x)
     assert output.shape == (1, 8, 256, 256)
 
     # tanh
-    conv = ConvModule(3, 8, 3, padding=1, act_cfg=dict(type='Tanh'))
+    conv = ConvModule(3, 8, 3, padding=1, act_cfg={'type': 'Tanh'})
     assert isinstance(conv.activate, nn.Tanh)
     output = conv(x)
     assert output.shape == (1, 8, 256, 256)
 
     # Sigmoid
-    conv = ConvModule(3, 8, 3, padding=1, act_cfg=dict(type='Sigmoid'))
+    conv = ConvModule(3, 8, 3, padding=1, act_cfg={'type': 'Sigmoid'})
     assert isinstance(conv.activate, nn.Sigmoid)
     output = conv(x)
     assert output.shape == (1, 8, 256, 256)
 
     # PReLU
-    conv = ConvModule(3, 8, 3, padding=1, act_cfg=dict(type='PReLU'))
+    conv = ConvModule(3, 8, 3, padding=1, act_cfg={'type': 'PReLU'})
     assert isinstance(conv.activate, nn.PReLU)
     output = conv(x)
     assert output.shape == (1, 8, 256, 256)
 
     # HSwish
-    conv = ConvModule(3, 8, 3, padding=1, act_cfg=dict(type='HSwish'))
+    conv = ConvModule(3, 8, 3, padding=1, act_cfg={'type': 'HSwish'})
     if (TORCH_VERSION == 'parrots'
             or digit_version(TORCH_VERSION) < digit_version('1.7')):
         assert isinstance(conv.activate, HSwish)
@@ -177,7 +176,7 @@ def test_conv_module():
     assert output.shape == (1, 8, 256, 256)
 
     # HSigmoid
-    conv = ConvModule(3, 8, 3, padding=1, act_cfg=dict(type='HSigmoid'))
+    conv = ConvModule(3, 8, 3, padding=1, act_cfg={'type': 'HSigmoid'})
     assert isinstance(conv.activate, HSigmoid)
     output = conv(x)
     assert output.shape == (1, 8, 256, 256)
@@ -189,7 +188,7 @@ def test_bias():
     assert conv.conv.bias is not None
 
     # bias: auto, with norm
-    conv = ConvModule(3, 8, 2, norm_cfg=dict(type='BN'))
+    conv = ConvModule(3, 8, 2, norm_cfg={'type': 'BN'})
     assert conv.conv.bias is None
 
     # bias: False, without norm
@@ -198,23 +197,23 @@ def test_bias():
 
     # bias: True, with batch norm
     with pytest.warns(UserWarning) as record:
-        ConvModule(3, 8, 2, bias=True, norm_cfg=dict(type='BN'))
+        ConvModule(3, 8, 2, bias=True, norm_cfg={'type': 'BN'})
     assert len(record) == 1
     assert record[0].message.args[
         0] == 'Unnecessary conv bias before batch/instance norm'
 
     # bias: True, with instance norm
     with pytest.warns(UserWarning) as record:
-        ConvModule(3, 8, 2, bias=True, norm_cfg=dict(type='IN'))
+        ConvModule(3, 8, 2, bias=True, norm_cfg={'type': 'IN'})
     assert len(record) == 1
     assert record[0].message.args[
         0] == 'Unnecessary conv bias before batch/instance norm'
 
     # bias: True, with other norm
     with pytest.warns(UserWarning) as record:
-        norm_cfg = dict(type='GN', num_groups=1)
+        norm_cfg = {'type': 'GN', 'num_groups': 1}
         ConvModule(3, 8, 2, bias=True, norm_cfg=norm_cfg)
-        warnings.warn('No warnings')
+        warnings.warn('No warnings', stacklevel=2)
     assert len(record) == 1
     assert record[0].message.args[0] == 'No warnings'
 
@@ -257,22 +256,22 @@ def test_order():
         ConvModule(3, 8, 2, order=order)
 
     # ('conv', 'norm', 'act')
-    conv = ConvModule(3, 8, 2, norm_cfg=dict(type='BN'))
+    conv = ConvModule(3, 8, 2, norm_cfg={'type': 'BN'})
     out = conv('input')
     assert out == 'input_conv_bn_relu'
 
     # ('norm', 'conv', 'act')
     conv = ConvModule(
-        3, 8, 2, norm_cfg=dict(type='BN'), order=('norm', 'conv', 'act'))
+        3, 8, 2, norm_cfg={'type': 'BN'}, order=('norm', 'conv', 'act'))
     out = conv('input')
     assert out == 'input_bn_conv_relu'
 
     # ('conv', 'norm', 'act'), activate=False
-    conv = ConvModule(3, 8, 2, norm_cfg=dict(type='BN'))
+    conv = ConvModule(3, 8, 2, norm_cfg={'type': 'BN'})
     out = conv('input', activate=False)
     assert out == 'input_conv_bn'
 
     # ('conv', 'norm', 'act'), activate=False
-    conv = ConvModule(3, 8, 2, norm_cfg=dict(type='BN'))
+    conv = ConvModule(3, 8, 2, norm_cfg={'type': 'BN'})
     out = conv('input', norm=False)
     assert out == 'input_conv_relu'

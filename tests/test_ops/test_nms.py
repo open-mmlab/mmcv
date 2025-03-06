@@ -3,7 +3,6 @@ import mmengine
 import numpy as np
 import pytest
 import torch
-
 from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
 
 
@@ -149,11 +148,11 @@ class Testnms:
         results = mmengine.load('./tests/data/batched_nms_data.pkl')
 
         nms_max_num = 100
-        nms_cfg = dict(
-            type='nms',
-            iou_threshold=0.7,
-            score_threshold=0.5,
-            max_num=nms_max_num)
+        nms_cfg = {
+            'type': 'nms',
+            'iou_threshold': 0.7,
+            'score_threshold': 0.5,
+            'max_num': nms_max_num}
         boxes, keep = batched_nms(
             torch.from_numpy(results['boxes']),
             torch.from_numpy(results['scores']),
@@ -174,7 +173,7 @@ class Testnms:
         assert torch.equal(keep,
                            torch.from_numpy(results['keep'][:nms_max_num]))
 
-        nms_cfg = dict(type='soft_nms', iou_threshold=0.7)
+        nms_cfg = {'type': 'soft_nms', 'iou_threshold': 0.7}
         boxes, keep = batched_nms(
             torch.from_numpy(results['boxes']),
             torch.from_numpy(results['scores']),

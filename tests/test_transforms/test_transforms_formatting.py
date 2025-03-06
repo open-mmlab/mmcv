@@ -4,7 +4,7 @@ try:
 except ModuleNotFoundError:
     torch = None
 else:
-    from mmcv.transforms import ToTensor, to_tensor, ImageToTensor
+    from mmcv.transforms import ImageToTensor, ToTensor, to_tensor
 
 import copy
 

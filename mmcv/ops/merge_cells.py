@@ -1,13 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
 from abc import abstractmethod
-from typing import Optional
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ..cnn import ConvModule
+from mmcv.ops.cnn import ConvModule
 
 
 class BaseMergeCell(nn.Module):
@@ -43,18 +42,19 @@ class BaseMergeCell(nn.Module):
     """
 
     def __init__(self,
-                 fused_channels: Optional[int] = 256,
-                 out_channels: Optional[int] = 256,
+                 fused_channels: int | None = 256,
+                 out_channels: int | None = 256,
                  with_out_conv: bool = True,
-                 out_conv_cfg: dict = dict(
-                     groups=1, kernel_size=3, padding=1, bias=True),
-                 out_norm_cfg: Optional[dict] = None,
+                 out_conv_cfg: dict | None = None,
+                 out_norm_cfg: dict | None = None,
                  out_conv_order: tuple = ('act', 'conv', 'norm'),
                  with_input1_conv: bool = False,
                  with_input2_conv: bool = False,
-                 input_conv_cfg: Optional[dict] = None,
-                 input_norm_cfg: Optional[dict] = None,
+                 input_conv_cfg: dict | None = None,
+                 input_norm_cfg: dict | None = None,
                  upsample_mode: str = 'nearest'):
+        if out_conv_cfg is None:
+            out_conv_cfg = {'groups': 1, 'kernel_size': 3, 'padding': 1, 'bias': True}
         super().__init__()
         assert upsample_mode in ['nearest', 'bilinear']
         self.with_out_conv = with_out_conv
@@ -115,7 +115,7 @@ class BaseMergeCell(nn.Module):
     def forward(self,
                 x1: torch.Tensor,
                 x2: torch.Tensor,
-                out_size: Optional[tuple] = None) -> torch.Tensor:
+                out_size: tuple | None = None) -> torch.Tensor:
         assert x1.shape[:2] == x2.shape[:2]
         assert out_size is None or len(out_size) == 2
         if out_size is None:  # resize to larger one
@@ -155,8 +155,8 @@ class ConcatCell(BaseMergeCell):
 class GlobalPoolingCell(BaseMergeCell):
 
     def __init__(self,
-                 in_channels: Optional[int] = None,
-                 out_channels: Optional[int] = None,
+                 in_channels: int | None = None,
+                 out_channels: int | None = None,
                  **kwargs):
         super().__init__(in_channels, out_channels, **kwargs)
         self.global_pool = nn.AdaptiveAvgPool2d((1, 1))

@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
-from typing import Dict, Optional
 
 import mmengine
 import torch  # noqa
@@ -9,8 +8,8 @@ from mmengine.hooks import Hook
 from mmengine.logging import print_log
 from mmengine.registry import HOOKS
 
-from .operator import BaseConvRFSearchOp, Conv2dRFSearchOp  # noqa
-from .utils import get_single_padding, write_to_json
+from mmcv.cnn.rfsearch.operator import BaseConvRFSearchOp, Conv2dRFSearchOp  # noqa
+from mmcv.cnn.rfsearch.utils import get_single_padding, write_to_json
 
 
 @HOOKS.register_module()
@@ -54,10 +53,12 @@ class RFSearchHook(Hook):
 
     def __init__(self,
                  mode: str = 'search',
-                 config: Dict = {},
-                 rfstructure_file: Optional[str] = None,
+                 config: dict | None = None,
+                 rfstructure_file: str | None = None,
                  by_epoch: bool = True,
                  verbose: bool = True):
+        if config is None:
+            config = {}
         assert mode in ['search', 'fixed_single_branch', 'fixed_multi_branch']
         assert config is not None
         self.config = config
@@ -167,17 +168,16 @@ class RFSearchHook(Hook):
                        for layer in self.config['search']['skip_layer']):
                     continue
             if isinstance(module, eval(op)):
-                if 1 < module.kernel_size[0] and \
-                    0 != module.kernel_size[0] % 2 or \
-                    1 < module.kernel_size[1] and \
-                        0 != module.kernel_size[1] % 2:
+                if (1 < module.kernel_size[0] and \
+                    0 != module.kernel_size[0] % 2) or \
+                    (1 < module.kernel_size[1] and \
+                        0 != module.kernel_size[1] % 2):
                     moduleWrap = eval(search_op + 'RFSearchOp')(
                         module, self.config['search'], self.verbose)
                     moduleWrap = moduleWrap.to(module.weight.device)
                     if self.verbose:
                         print_log(
-                            'Wrap model %s to %s.' %
-                            (str(module), str(moduleWrap)), 'current')
+                            f'Wrap model {module!s} to {moduleWrap!s}.', 'current')
                     setattr(model, name, moduleWrap)
             elif not isinstance(module, BaseConvRFSearchOp):
                 self.wrap_model(module, search_op, fullname)
@@ -185,7 +185,7 @@ class RFSearchHook(Hook):
     def set_model(self,
                   model: nn.Module,
                   search_op: str = 'Conv2d',
-                  init_rates: Optional[int] = None,
+                  init_rates: int | None = None,
                   prefix: str = '') -> None:
         """Set model based on config.
 
@@ -209,10 +209,10 @@ class RFSearchHook(Hook):
                        for layer in self.config['search']['skip_layer']):
                     continue
             if isinstance(module, eval(op)):
-                if 1 < module.kernel_size[0] and \
-                    0 != module.kernel_size[0] % 2 or \
-                    1 < module.kernel_size[1] and \
-                        0 != module.kernel_size[1] % 2:
+                if (1 < module.kernel_size[0] and \
+                    0 != module.kernel_size[0] % 2) or \
+                    (1 < module.kernel_size[1] and \
+                        0 != module.kernel_size[1] % 2):
                     if isinstance(self.config['structure'][fullname], int):
                         self.config['structure'][fullname] = [
                             self.config['structure'][fullname],

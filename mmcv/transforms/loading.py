@@ -1,13 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
-from typing import Optional
 
 import mmengine.fileio as fileio
 import numpy as np
 
 import mmcv
-from .base import BaseTransform
-from .builder import TRANSFORMS
+
+from mmcv.transforms.base import BaseTransform
+from mmcv.transforms.builder import TRANSFORMS
 
 
 @TRANSFORMS.register_module()
@@ -54,21 +54,21 @@ class LoadImageFromFile(BaseTransform):
                  to_float32: bool = False,
                  color_type: str = 'color',
                  imdecode_backend: str = 'cv2',
-                 file_client_args: Optional[dict] = None,
+                 file_client_args: dict | None = None,
                  ignore_empty: bool = False,
                  *,
-                 backend_args: Optional[dict] = None) -> None:
+                 backend_args: dict | None = None) -> None:
         self.ignore_empty = ignore_empty
         self.to_float32 = to_float32
         self.color_type = color_type
         self.imdecode_backend = imdecode_backend
 
-        self.file_client_args: Optional[dict] = None
-        self.backend_args: Optional[dict] = None
+        self.file_client_args: dict | None = None
+        self.backend_args: dict | None = None
         if file_client_args is not None:
             warnings.warn(
                 '"file_client_args" will be deprecated in future. '
-                'Please use "backend_args" instead', DeprecationWarning)
+                'Please use "backend_args" instead', DeprecationWarning, stacklevel=2)
             if backend_args is not None:
                 raise ValueError(
                     '"file_client_args" and "backend_args" cannot be set '
@@ -78,7 +78,7 @@ class LoadImageFromFile(BaseTransform):
         if backend_args is not None:
             self.backend_args = backend_args.copy()
 
-    def transform(self, results: dict) -> Optional[dict]:
+    def transform(self, results: dict) -> dict | None:
         """Functions to load image.
 
         Args:
@@ -229,9 +229,9 @@ class LoadAnnotations(BaseTransform):
         with_seg: bool = False,
         with_keypoints: bool = False,
         imdecode_backend: str = 'cv2',
-        file_client_args: Optional[dict] = None,
+        file_client_args: dict | None = None,
         *,
-        backend_args: Optional[dict] = None,
+        backend_args: dict | None = None,
     ) -> None:
         super().__init__()
         self.with_bbox = with_bbox
@@ -240,12 +240,12 @@ class LoadAnnotations(BaseTransform):
         self.with_keypoints = with_keypoints
         self.imdecode_backend = imdecode_backend
 
-        self.file_client_args: Optional[dict] = None
-        self.backend_args: Optional[dict] = None
+        self.file_client_args: dict | None = None
+        self.backend_args: dict | None = None
         if file_client_args is not None:
             warnings.warn(
                 '"file_client_args" will be deprecated in future. '
-                'Please use "backend_args" instead', DeprecationWarning)
+                'Please use "backend_args" instead', DeprecationWarning, stacklevel=2)
             if backend_args is not None:
                 raise ValueError(
                     '"file_client_args" and "backend_args" cannot be set '

@@ -3,13 +3,11 @@ import io
 import os.path as osp
 import warnings
 from pathlib import Path
-from typing import Optional, Union
 
 import cv2
 import mmengine.fileio as fileio
 import numpy as np
-from cv2 import (IMREAD_COLOR, IMREAD_GRAYSCALE, IMREAD_IGNORE_ORIENTATION,
-                 IMREAD_UNCHANGED)
+from cv2 import IMREAD_COLOR, IMREAD_GRAYSCALE, IMREAD_IGNORE_ORIENTATION, IMREAD_UNCHANGED
 from mmengine.utils import is_filepath, is_str
 
 try:
@@ -141,13 +139,13 @@ def _pillow2array(img,
     return array
 
 
-def imread(img_or_path: Union[np.ndarray, str, Path],
+def imread(img_or_path: np.ndarray | str | Path,
            flag: str = 'color',
            channel_order: str = 'bgr',
-           backend: Optional[str] = None,
-           file_client_args: Optional[dict] = None,
+           backend: str | None = None,
+           file_client_args: dict | None = None,
            *,
-           backend_args: Optional[dict] = None) -> np.ndarray:
+           backend_args: dict | None = None) -> np.ndarray:
     """Read an image.
 
     Args:
@@ -205,7 +203,7 @@ def imread(img_or_path: Union[np.ndarray, str, Path],
     if file_client_args is not None:
         warnings.warn(
             '"file_client_args" will be deprecated in future. '
-            'Please use "backend_args" instead', DeprecationWarning)
+            'Please use "backend_args" instead', DeprecationWarning, stacklevel=2)
         if backend_args is not None:
             raise ValueError(
                 '"file_client_args" and "backend_args" cannot be set at the '
@@ -232,7 +230,7 @@ def imread(img_or_path: Union[np.ndarray, str, Path],
 def imfrombytes(content: bytes,
                 flag: str = 'color',
                 channel_order: str = 'bgr',
-                backend: Optional[str] = None) -> np.ndarray:
+                backend: str | None = None) -> np.ndarray:
     """Read an image from bytes.
 
     Args:
@@ -290,11 +288,11 @@ def imfrombytes(content: bytes,
 
 def imwrite(img: np.ndarray,
             file_path: str,
-            params: Optional[list] = None,
-            auto_mkdir: Optional[bool] = None,
-            file_client_args: Optional[dict] = None,
+            params: list | None = None,
+            auto_mkdir: bool | None = None,
+            file_client_args: dict | None = None,
             *,
-            backend_args: Optional[dict] = None) -> bool:
+            backend_args: dict | None = None) -> bool:
     """Write image to file.
 
     Warning:
@@ -335,7 +333,7 @@ def imwrite(img: np.ndarray,
     if file_client_args is not None:
         warnings.warn(
             '"file_client_args" will be deprecated in future. '
-            'Please use "backend_args" instead', DeprecationWarning)
+            'Please use "backend_args" instead', DeprecationWarning, stacklevel=2)
         if backend_args is not None:
             raise ValueError(
                 '"file_client_args" and "backend_args" cannot be set at the '
@@ -346,7 +344,7 @@ def imwrite(img: np.ndarray,
     if auto_mkdir is not None:
         warnings.warn(
             'The parameter `auto_mkdir` will be deprecated in the future and '
-            'every file clients will make directory automatically.')
+            'every file clients will make directory automatically.', stacklevel=2)
 
     img_ext = osp.splitext(file_path)[-1]
     # Encode image according to image suffix.

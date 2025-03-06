@@ -11,14 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
 from collections import OrderedDict
-from typing import Any, List, Optional, Union
+from typing import Any
 
 import torch
 from torch import nn
 
-from .sparse_structure import SparseConvTensor
+from mmcv.ops.sparse_structure import SparseConvTensor
+from mmcv.ops.sparse_conv import SparseConvolution
 
 
 def is_spconv_module(module: nn.Module) -> bool:
@@ -27,18 +27,17 @@ def is_spconv_module(module: nn.Module) -> bool:
 
 
 def is_sparse_conv(module: nn.Module) -> bool:
-    from .sparse_conv import SparseConvolution
     return isinstance(module, SparseConvolution)
 
 
-def _mean_update(vals: Union[int, List], m_vals: Union[int, List],
-                 t: float) -> List:
+def _mean_update(vals: int | list, m_vals: int | list,
+                 t: float) -> list:
     outputs = []
     if not isinstance(vals, list):
         vals = [vals]
     if not isinstance(m_vals, list):
         m_vals = [m_vals]
-    for val, m_val in zip(vals, m_vals):
+    for val, m_val in zip(vals, m_vals, strict=False):
         output = t / float(t + 1) * m_val + 1 / float(t + 1) * val
         outputs.append(output)
     if len(outputs) == 1:
@@ -95,8 +94,6 @@ class SparseSequential(SparseModule):
             for idx, module in enumerate(args):
                 self.add_module(str(idx), module)
         for name, module in kwargs.items():
-            if sys.version_info < (3, 6):
-                raise ValueError('kwargs only supported in py36+')
             if name in self._modules:
                 raise ValueError('name exists.')
             self.add_module(name, module)
@@ -108,7 +105,7 @@ class SparseSequential(SparseModule):
         if idx < 0:
             idx += len(self)
         it = iter(self._modules.values())
-        for i in range(idx):
+        for _i in range(idx):
             next(it)
         return next(it)
 
@@ -119,7 +116,7 @@ class SparseSequential(SparseModule):
     def sparity_dict(self):
         return self._sparity_dict
 
-    def add(self, module: Any, name: Optional[str] = None) -> None:
+    def add(self, module: Any, name: str | None = None) -> None:
         if name is None:
             name = str(len(self._modules))
             if name in self._modules:
@@ -141,7 +138,7 @@ class SparseSequential(SparseModule):
         return input
 
     def fused(self):
-        from .sparse_conv import SparseConvolution
+        from mmcv.ops.sparse_conv import SparseConvolution
         mods = [v for k, v in self._modules.items()]
         fused_mods = []
         idx = 0

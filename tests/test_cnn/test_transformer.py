@@ -3,14 +3,17 @@ import copy
 
 import pytest
 import torch
-from mmengine.model import ModuleList
-
 from mmcv.cnn.bricks.drop import DropPath
-from mmcv.cnn.bricks.transformer import (FFN, AdaptivePadding,
-                                         BaseTransformerLayer,
-                                         MultiheadAttention, PatchEmbed,
-                                         PatchMerging,
-                                         TransformerLayerSequence)
+from mmcv.cnn.bricks.transformer import (
+    FFN,
+    AdaptivePadding,
+    BaseTransformerLayer,
+    MultiheadAttention,
+    PatchEmbed,
+    PatchMerging,
+    TransformerLayerSequence,
+)
+from mmengine.model import ModuleList
 
 
 def test_adaptive_padding():
@@ -170,7 +173,7 @@ def test_patch_embed():
         stride=stride,
         padding=0,
         dilation=2,
-        norm_cfg=dict(type='LN'),
+        norm_cfg={'type': 'LN'},
         input_size=input_size)
 
     x3, shape = patch_merge_3(dummy_input)
@@ -198,7 +201,7 @@ def test_patch_embed():
         stride=stride,
         padding=0,
         dilation=2,
-        norm_cfg=dict(type='LN'),
+        norm_cfg={'type': 'LN'},
         input_size=input_size)
 
     _, shape = patch_merge_3(dummy_input)
@@ -216,7 +219,7 @@ def test_patch_embed():
         stride=stride,
         padding=0,
         dilation=2,
-        norm_cfg=dict(type='LN'),
+        norm_cfg={'type': 'LN'},
         input_size=input_size)
 
     _, shape = patch_merge_3(dummy_input)
@@ -475,7 +478,7 @@ def test_multiheadattention():
         num_heads=5,
         attn_drop=0,
         proj_drop=0,
-        dropout_layer=dict(type='Dropout', drop_prob=0.),
+        dropout_layer={'type': 'Dropout', 'drop_prob': 0.},
         batch_first=True)
     batch_dim = 2
     embed_dim = 5
@@ -485,7 +488,7 @@ def test_multiheadattention():
         num_heads=5,
         attn_drop=0,
         proj_drop=0,
-        dropout_layer=dict(type='DropPath', drop_prob=0.),
+        dropout_layer={'type': 'DropPath', 'drop_prob': 0.},
         batch_first=True)
 
     attn_query_first = MultiheadAttention(
@@ -493,7 +496,7 @@ def test_multiheadattention():
         num_heads=5,
         attn_drop=0,
         proj_drop=0,
-        dropout_layer=dict(type='DropPath', drop_prob=0.),
+        dropout_layer={'type': 'DropPath', 'drop_prob': 0.},
         batch_first=False)
 
     param_dict = dict(attn_query_first.named_parameters())
@@ -568,11 +571,11 @@ def test_basetransformerlayer_cuda():
     baselayer = BaseTransformerLayer(
         operation_order=operation_order,
         batch_first=True,
-        attn_cfgs=dict(
-            type='MultiheadAttention',
-            embed_dims=256,
-            num_heads=8,
-        ),
+        attn_cfgs={
+            'type': 'MultiheadAttention',
+            'embed_dims': 256,
+            'num_heads': 8,
+        },
     )
     baselayers = ModuleList([copy.deepcopy(baselayer) for _ in range(2)])
     baselayers.to('cuda')
@@ -584,24 +587,24 @@ def test_basetransformerlayer_cuda():
 
 @pytest.mark.parametrize('embed_dims', [False, 256])
 def test_basetransformerlayer(embed_dims):
-    attn_cfgs = dict(type='MultiheadAttention', embed_dims=256, num_heads=8),
+    attn_cfgs = {'type': 'MultiheadAttention', 'embed_dims': 256, 'num_heads': 8},
     if embed_dims:
-        ffn_cfgs = dict(
-            type='FFN',
-            embed_dims=embed_dims,
-            feedforward_channels=1024,
-            num_fcs=2,
-            ffn_drop=0.,
-            act_cfg=dict(type='ReLU', inplace=True),
-        )
+        ffn_cfgs = {
+            'type': 'FFN',
+            'embed_dims': embed_dims,
+            'feedforward_channels': 1024,
+            'num_fcs': 2,
+            'ffn_drop': 0.,
+            'act_cfg': {'type': 'ReLU', 'inplace': True},
+        }
     else:
-        ffn_cfgs = dict(
-            type='FFN',
-            feedforward_channels=1024,
-            num_fcs=2,
-            ffn_drop=0.,
-            act_cfg=dict(type='ReLU', inplace=True),
-        )
+        ffn_cfgs = {
+            'type': 'FFN',
+            'feedforward_channels': 1024,
+            'num_fcs': 2,
+            'ffn_drop': 0.,
+            'act_cfg': {'type': 'ReLU', 'inplace': True},
+        }
 
     feedforward_channels = 2048
     ffn_dropout = 0.1
@@ -617,7 +620,7 @@ def test_basetransformerlayer(embed_dims):
     assert baselayer.batch_first is False
     assert baselayer.ffns[0].feedforward_channels == feedforward_channels
 
-    attn_cfgs = dict(type='MultiheadAttention', num_heads=8, embed_dims=256),
+    attn_cfgs = {'type': 'MultiheadAttention', 'num_heads': 8, 'embed_dims': 256},
     feedforward_channels = 2048
     ffn_dropout = 0.1
     operation_order = ('self_attn', 'norm', 'ffn', 'norm')
@@ -635,20 +638,20 @@ def test_basetransformerlayer(embed_dims):
 def test_transformerlayersequence():
     squeue = TransformerLayerSequence(
         num_layers=6,
-        transformerlayers=dict(
-            type='BaseTransformerLayer',
-            attn_cfgs=[
-                dict(
-                    type='MultiheadAttention',
-                    embed_dims=256,
-                    num_heads=8,
-                    dropout=0.1),
-                dict(type='MultiheadAttention', embed_dims=256, num_heads=4)
+        transformerlayers={
+            'type': 'BaseTransformerLayer',
+            'attn_cfgs': [
+                {
+                    'type': 'MultiheadAttention',
+                    'embed_dims': 256,
+                    'num_heads': 8,
+                    'dropout': 0.1},
+                {'type': 'MultiheadAttention', 'embed_dims': 256, 'num_heads': 4}
             ],
-            feedforward_channels=1024,
-            ffn_dropout=0.1,
-            operation_order=('self_attn', 'norm', 'cross_attn', 'norm', 'ffn',
-                             'norm')))
+            'feedforward_channels': 1024,
+            'ffn_dropout': 0.1,
+            'operation_order': ('self_attn', 'norm', 'cross_attn', 'norm', 'ffn',
+                             'norm')})
     assert len(squeue.layers) == 6
     assert squeue.pre_norm is False
     with pytest.raises(AssertionError):
@@ -657,20 +660,20 @@ def test_transformerlayersequence():
         TransformerLayerSequence(
             num_layers=6,
             transformerlayers=[
-                dict(
-                    type='BaseTransformerLayer',
-                    attn_cfgs=[
-                        dict(
-                            type='MultiheadAttention',
-                            embed_dims=256,
-                            num_heads=8,
-                            dropout=0.1),
-                        dict(type='MultiheadAttention', embed_dims=256)
+                {
+                    'type': 'BaseTransformerLayer',
+                    'attn_cfgs': [
+                        {
+                            'type': 'MultiheadAttention',
+                            'embed_dims': 256,
+                            'num_heads': 8,
+                            'dropout': 0.1},
+                        {'type': 'MultiheadAttention', 'embed_dims': 256}
                     ],
-                    feedforward_channels=1024,
-                    ffn_dropout=0.1,
-                    operation_order=('self_attn', 'norm', 'cross_attn', 'norm',
-                                     'ffn', 'norm'))
+                    'feedforward_channels': 1024,
+                    'ffn_dropout': 0.1,
+                    'operation_order': ('self_attn', 'norm', 'cross_attn', 'norm',
+                                     'ffn', 'norm')}
             ])
 
 

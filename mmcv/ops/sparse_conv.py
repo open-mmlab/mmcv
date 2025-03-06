@@ -19,10 +19,10 @@ from mmengine.registry import MODELS
 from torch.nn import init
 from torch.nn.parameter import Parameter
 
-from . import sparse_functional as Fsp
-from . import sparse_ops as ops
-from .sparse_modules import SparseModule
-from .sparse_structure import SparseConvTensor
+from mmcv.ops import sparse_functional as Fsp
+from mmcv.ops import sparse_ops as ops
+from mmcv.ops.sparse_modules import SparseModule
+from mmcv.ops.sparse_structure import SparseConvTensor
 
 
 def _calculate_fan_in_and_fan_out_hwio(tensor):
@@ -66,18 +66,18 @@ class SparseConvolution(SparseModule):
                  fused_bn=False):
         super().__init__()
         assert groups == 1
-        if not isinstance(kernel_size, (list, tuple)):
+        if not isinstance(kernel_size, list | tuple):
             kernel_size = [kernel_size] * ndim
-        if not isinstance(stride, (list, tuple)):
+        if not isinstance(stride, list | tuple):
             stride = [stride] * ndim
-        if not isinstance(padding, (list, tuple)):
+        if not isinstance(padding, list | tuple):
             padding = [padding] * ndim
-        if not isinstance(dilation, (list, tuple)):
+        if not isinstance(dilation, list | tuple):
             dilation = [dilation] * ndim
-        if not isinstance(output_padding, (list, tuple)):
+        if not isinstance(output_padding, list | tuple):
             output_padding = [output_padding] * ndim
 
-        for d, s in zip(dilation, stride):
+        for d, s in zip(dilation, stride, strict=False):
             assert any([s == 1, d == 1]), "don't support this."
 
         self.ndim = ndim

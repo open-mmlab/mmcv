@@ -6,10 +6,10 @@ from torch import nn
 from torch.autograd import Function
 from torch.nn.modules.utils import _pair
 
-from .pure_pytorch_psa_mask.psamask_forward import psamask_forward_pytorch
-from .pure_pytorch_psa_mask.psamask_backward import psamask_backward_pytorch
-from .pure_pytorch_psa_mask.psamask_forward import psamask_forward_pytorch
-from .pure_pytorch_psa_mask.psamask_backward import psamask_backward_pytorch
+from mmcv.ops.pure_pytorch_psa_mask.psamask_forward import psamask_forward_pytorch
+from mmcv.ops.pure_pytorch_psa_mask.psamask_backward import psamask_backward_pytorch
+from mmcv.ops.pure_pytorch_psa_mask.psamask_forward import psamask_forward_pytorch
+from mmcv.ops.pure_pytorch_psa_mask.psamask_backward import psamask_backward_pytorch
 
                                  ['psamask_forward', 'psamask_backward'])
 

@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
-
 from mmcv.ops import Correlation
 
 _input1 = [[[[1., 2., 3.], [0., 1., 2.], [3., 5., 2.]]]]

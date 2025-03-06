@@ -48,9 +48,9 @@ class LayerScale(nn.Module):
 
     def forward(self, x) -> torch.Tensor:
         if self.data_format == 'channels_first':
-            shape = tuple((1, -1, *(1 for _ in range(x.dim() - 2))))
+            shape = (1, -1, *(1 for _ in range(x.dim() - 2)))
         else:
-            shape = tuple((*(1 for _ in range(x.dim() - 1)), -1))
+            shape = (*(1 for _ in range(x.dim() - 1)), -1)
         if self.inplace:
             return x.mul_(self.weight.view(*shape))
         else:

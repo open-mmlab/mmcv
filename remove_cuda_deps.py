@@ -4,12 +4,12 @@ This script identifies operations that depend on CUDA/C++ and replaces them with
 pure PyTorch equivalents or stubs with appropriate warnings.
 """
 
+import argparse
+import glob
 import os
 import re
-import glob
 import sys
 from pathlib import Path
-import argparse
 
 # Define paths to check
 MMCV_ROOT = Path(__file__).parent
@@ -78,7 +78,7 @@ def {function_name}_pytorch(*args, **kwargs):
 def process_file(file_path, create_stubs=False):
     """Process a Python file to replace CUDA/C++ implementations."""
     try:
-        with open(file_path, 'r') as f:
+        with open(file_path) as f:
             content = f.read()
     except UnicodeDecodeError:
         print(f"  Skipping {file_path} - not a text file")
@@ -157,7 +157,7 @@ def list_unimplemented_ops():
             continue
             
         try:
-            with open(py_file, 'r') as f:
+            with open(py_file) as f:
                 content = f.read()
         except UnicodeDecodeError:
             continue

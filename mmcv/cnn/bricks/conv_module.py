@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
 from functools import partial
-from typing import Dict, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -9,10 +8,10 @@ from mmengine.model import constant_init, kaiming_init
 from mmengine.registry import MODELS
 from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm, _InstanceNorm
 
-from .activation import build_activation_layer
-from .conv import build_conv_layer
-from .norm import build_norm_layer
-from .padding import build_padding_layer
+from mmcv.cnn.bricks.activation import build_activation_layer
+from mmcv.cnn.bricks.conv import build_conv_layer
+from mmcv.cnn.bricks.norm import build_norm_layer
+from mmcv.cnn.bricks.padding import build_padding_layer
 
 
 def efficient_conv_bn_eval_forward(bn: _BatchNorm,
@@ -126,20 +125,22 @@ class ConvModule(nn.Module):
     def __init__(self,
                  in_channels: int,
                  out_channels: int,
-                 kernel_size: Union[int, Tuple[int, int]],
-                 stride: Union[int, Tuple[int, int]] = 1,
-                 padding: Union[int, Tuple[int, int]] = 0,
-                 dilation: Union[int, Tuple[int, int]] = 1,
+                 kernel_size: int | tuple[int, int],
+                 stride: int | tuple[int, int] = 1,
+                 padding: int | tuple[int, int] = 0,
+                 dilation: int | tuple[int, int] = 1,
                  groups: int = 1,
-                 bias: Union[bool, str] = 'auto',
-                 conv_cfg: Optional[Dict] = None,
-                 norm_cfg: Optional[Dict] = None,
-                 act_cfg: Optional[Dict] = dict(type='ReLU'),
+                 bias: bool | str = 'auto',
+                 conv_cfg: dict | None = None,
+                 norm_cfg: dict | None = None,
+                 act_cfg: dict | None = None,
                  inplace: bool = True,
                  with_spectral_norm: bool = False,
                  padding_mode: str = 'zeros',
                  order: tuple = ('conv', 'norm', 'act'),
                  efficient_conv_bn_eval: bool = False):
+        if act_cfg is None:
+            act_cfg = {'type': 'ReLU'}
         super().__init__()
         assert conv_cfg is None or isinstance(conv_cfg, dict)
         assert norm_cfg is None or isinstance(norm_cfg, dict)
@@ -163,7 +164,7 @@ class ConvModule(nn.Module):
         self.with_bias = bias
 
         if self.with_explicit_padding:
-            pad_cfg = dict(type=padding_mode)
+            pad_cfg = {'type': padding_mode}
             self.padding_layer = build_padding_layer(pad_cfg, padding)
 
         # reset padding to 0 for conv module
@@ -204,9 +205,9 @@ class ConvModule(nn.Module):
                 norm_cfg, norm_channels)  # type: ignore
             self.add_module(self.norm_name, norm)
             if self.with_bias:
-                if isinstance(norm, (_BatchNorm, _InstanceNorm)):
+                if isinstance(norm, _BatchNorm | _InstanceNorm):
                     warnings.warn(
-                        'Unnecessary conv bias before batch/instance norm')
+                        'Unnecessary conv bias before batch/instance norm', stacklevel=2)
         else:
             self.norm_name = None  # type: ignore
 
@@ -292,7 +293,7 @@ class ConvModule(nn.Module):
         if efficient_conv_bn_eval and self.norm \
                             and isinstance(self.norm, _BatchNorm) \
                             and self.norm.track_running_stats:
-            self.efficient_conv_bn_eval_forward = efficient_conv_bn_eval_forward  # noqa: E501
+            self.efficient_conv_bn_eval_forward = efficient_conv_bn_eval_forward
         else:
             self.efficient_conv_bn_eval_forward = None  # type: ignore
 
