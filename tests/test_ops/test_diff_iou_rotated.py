@@ -4,12 +4,13 @@ import pytest
 import torch
 
 from mmcv.ops import diff_iou_rotated_2d, diff_iou_rotated_3d
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE
 
 if IS_MLU_AVAILABLE:
     torch.backends.mlu.matmul.allow_tf32 = False
 
 
+# TODO @MTAI there are some bugs for musa!
 @pytest.mark.parametrize('device', [
     pytest.param(
         'cuda',
@@ -18,7 +19,11 @@ if IS_MLU_AVAILABLE:
     pytest.param(
         'mlu',
         marks=pytest.mark.skipif(
-            not IS_MLU_AVAILABLE, reason='requires MLU support'))
+            not IS_MLU_AVAILABLE, reason='requires MLU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
 def test_diff_iou_rotated_2d(device):
     np_boxes1 = np.asarray([[[0.5, 0.5, 1., 1., .0], [0.5, 0.5, 1., 1., .0],
@@ -47,7 +52,11 @@ def test_diff_iou_rotated_2d(device):
     pytest.param(
         'mlu',
         marks=pytest.mark.skipif(
-            not IS_MLU_AVAILABLE, reason='requires MLU support'))
+            not IS_MLU_AVAILABLE, reason='requires MLU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
 def test_diff_iou_rotated_3d(device):
     np_boxes1 = np.asarray(
