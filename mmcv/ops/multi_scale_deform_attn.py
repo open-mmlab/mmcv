@@ -12,7 +12,8 @@ from mmengine.registry import MODELS
 from mmengine.utils import deprecated_api_warning
 from torch.autograd.function import Function, once_differentiable
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import (IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE,
+                        IS_NPU_AVAILABLE)
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(
@@ -219,7 +220,7 @@ class MultiScaleDeformableAttention(BaseModule):
         self.batch_first = batch_first
 
         # you'd better set dim_per_head to a power of 2
-        # which is more efficient in the CUDA implementation
+        # which is more efficient in the CUDA/MUSA implementation
         def _is_power_of_2(n):
             if (not isinstance(n, int)) or (n < 0):
                 raise ValueError(
@@ -232,7 +233,7 @@ class MultiScaleDeformableAttention(BaseModule):
                 "You'd better set embed_dims in "
                 'MultiScaleDeformAttention to make '
                 'the dimension of each attention head a power of 2 '
-                'which is more efficient in our CUDA implementation.')
+                'which is more efficient in our CUDA/MUSA implementation.')
 
         self.im2col_step = im2col_step
         self.embed_dims = embed_dims
@@ -365,6 +366,7 @@ class MultiScaleDeformableAttention(BaseModule):
                 f' 2 or 4, but get {reference_points.shape[-1]} instead.')
         if ((IS_CUDA_AVAILABLE and value.is_cuda)
                 or (IS_MLU_AVAILABLE and value.is_mlu)
+                or (IS_MUSA_AVAILABLE and value.is_musa)
                 or (IS_NPU_AVAILABLE and value.device.type == 'npu')):
             output = MultiScaleDeformableAttnFunction.apply(
                 value, spatial_shapes, level_start_index, sampling_locations,

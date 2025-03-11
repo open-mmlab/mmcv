@@ -4,7 +4,8 @@ import pytest
 import torch
 
 from mmcv.ops import boxes_iou3d, boxes_overlap_bev, nms3d, nms3d_normal
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import (IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE,
+                        IS_NPU_AVAILABLE)
 
 
 @pytest.mark.parametrize('device', [
@@ -46,7 +47,11 @@ def test_boxes_overlap_bev(device):
     pytest.param(
         'cuda',
         marks=pytest.mark.skipif(
-            not IS_CUDA_AVAILABLE, reason='requires CUDA support'))
+            not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
 def test_boxes_iou3d(device):
     np_boxes1 = np.asarray([[1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 0.0],
@@ -81,7 +86,11 @@ def test_boxes_iou3d(device):
     pytest.param(
         'npu',
         marks=pytest.mark.skipif(
-            not IS_NPU_AVAILABLE, reason='requires NPU support'))
+            not IS_NPU_AVAILABLE, reason='requires NPU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
 def test_nms3d(device):
     # test for 5 boxes
@@ -124,7 +133,11 @@ def test_nms3d(device):
     pytest.param(
         'npu',
         marks=pytest.mark.skipif(
-            not IS_NPU_AVAILABLE, reason='requires NPU support'))
+            not IS_NPU_AVAILABLE, reason='requires NPU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
 def test_nms3d_normal(device):
     # test for 5 boxes
