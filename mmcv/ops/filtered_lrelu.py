@@ -13,7 +13,7 @@ from typing import Dict, Optional, Union
 import numpy as np
 import torch
 
-from ..utils import ext_loader
+from ..utils import IS_MUSA_AVAILABLE, ext_loader
 from .bias_act import bias_act
 from .upfirdn2d import _get_filter_size, _parse_padding, upfirdn2d
 
@@ -111,7 +111,7 @@ def filtered_lrelu(input: torch.Tensor,
             clamp=clamp,
             flip_filter=flip_filter).apply(input, filter_up, filter_down, bias,
                                            None, 0, 0)
-    if use_custom_op and input.is_musa:
+    if use_custom_op and IS_MUSA_AVAILABLE and input.is_musa:
         # @MTAI there have some bugs
         input = input.cpu()
         if bias is not None:
