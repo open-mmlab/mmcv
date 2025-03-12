@@ -7,14 +7,21 @@ import torch
 from mmengine.utils import digit_version
 from mmengine.utils.dl_utils import TORCH_VERSION
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE
 
-try:
-    # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast
-    # would be imported and used; we should test if our modules support it.
-    from torch.cuda.amp import autocast
-except ImportError:
-    pass
+if IS_MUSA_AVAILABLE:
+    try:
+        from torch_musa.core.amp import autocast
+    except ImportError:
+        pass
+else:
+    try:
+        # If PyTorch version >= 1.6.0 and fp16 is enabled,
+        # torch.cuda.amp.autocast would be imported and used;
+        # we should test if our modules support it.
+        from torch.cuda.amp import autocast
+    except ImportError:
+        pass
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -130,6 +137,10 @@ class TestMdconv:
             'mlu',
             marks=pytest.mark.skipif(
                 not IS_MLU_AVAILABLE, reason='requires MLU support')),
+        pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
     ])
     def test_mdconv_float(self, device):
         self._test_mdconv(dtype=torch.float, device=device)
@@ -157,6 +168,10 @@ class TestMdconv:
             'mlu',
             marks=pytest.mark.skipif(
                 not IS_MLU_AVAILABLE, reason='requires MLU support')),
+        pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
     ])
     def test_mdconv_half(self, device):
         self._test_mdconv(torch.half, device=device)

@@ -1,4 +1,5 @@
 import torch
+from mmengine.device import is_cuda_available, is_musa_available
 from torch.autograd import Function
 
 from ..utils import ext_loader
@@ -30,9 +31,12 @@ class FurthestPointSampling(Function):
         if points_xyz.device.type == 'npu':
             output = torch.IntTensor(B, num_points).npu()
             temp = torch.FloatTensor(B, N).fill_(1e10).npu()
-        else:
+        elif is_cuda_available():
             output = torch.cuda.IntTensor(B, num_points)
             temp = torch.cuda.FloatTensor(B, N).fill_(1e10)
+        elif is_musa_available():
+            output = torch.musa.IntTensor(B, num_points)
+            temp = torch.musa.FloatTensor(B, N).fill_(1e10)
 
         ext_module.furthest_point_sampling_forward(
             points_xyz,

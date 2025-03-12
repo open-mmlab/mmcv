@@ -22,6 +22,12 @@ Tensor nms_rotated_mlu(const Tensor dets, const Tensor scores,
                        const float iou_threshold);
 #endif
 
+#ifdef MMCV_WITH_MUSA
+Tensor nms_rotated_musa(const Tensor dets, const Tensor scores,
+                        const Tensor order, const Tensor dets_sorted,
+                        const float iou_threshold, const int multi_label);
+#endif
+
 // Interface for Python
 // inline is needed to prevent multiple function definitions when this header is
 // included by different cpps
@@ -47,6 +53,11 @@ Tensor nms_rotated(const Tensor dets, const Tensor scores, const Tensor order,
 #ifdef MMCV_WITH_MLU
   } else if (dets.device().type() == at::kMLU) {
     return nms_rotated_mlu(dets, scores, iou_threshold);
+#endif
+#ifdef MMCV_WITH_MUSA
+  } else if (dets.device().type() == ::at::kPrivateUse1) {
+    return nms_rotated_musa(dets, scores, order, dets_sorted.contiguous(),
+                            iou_threshold, multi_label);
 #endif
   }
 

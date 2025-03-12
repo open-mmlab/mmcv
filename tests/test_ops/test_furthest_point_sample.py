@@ -3,7 +3,7 @@ import pytest
 import torch
 
 from mmcv.ops import furthest_point_sample, furthest_point_sample_with_dist
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MUSA_AVAILABLE, IS_NPU_AVAILABLE
 
 
 @pytest.mark.parametrize('device', [
@@ -14,7 +14,11 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
     pytest.param(
         'npu',
         marks=pytest.mark.skipif(
-            not IS_NPU_AVAILABLE, reason='requires NPU support'))
+            not IS_NPU_AVAILABLE, reason='requires NPU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
 def test_fps(device):
     xyz = torch.tensor([[[-0.2748, 1.0020, -1.1674], [0.1015, 1.3952, -1.2681],
@@ -39,7 +43,11 @@ def test_fps(device):
     pytest.param(
         'npu',
         marks=pytest.mark.skipif(
-            not IS_NPU_AVAILABLE, reason='requires NPU support'))
+            not IS_NPU_AVAILABLE, reason='requires NPU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
 def test_fps_with_dist(device):
     xyz = torch.tensor([[[-0.2748, 1.0020, -1.1674], [0.1015, 1.3952, -1.2681],
@@ -62,8 +70,8 @@ def test_fps_with_dist(device):
     features_for_fps_distance = np.load(
         'tests/data/for_3d_ops/features_for_fps_distance.npy')
     expected_idx = torch.from_numpy(fps_idx).to(device)
-    features_for_fps_distance = torch.from_numpy(
-        features_for_fps_distance).cuda()
+    features_for_fps_distance = torch.from_numpy(features_for_fps_distance).to(
+        device)
 
     idx = furthest_point_sample_with_dist(features_for_fps_distance, 16)
     assert torch.all(idx == expected_idx)

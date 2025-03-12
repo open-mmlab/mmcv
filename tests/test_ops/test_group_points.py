@@ -3,7 +3,7 @@ import pytest
 import torch
 
 from mmcv.ops import grouping_operation
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MUSA_AVAILABLE, IS_NPU_AVAILABLE
 
 
 @pytest.mark.parametrize('device', [
@@ -14,9 +14,23 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_NPU_AVAILABLE
     pytest.param(
         'npu',
         marks=pytest.mark.skipif(
-            not IS_NPU_AVAILABLE, reason='requires NPU support'))
+            not IS_NPU_AVAILABLE, reason='requires NPU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
-@pytest.mark.parametrize('dtype', [torch.half, torch.float, torch.double])
+@pytest.mark.parametrize('dtype', [
+    torch.half,
+    torch.float,
+    pytest.param(
+        torch.double,
+        marks=[
+            pytest.mark.skipif(
+                IS_MUSA_AVAILABLE,
+                reason='MUSA does not support for 64-bit floating point')
+        ]),
+])
 def test_grouping_points(dtype, device):
     idx = torch.tensor([[[0, 0, 0], [3, 3, 3], [8, 8, 8], [0, 0, 0], [0, 0, 0],
                          [0, 0, 0]],
@@ -110,9 +124,21 @@ def test_grouping_points(dtype, device):
     pytest.param(
         'npu',
         marks=pytest.mark.skipif(
-            not IS_NPU_AVAILABLE, reason='requires NPU support'))
+            not IS_NPU_AVAILABLE, reason='requires NPU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
-@pytest.mark.parametrize('dtype', [torch.half, torch.float, torch.double])
+@pytest.mark.parametrize('dtype', [
+    torch.half,
+    torch.float,
+    pytest.param(
+        torch.double,
+        marks=pytest.mark.skipif(
+            IS_MUSA_AVAILABLE,
+            reason='MUSA does not support for 64-bit floating point')),
+])
 def test_stack_grouping_points(dtype, device):
     if device == 'npu' and dtype == torch.double:
         return
