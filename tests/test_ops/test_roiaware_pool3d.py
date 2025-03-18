@@ -5,7 +5,8 @@ import torch
 
 from mmcv.ops import (RoIAwarePool3d, points_in_boxes_all, points_in_boxes_cpu,
                       points_in_boxes_part)
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
+from mmcv.utils import (IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE,
+                        IS_NPU_AVAILABLE)
 
 
 @pytest.mark.parametrize('dtype', [
@@ -13,7 +14,7 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE, IS
     pytest.param(
         torch.double,
         marks=pytest.mark.skipif(
-            IS_MLU_AVAILABLE or IS_MUSA_AVAILABLE, 
+            IS_MLU_AVAILABLE or IS_MUSA_AVAILABLE,
             reason='MLU, MUSA does not support for double'))
 ])
 @pytest.mark.parametrize('device', [

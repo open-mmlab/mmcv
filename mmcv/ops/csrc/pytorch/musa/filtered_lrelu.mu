@@ -1916,7 +1916,7 @@ std::tuple<torch::Tensor, torch::Tensor, int> filtered_lrelu_op(
   {
     p.blockZofs = zofs;
     int subGz = std::min(maxSubGz, gz - zofs);
-// FIXME:TODO FIX BUG  
+// FIXME:TODO FIX BUG
 #ifdef MMCV_WITH_HIP
     AT_MUSA_CHECK(hipLaunchKernel(spec.exec, dim3(gx, gy, subGz), bx, args,
                                   spec.dynamicSharedKB << 10,

@@ -4,7 +4,8 @@ import pytest
 import torch
 
 from mmcv.ops import Voxelization
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE, IS_MUSA_AVAILABLE
+from mmcv.utils import (IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE,
+                        IS_NPU_AVAILABLE)
 
 
 def _get_voxel_points_indices(points, coors, voxel):
@@ -216,14 +217,13 @@ def test_voxelization_npu(device_type):
     assert np.all(voxels == expected_voxels)
     assert np.all(num_points_per_voxel == expected_num_points_per_voxel)
 
-@pytest.mark.parametrize(
-    'device_type',
-    [
-        pytest.param(
-            'musa',
-            marks=pytest.mark.skipif(
-                not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
-    ])
+
+@pytest.mark.parametrize('device_type', [
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
+])
 def test_voxelization_musa(device_type):
     voxel_size = [0.5, 0.5, 0.5]
     point_cloud_range = [0, -40, -3, 70.4, 40, 1]

@@ -196,7 +196,6 @@ class TestSyncBN:
             torch.cuda.manual_seed(9)
         elif IS_MUSA_AVAILABLE:
             torch.musa.manual_seed(9)
-            
 
         self.x = torch.rand(0, 3, 2, 3).to(device)
         self.y_bp = torch.rand(0, 3, 2, 3).to(device)
