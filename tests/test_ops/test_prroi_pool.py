@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE
+from mmcv.utils import IS_CUDA_AVAILABLE, IS_MUSA_AVAILABLE
 
 _USING_PARROTS = True
 try:
@@ -41,7 +41,11 @@ class TestPrRoiPool:
         pytest.param(
             'cuda',
             marks=pytest.mark.skipif(
-                not IS_CUDA_AVAILABLE, reason='requires CUDA support'))
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
     ])
     def test_roipool_gradcheck(self, device):
         from mmcv.ops import PrRoIPool
@@ -92,7 +96,11 @@ class TestPrRoiPool:
         pytest.param(
             'cuda',
             marks=pytest.mark.skipif(
-                not IS_CUDA_AVAILABLE, reason='requires CUDA support'))
+                not IS_CUDA_AVAILABLE, reason='requires CUDA support')),
+        pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
     ])
     def test_roipool_allclose_float(self, device):
         self._test_roipool_allclose(device, dtype=torch.float)
