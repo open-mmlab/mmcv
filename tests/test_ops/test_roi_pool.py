@@ -5,7 +5,8 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import (IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE,
+                        IS_NPU_AVAILABLE)
 
 _USING_PARROTS = True
 try:
@@ -89,16 +90,20 @@ class TestRoiPool:
         pytest.param(
             'npu',
             marks=pytest.mark.skipif(
-                not IS_NPU_AVAILABLE, reason='requires NPU support'))
+                not IS_NPU_AVAILABLE, reason='requires NPU support')),
+        pytest.param(
+            'musa',
+            marks=pytest.mark.skipif(
+                not IS_MUSA_AVAILABLE, reason='requires MUSA support')),
     ])
     @pytest.mark.parametrize('dtype', [
         torch.float,
         pytest.param(
             torch.double,
             marks=pytest.mark.skipif(
-                IS_MLU_AVAILABLE or IS_NPU_AVAILABLE,
-                reason='MLU, NPU does not support for 64-bit floating point')),
-        torch.half
+                IS_MLU_AVAILABLE or IS_NPU_AVAILABLE or IS_MUSA_AVAILABLE,
+                reason='MLU, NPU, MUSA '
+                'does not support for 64-bit floating point')), torch.half
     ])
     def test_roipool_allclose(self, device, dtype):
         self._test_roipool_allclose(device, dtype)

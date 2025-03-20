@@ -540,6 +540,17 @@ torch::Tensor bias_act_op(const torch::Tensor &input, const torch::Tensor &bias,
 
 REGISTER_DEVICE_IMPL(bias_act_op_impl, MUSA, bias_act_op);
 
+torch::Tensor filtered_lrelu_act_op_impl(torch::Tensor x, torch::Tensor si,
+                                         int sx, int sy, float gain,
+                                         float slope, float clamp,
+                                         bool writeSigns);
+
+torch::Tensor filtered_lrelu_act_op(torch::Tensor x, torch::Tensor si, int sx,
+                                    int sy, float gain, float slope,
+                                    float clamp, bool writeSigns);
+
+REGISTER_DEVICE_IMPL(filtered_lrelu_act_op_impl, MUSA, filtered_lrelu_act_op);
+
 void GatherPointsForwardMUSAKernelLauncher(int b, int c, int n, int npoints,
                                            const Tensor points,
                                            const Tensor idx, Tensor out);
@@ -869,6 +880,854 @@ Tensor nms_musa(Tensor boxes, Tensor scores, float iou_threshold, int offset) {
 Tensor nms_impl(Tensor boxes, Tensor scores, float iou_threshold, int offset);
 REGISTER_DEVICE_IMPL(nms_impl, MUSA, nms_musa);
 
+void PointsInBoxesPartForwardMUSAKernelLauncher(int batch_size, int boxes_num,
+                                                int pts_num, const Tensor boxes,
+                                                const Tensor pts,
+                                                Tensor box_idx_of_points);
+
+void PointsInBoxesAllForwardMUSAKernelLauncher(int batch_size, int boxes_num,
+                                               int pts_num, const Tensor boxes,
+                                               const Tensor pts,
+                                               Tensor box_idx_of_points);
+
+void points_in_boxes_part_forward_musa(int batch_size, int boxes_num,
+                                       int pts_num, const Tensor boxes,
+                                       const Tensor pts,
+                                       Tensor box_idx_of_points) {
+  PointsInBoxesPartForwardMUSAKernelLauncher(batch_size, boxes_num, pts_num,
+                                             boxes, pts, box_idx_of_points);
+};
+
+void points_in_boxes_all_forward_musa(int batch_size, int boxes_num,
+                                      int pts_num, const Tensor boxes,
+                                      const Tensor pts,
+                                      Tensor box_idx_of_points) {
+  PointsInBoxesAllForwardMUSAKernelLauncher(batch_size, boxes_num, pts_num,
+                                            boxes, pts, box_idx_of_points);
+};
+
+void points_in_boxes_part_forward_impl(int batch_size, int boxes_num,
+                                       int pts_num, const Tensor boxes,
+                                       const Tensor pts,
+                                       Tensor box_idx_of_points);
+
+void points_in_boxes_all_forward_impl(int batch_size, int boxes_num,
+                                      int pts_num, const Tensor boxes,
+                                      const Tensor pts,
+                                      Tensor box_idx_of_points);
+REGISTER_DEVICE_IMPL(points_in_boxes_part_forward_impl, MUSA,
+                     points_in_boxes_part_forward_musa);
+REGISTER_DEVICE_IMPL(points_in_boxes_all_forward_impl, MUSA,
+                     points_in_boxes_all_forward_musa);
+
+void PSAMaskForwardMUSAKernelLauncher(const int psa_type, const Tensor input,
+                                      Tensor output, const int num_,
+                                      const int h_feature, const int w_feature,
+                                      const int h_mask, const int w_mask,
+                                      const int half_h_mask,
+                                      const int half_w_mask);
+
+void PSAMaskBackwardMUSAKernelLauncher(
+    const int psa_type, const Tensor grad_output, Tensor grad_input,
+    const int num_, const int h_feature, const int w_feature, const int h_mask,
+    const int w_mask, const int half_h_mask, const int half_w_mask);
+
+void psamask_forward_musa(const int psa_type, const Tensor input, Tensor output,
+                          const int num_, const int h_feature,
+                          const int w_feature, const int h_mask,
+                          const int w_mask, const int half_h_mask,
+                          const int half_w_mask) {
+  PSAMaskForwardMUSAKernelLauncher(psa_type, input, output, num_, h_feature,
+                                   w_feature, h_mask, w_mask, half_h_mask,
+                                   half_w_mask);
+}
+
+void psamask_backward_musa(const int psa_type, const Tensor grad_output,
+                           Tensor grad_input, const int num_,
+                           const int h_feature, const int w_feature,
+                           const int h_mask, const int w_mask,
+                           const int half_h_mask, const int half_w_mask) {
+  PSAMaskBackwardMUSAKernelLauncher(psa_type, grad_output, grad_input, num_,
+                                    h_feature, w_feature, h_mask, w_mask,
+                                    half_h_mask, half_w_mask);
+}
+
+void psamask_forward_impl(const int psa_type, const Tensor input, Tensor output,
+                          const int num_, const int h_feature,
+                          const int w_feature, const int h_mask,
+                          const int w_mask, const int half_h_mask,
+                          const int half_w_mask);
+
+void psamask_backward_impl(const int psa_type, const Tensor grad_output,
+                           Tensor grad_input, const int num_,
+                           const int h_feature, const int w_feature,
+                           const int h_mask, const int w_mask,
+                           const int half_h_mask, const int half_w_mask);
+REGISTER_DEVICE_IMPL(psamask_forward_impl, MUSA, psamask_forward_musa);
+REGISTER_DEVICE_IMPL(psamask_backward_impl, MUSA, psamask_backward_musa);
+
+void ROIAlignForwardMUSAKernelLauncher(Tensor input, Tensor rois, Tensor output,
+                                       Tensor argmax_y, Tensor argmax_x,
+                                       int aligned_height, int aligned_width,
+                                       float spatial_scale, int sampling_ratio,
+                                       int pool_mode, bool aligned);
+
+void ROIAlignBackwardMUSAKernelLauncher(Tensor grad_output, Tensor rois,
+                                        Tensor argmax_y, Tensor argmax_x,
+                                        Tensor grad_input, int aligned_height,
+                                        int aligned_width, float spatial_scale,
+                                        int sampling_ratio, int pool_mode,
+                                        bool aligned);
+
+void roi_align_forward_musa(Tensor input, Tensor rois, Tensor output,
+                            Tensor argmax_y, Tensor argmax_x,
+                            int aligned_height, int aligned_width,
+                            float spatial_scale, int sampling_ratio,
+                            int pool_mode, bool aligned) {
+  ROIAlignForwardMUSAKernelLauncher(
+      input, rois, output, argmax_y, argmax_x, aligned_height, aligned_width,
+      spatial_scale, sampling_ratio, pool_mode, aligned);
+}
+
+void roi_align_backward_musa(Tensor grad_output, Tensor rois, Tensor argmax_y,
+                             Tensor argmax_x, Tensor grad_input,
+                             int aligned_height, int aligned_width,
+                             float spatial_scale, int sampling_ratio,
+                             int pool_mode, bool aligned) {
+  ROIAlignBackwardMUSAKernelLauncher(
+      grad_output, rois, argmax_y, argmax_x, grad_input, aligned_height,
+      aligned_width, spatial_scale, sampling_ratio, pool_mode, aligned);
+}
+
+void roi_align_forward_impl(Tensor input, Tensor rois, Tensor output,
+                            Tensor argmax_y, Tensor argmax_x,
+                            int aligned_height, int aligned_width,
+                            float spatial_scale, int sampling_ratio,
+                            int pool_mode, bool aligned);
+
+void roi_align_backward_impl(Tensor grad_output, Tensor rois, Tensor argmax_y,
+                             Tensor argmax_x, Tensor grad_input,
+                             int aligned_height, int aligned_width,
+                             float spatial_scale, int sampling_ratio,
+                             int pool_mode, bool aligned);
+
+REGISTER_DEVICE_IMPL(roi_align_forward_impl, MUSA, roi_align_forward_musa);
+REGISTER_DEVICE_IMPL(roi_align_backward_impl, MUSA, roi_align_backward_musa);
+
+void ROIAlignRotatedForwardMUSAKernelLauncher(
+    const at::Tensor input, const at::Tensor rois, const float spatial_scale,
+    const int sampling_ratio, const bool aligned, const bool clockwise,
+    const int channels, const int height, const int width, const int num_rois,
+    const int pooled_height, const int pooled_width, at::Tensor output);
+
+void ROIAlignRotatedBackwardMUSAKernelLauncher(
+    const at::Tensor top_grad, const at::Tensor rois, const float spatial_scale,
+    const int sampling_ratio, const bool aligned, const bool clockwise,
+    const int channels, const int height, const int width, const int num_rois,
+    const int pooled_height, const int pooled_width, at::Tensor bottom_grad);
+
+void roi_align_rotated_forward_musa(Tensor input, Tensor rois, Tensor output,
+                                    int aligned_height, int aligned_width,
+                                    float spatial_scale, int sampling_ratio,
+                                    bool aligned, bool clockwise) {
+  // Number of ROIs
+  int num_rois = rois.size(0);
+  int size_rois = rois.size(1);
+
+  if (size_rois != 6) {
+    AT_ERROR("wrong roi size");
+  }
+
+  int num_channels = input.size(1);
+  int data_height = input.size(2);
+  int data_width = input.size(3);
+  ROIAlignRotatedForwardMUSAKernelLauncher(
+      input, rois, spatial_scale, sampling_ratio, aligned, clockwise,
+      num_channels, data_height, data_width, num_rois, aligned_height,
+      aligned_width, output);
+}
+
+void roi_align_rotated_backward_musa(Tensor top_grad, Tensor rois,
+                                     Tensor bottom_grad, int aligned_height,
+                                     int aligned_width, float spatial_scale,
+                                     int sampling_ratio, bool aligned,
+                                     bool clockwise) {
+  // Number of ROIs
+  int num_rois = rois.size(0);
+  int size_rois = rois.size(1);
+  if (size_rois != 6) {
+    AT_ERROR("wrong roi size");
+  }
+
+  int num_channels = bottom_grad.size(1);
+  int data_height = bottom_grad.size(2);
+  int data_width = bottom_grad.size(3);
+  ROIAlignRotatedBackwardMUSAKernelLauncher(
+      top_grad, rois, spatial_scale, sampling_ratio, aligned, clockwise,
+      num_channels, data_height, data_width, num_rois, aligned_height,
+      aligned_width, bottom_grad);
+}
+
+void roi_align_rotated_forward_impl(Tensor input, Tensor rois, Tensor output,
+                                    int aligned_height, int aligned_width,
+                                    float spatial_scale, int sampling_ratio,
+                                    bool aligned, bool clockwise);
+
+void roi_align_rotated_backward_impl(Tensor top_grad, Tensor rois,
+                                     Tensor bottom_grad, int aligned_height,
+                                     int aligned_width, float spatial_scale,
+                                     int sampling_ratio, bool aligned,
+                                     bool clockwise);
+REGISTER_DEVICE_IMPL(roi_align_rotated_forward_impl, MUSA,
+                     roi_align_rotated_forward_musa);
+REGISTER_DEVICE_IMPL(roi_align_rotated_backward_impl, MUSA,
+                     roi_align_rotated_backward_musa);
+
+void RiROIAlignRotatedForwardMUSAKernelLauncher(
+    const at::Tensor features, const at::Tensor rois, const float spatial_scale,
+    const int num_samples, const bool clockwise, const int channels,
+    const int height, const int width, const int num_rois,
+    const int pooled_height, const int pooled_width, const int num_orientations,
+    at::Tensor output);
+
+void RiROIAlignRotatedBackwardMUSAKernelLauncher(
+    const at::Tensor top_grad, const at::Tensor rois, const float spatial_scale,
+    const int num_samples, const bool clockwise, const int channels,
+    const int height, const int width, const int num_rois,
+    const int pooled_height, const int pooled_width, const int num_orientations,
+    at::Tensor bottom_grad);
+
+void riroi_align_rotated_forward_musa(Tensor features, Tensor rois,
+                                      Tensor output, int pooled_height,
+                                      int pooled_width, float spatial_scale,
+                                      int num_samples, int num_orientations,
+                                      bool clockwise) {
+  // Number of ROIs
+  int num_rois = rois.size(0);
+  int size_rois = rois.size(1);
+  if (size_rois != 6) {
+    AT_ERROR("wrong roi size");
+  }
+  CHECK_CONTIGUOUS(features);
+  CHECK_CONTIGUOUS(rois);
+  int num_channels = features.size(1) / num_orientations;
+  int data_height = features.size(2);
+  int data_width = features.size(3);
+  RiROIAlignRotatedForwardMUSAKernelLauncher(
+      features, rois, spatial_scale, num_samples, clockwise, num_channels,
+      data_height, data_width, num_rois, pooled_height, pooled_width,
+      num_orientations, output);
+}
+
+void riroi_align_rotated_backward_musa(Tensor top_grad, Tensor rois,
+                                       Tensor bottom_grad, int pooled_height,
+                                       int pooled_width, float spatial_scale,
+                                       int num_samples, int num_orientations,
+                                       bool clockwise) {
+  // Number of ROIs
+  int num_rois = rois.size(0);
+  int size_rois = rois.size(1);
+  if (size_rois != 6) {
+    AT_ERROR("wrong roi size");
+  }
+  CHECK_CONTIGUOUS(top_grad);
+  CHECK_CONTIGUOUS(rois);
+  int num_channels = bottom_grad.size(1) / num_orientations;
+  int data_height = bottom_grad.size(2);
+  int data_width = bottom_grad.size(3);
+  RiROIAlignRotatedBackwardMUSAKernelLauncher(
+      top_grad, rois, spatial_scale, num_samples, clockwise, num_channels,
+      data_height, data_width, num_rois, pooled_height, pooled_width,
+      num_orientations, bottom_grad);
+}
+
+void riroi_align_rotated_forward_impl(Tensor features, Tensor rois,
+                                      Tensor output, int pooled_height,
+                                      int pooled_width, float spatial_scale,
+                                      int num_samples, int num_orientations,
+                                      bool clockwise);
+
+void riroi_align_rotated_backward_impl(Tensor top_grad, Tensor rois,
+                                       Tensor bottom_grad, int pooled_height,
+                                       int pooled_width, float spatial_scale,
+                                       int num_samples, int num_orientations,
+                                       bool clockwise);
+
+REGISTER_DEVICE_IMPL(riroi_align_rotated_forward_impl, MUSA,
+                     riroi_align_rotated_forward_musa);
+REGISTER_DEVICE_IMPL(riroi_align_rotated_backward_impl, MUSA,
+                     riroi_align_rotated_backward_musa);
+
+void RoiawarePool3dForwardMUSAKernelLauncher(
+    int boxes_num, int pts_num, int channels, int max_pts_each_voxel, int out_x,
+    int out_y, int out_z, const Tensor rois, const Tensor pts,
+    const Tensor pts_feature, Tensor argmax, Tensor pts_idx_of_voxels,
+    Tensor pooled_features, int pool_method);
+
+void RoiawarePool3dBackwardMUSAKernelLauncher(
+    int boxes_num, int out_x, int out_y, int out_z, int channels,
+    int max_pts_each_voxel, const Tensor pts_idx_of_voxels, const Tensor argmax,
+    const Tensor grad_out, Tensor grad_in, int pool_method);
+
+void roiaware_pool3d_forward_musa(int boxes_num, int pts_num, int channels,
+                                  int max_pts_each_voxel, int out_x, int out_y,
+                                  int out_z, const Tensor rois,
+                                  const Tensor pts, const Tensor pts_feature,
+                                  Tensor argmax, Tensor pts_idx_of_voxels,
+                                  Tensor pooled_features, int pool_method) {
+  RoiawarePool3dForwardMUSAKernelLauncher(
+      boxes_num, pts_num, channels, max_pts_each_voxel, out_x, out_y, out_z,
+      rois, pts, pts_feature, argmax, pts_idx_of_voxels, pooled_features,
+      pool_method);
+};
+
+void roiaware_pool3d_backward_musa(int boxes_num, int out_x, int out_y,
+                                   int out_z, int channels,
+                                   int max_pts_each_voxel,
+                                   const Tensor pts_idx_of_voxels,
+                                   const Tensor argmax, const Tensor grad_out,
+                                   Tensor grad_in, int pool_method) {
+  RoiawarePool3dBackwardMUSAKernelLauncher(
+      boxes_num, out_x, out_y, out_z, channels, max_pts_each_voxel,
+      pts_idx_of_voxels, argmax, grad_out, grad_in, pool_method);
+};
+
+void roiaware_pool3d_forward_impl(int boxes_num, int pts_num, int channels,
+                                  int max_pts_each_voxel, int out_x, int out_y,
+                                  int out_z, const Tensor rois,
+                                  const Tensor pts, const Tensor pts_feature,
+                                  Tensor argmax, Tensor pts_idx_of_voxels,
+                                  Tensor pooled_features, int pool_method);
+
+void roiaware_pool3d_backward_impl(int boxes_num, int out_x, int out_y,
+                                   int out_z, int channels,
+                                   int max_pts_each_voxel,
+                                   const Tensor pts_idx_of_voxels,
+                                   const Tensor argmax, const Tensor grad_out,
+                                   Tensor grad_in, int pool_method);
+
+REGISTER_DEVICE_IMPL(roiaware_pool3d_forward_impl, MUSA,
+                     roiaware_pool3d_forward_musa);
+REGISTER_DEVICE_IMPL(roiaware_pool3d_backward_impl, MUSA,
+                     roiaware_pool3d_backward_musa);
+
+void RoIPointPool3dForwardMUSAKernelLauncher(
+    int batch_size, int pts_num, int boxes_num, int feature_in_len,
+    int sampled_pts_num, const Tensor xyz, const Tensor boxes3d,
+    const Tensor pts_feature, Tensor pooled_features, Tensor pooled_empty_flag);
+
+void roipoint_pool3d_forward_musa(int batch_size, int pts_num, int boxes_num,
+                                  int feature_in_len, int sampled_pts_num,
+                                  const Tensor xyz, const Tensor boxes3d,
+                                  const Tensor pts_feature,
+                                  Tensor pooled_features,
+                                  Tensor pooled_empty_flag) {
+  RoIPointPool3dForwardMUSAKernelLauncher(
+      batch_size, pts_num, boxes_num, feature_in_len, sampled_pts_num, xyz,
+      boxes3d, pts_feature, pooled_features, pooled_empty_flag);
+};
+
+void roipoint_pool3d_forward_impl(int batch_size, int pts_num, int boxes_num,
+                                  int feature_in_len, int sampled_pts_num,
+                                  const Tensor xyz, const Tensor boxes3d,
+                                  const Tensor pts_feature,
+                                  Tensor pooled_features,
+                                  Tensor pooled_empty_flag);
+REGISTER_DEVICE_IMPL(roipoint_pool3d_forward_impl, MUSA,
+                     roipoint_pool3d_forward_musa);
+
+void ROIPoolForwardMUSAKernelLauncher(Tensor input, Tensor rois, Tensor output,
+                                      Tensor argmax, int pooled_height,
+                                      int pooled_width, float spatial_scale);
+
+void ROIPoolBackwardMUSAKernelLauncher(Tensor grad_output, Tensor rois,
+                                       Tensor argmax, Tensor grad_input,
+                                       int pooled_height, int pooled_width,
+                                       float spatial_scale);
+
+void roi_pool_forward_musa(Tensor input, Tensor rois, Tensor output,
+                           Tensor argmax, int pooled_height, int pooled_width,
+                           float spatial_scale) {
+  ROIPoolForwardMUSAKernelLauncher(input, rois, output, argmax, pooled_height,
+                                   pooled_width, spatial_scale);
+}
+
+void roi_pool_backward_musa(Tensor grad_output, Tensor rois, Tensor argmax,
+                            Tensor grad_input, int pooled_height,
+                            int pooled_width, float spatial_scale) {
+  ROIPoolBackwardMUSAKernelLauncher(grad_output, rois, argmax, grad_input,
+                                    pooled_height, pooled_width, spatial_scale);
+}
+
+void roi_pool_forward_impl(Tensor input, Tensor rois, Tensor output,
+                           Tensor argmax, int pooled_height, int pooled_width,
+                           float spatial_scale);
+void roi_pool_backward_impl(Tensor grad_output, Tensor rois, Tensor argmax,
+                            Tensor grad_input, int pooled_height,
+                            int pooled_width, float spatial_scale);
+REGISTER_DEVICE_IMPL(roi_pool_forward_impl, MUSA, roi_pool_forward_musa);
+REGISTER_DEVICE_IMPL(roi_pool_backward_impl, MUSA, roi_pool_backward_musa);
+
+typedef enum { SUM = 0, MEAN = 1, MAX = 2 } reduce_t;
+
+std::vector<at::Tensor> DynamicPointToVoxelForwardMUSAKernelLauncher(
+    const at::Tensor &feats, const at::Tensor &coors,
+    const reduce_t reduce_type);
+
+void DynamicPointToVoxelBackwardMUSAKernelLauncher(
+    at::Tensor &grad_feats, const at::Tensor &grad_reduced_feats,
+    const at::Tensor &feats, const at::Tensor &reduced_feats,
+    const at::Tensor &coors_map, const at::Tensor &reduce_count,
+    const reduce_t reduce_type);
+
+std::vector<torch::Tensor> dynamic_point_to_voxel_forward_musa(
+    const torch::Tensor &feats, const torch::Tensor &coors,
+    const reduce_t reduce_type) {
+  return DynamicPointToVoxelForwardMUSAKernelLauncher(feats, coors,
+                                                      reduce_type);
+};
+
+void dynamic_point_to_voxel_backward_musa(
+    torch::Tensor &grad_feats, const torch::Tensor &grad_reduced_feats,
+    const torch::Tensor &feats, const torch::Tensor &reduced_feats,
+    const torch::Tensor &coors_idx, const torch::Tensor &reduce_count,
+    const reduce_t reduce_type) {
+  DynamicPointToVoxelBackwardMUSAKernelLauncher(grad_feats, grad_reduced_feats,
+                                                feats, reduced_feats, coors_idx,
+                                                reduce_count, reduce_type);
+};
+
+std::vector<torch::Tensor> dynamic_point_to_voxel_forward_impl(
+    const torch::Tensor &feats, const torch::Tensor &coors,
+    const reduce_t reduce_type);
+
+void dynamic_point_to_voxel_backward_impl(
+    torch::Tensor &grad_feats, const torch::Tensor &grad_reduced_feats,
+    const torch::Tensor &feats, const torch::Tensor &reduced_feats,
+    const torch::Tensor &coors_idx, const torch::Tensor &reduce_count,
+    const reduce_t reduce_type);
+
+REGISTER_DEVICE_IMPL(dynamic_point_to_voxel_forward_impl, MUSA,
+                     dynamic_point_to_voxel_forward_musa);
+REGISTER_DEVICE_IMPL(dynamic_point_to_voxel_backward_impl, MUSA,
+                     dynamic_point_to_voxel_backward_musa);
+
+void SyncBNForwardMeanMUSAKernelLauncher(const Tensor input, Tensor mean);
+
+void SyncBNForwardVarMUSAKernelLauncher(const Tensor input, const Tensor mean,
+                                        Tensor var);
+
+void SyncBNForwardOutputMUSAKernelLauncher(
+    const Tensor input, const Tensor mean, const Tensor var,
+    Tensor running_mean, Tensor running_var, const Tensor weight,
+    const Tensor bias, Tensor norm, Tensor std, Tensor output, float eps,
+    float momentum, int group_size);
+
+void SyncBNBackwardParamMUSAKernelLauncher(const Tensor grad_output,
+                                           const Tensor norm,
+                                           Tensor grad_weight,
+                                           Tensor grad_bias);
+
+void SyncBNBackwardDataMUSAKernelLauncher(const Tensor grad_output,
+                                          const Tensor weight,
+                                          const Tensor grad_weight,
+                                          const Tensor grad_bias,
+                                          const Tensor norm, const Tensor std,
+                                          Tensor grad_input);
+
+void sync_bn_forward_mean_musa(const Tensor input, Tensor mean) {
+  SyncBNForwardMeanMUSAKernelLauncher(input, mean);
+}
+
+void sync_bn_forward_var_musa(const Tensor input, const Tensor mean,
+                              Tensor var) {
+  SyncBNForwardVarMUSAKernelLauncher(input, mean, var);
+}
+
+void sync_bn_forward_output_musa(const Tensor input, const Tensor mean,
+                                 const Tensor var, Tensor running_mean,
+                                 Tensor running_var, const Tensor weight,
+                                 const Tensor bias, Tensor norm, Tensor std,
+                                 Tensor output, float eps, float momentum,
+                                 int group_size) {
+  SyncBNForwardOutputMUSAKernelLauncher(input, mean, var, running_mean,
+                                        running_var, weight, bias, norm, std,
+                                        output, eps, momentum, group_size);
+}
+
+void sync_bn_backward_param_musa(const Tensor grad_output, const Tensor norm,
+                                 Tensor grad_weight, Tensor grad_bias) {
+  SyncBNBackwardParamMUSAKernelLauncher(grad_output, norm, grad_weight,
+                                        grad_bias);
+}
+
+void sync_bn_backward_data_musa(const Tensor grad_output, const Tensor weight,
+                                const Tensor grad_weight,
+                                const Tensor grad_bias, const Tensor norm,
+                                const Tensor std, Tensor grad_input) {
+  SyncBNBackwardDataMUSAKernelLauncher(grad_output, weight, grad_weight,
+                                       grad_bias, norm, std, grad_input);
+}
+
+void sync_bn_forward_mean_impl(const Tensor input, Tensor mean);
+
+void sync_bn_forward_var_impl(const Tensor input, const Tensor mean,
+                              Tensor var);
+
+void sync_bn_forward_output_impl(const Tensor input, const Tensor mean,
+                                 const Tensor var, Tensor running_mean,
+                                 Tensor running_var, const Tensor weight,
+                                 const Tensor bias, Tensor norm, Tensor std,
+                                 Tensor output, float eps, float momentum,
+                                 int group_size);
+
+void sync_bn_backward_param_impl(const Tensor grad_output, const Tensor norm,
+                                 Tensor grad_weight, Tensor grad_bias);
+
+void sync_bn_backward_data_impl(const Tensor grad_output, const Tensor weight,
+                                const Tensor grad_weight,
+                                const Tensor grad_bias, const Tensor norm,
+                                const Tensor std, Tensor grad_input);
+
+REGISTER_DEVICE_IMPL(sync_bn_forward_mean_impl, MUSA,
+                     sync_bn_forward_mean_musa);
+REGISTER_DEVICE_IMPL(sync_bn_forward_var_impl, MUSA, sync_bn_forward_var_musa);
+REGISTER_DEVICE_IMPL(sync_bn_forward_output_impl, MUSA,
+                     sync_bn_forward_output_musa);
+REGISTER_DEVICE_IMPL(sync_bn_backward_param_impl, MUSA,
+                     sync_bn_backward_param_musa);
+REGISTER_DEVICE_IMPL(sync_bn_backward_data_impl, MUSA,
+                     sync_bn_backward_data_musa);
+
+void ThreeInterpolateForwardMUSAKernelLauncher(int b, int c, int m, int n,
+                                               const Tensor points,
+                                               const Tensor idx,
+                                               const Tensor weight, Tensor out);
+
+void ThreeInterpolateBackwardMUSAKernelLauncher(int b, int c, int n, int m,
+                                                const Tensor grad_out,
+                                                const Tensor idx,
+                                                const Tensor weight,
+                                                Tensor grad_points);
+
+void three_interpolate_forward_musa(int b, int c, int m, int n,
+                                    const Tensor points, const Tensor idx,
+                                    const Tensor weight, Tensor out) {
+  ThreeInterpolateForwardMUSAKernelLauncher(b, c, m, n, points, idx, weight,
+                                            out);
+};
+
+void three_interpolate_backward_musa(int b, int c, int n, int m,
+                                     const Tensor grad_out, const Tensor idx,
+                                     const Tensor weight, Tensor grad_points) {
+  ThreeInterpolateBackwardMUSAKernelLauncher(b, c, n, m, grad_out, idx, weight,
+                                             grad_points);
+};
+
+void three_interpolate_forward_impl(int b, int c, int m, int n,
+                                    const Tensor points, const Tensor idx,
+                                    const Tensor weight, Tensor out);
+
+void three_interpolate_backward_impl(int b, int c, int n, int m,
+                                     const Tensor grad_out, const Tensor idx,
+                                     const Tensor weight, Tensor grad_points);
+REGISTER_DEVICE_IMPL(three_interpolate_forward_impl, MUSA,
+                     three_interpolate_forward_musa);
+REGISTER_DEVICE_IMPL(three_interpolate_backward_impl, MUSA,
+                     three_interpolate_backward_musa);
+
+void ThreeNNForwardMUSAKernelLauncher(int b, int n, int m, const Tensor unknown,
+                                      const Tensor known, Tensor dist2,
+                                      Tensor idx);
+
+void three_nn_forward_musa(int b, int n, int m, const Tensor unknown,
+                           const Tensor known, Tensor dist2, Tensor idx) {
+  ThreeNNForwardMUSAKernelLauncher(b, n, m, unknown, known, dist2, idx);
+};
+
+void three_nn_forward_impl(int b, int n, int m, const Tensor unknown,
+                           const Tensor known, Tensor dist2, Tensor idx);
+REGISTER_DEVICE_IMPL(three_nn_forward_impl, MUSA, three_nn_forward_musa);
+
+void TINShiftForwardMUSAKernelLauncher(Tensor input, Tensor shift,
+                                       Tensor output);
+
+void TINShiftBackwardMUSAKernelLauncher(Tensor grad_output, Tensor shift,
+                                        Tensor grad_input);
+
+void tin_shift_forward_musa(Tensor input, Tensor shift, Tensor output) {
+  TINShiftForwardMUSAKernelLauncher(input, shift, output);
+}
+
+void tin_shift_backward_musa(Tensor grad_output, Tensor shift,
+                             Tensor grad_input) {
+  TINShiftBackwardMUSAKernelLauncher(grad_output, shift, grad_input);
+}
+
+void tin_shift_forward_impl(Tensor input, Tensor shift, Tensor output);
+void tin_shift_backward_impl(Tensor grad_output, Tensor shift,
+                             Tensor grad_input);
+REGISTER_DEVICE_IMPL(tin_shift_forward_impl, MUSA, tin_shift_forward_musa);
+REGISTER_DEVICE_IMPL(tin_shift_backward_impl, MUSA, tin_shift_backward_musa);
+
+#if ((!defined(MUSA_ARCH)) || (defined(MUSA_ARCH)) && (MUSA_ARCH > 21))
+torch::Tensor upfirdn2d_op(torch::Tensor input, torch::Tensor filter, int upx,
+                           int upy, int downx, int downy, int padx0, int padx1,
+                           int pady0, int pady1, bool flip, float gain);
+
+torch::Tensor upfirdn2d_op_impl(torch::Tensor input, torch::Tensor filter,
+                                int upx, int upy, int downx, int downy,
+                                int padx0, int padx1, int pady0, int pady1,
+                                bool flip, float gain);
+REGISTER_DEVICE_IMPL(upfirdn2d_op_impl, MUSA, upfirdn2d_op);
+#endif
+
+int HardVoxelizeForwardMUSAKernelLauncher(
+    const at::Tensor &points, at::Tensor &voxels, at::Tensor &coors,
+    at::Tensor &num_points_per_voxel, const std::vector<float> voxel_size,
+    const std::vector<float> coors_range, const int max_points,
+    const int max_voxels, const int NDim = 3);
+
+int NondeterministicHardVoxelizeForwardMUSAKernelLauncher(
+    const at::Tensor &points, at::Tensor &voxels, at::Tensor &coors,
+    at::Tensor &num_points_per_voxel, const std::vector<float> voxel_size,
+    const std::vector<float> coors_range, const int max_points,
+    const int max_voxels, const int NDim = 3);
+
+void DynamicVoxelizeForwardMUSAKernelLauncher(
+    const at::Tensor &points, at::Tensor &coors,
+    const std::vector<float> voxel_size, const std::vector<float> coors_range,
+    const int NDim = 3);
+
+int hard_voxelize_forward_musa(const at::Tensor &points, at::Tensor &voxels,
+                               at::Tensor &coors,
+                               at::Tensor &num_points_per_voxel,
+                               const std::vector<float> voxel_size,
+                               const std::vector<float> coors_range,
+                               const int max_points, const int max_voxels,
+                               const int NDim) {
+  return HardVoxelizeForwardMUSAKernelLauncher(
+      points, voxels, coors, num_points_per_voxel, voxel_size, coors_range,
+      max_points, max_voxels, NDim);
+};
+
+int nondeterministic_hard_voxelize_forward_musa(
+    const at::Tensor &points, at::Tensor &voxels, at::Tensor &coors,
+    at::Tensor &num_points_per_voxel, const std::vector<float> voxel_size,
+    const std::vector<float> coors_range, const int max_points,
+    const int max_voxels, const int NDim) {
+  return NondeterministicHardVoxelizeForwardMUSAKernelLauncher(
+      points, voxels, coors, num_points_per_voxel, voxel_size, coors_range,
+      max_points, max_voxels, NDim);
+};
+
+void dynamic_voxelize_forward_musa(const at::Tensor &points, at::Tensor &coors,
+                                   const std::vector<float> voxel_size,
+                                   const std::vector<float> coors_range,
+                                   const int NDim) {
+  DynamicVoxelizeForwardMUSAKernelLauncher(points, coors, voxel_size,
+                                           coors_range, NDim);
+};
+
+int hard_voxelize_forward_impl(const at::Tensor &points, at::Tensor &voxels,
+                               at::Tensor &coors,
+                               at::Tensor &num_points_per_voxel,
+                               const std::vector<float> voxel_size,
+                               const std::vector<float> coors_range,
+                               const int max_points, const int max_voxels,
+                               const int NDim);
+
+int nondeterministic_hard_voxelize_forward_impl(
+    const at::Tensor &points, at::Tensor &voxels, at::Tensor &coors,
+    at::Tensor &num_points_per_voxel, const std::vector<float> voxel_size,
+    const std::vector<float> coors_range, const int max_points,
+    const int max_voxels, const int NDim);
+
+void dynamic_voxelize_forward_impl(const at::Tensor &points, at::Tensor &coors,
+                                   const std::vector<float> voxel_size,
+                                   const std::vector<float> coors_range,
+                                   const int NDim);
+
+REGISTER_DEVICE_IMPL(hard_voxelize_forward_impl, MUSA,
+                     hard_voxelize_forward_musa);
+REGISTER_DEVICE_IMPL(nondeterministic_hard_voxelize_forward_impl, MUSA,
+                     nondeterministic_hard_voxelize_forward_musa);
+REGISTER_DEVICE_IMPL(dynamic_voxelize_forward_impl, MUSA,
+                     dynamic_voxelize_forward_musa);
+
+void RotatedFeatureAlignForwardMUSAKernelLauncher(const Tensor features,
+                                                  const Tensor best_bboxes,
+                                                  const float spatial_scale,
+                                                  const int points,
+                                                  Tensor output);
+
+void RotatedFeatureAlignBackwardMUSAKernelLauncher(const Tensor top_grad,
+                                                   const Tensor best_bboxes,
+                                                   const float spatial_scale,
+                                                   const int points,
+                                                   Tensor bottom_grad);
+
+void rotated_feature_align_forward_musa(const Tensor features,
+                                        const Tensor best_bboxes,
+                                        const float spatial_scale,
+                                        const int points, Tensor output) {
+  RotatedFeatureAlignForwardMUSAKernelLauncher(features, best_bboxes,
+                                               spatial_scale, points, output);
+};
+
+void rotated_feature_align_backward_musa(const Tensor top_grad,
+                                         const Tensor best_bboxes,
+                                         const float spatial_scale,
+                                         const int points, Tensor bottom_grad) {
+  RotatedFeatureAlignBackwardMUSAKernelLauncher(
+      top_grad, best_bboxes, spatial_scale, points, bottom_grad);
+};
+
+void rotated_feature_align_forward_impl(const Tensor features,
+                                        const Tensor best_bboxes,
+                                        const float spatial_scale,
+                                        const int points, Tensor output);
+
+void rotated_feature_align_backward_impl(const Tensor top_grad,
+                                         const Tensor best_bboxes,
+                                         const float spatial_scale,
+                                         const int points, Tensor bottom_grad);
+
+REGISTER_DEVICE_IMPL(rotated_feature_align_forward_impl, MUSA,
+                     rotated_feature_align_forward_musa);
+REGISTER_DEVICE_IMPL(rotated_feature_align_backward_impl, MUSA,
+                     rotated_feature_align_backward_musa);
+
+void PointsInPolygonsForwardMUSAKernelLauncher(const at::Tensor points,
+                                               const at::Tensor polygons,
+                                               const int rows, const int cols,
+                                               at::Tensor output);
+
+void points_in_polygons_forward_musa(const Tensor points, const Tensor polygons,
+                                     Tensor output, const int rows,
+                                     const int cols) {
+  PointsInPolygonsForwardMUSAKernelLauncher(points, polygons, rows, cols,
+                                            output);
+};
+
+void points_in_polygons_forward_impl(const Tensor points, const Tensor polygons,
+                                     Tensor output, const int rows,
+                                     const int cols);
+
+REGISTER_DEVICE_IMPL(points_in_polygons_forward_impl, MUSA,
+                     points_in_polygons_forward_musa);
+
+torch::Tensor IndiceMaxpoolForwardMUSAKernelLauncher(torch::Tensor features,
+                                                     torch::Tensor indicePairs,
+                                                     torch::Tensor indiceNum,
+                                                     int64_t numAct);
+
+torch::Tensor indice_maxpool_forward_musa(torch::Tensor features,
+                                          torch::Tensor indicePairs,
+                                          torch::Tensor indiceNum,
+                                          int64_t numAct) {
+  return IndiceMaxpoolForwardMUSAKernelLauncher(features, indicePairs,
+                                                indiceNum, numAct);
+};
+
+torch::Tensor indice_maxpool_forward_impl(torch::Tensor features,
+                                          torch::Tensor indicePairs,
+                                          torch::Tensor indiceNum,
+                                          int64_t numAct);
+REGISTER_DEVICE_IMPL(indice_maxpool_forward_impl, MUSA,
+                     indice_maxpool_forward_musa);
+
+torch::Tensor IndiceMaxpoolBackwardMUSAKernelLauncher(torch::Tensor features,
+                                                      torch::Tensor outFeatures,
+                                                      torch::Tensor outGrad,
+                                                      torch::Tensor indicePairs,
+                                                      torch::Tensor indiceNum);
+
+torch::Tensor indice_maxpool_backward_musa(torch::Tensor features,
+                                           torch::Tensor outFeatures,
+                                           torch::Tensor outGrad,
+                                           torch::Tensor indicePairs,
+                                           torch::Tensor indiceNum) {
+  return IndiceMaxpoolBackwardMUSAKernelLauncher(features, outFeatures, outGrad,
+                                                 indicePairs, indiceNum);
+};
+
+torch::Tensor indice_maxpool_backward_impl(torch::Tensor features,
+                                           torch::Tensor outFeatures,
+                                           torch::Tensor outGrad,
+                                           torch::Tensor indicePairs,
+                                           torch::Tensor indiceNum);
+
+REGISTER_DEVICE_IMPL(indice_maxpool_backward_impl, MUSA,
+                     indice_maxpool_backward_musa)
+
+torch::Tensor IndiceConvForwardMUSAKernelLauncher(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor indicePairs,
+    torch::Tensor indiceNum, int64_t numActOut, int64_t _inverse,
+    int64_t _subM);
+
+torch::Tensor indice_conv_forward_musa(torch::Tensor features,
+                                       torch::Tensor filters,
+                                       torch::Tensor indicePairs,
+                                       torch::Tensor indiceNum,
+                                       int64_t numActOut, int64_t _inverse,
+                                       int64_t _subM) {
+  return IndiceConvForwardMUSAKernelLauncher(
+      features, filters, indicePairs, indiceNum, numActOut, _inverse, _subM);
+};
+
+torch::Tensor indice_conv_forward_impl(torch::Tensor features,
+                                       torch::Tensor filters,
+                                       torch::Tensor indicePairs,
+                                       torch::Tensor indiceNum,
+                                       int64_t numActOut, int64_t _inverse,
+                                       int64_t _subM);
+
+REGISTER_DEVICE_IMPL(indice_conv_forward_impl, MUSA, indice_conv_forward_musa);
+
+std::vector<torch::Tensor> IndiceConvBackwardMUSAKernelLauncher(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
+    int64_t _subM);
+
+std::vector<torch::Tensor> indice_conv_backward_musa(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
+    int64_t _subM) {
+  return IndiceConvBackwardMUSAKernelLauncher(
+      features, filters, outGrad, indicePairs, indiceNum, _inverse, _subM);
+};
+
+std::vector<torch::Tensor> indice_conv_backward_impl(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor outGrad,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t _inverse,
+    int64_t _subM);
+
+REGISTER_DEVICE_IMPL(indice_conv_backward_impl, MUSA,
+                     indice_conv_backward_musa);
+
+torch::Tensor FusedIndiceConvBatchnormMUSAKernelLauncher(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
+    int64_t _inverse, int64_t _subM);
+
+torch::Tensor fused_indice_conv_batchnorm_forward_musa(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
+    int64_t _inverse, int64_t _subM) {
+  return FusedIndiceConvBatchnormMUSAKernelLauncher(features, filters, bias,
+                                                    indicePairs, indiceNum,
+                                                    numActOut, _inverse, _subM);
+};
+
+torch::Tensor fused_indice_conv_batchnorm_forward_impl(
+    torch::Tensor features, torch::Tensor filters, torch::Tensor bias,
+    torch::Tensor indicePairs, torch::Tensor indiceNum, int64_t numActOut,
+    int64_t _inverse, int64_t _subM);
+
+REGISTER_DEVICE_IMPL(fused_indice_conv_batchnorm_forward_impl, MUSA,
+                     fused_indice_conv_batchnorm_forward_musa)
+
 void MinAreaPolygonsMUSAKernelLauncher(const Tensor pointsets, Tensor polygons);
 
 void min_area_polygons_musa(const Tensor pointsets, Tensor polygons) {
@@ -989,6 +1848,57 @@ REGISTER_DEVICE_IMPL(chamfer_distance_forward_impl, MUSA,
 REGISTER_DEVICE_IMPL(chamfer_distance_backward_impl, MUSA,
                      chamfer_distance_backward_musa);
 #endif
+
+void PrROIPoolForwardMUSAKernelLauncher(Tensor input, Tensor rois,
+                                        Tensor output, int pooled_height,
+                                        int pooled_width, float spatial_scale);
+
+void PrROIPoolBackwardMUSAKernelLauncher(Tensor grad_output, Tensor rois,
+                                         Tensor grad_input, int pooled_height,
+                                         int pooled_width, float spatial_scale);
+
+void PrROIPoolCoorBackwardMUSAKernelLauncher(
+    Tensor output, Tensor grad_output, Tensor input, Tensor rois,
+    Tensor grad_rois, int pooled_height, int pooled_width, float spatial_scale);
+
+void prroi_pool_forward_musa(Tensor input, Tensor rois, Tensor output,
+                             int pooled_height, int pooled_width,
+                             float spatial_scale) {
+  PrROIPoolForwardMUSAKernelLauncher(input, rois, output, pooled_height,
+                                     pooled_width, spatial_scale);
+}
+
+void prroi_pool_backward_musa(Tensor grad_output, Tensor rois,
+                              Tensor grad_input, int pooled_height,
+                              int pooled_width, float spatial_scale) {
+  PrROIPoolBackwardMUSAKernelLauncher(grad_output, rois, grad_input,
+                                      pooled_height, pooled_width,
+                                      spatial_scale);
+}
+
+void prroi_pool_coor_backward_musa(Tensor output, Tensor grad_output,
+                                   Tensor input, Tensor rois, Tensor grad_rois,
+                                   int pooled_height, int pooled_width,
+                                   float spatial_scale) {
+  PrROIPoolCoorBackwardMUSAKernelLauncher(output, grad_output, input, rois,
+                                          grad_rois, pooled_height,
+                                          pooled_width, spatial_scale);
+}
+
+void prroi_pool_forward_impl(Tensor input, Tensor rois, Tensor output,
+                             int pooled_height, int pooled_width,
+                             float spatial_scale);
+void prroi_pool_backward_impl(Tensor grad_output, Tensor rois,
+                              Tensor grad_input, int pooled_height,
+                              int pooled_width, float spatial_scale);
+void prroi_pool_coor_backward_impl(Tensor output, Tensor grad_output,
+                                   Tensor input, Tensor rois, Tensor grad_rois,
+                                   int pooled_height, int pooled_width,
+                                   float spatial_scale);
+REGISTER_DEVICE_IMPL(prroi_pool_forward_impl, MUSA, prroi_pool_forward_musa);
+REGISTER_DEVICE_IMPL(prroi_pool_backward_impl, MUSA, prroi_pool_backward_musa);
+REGISTER_DEVICE_IMPL(prroi_pool_coor_backward_impl, MUSA,
+                     prroi_pool_coor_backward_musa);
 
 void BezierAlignForwardMUSAKernelLauncher(Tensor input, Tensor rois,
                                           Tensor output, int aligned_height,

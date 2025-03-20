@@ -5,7 +5,8 @@ import torch
 
 from mmcv.ops import (RoIAwarePool3d, points_in_boxes_all, points_in_boxes_cpu,
                       points_in_boxes_part)
-from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
+from mmcv.utils import (IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_MUSA_AVAILABLE,
+                        IS_NPU_AVAILABLE)
 
 
 @pytest.mark.parametrize('dtype', [
@@ -13,7 +14,8 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
     pytest.param(
         torch.double,
         marks=pytest.mark.skipif(
-            IS_MLU_AVAILABLE, reason='MLU does not support for double'))
+            IS_MLU_AVAILABLE or IS_MUSA_AVAILABLE,
+            reason='MLU, MUSA does not support for double'))
 ])
 @pytest.mark.parametrize('device', [
     pytest.param(
@@ -23,7 +25,11 @@ from mmcv.utils import IS_CUDA_AVAILABLE, IS_MLU_AVAILABLE, IS_NPU_AVAILABLE
     pytest.param(
         'mlu',
         marks=pytest.mark.skipif(
-            not IS_MLU_AVAILABLE, reason='requires MLU support'))
+            not IS_MLU_AVAILABLE, reason='requires MLU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
 def test_RoIAwarePool3d(device, dtype):
     roiaware_pool3d_max = RoIAwarePool3d(
@@ -64,7 +70,11 @@ def test_RoIAwarePool3d(device, dtype):
     pytest.param(
         'npu',
         marks=pytest.mark.skipif(
-            not IS_NPU_AVAILABLE, reason='requires NPU support'))
+            not IS_NPU_AVAILABLE, reason='requires NPU support')),
+    pytest.param(
+        'musa',
+        marks=pytest.mark.skipif(
+            not IS_MUSA_AVAILABLE, reason='requires MUSA support'))
 ])
 def test_points_in_boxes_part(device):
     boxes = torch.tensor(
