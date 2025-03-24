@@ -259,7 +259,7 @@ def fused_bias_leakyrelu(input: torch.Tensor,
     """
 
     if (not input.is_cuda) and (not input.is_musa) and \
-        input.device.type != 'npu':
+            input.device.type != 'npu':
         return bias_leakyrelu_ref(input, bias, negative_slope, scale)
 
     return FusedBiasLeakyReLUFunction.apply(input, bias.to(input.dtype),
