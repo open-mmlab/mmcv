@@ -28,10 +28,11 @@ void assign_score_withk_backward_npu(
     const Tensor& grad_out, const Tensor& points, const Tensor& centers,
     const Tensor& scores, const Tensor& knn_idx, Tensor& grad_points,
     Tensor& grad_centers, Tensor& grad_scores) {
+  at::Tensor grad_out_trans = grad_out.permute({0, 2, 3, 1});
 
-    at::Tensor grad_out_trans = grad_out.permute({0, 2, 3, 1});
-
-EXEC_NPU_CMD(aclnnAssignScoreWithkGrad, grad_out_trans, points, centers, scores, knn_idx, B, N0, N1, M, K, O, aggregate, grad_scores, grad_points, grad_centers);
+  EXEC_NPU_CMD(aclnnAssignScoreWithkGrad, grad_out_trans, points, centers,
+               scores, knn_idx, B, N0, N1, M, K, O, aggregate,
+               grad_scores, grad_points, grad_centers);
 }
 
 void assign_score_withk_backward_impl(
@@ -40,4 +41,5 @@ void assign_score_withk_backward_impl(
     const Tensor& scores, const Tensor& knn_idx, Tensor& grad_points,
     Tensor& grad_centers, Tensor& grad_scores);
 
-REGISTER_NPU_IMPL(assign_score_withk_backward_impl, assign_score_withk_backward_npu);
+REGISTER_NPU_IMPL(assign_score_withk_backward_impl, 
+                  assign_score_withk_backward_npu);
