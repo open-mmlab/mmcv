@@ -41,5 +41,5 @@ void assign_score_withk_backward_impl(
     const Tensor& scores, const Tensor& knn_idx, Tensor& grad_points,
     Tensor& grad_centers, Tensor& grad_scores);
 
-REGISTER_NPU_IMPL(assign_score_withk_backward_impl, 
+REGISTER_NPU_IMPL(assign_score_withk_backward_impl,
                   assign_score_withk_backward_npu);
