@@ -22,7 +22,6 @@ void assign_score_withk_forward_impl(int B, int N0, int N1, int M, int K, int O,
 REGISTER_NPU_IMPL(assign_score_withk_forward_impl,
                   assign_score_withk_forward_npu);
 
-
 void assign_score_withk_backward_npu(
     int B, int N0, int N1, int M, int K, int O, int aggregate,
     const Tensor& grad_out, const Tensor& points, const Tensor& centers,
