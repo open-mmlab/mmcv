@@ -31,8 +31,8 @@ void assign_score_withk_backward_npu(
   at::Tensor grad_out_trans = grad_out.permute({0, 2, 3, 1});
 
   EXEC_NPU_CMD(aclnnAssignScoreWithkGrad, grad_out_trans, points, centers,
-               scores, knn_idx, B, N0, N1, M, K, O, aggregate,
-               grad_scores, grad_points, grad_centers);
+               scores, knn_idx, B, N0, N1, M, K, O, aggregate, grad_scores,
+               grad_points, grad_centers);
 }
 
 void assign_score_withk_backward_impl(
