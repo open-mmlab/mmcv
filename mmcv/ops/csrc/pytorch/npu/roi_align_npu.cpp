@@ -8,6 +8,8 @@ void roi_align_forward_npu(Tensor input, Tensor rois, Tensor output,
                            Tensor argmax_y, Tensor argmax_x, int aligned_height,
                            int aligned_width, float spatial_scale,
                            int sampling_ratio, int pool_mode, bool aligned) {
+  TORCH_CHECK(input.scalar_type() == at::kFloat,
+              "input should be a float tensor");
   int64_t roi_end_mode = 2;
   if (!aligned) {
     LOG(WARNING) << "The [aligned] attr in roi_align op is false";
@@ -34,6 +36,8 @@ void roi_align_backward_npu(Tensor grad_output, Tensor rois, Tensor argmax_y,
                             int aligned_height, int aligned_width,
                             float spatial_scale, int sampling_ratio,
                             int pool_mode, bool aligned) {
+  TORCH_CHECK(grad_output.scalar_type() == at::kFloat,
+              "input should be a float tensor");
   int64_t aligned_height_64 = aligned_height;
   int64_t aligned_width_64 = aligned_width;
   int64_t sampling_ratio_64 = sampling_ratio;
