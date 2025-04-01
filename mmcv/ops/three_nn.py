@@ -34,6 +34,21 @@ class ThreeNN(Function):
 
         B, N, _ = target.size()
         m = source.size(1)
+        if source.device.type == 'npu':
+            # strict to fp32
+            source = source.transpose(2, 1).contiguous()
+            dtype_ = source.dtype
+            if dtype_ == torch.float16:
+                target = target.float()
+                source = source.float()
+            dist2 = target.new_empty(B, N, 3)
+            idx = target.new_empty(B, N, 3, dtype=torch.int32)
+            ext_module.three_nn_forward(
+                target, source, dist2, idx, b=B, n=N, m=m)
+            dist2 = torch.sqrt(dist2)
+            if dtype_ == torch.float16:
+                dist2 = dist2.half()
+            return dist2, idx.int()
         dist2 = target.new_empty(B, N, 3)
         idx = target.new_empty(B, N, 3, dtype=torch.int32)
 
