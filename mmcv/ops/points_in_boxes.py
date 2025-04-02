@@ -55,7 +55,7 @@ def points_in_boxes_part(points: Tensor, boxes: Tensor) -> Tensor:
         elif is_musa_available():
             if torch.musa.current_device() != points_device:
                 torch.musa.set_device(points_device)
-    elif points.device.type == 'npu':
+    else:
         boxes[:, :, 2] += boxes[:, :, 5] / 2.0
 
     ext_module.points_in_boxes_part_forward(boxes.contiguous(),
