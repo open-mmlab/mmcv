@@ -6,7 +6,7 @@ using namespace std;
 namespace {
 constexpr int32_t MODE_FLAG_OVERLAP = 0;
 constexpr int32_t FORMAT_FLAG_XYZWHDR = 3;
-};
+};  // namespace
 
 void iou3d_boxes_overlap_bev_forward_impl(const int num_a, const Tensor boxes_a,
                                           const int num_b, const Tensor boxes_b,
