@@ -17,7 +17,8 @@ Tensor diff_iou_rotated_sort_vertices_npu(Tensor vertices, Tensor mask,
   at::Tensor sortedIdx = at::empty({B, N, 9}, num_valid.options());
   at::Tensor mask_fp = mask.to(at::kFloat);
 
-  EXEC_NPU_CMD(aclnnDiffIouRotatedSortVertices, vertices, mask_fp, num_valid, sortedIdx);
+  EXEC_NPU_CMD(aclnnDiffIouRotatedSortVertices, vertices, mask_fp, num_valid,
+               sortedIdx);
 
   return sortedIdx;
 }
