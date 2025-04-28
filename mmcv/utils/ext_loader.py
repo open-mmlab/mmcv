@@ -7,12 +7,18 @@ from collections import namedtuple
 
 import torch
 
+from .op_input_info_logger import OpInputInfoLogger
+
 if torch.__version__ != 'parrots':
 
     def load_ext(name, funcs):
         ext = importlib.import_module('mmcv.' + name)
         for fun in funcs:
             assert hasattr(ext, fun), f'{fun} miss in module {name}'
+            if os.getenv('MMCV_OPS_PRINT', '0') == '1':
+                if isinstance(getattr(ext, fun), OpInputInfoLogger):
+                    continue
+                setattr(ext, fun, OpInputInfoLogger(getattr(ext, fun)))
         return ext
 else:
     from parrots import extension
