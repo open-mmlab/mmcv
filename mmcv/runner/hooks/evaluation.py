@@ -119,7 +119,7 @@ class EvalHook(Hook):
             self.greater_keys = self._default_greater_keys
         else:
             if not isinstance(greater_keys, (list, tuple)):
-                greater_keys = (greater_keys, )
+                greater_keys = (greater_keys,)
             assert is_seq_of(greater_keys, str)
             self.greater_keys = greater_keys
 
@@ -127,7 +127,7 @@ class EvalHook(Hook):
             self.less_keys = self._default_less_keys
         else:
             if not isinstance(less_keys, (list, tuple)):
-                less_keys = (less_keys, )
+                less_keys = (less_keys,)
             assert is_seq_of(less_keys, str)
             self.less_keys = less_keys
 

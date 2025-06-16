@@ -6,6 +6,8 @@ import numpy as np
 import torch
 
 from ..hook import Hook
+import os
+import os.path as osp
 
 
 class LoggerHook(Hook):
@@ -30,6 +32,10 @@ class LoggerHook(Hook):
         self.ignore_last = ignore_last
         self.reset_flag = reset_flag
         self.by_epoch = by_epoch
+        self.best_ckpt_path = None
+        self.best_pck_path = None
+        self.best_loss_path = None
+        self.key_indicator = 'PCK'  # Esto esta puesto a mano cuidado
 
     @abstractmethod
     def log(self, runner):
@@ -159,8 +165,65 @@ class LoggerHook(Hook):
             if self.reset_flag:
                 runner.log_buffer.clear_output()
 
+        runner.log_buffer.average()
+        self.log(runner)
+        output = runner.log_buffer.output
+        runner.t_loss.append(output['loss'])
+        runner.pt_loss.append(runner.list_mean(runner.t_loss))
+        runner.min_train_loss = runner.min_train_loss if runner.min_train_loss < runner.pt_loss[-1] else runner.pt_loss[-1]
+        runner.t_pck.append(output['acc_pose'])
+        if self.reset_flag:
+            runner.log_buffer.clear_output()
+
     def after_val_epoch(self, runner):
         runner.log_buffer.average()
         self.log(runner)
+        output = runner.log_buffer.output
+
+        runner.e_loss.append(output['loss'])
+        runner.pe_loss.append(runner.list_mean(runner.e_loss))
+        runner.min_prom_eval_loss = runner.min_prom_eval_loss if runner.min_prom_eval_loss < runner.pe_loss[-1] else runner.pe_loss[-1]
+        dif = runner.pe_loss[-1] - runner.min_prom_eval_loss
+        per = dif/runner.min_prom_eval_loss
+        if per > 0.1:
+            dif_t = runner.pt_loss[-1] - runner.min_train_loss
+            per_t = dif_t / runner.min_train_loss
+            if per_t < 0.1:
+                runner.patience_count += 1
+                print(f"Patience {runner.patience_count} / {runner.max_patience}. Min: {runner.min_prom_eval_loss}; Cur: {runner.pt_loss[-1]}; Per: {per}")
+
+        runner.e_pck.append(output['acc_pose'])
+        self.save_if_best(runner)
         if self.reset_flag:
             runner.log_buffer.clear_output()
+
+    def save_if_best(self, runner):
+        # runner.log_buffer.average()
+        output = runner.log_buffer.output
+        if runner.max_eval_pck < output['acc_pose']:
+            runner.max_eval_pck = output['acc_pose']
+            if self.best_pck_path and osp.isfile(self.best_pck_path):
+                os.remove(self.best_pck_path)
+            current = f'epoch_{runner.epoch}'
+            best_ckpt_name = f'best_{self.key_indicator}_{current}.pth'
+            self.best_pck_path = osp.join(runner.work_dir, best_ckpt_name)
+            runner.save_checkpoint(
+                runner.work_dir, best_ckpt_name, create_symlink=False)
+            runner.logger.info(
+                f'MAX PCK - Now best checkpoint is saved as {best_ckpt_name}.')
+            runner.logger.info(
+                f'MAX PCK - Best {self.key_indicator} is {runner.max_eval_pck:0.4f} at {runner.epoch} epoch.')
+
+        if runner.min_eval_loss > output['loss']:
+            runner.min_eval_loss = output['loss']
+            if self.best_loss_path and osp.isfile(self.best_loss_path):
+                os.remove(self.best_loss_path)
+            current = f'epoch_{runner.epoch}'
+            best_ckpt_name = f'best_LOSS_{current}.pth'
+            self.best_loss_path = osp.join(runner.work_dir, best_ckpt_name)
+            runner.save_checkpoint(
+                runner.work_dir, best_ckpt_name, create_symlink=False)
+            runner.logger.info(
+                f'MIN LOSS - Now best checkpoint is saved as {best_ckpt_name}.')
+            runner.logger.info(
+                f'MIN LOSS - Best LOSS is {runner.min_eval_loss:0.4f} at {runner.epoch} epoch.')

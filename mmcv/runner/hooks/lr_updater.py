@@ -60,10 +60,12 @@ class LrUpdaterHook(Hook):
             for k, optim in runner.optimizer.items():
                 for param_group, lr in zip(optim.param_groups, lr_groups[k]):
                     param_group['lr'] = lr
+                    runner.iter_lrs.append(lr)
         else:
             for param_group, lr in zip(runner.optimizer.param_groups,
                                        lr_groups):
                 param_group['lr'] = lr
+                runner.iter_lrs.append(lr)
 
     def get_lr(self, runner, base_lr):
         raise NotImplementedError

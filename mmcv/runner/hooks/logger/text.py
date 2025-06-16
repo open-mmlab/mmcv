@@ -80,7 +80,7 @@ class TextLoggerHook(LoggerHook):
             # by epoch: Epoch [4][100/1000]
             # by iter:  Iter [100/100000]
             if self.by_epoch:
-                log_str = f'Epoch [{log_dict["epoch"]}]' \
+                log_str = f'Epoch({log_dict["mode"]}) [{log_dict["epoch"]}]' \
                           f'[{log_dict["iter"]}/{len(runner.data_loader)}]\t'
             else:
                 log_str = f'Iter [{log_dict["iter"]}/{runner.max_iters}]\t'
