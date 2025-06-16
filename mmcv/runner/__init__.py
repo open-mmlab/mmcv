@@ -8,6 +8,8 @@ from .checkpoint import (CheckpointLoader, _load_checkpoint,
 from .dist_utils import (allreduce_grads, allreduce_params, get_dist_info,
                          init_dist, master_only)
 from .epoch_based_runner import EpochBasedRunner, Runner
+from .epoch_based_runner_for_search import EpochBasedRunnerForSearch, RunnerForSearch
+
 from .fp16_utils import LossScaler, auto_fp16, force_fp32, wrap_fp16_model
 from .hooks import (HOOKS, CheckpointHook, ClosureHook, DistEvalHook,
                     DistSamplerSeedHook, DvcliveLoggerHook, EMAHook, EvalHook,
@@ -39,5 +41,5 @@ __all__ = [
     'SyncBuffersHook', 'EMAHook', 'build_runner', 'RUNNERS', 'allreduce_grads',
     'allreduce_params', 'LossScaler', 'CheckpointLoader', 'BaseModule',
     '_load_checkpoint_with_prefix', 'EvalHook', 'DistEvalHook', 'Sequential',
-    'ModuleList'
+    'ModuleList', 'EpochBasedRunnerForSearch', 'RunnerForSearch'
 ]

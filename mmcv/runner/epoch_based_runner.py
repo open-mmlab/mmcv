@@ -9,9 +9,11 @@ import torch
 
 import mmcv
 from .base_runner import BaseRunner
-from .builder import RUNNERS
+from mmcv.runner.optimizer.builder import RUNNERS
 from .checkpoint import save_checkpoint
 from .utils import get_host_info
+from pylab import *
+import json
 
 
 @RUNNERS.register_module()
@@ -20,6 +22,30 @@ class EpochBasedRunner(BaseRunner):
 
     This runner train models epoch by epoch.
     """
+
+    def __init__(self,
+                 model,
+                 batch_processor=None,
+                 optimizer=None,
+                 work_dir=None,
+                 logger=None,
+                 meta=None,
+                 max_iters=None,
+                 max_epochs=None):
+        super().__init__(model, batch_processor, optimizer, work_dir, logger, meta, max_iters, max_epochs)
+        self.t_loss = []
+        self.e_loss = []
+        self.pt_loss = []
+        self.pe_loss = []
+        self.t_pck = []
+        self.e_pck = []
+        self.iter_lrs = []
+        self.max_eval_pck = 0.0
+        self.min_prom_eval_loss = 100.
+        self.min_eval_loss = 100.
+        self.min_train_loss = 100.
+        self.patience_count = 0
+        self.max_patience = 20  # En 20 aseguramos el mejor PCK
 
     def run_iter(self, data_batch, train_mode, **kwargs):
         if self.batch_processor is not None:
@@ -50,7 +76,6 @@ class EpochBasedRunner(BaseRunner):
             self.run_iter(data_batch, train_mode=True, **kwargs)
             self.call_hook('after_train_iter')
             self._iter += 1
-
         self.call_hook('after_train_epoch')
         self._epoch += 1
 
@@ -66,7 +91,6 @@ class EpochBasedRunner(BaseRunner):
             self.call_hook('before_val_iter')
             self.run_iter(data_batch, train_mode=False)
             self.call_hook('after_val_iter')
-
         self.call_hook('after_val_epoch')
 
     def run(self, data_loaders, workflow, max_epochs=None, **kwargs):
@@ -107,7 +131,14 @@ class EpochBasedRunner(BaseRunner):
                          self._max_epochs)
         self.call_hook('before_run')
 
-        while self.epoch < self._max_epochs:
+        count = 0
+
+        # while self.epoch < self._max_epochs:
+        while self.patience_count <= self.max_patience:
+            if self.epoch >= self._max_epochs:
+                break
+            if count % 5 == 0:
+                self.save_supervise_info()
             for i, flow in enumerate(workflow):
                 mode, epochs = flow
                 if isinstance(mode, str):  # self.train()
@@ -125,9 +156,31 @@ class EpochBasedRunner(BaseRunner):
                     if mode == 'train' and self.epoch >= self._max_epochs:
                         break
                     epoch_runner(data_loaders[i], **kwargs)
+            count = count + 1
 
         time.sleep(1)  # wait for some hooks like loggers to finish
         self.call_hook('after_run')
+        self.save_supervise_info()
+
+    def save_supervise_info(self):
+        datos = {"t_loss": self.t_loss, "e_loss": self.e_loss, "pt_loss": self.pt_loss, "pe_loss": self.pe_loss,
+                 "t_pck": self.t_pck, "e_pck": self.e_pck}
+
+        name_file = osp.join(self.work_dir, "supervise_info.json")
+
+        with open(name_file, 'w') as f:
+            json.dump(datos, f)
+
+    @staticmethod
+    def list_mean(l, window=20):
+        ac = 0
+        count = 0
+        for i in reversed(l):
+            ac = ac + i
+            count = count + 1
+            if count == window:
+                break
+        return ac / count
 
     def save_checkpoint(self,
                         out_dir,

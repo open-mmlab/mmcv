@@ -9,7 +9,7 @@ import torch
 
 import mmcv
 from .base_runner import BaseRunner
-from .builder import RUNNERS
+from mmcv.runner.optimizer.builder import RUNNERS
 from .checkpoint import save_checkpoint
 from .utils import get_host_info
 from pylab import *
