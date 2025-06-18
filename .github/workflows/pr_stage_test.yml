@@ -23,6 +23,8 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: nvidia/cuda:12.1.0-cudnn8-devel-ubuntu22.04
+    permissions:
+      pull-requests: write
     strategy:
       matrix:
         python-version: ["3.10"]
@@ -56,7 +58,7 @@ jobs:
       - name: Install system dependencies
         run: apt-get update && apt-get install -y git ffmpeg libturbojpeg
       - name: Install MMEngine from main branch
-        run: pip install git+https://github.com/open-mmlab/mmengine.git@main
+        run: pip install git+https://github.com/VBTI-development/mmengine.git@main
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
       - name: Build MMEngine from source
@@ -69,7 +71,19 @@ jobs:
         run: |
           coverage run --branch --source mmengine -m pytest tests/  --ignore tests/test_dist/
           coverage xml
-          coverage report -m
+      - name: Code Coverage Summary Report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: coverage.xml
+          format: markdown
+          output: both
+          hide_branch_rate: false
+      - name: Add Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          recreate: true
+          path: code-coverage-results.md
 
   build_cu118:
     runs-on: ubuntu-22.04
@@ -108,7 +122,7 @@ jobs:
       - name: Install system dependencies
         run: apt-get update && apt-get install -y git ffmpeg libturbojpeg
       - name: Install MMEngine from main branch
-        run: pip install git+https://github.com/open-mmlab/mmengine.git@main
+        run: pip install git+https://github.com/VBTI-development/mmengine.git@main
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
       - name: Build MMEngine from source
@@ -142,7 +156,7 @@ jobs:
       - name: Install PyTorch
         run: pip install torch==1.8.1+cpu torchvision==0.9.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install MMEngine from main branch
-        run: pip install git+https://github.com/open-mmlab/mmengine.git@main
+        run: pip install git+https://github.com/VBTI-development/mmengine.git@main
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
       - name: Build MMCV from source
@@ -174,7 +188,7 @@ jobs:
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install MMEngine from main branch
-        run: pip install git+https://github.com/open-mmlab/mmengine.git@main
+        run: pip install git+https://github.com/VBTI-development/mmengine.git@main
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
       - name: Build MMCV from source
@@ -208,7 +222,7 @@ jobs:
   #     - name: Install PyTorch
   #       run: pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }}
   #     - name: Install MMEngine from main branch
-  #       run: pip install git+https://github.com/open-mmlab/mmengine.git@main
+  #       run: pip install git+https://github.com/VBTI-development/mmengine.git@main
   #     - name: Install ninja to speed the compilation
   #       run: pip install ninja psutil
   #     - name: Build MMCV from source
