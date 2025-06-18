@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from mmcv.ops.multi_scale_deform_attn import (
+from imashrimp_mmcv.mmcv.ops.multi_scale_deform_attn import (
     MultiScaleDeformableAttention, MultiScaleDeformableAttnFunction,
     multi_scale_deformable_attn_pytorch)
 

@@ -4,7 +4,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mmcv.cnn.bricks import (Conv2d, Conv3d, ConvTranspose2d, ConvTranspose3d,
+from imashrimp_mmcv.mmcv.cnn.bricks import (Conv2d, Conv3d, ConvTranspose2d, ConvTranspose3d,
                              Linear, MaxPool2d, MaxPool3d)
 
 if torch.__version__ != 'parrots':

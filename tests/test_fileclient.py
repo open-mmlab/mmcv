@@ -4,8 +4,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-import mmcv
-from mmcv import BaseStorageBackend, FileClient
+import imashrimp_mmcv.mmcv as mmcv
+from imashrimp_mmcv.mmcv import BaseStorageBackend, FileClient
 
 sys.modules['ceph'] = MagicMock()
 sys.modules['petrel_client'] = MagicMock()

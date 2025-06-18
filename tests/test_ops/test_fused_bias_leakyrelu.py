@@ -21,7 +21,7 @@ class TestFusedBiasLeakyReLU(object):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason='requires cuda')
     def test_gradient(self):
 
-        from mmcv.ops import FusedBiasLeakyReLU
+        from imashrimp_mmcv.mmcv.ops import FusedBiasLeakyReLU
         if _USING_PARROTS:
             gradcheck(
                 FusedBiasLeakyReLU(2).cuda(),
@@ -40,7 +40,7 @@ class TestFusedBiasLeakyReLU(object):
         reason='requires cuda')
     def test_gradgradient(self):
 
-        from mmcv.ops import FusedBiasLeakyReLU
+        from imashrimp_mmcv.mmcv.ops import FusedBiasLeakyReLU
         gradgradcheck(
             FusedBiasLeakyReLU(2).cuda(),
             self.input_tensor,

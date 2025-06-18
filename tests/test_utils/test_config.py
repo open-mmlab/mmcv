@@ -9,7 +9,7 @@ import tempfile
 import pytest
 import yaml
 
-from mmcv import Config, DictAction, dump, load
+from imashrimp_mmcv.mmcv import Config, DictAction, dump, load
 
 data_path = osp.join(osp.dirname(osp.dirname(__file__)), 'data')
 

@@ -8,7 +8,8 @@ from collections import defaultdict
 import cv2
 import torch
 
-import mmcv
+# import imashrimp_mmcv.mmcv as mmcv
+import imashrimp_mmcv.mmcv as mmcv
 from .parrots_wrapper import get_build_config
 
 
@@ -48,7 +49,7 @@ def collect_env():
         for name, device_ids in devices.items():
             env_info['GPU ' + ','.join(device_ids)] = name
 
-        from mmcv.utils.parrots_wrapper import CUDA_HOME
+        from imashrimp_mmcv.mmcv.utils.parrots_wrapper import CUDA_HOME
         env_info['CUDA_HOME'] = CUDA_HOME
 
         if CUDA_HOME is not None and osp.isdir(CUDA_HOME):
@@ -82,7 +83,7 @@ def collect_env():
     env_info['MMCV'] = mmcv.__version__
 
     try:
-        from mmcv.ops import get_compiler_version, get_compiling_cuda_version
+        from imashrimp_mmcv.mmcv.ops import get_compiler_version, get_compiling_cuda_version
     except ModuleNotFoundError:
         env_info['MMCV Compiler'] = 'n/a'
         env_info['MMCV CUDA Compiler'] = 'n/a'

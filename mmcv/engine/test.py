@@ -7,8 +7,8 @@ import time
 import torch
 import torch.distributed as dist
 
-import mmcv
-from mmcv.runner import get_dist_info
+import imashrimp_mmcv.mmcv as mmcv
+from imashrimp_mmcv.mmcv.runner import get_dist_info
 
 
 def single_gpu_test(model, data_loader):

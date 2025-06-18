@@ -3,8 +3,8 @@ import warnings
 import torch
 from torch.nn import GroupNorm, LayerNorm
 
-from mmcv.utils import _BatchNorm, _InstanceNorm, build_from_cfg, is_list_of
-from mmcv.utils.ext_loader import check_ops_exist
+from imashrimp_mmcv.mmcv.utils import _BatchNorm, _InstanceNorm, build_from_cfg, is_list_of
+from imashrimp_mmcv.mmcv.utils.ext_loader import check_ops_exist
 from .builder import OPTIMIZER_BUILDERS, OPTIMIZERS
 
 
@@ -217,7 +217,7 @@ class DefaultOptimizerConstructor:
             params.append(param_group)
 
         if check_ops_exist():
-            from mmcv.ops import DeformConv2d, ModulatedDeformConv2d
+            from imashrimp_mmcv.mmcv.ops import DeformConv2d, ModulatedDeformConv2d
             is_dcn_module = isinstance(module,
                                        (DeformConv2d, ModulatedDeformConv2d))
         else:

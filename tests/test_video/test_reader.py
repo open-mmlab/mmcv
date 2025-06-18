@@ -7,7 +7,7 @@ from collections import OrderedDict
 
 import pytest
 
-import mmcv
+import imashrimp_mmcv.mmcv as mmcv
 
 
 class TestCache:

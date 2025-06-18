@@ -5,7 +5,7 @@ import tempfile
 
 import pytest
 
-import mmcv
+import imashrimp_mmcv.mmcv as mmcv
 
 
 def _test_handler(file_format, test_obj, str_checker, mode='r+'):

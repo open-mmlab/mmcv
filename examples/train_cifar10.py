@@ -13,8 +13,8 @@ from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 from torchvision import datasets, transforms
 
-from mmcv import Config
-from mmcv.runner import DistSamplerSeedHook, Runner
+from imashrimp_mmcv.mmcv import Config
+from imashrimp_mmcv.mmcv.runner import DistSamplerSeedHook, Runner
 
 
 def accuracy(output, target, topk=(1, )):

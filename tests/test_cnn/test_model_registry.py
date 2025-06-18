@@ -1,7 +1,7 @@
 import torch.nn as nn
 
-import mmcv
-from mmcv.cnn import MODELS, build_model_from_cfg
+import imashrimp_mmcv.mmcv as mmcv
+from imashrimp_mmcv.mmcv.cnn import MODELS, build_model_from_cfg
 
 
 def test_build_model_from_cfg():

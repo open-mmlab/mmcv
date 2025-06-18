@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
-from mmcv.utils import Registry, build_from_cfg, get_logger, print_log
+from imashrimp_mmcv.mmcv.utils import Registry, build_from_cfg, get_logger, print_log
 
 INITIALIZERS = Registry('initializer')
 
@@ -403,7 +403,7 @@ class PretrainedInit(object):
         self.map_location = map_location
 
     def __call__(self, module):
-        from mmcv.runner import (_load_checkpoint_with_prefix, load_checkpoint,
+        from imashrimp_mmcv.mmcv.runner import (_load_checkpoint_with_prefix, load_checkpoint,
                                  load_state_dict)
         logger = get_logger('mmcv')
         if self.prefix is None:

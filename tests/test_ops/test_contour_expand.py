@@ -3,7 +3,7 @@ import torch
 
 
 def test_contour_expand():
-    from mmcv.ops import contour_expand
+    from imashrimp_mmcv.mmcv.ops import contour_expand
 
     np_internal_kernel_label = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],

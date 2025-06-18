@@ -1,6 +1,6 @@
 import numpy as np
 
-import mmcv
+import imashrimp_mmcv.mmcv as mmcv
 
 try:
     import torch

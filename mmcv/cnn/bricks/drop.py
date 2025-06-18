@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from mmcv import build_from_cfg
+from imashrimp_mmcv.mmcv import build_from_cfg
 from .registry import DROPOUT_LAYERS
 
 

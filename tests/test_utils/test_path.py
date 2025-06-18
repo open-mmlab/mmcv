@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-import mmcv
+import imashrimp_mmcv.mmcv as mmcv
 
 
 def test_is_filepath():

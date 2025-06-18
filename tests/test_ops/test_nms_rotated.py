@@ -9,7 +9,7 @@ import torch
 class TestNmsRotated:
 
     def test_ml_nms_rotated(self):
-        from mmcv.ops import nms_rotated
+        from imashrimp_mmcv.mmcv.ops import nms_rotated
         np_boxes = np.array(
             [[6.0, 3.0, 8.0, 7.0, 0.5, 0.7], [3.0, 6.0, 9.0, 11.0, 0.6, 0.8],
              [3.0, 7.0, 10.0, 12.0, 0.3, 0.5], [1.0, 4.0, 13.0, 7.0, 0.6, 0.9]
@@ -32,7 +32,7 @@ class TestNmsRotated:
         assert np.allclose(keep_inds.cpu().numpy(), np_expect_keep_inds)
 
     def test_nms_rotated(self):
-        from mmcv.ops import nms_rotated
+        from imashrimp_mmcv.mmcv.ops import nms_rotated
         np_boxes = np.array(
             [[6.0, 3.0, 8.0, 7.0, 0.5, 0.7], [3.0, 6.0, 9.0, 11.0, 0.6, 0.8],
              [3.0, 7.0, 10.0, 12.0, 0.3, 0.5], [1.0, 4.0, 13.0, 7.0, 0.6, 0.9]

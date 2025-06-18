@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from mmcv import get_logger, print_log
+from imashrimp_mmcv.mmcv import get_logger, print_log
 
 if platform.system() == 'Windows':
     import regex as re

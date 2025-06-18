@@ -6,7 +6,7 @@ import torch
 class TestBoxIoURotated(object):
 
     def test_box_iou_rotated_cpu(self):
-        from mmcv.ops import box_iou_rotated
+        from imashrimp_mmcv.mmcv.ops import box_iou_rotated
         np_boxes1 = np.asarray(
             [[1.0, 1.0, 3.0, 4.0, 0.5], [2.0, 2.0, 3.0, 4.0, 0.6],
              [7.0, 7.0, 8.0, 8.0, 0.4]],
@@ -35,7 +35,7 @@ class TestBoxIoURotated(object):
     @pytest.mark.skipif(
         not torch.cuda.is_available(), reason='requires CUDA support')
     def test_box_iou_rotated_cuda(self):
-        from mmcv.ops import box_iou_rotated
+        from imashrimp_mmcv.mmcv.ops import box_iou_rotated
         np_boxes1 = np.asarray(
             [[1.0, 1.0, 3.0, 4.0, 0.5], [2.0, 2.0, 3.0, 4.0, 0.6],
              [7.0, 7.0, 8.0, 8.0, 0.4]],
@@ -62,7 +62,7 @@ class TestBoxIoURotated(object):
             ious.cpu().numpy(), np_expect_ious_aligned, atol=1e-4)
 
     def test_box_iou_rotated_iof_cpu(self):
-        from mmcv.ops import box_iou_rotated
+        from imashrimp_mmcv.mmcv.ops import box_iou_rotated
         np_boxes1 = np.asarray(
             [[1.0, 1.0, 3.0, 4.0, 0.5], [2.0, 2.0, 3.0, 4.0, 0.6],
              [7.0, 7.0, 8.0, 8.0, 0.4]],
@@ -90,7 +90,7 @@ class TestBoxIoURotated(object):
     @pytest.mark.skipif(
         not torch.cuda.is_available(), reason='requires CUDA support')
     def test_box_iou_rotated_iof_cuda(self):
-        from mmcv.ops import box_iou_rotated
+        from imashrimp_mmcv.mmcv.ops import box_iou_rotated
         np_boxes1 = np.asarray(
             [[1.0, 1.0, 3.0, 4.0, 0.5], [2.0, 2.0, 3.0, 4.0, 0.6],
              [7.0, 7.0, 8.0, 8.0, 0.4]],

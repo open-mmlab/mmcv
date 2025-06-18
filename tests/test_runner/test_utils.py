@@ -5,8 +5,8 @@ from pkg_resources import parse_version
 import numpy as np
 import torch
 
-from mmcv.runner import set_random_seed
-from mmcv.utils import TORCH_VERSION
+from imashrimp_mmcv.mmcv.runner import set_random_seed
+from imashrimp_mmcv.mmcv.utils import TORCH_VERSION
 
 is_rocm_pytorch = False
 if parse_version(TORCH_VERSION) >= parse_version('1.5'):

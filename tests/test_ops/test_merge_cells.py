@@ -5,7 +5,7 @@ CommandLine:
 import torch
 import torch.nn.functional as F
 
-from mmcv.ops.merge_cells import (BaseMergeCell, ConcatCell, GlobalPoolingCell,
+from imashrimp_mmcv.mmcv.ops.merge_cells import (BaseMergeCell, ConcatCell, GlobalPoolingCell,
                                   SumCell)
 
 

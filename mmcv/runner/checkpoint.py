@@ -15,7 +15,7 @@ import torchvision
 from torch.optim import Optimizer
 from torch.utils import model_zoo
 
-import mmcv
+import imashrimp_mmcv.mmcv as mmcv
 from ..fileio import FileClient
 from ..fileio import load as load_file
 from ..parallel import is_module_wrapper

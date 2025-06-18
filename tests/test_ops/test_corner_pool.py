@@ -5,7 +5,7 @@ CommandLine:
 import pytest
 import torch
 
-from mmcv.ops import CornerPool
+from imashrimp_mmcv.mmcv.ops import CornerPool
 
 
 def test_corner_pool_device_and_dtypes_cpu():

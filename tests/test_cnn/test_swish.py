@@ -1,7 +1,7 @@
 import torch
 from torch.nn.functional import sigmoid
 
-from mmcv.cnn.bricks import Swish
+from imashrimp_mmcv.mmcv.cnn.bricks import Swish
 
 
 def test_swish():

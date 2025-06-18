@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pytest
 
-from mmcv.runner import init_dist
+from imashrimp_mmcv.mmcv.runner import init_dist
 
 
 @patch('torch.cuda.device_count', return_value=1)

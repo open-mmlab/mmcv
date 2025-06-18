@@ -4,7 +4,7 @@ from abc import ABCMeta
 
 import torch.nn as nn
 
-from mmcv import ConfigDict
+from imashrimp_mmcv.mmcv import ConfigDict
 
 
 class BaseModule(nn.Module, metaclass=ABCMeta):

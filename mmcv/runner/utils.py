@@ -9,7 +9,7 @@ from socket import gethostname
 import numpy as np
 import torch
 
-import mmcv
+import imashrimp_mmcv.mmcv as mmcv
 
 
 def get_host_info():

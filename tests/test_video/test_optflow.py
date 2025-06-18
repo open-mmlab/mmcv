@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
-import mmcv
+import imashrimp_mmcv.mmcv as mmcv
 
 
 def test_flowread():

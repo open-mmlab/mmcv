@@ -1,8 +1,8 @@
 import pytest
 import torch
 
-from mmcv.cnn.bricks.drop import DropPath
-from mmcv.cnn.bricks.transformer import (FFN, BaseTransformerLayer,
+from imashrimp_mmcv.mmcv.cnn.bricks.drop import DropPath
+from imashrimp_mmcv.mmcv.cnn.bricks.transformer import (FFN, BaseTransformerLayer,
                                          MultiheadAttention,
                                          TransformerLayerSequence)
 

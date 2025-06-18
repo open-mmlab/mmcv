@@ -1,8 +1,8 @@
 import torch
 from torch import nn
 
-from mmcv.runner import BaseModule, ModuleList, Sequential
-from mmcv.utils import Registry, build_from_cfg
+from imashrimp_mmcv.mmcv.runner import BaseModule, ModuleList, Sequential
+from imashrimp_mmcv.mmcv.utils import Registry, build_from_cfg
 
 COMPONENTS = Registry('component')
 FOOMODELS = Registry('model')

@@ -7,7 +7,7 @@ class TestCarafe(object):
     def test_carafe_naive_gradcheck(self):
         if not torch.cuda.is_available():
             return
-        from mmcv.ops import CARAFENaive
+        from imashrimp_mmcv.mmcv.ops import CARAFENaive
         feat = torch.randn(
             2, 64, 3, 3, requires_grad=True, device='cuda').double()
         mask = torch.randn(
@@ -18,7 +18,7 @@ class TestCarafe(object):
     def test_carafe_gradcheck(self):
         if not torch.cuda.is_available():
             return
-        from mmcv.ops import CARAFE
+        from imashrimp_mmcv.mmcv.ops import CARAFE
         feat = torch.randn(
             2, 64, 3, 3, requires_grad=True, device='cuda').double()
         mask = torch.randn(

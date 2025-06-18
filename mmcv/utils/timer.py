@@ -15,7 +15,7 @@ class Timer:
     :Example:
 
     >>> import time
-    >>> import mmcv
+    >>> import imashrimp_mmcv.mmcv as mmcv
     >>> with mmcv.Timer():
     >>>     # simulate a code block that will run for 1s
     >>>     time.sleep(1)
@@ -98,7 +98,7 @@ def check_time(timer_id):
     :Example:
 
     >>> import time
-    >>> import mmcv
+    >>> import imashrimp_mmcv.mmcv as mmcv
     >>> for i in range(1, 6):
     >>>     # simulate a code block
     >>>     time.sleep(i)

@@ -2,7 +2,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mmcv.ops import SAConv2d
+from imashrimp_mmcv.mmcv.ops import SAConv2d
 
 
 def test_sacconv():

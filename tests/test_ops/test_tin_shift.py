@@ -54,7 +54,7 @@ grads = [[[[[1., 1.], [1., 1.], [1., 1.]], [[1., 1.], [1., 1.], [1., 1.]],
 
 def _test_tinshift_gradcheck(dtype):
     try:
-        from mmcv.ops import tin_shift
+        from imashrimp_mmcv.mmcv.ops import tin_shift
     except ModuleNotFoundError:
         pytest.skip('TinShift op is not successfully compiled')
 
@@ -76,7 +76,7 @@ def _test_tinshift_gradcheck(dtype):
 
 def _test_tinshift_allclose(dtype):
     try:
-        from mmcv.ops import tin_shift
+        from imashrimp_mmcv.mmcv.ops import tin_shift
     except ModuleNotFoundError:
         pytest.skip('TinShift op is not successfully compiled')
 

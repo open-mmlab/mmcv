@@ -19,11 +19,11 @@ import torch.nn as nn
 from torch.nn.init import constant_
 from torch.utils.data import DataLoader
 
-from mmcv.runner import (CheckpointHook, DvcliveLoggerHook, EMAHook,
+from imashrimp_mmcv.mmcv.runner import (CheckpointHook, DvcliveLoggerHook, EMAHook,
                          IterTimerHook, MlflowLoggerHook, NeptuneLoggerHook,
                          PaviLoggerHook, WandbLoggerHook, build_runner)
-from mmcv.runner.hooks.hook import HOOKS, Hook
-from mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
+from imashrimp_mmcv.mmcv.runner.hooks.hook import HOOKS, Hook
+from imashrimp_mmcv.mmcv.runner.hooks.lr_updater import (CosineRestartLrUpdaterHook,
                                           CyclicLrUpdaterHook,
                                           OneCycleLrUpdaterHook,
                                           StepLrUpdaterHook)

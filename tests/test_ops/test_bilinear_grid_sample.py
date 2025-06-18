@@ -11,7 +11,7 @@ class TestBilinearGridSample(object):
                                    align_corners=False,
                                    multiplier=1,
                                    precision=1e-3):
-        from mmcv.ops.point_sample import bilinear_grid_sample
+        from imashrimp_mmcv.mmcv.ops.point_sample import bilinear_grid_sample
 
         input = torch.rand(1, 1, 20, 20, dtype=dtype)
         grid = torch.Tensor([[[1, 0, 0], [0, 1, 0]]])

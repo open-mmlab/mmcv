@@ -3,15 +3,15 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mmcv.cnn.bricks import (ACTIVATION_LAYERS, CONV_LAYERS, NORM_LAYERS,
+from imashrimp_mmcv.mmcv.cnn.bricks import (ACTIVATION_LAYERS, CONV_LAYERS, NORM_LAYERS,
                              PADDING_LAYERS, PLUGIN_LAYERS,
                              build_activation_layer, build_conv_layer,
                              build_norm_layer, build_padding_layer,
                              build_plugin_layer, build_upsample_layer, is_norm)
-from mmcv.cnn.bricks.norm import infer_abbr as infer_norm_abbr
-from mmcv.cnn.bricks.plugin import infer_abbr as infer_plugin_abbr
-from mmcv.cnn.bricks.upsample import PixelShufflePack
-from mmcv.utils.parrots_wrapper import _BatchNorm
+from imashrimp_mmcv.mmcv.cnn.bricks.norm import infer_abbr as infer_norm_abbr
+from imashrimp_mmcv.mmcv.cnn.bricks.plugin import infer_abbr as infer_plugin_abbr
+from imashrimp_mmcv.mmcv.cnn.bricks.upsample import PixelShufflePack
+from imashrimp_mmcv.mmcv.utils.parrots_wrapper import _BatchNorm
 
 
 def test_build_conv_layer():

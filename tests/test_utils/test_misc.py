@@ -1,7 +1,7 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import pytest
 
-import mmcv
+import imashrimp_mmcv.mmcv as mmcv
 
 
 def test_to_ntuple():

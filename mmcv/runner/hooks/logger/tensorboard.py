@@ -2,7 +2,7 @@
 import os.path as osp
 from distutils.version import LooseVersion
 
-from mmcv.utils import TORCH_VERSION
+from imashrimp_mmcv.mmcv.utils import TORCH_VERSION
 from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook

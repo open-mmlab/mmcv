@@ -6,7 +6,7 @@ from collections import OrderedDict
 import torch
 import torch.distributed as dist
 
-import mmcv
+import imashrimp_mmcv.mmcv as mmcv
 from ..hook import HOOKS
 from .base import LoggerHook
 

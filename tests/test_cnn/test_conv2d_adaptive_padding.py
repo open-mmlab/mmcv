@@ -1,6 +1,6 @@
 import torch
 
-from mmcv.cnn.bricks import Conv2dAdaptivePadding
+from imashrimp_mmcv.mmcv.cnn.bricks import Conv2dAdaptivePadding
 
 
 def test_conv2d_samepadding():

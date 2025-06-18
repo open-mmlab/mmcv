@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
-import mmcv
-from mmcv.image.colorspace import (_convert_input_type_range,
+import imashrimp_mmcv.mmcv as mmcv
+from imashrimp_mmcv.mmcv.image.colorspace import (_convert_input_type_range,
                                    _convert_output_type_range)
 
 

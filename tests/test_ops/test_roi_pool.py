@@ -33,7 +33,7 @@ class TestRoiPool(object):
     def test_roipool_gradcheck(self):
         if not torch.cuda.is_available():
             return
-        from mmcv.ops import RoIPool
+        from imashrimp_mmcv.mmcv.ops import RoIPool
         pool_h = 2
         pool_w = 2
         spatial_scale = 1.0
@@ -56,7 +56,7 @@ class TestRoiPool(object):
     def _test_roipool_allclose(self, dtype=torch.float):
         if not torch.cuda.is_available():
             return
-        from mmcv.ops import roi_pool
+        from imashrimp_mmcv.mmcv.ops import roi_pool
         pool_h = 2
         pool_w = 2
         spatial_scale = 1.0

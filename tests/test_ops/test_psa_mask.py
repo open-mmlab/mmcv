@@ -19,7 +19,7 @@ class TestPSAMask(object):
     def test_psa_mask_collect(self):
         if not torch.cuda.is_available():
             return
-        from mmcv.ops import PSAMask
+        from imashrimp_mmcv.mmcv.ops import PSAMask
         test_loss = Loss()
 
         input = np.fromfile(
@@ -59,7 +59,7 @@ class TestPSAMask(object):
     def test_psa_mask_distribute(self):
         if not torch.cuda.is_available():
             return
-        from mmcv.ops import PSAMask
+        from imashrimp_mmcv.mmcv.ops import PSAMask
         test_loss = Loss()
 
         input = np.fromfile(

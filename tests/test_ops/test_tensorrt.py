@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 
 try:
-    from mmcv.tensorrt import (TRTWrapper, is_tensorrt_plugin_loaded, onnx2trt,
+    from imashrimp_mmcv.mmcv.tensorrt import (TRTWrapper, is_tensorrt_plugin_loaded, onnx2trt,
                                save_trt_engine)
 except ImportError:
     pytest.skip(
@@ -41,7 +41,7 @@ trt_file = 'tmp.engine'
 
 def test_roialign():
     try:
-        from mmcv.ops import RoIAlign
+        from imashrimp_mmcv.mmcv.ops import RoIAlign
     except (ImportError, ModuleNotFoundError):
         pytest.skip('test requires compilation')
 
@@ -115,8 +115,8 @@ def test_roialign():
 
 def test_nms():
     try:
-        import mmcv
-        from mmcv.ops import nms
+        import imashrimp_mmcv.mmcv as mmcv
+        from imashrimp_mmcv.mmcv.ops import nms
     except (ImportError, ModuleNotFoundError):
         pytest.skip('test requires compilation')
     os.environ['ONNX_BACKEND'] = 'MMCVTensorRT'
@@ -186,8 +186,8 @@ def test_nms():
 
 def test_batched_nms():
     try:
-        import mmcv
-        from mmcv.ops import batched_nms
+        import imashrimp_mmcv.mmcv as mmcv
+        from imashrimp_mmcv.mmcv.ops import batched_nms
     except (ImportError, ModuleNotFoundError):
         pytest.skip('test requires compilation')
 
@@ -332,7 +332,7 @@ def test_scatternd():
 
 def test_deform_conv():
     try:
-        from mmcv.ops import DeformConv2dPack
+        from imashrimp_mmcv.mmcv.ops import DeformConv2dPack
     except (ImportError, ModuleNotFoundError):
         pytest.skip('test requires compilation')
 
@@ -409,7 +409,7 @@ def test_deform_conv():
 @pytest.mark.parametrize('with_bias', [True, False])
 def test_modulated_deform_conv(with_bias):
     try:
-        from mmcv.ops import ModulatedDeformConv2dPack
+        from imashrimp_mmcv.mmcv.ops import ModulatedDeformConv2dPack
     except (ImportError, ModuleNotFoundError):
         pytest.skip('test requires compilation')
 
@@ -481,7 +481,7 @@ def test_modulated_deform_conv(with_bias):
 @pytest.mark.parametrize('padding_mode', ['zeros', 'border', 'reflection'])
 @pytest.mark.parametrize('align_corners', [True, False])
 def test_grid_sample(mode, padding_mode, align_corners):
-    from mmcv.onnx.symbolic import register_extra_symbolics
+    from imashrimp_mmcv.mmcv.onnx.symbolic import register_extra_symbolics
 
     register_extra_symbolics(11)
 
@@ -569,7 +569,7 @@ def test_cummin_cummax(func: Callable):
 
     opset = 11
     # register custom op `mmcv::cummax` and `mmcv::cummin`
-    from mmcv.onnx.symbolic import register_extra_symbolics
+    from imashrimp_mmcv.mmcv.onnx.symbolic import register_extra_symbolics
     register_extra_symbolics(opset)
 
     input_list = [
@@ -732,13 +732,13 @@ def test_instance_norm(dynamic_export, fp16_mode):
 @pytest.mark.parametrize('mode', ['top', 'bottom', 'left', 'right'])
 def test_corner_pool(mode):
     try:
-        from mmcv.ops import CornerPool
+        from imashrimp_mmcv.mmcv.ops import CornerPool
     except (ImportError, ModuleNotFoundError):
         pytest.skip('test requires compilation')
 
     opset = 11
     # register custom op `mmcv::MMCVCornerPool`
-    from mmcv.onnx.symbolic import register_extra_symbolics
+    from imashrimp_mmcv.mmcv.onnx.symbolic import register_extra_symbolics
     register_extra_symbolics(opset)
 
     # trt config

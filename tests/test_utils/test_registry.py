@@ -1,6 +1,6 @@
 import pytest
 
-import mmcv
+import imashrimp_mmcv.mmcv as mmcv
 
 
 def test_registry():

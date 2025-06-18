@@ -3,7 +3,7 @@ import torch
 
 
 def test_pixel_group():
-    from mmcv.ops import pixel_group
+    from imashrimp_mmcv.mmcv.ops import pixel_group
     np_score = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],

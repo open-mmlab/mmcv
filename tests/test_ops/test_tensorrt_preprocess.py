@@ -4,8 +4,8 @@ from functools import wraps
 import onnx
 import torch
 
-from mmcv.ops import nms
-from mmcv.tensorrt.preprocess import preprocess_onnx
+from imashrimp_mmcv.mmcv.ops import nms
+from imashrimp_mmcv.mmcv.tensorrt.preprocess import preprocess_onnx
 
 
 def remove_tmp_file(func):

@@ -1,6 +1,6 @@
 import torch
 
-from mmcv.cnn.bricks import GeneralizedAttention
+from imashrimp_mmcv.mmcv.cnn.bricks import GeneralizedAttention
 
 
 def test_context_block():

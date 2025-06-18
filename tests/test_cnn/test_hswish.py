@@ -1,7 +1,7 @@
 import torch
 from torch.nn.functional import relu6
 
-from mmcv.cnn.bricks import HSwish
+from imashrimp_mmcv.mmcv.cnn.bricks import HSwish
 
 
 def test_hswish():

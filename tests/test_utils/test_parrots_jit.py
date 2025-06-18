@@ -1,8 +1,8 @@
 import pytest
 import torch
 
-import mmcv
-from mmcv.utils import TORCH_VERSION
+import imashrimp_mmcv.mmcv as mmcv
+from imashrimp_mmcv.mmcv.utils import TORCH_VERSION
 
 skip_no_parrots = pytest.mark.skipif(
     TORCH_VERSION != 'parrots', reason='test case under parrots environment')

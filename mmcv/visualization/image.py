@@ -2,7 +2,7 @@
 import cv2
 import numpy as np
 
-from mmcv.image import imread, imwrite
+from imashrimp_mmcv.mmcv.image import imread, imwrite
 from .color import color_val
 
 

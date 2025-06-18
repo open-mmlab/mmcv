@@ -30,7 +30,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-import mmcv
+import imashrimp_mmcv.mmcv
 
 
 def get_model_complexity_info(model,

@@ -7,9 +7,9 @@ import warnings
 
 import torch
 
-import mmcv
+import imashrimp_mmcv.mmcv as mmcv
 from .base_runner import BaseRunner
-from mmcv.runner.optimizer.builder import RUNNERS
+from .builder import RUNNERS #imashrimp_mmcv.mmcv.runner.optimizer
 from .checkpoint import save_checkpoint
 from .utils import get_host_info
 from pylab import *

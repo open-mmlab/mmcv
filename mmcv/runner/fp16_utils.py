@@ -8,7 +8,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from mmcv.utils import TORCH_VERSION
+from imashrimp_mmcv.mmcv.utils import TORCH_VERSION
 from .dist_utils import allreduce_grads as _allreduce_grads
 
 try:

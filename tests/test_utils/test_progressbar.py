@@ -12,7 +12,7 @@ try:
 except ImportError:
     from io import StringIO
 
-import mmcv  # isort:skip
+import imashrimp_mmcv.mmcv as mmcv  # isort:skip
 
 
 def reset_string_io(io):

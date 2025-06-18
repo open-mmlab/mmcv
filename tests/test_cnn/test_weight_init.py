@@ -8,7 +8,7 @@ import torch
 from scipy import stats
 from torch import nn
 
-from mmcv.cnn import (Caffe2XavierInit, ConstantInit, KaimingInit, NormalInit,
+from imashrimp_mmcv.mmcv.cnn import (Caffe2XavierInit, ConstantInit, KaimingInit, NormalInit,
                       PretrainedInit, TruncNormalInit, UniformInit, XavierInit,
                       bias_init_with_prob, caffe2_xavier_init, constant_init,
                       initialize, kaiming_init, normal_init, trunc_normal_init,

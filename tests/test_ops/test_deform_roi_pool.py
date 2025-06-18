@@ -39,7 +39,7 @@ class TestDeformRoIPool(object):
     def test_deform_roi_pool_gradcheck(self):
         if not torch.cuda.is_available():
             return
-        from mmcv.ops import DeformRoIPoolPack
+        from imashrimp_mmcv.mmcv.ops import DeformRoIPoolPack
         pool_h = 2
         pool_w = 2
         spatial_scale = 1.0
@@ -67,7 +67,7 @@ class TestDeformRoIPool(object):
     def test_modulated_deform_roi_pool_gradcheck(self):
         if not torch.cuda.is_available():
             return
-        from mmcv.ops import ModulatedDeformRoIPoolPack
+        from imashrimp_mmcv.mmcv.ops import ModulatedDeformRoIPoolPack
         pool_h = 2
         pool_w = 2
         spatial_scale = 1.0

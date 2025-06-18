@@ -2,7 +2,7 @@ import sys
 
 import pytest
 
-import mmcv
+import imashrimp_mmcv.mmcv as mmcv
 
 
 def test_collect_env():
@@ -11,7 +11,7 @@ def test_collect_env():
     except ModuleNotFoundError:
         pytest.skip('skipping tests that require PyTorch')
 
-    from mmcv.utils import collect_env
+    from imashrimp_mmcv.mmcv.utils import collect_env
     env_info = collect_env()
     expected_keys = [
         'sys.platform', 'Python', 'CUDA available', 'PyTorch',

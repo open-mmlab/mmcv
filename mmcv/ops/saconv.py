@@ -4,9 +4,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from mmcv.cnn import CONV_LAYERS, ConvAWS2d, constant_init
-from mmcv.ops.deform_conv import deform_conv2d
-from mmcv.utils import TORCH_VERSION
+from imashrimp_mmcv.mmcv.cnn import CONV_LAYERS, ConvAWS2d, constant_init
+from imashrimp_mmcv.mmcv.ops.deform_conv import deform_conv2d
+from imashrimp_mmcv.mmcv.utils import TORCH_VERSION
 
 
 @CONV_LAYERS.register_module(name='SAC')

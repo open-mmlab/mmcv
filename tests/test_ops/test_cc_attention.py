@@ -20,7 +20,7 @@ class TestCrissCrossAttention(object):
         if not torch.cuda.is_available():
             return
 
-        from mmcv.ops import CrissCrossAttention
+        from imashrimp_mmcv.mmcv.ops import CrissCrossAttention
         loss_func = Loss()
 
         input = np.fromfile(

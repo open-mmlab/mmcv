@@ -4,7 +4,7 @@ from distutils.version import LooseVersion
 import numpy
 import torch
 
-from mmcv.utils import TORCH_VERSION
+from imashrimp_mmcv.mmcv.utils import TORCH_VERSION
 
 try:
     # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast
@@ -41,7 +41,7 @@ class TestMdconv(object):
     def _test_mdconv(self, dtype=torch.float):
         if not torch.cuda.is_available():
             return
-        from mmcv.ops import ModulatedDeformConv2dPack
+        from imashrimp_mmcv.mmcv.ops import ModulatedDeformConv2dPack
         input = torch.tensor(input_t).cuda().type(dtype)
         input.requires_grad = True
 
@@ -80,7 +80,7 @@ class TestMdconv(object):
         """
         if not torch.cuda.is_available():
             return
-        from mmcv.ops import ModulatedDeformConv2dPack
+        from imashrimp_mmcv.mmcv.ops import ModulatedDeformConv2dPack
         input = torch.tensor(input_t).cuda().type(input_dtype)
         input.requires_grad = True
 

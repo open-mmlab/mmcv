@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from mmcv.cnn import ConvModule, fuse_conv_bn
+from imashrimp_mmcv.mmcv.cnn import ConvModule, fuse_conv_bn
 
 
 def test_fuse_conv_bn():

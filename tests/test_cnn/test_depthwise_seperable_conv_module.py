@@ -2,7 +2,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mmcv.cnn.bricks import DepthwiseSeparableConvModule
+from imashrimp_mmcv.mmcv.cnn.bricks import DepthwiseSeparableConvModule
 
 
 def test_depthwise_separable_conv():

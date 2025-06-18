@@ -10,10 +10,10 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mmcv.parallel import MMDataParallel
-from mmcv.runner import (RUNNERS, EpochBasedRunner, IterBasedRunner,
+from imashrimp_mmcv.mmcv.parallel import MMDataParallel
+from imashrimp_mmcv.mmcv.runner import (RUNNERS, EpochBasedRunner, IterBasedRunner,
                          build_runner)
-from mmcv.runner.hooks import IterTimerHook
+from imashrimp_mmcv.mmcv.runner.hooks import IterTimerHook
 
 
 class OldStyleModel(nn.Module):

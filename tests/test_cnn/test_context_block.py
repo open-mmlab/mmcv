@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from mmcv.cnn.bricks import ContextBlock
+from imashrimp_mmcv.mmcv.cnn.bricks import ContextBlock
 
 
 def test_context_block():

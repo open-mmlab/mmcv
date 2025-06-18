@@ -3,7 +3,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mmcv.runner.fp16_utils import auto_fp16, cast_tensor_type, force_fp32
+from imashrimp_mmcv.mmcv.runner.fp16_utils import auto_fp16, cast_tensor_type, force_fp32
 
 
 def test_cast_tensor_type():

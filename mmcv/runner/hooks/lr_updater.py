@@ -2,7 +2,7 @@
 import numbers
 from math import cos, pi
 
-import mmcv
+import imashrimp_mmcv.mmcv as mmcv
 from .hook import HOOKS, Hook
 
 

@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from mmcv import digit_version, get_git_hash, parse_version_info
+from imashrimp_mmcv.mmcv import digit_version, get_git_hash, parse_version_info
 
 
 def test_digit_version():

@@ -3,7 +3,7 @@ import time
 
 import pytest
 
-import mmcv
+import imashrimp_mmcv.mmcv as mmcv
 
 
 def test_timer_init():

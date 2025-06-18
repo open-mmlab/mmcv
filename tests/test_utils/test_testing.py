@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-import mmcv
+import imashrimp_mmcv.mmcv as mmcv
 
 try:
     import torch

@@ -39,7 +39,7 @@ class TestSyncBN(object):
             return
         else:
             print('Running syncbn test')
-        from mmcv.ops import SyncBatchNorm
+        from imashrimp_mmcv.mmcv.ops import SyncBatchNorm
 
         assert size in (1, 2, 4)
         if not dist.is_initialized():

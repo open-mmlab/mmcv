@@ -8,7 +8,7 @@ class Testnms(object):
     def test_nms_allclose(self):
         if not torch.cuda.is_available():
             return
-        from mmcv.ops import nms
+        from imashrimp_mmcv.mmcv.ops import nms
         np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
                              [3.0, 7.0, 10.0, 12.0], [1.0, 4.0, 13.0, 7.0]],
                             dtype=np.float32)
@@ -30,7 +30,7 @@ class Testnms(object):
     def test_softnms_allclose(self):
         if not torch.cuda.is_available():
             return
-        from mmcv.ops import soft_nms
+        from imashrimp_mmcv.mmcv.ops import soft_nms
         np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
                              [3.0, 7.0, 10.0, 12.0], [1.0, 4.0, 13.0, 7.0]],
                             dtype=np.float32)
@@ -99,7 +99,7 @@ class Testnms(object):
     def test_nms_match(self):
         if not torch.cuda.is_available():
             return
-        from mmcv.ops import nms, nms_match
+        from imashrimp_mmcv.mmcv.ops import nms, nms_match
         iou_thr = 0.6
         # empty input
         empty_dets = np.array([])
@@ -134,8 +134,8 @@ class Testnms(object):
             nms_match(wrong_dets, iou_thr)
 
     def test_batched_nms(self):
-        import mmcv
-        from mmcv.ops import batched_nms
+        import imashrimp_mmcv.mmcv as mmcv
+        from imashrimp_mmcv.mmcv.ops import batched_nms
         results = mmcv.load('./tests/data/batched_nms_data.pkl')
 
         nms_max_num = 100

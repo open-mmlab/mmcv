@@ -9,7 +9,7 @@ class TestBBox(object):
 
     def _test_bbox_overlaps(self, dtype=torch.float):
 
-        from mmcv.ops import bbox_overlaps
+        from imashrimp_mmcv.mmcv.ops import bbox_overlaps
         b1 = torch.tensor([[1.0, 1.0, 3.0, 4.0], [2.0, 2.0, 3.0, 4.0],
                            [7.0, 7.0, 8.0, 8.0]]).cuda().type(dtype)
         b2 = torch.tensor([[0.0, 2.0, 2.0, 5.0], [2.0, 1.0, 3.0,

@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from mmcv.utils import TORCH_VERSION, build_from_cfg
+from imashrimp_mmcv.mmcv.utils import TORCH_VERSION, build_from_cfg
 from .registry import ACTIVATION_LAYERS
 
 for module in [

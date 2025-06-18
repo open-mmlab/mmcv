@@ -4,9 +4,9 @@ import torch
 import torch.nn as nn
 from torch.nn.parallel import DataParallel, DistributedDataParallel
 
-from mmcv.parallel import (MODULE_WRAPPERS, MMDataParallel,
+from imashrimp_mmcv.mmcv.parallel import (MODULE_WRAPPERS, MMDataParallel,
                            MMDistributedDataParallel, is_module_wrapper)
-from mmcv.parallel.distributed_deprecated import \
+from imashrimp_mmcv.mmcv.parallel.distributed_deprecated import \
     MMDistributedDataParallel as DeprecatedMMDDP
 
 

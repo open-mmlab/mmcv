@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd.function import once_differentiable
 
-from mmcv.cnn import Scale
+from imashrimp_mmcv.mmcv.cnn import Scale
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(

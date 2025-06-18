@@ -64,11 +64,11 @@ def process_grid_sample(func, input, grid, ort_custom_op_path=''):
 @pytest.mark.parametrize('padding_mode', ['zeros', 'border', 'reflection'])
 @pytest.mark.parametrize('align_corners', [True, False])
 def test_grid_sample(mode, padding_mode, align_corners):
-    from mmcv.onnx.symbolic import register_extra_symbolics
+    from imashrimp_mmcv.mmcv.onnx.symbolic import register_extra_symbolics
     opset_version = 11
     register_extra_symbolics(opset_version)
 
-    from mmcv.ops import get_onnxruntime_op_path
+    from imashrimp_mmcv.mmcv.ops import get_onnxruntime_op_path
     ort_custom_op_path = get_onnxruntime_op_path()
     if not os.path.exists(ort_custom_op_path):
         pytest.skip('custom ops for onnxruntime are not compiled.')
@@ -90,7 +90,7 @@ def test_grid_sample(mode, padding_mode, align_corners):
 
 @pytest.mark.parametrize('align_corners', [True, False])
 def test_bilinear_grid_sample(align_corners):
-    from mmcv.ops.point_sample import bilinear_grid_sample
+    from imashrimp_mmcv.mmcv.ops.point_sample import bilinear_grid_sample
     # only support pytorch >= 1.5.0
     if version.parse(torch.__version__) < version.parse('1.5.0'):
         pytest.skip('Only support PyTorch >= 1.5.0')
@@ -108,7 +108,7 @@ def test_bilinear_grid_sample(align_corners):
 def test_nms():
     if torch.__version__ == 'parrots':
         pytest.skip('onnx is not supported in parrots directly')
-    from mmcv.ops import get_onnxruntime_op_path, nms
+    from imashrimp_mmcv.mmcv.ops import get_onnxruntime_op_path, nms
     np_boxes = np.array([[6.0, 3.0, 8.0, 7.0], [3.0, 6.0, 9.0, 11.0],
                          [3.0, 7.0, 10.0, 12.0], [1.0, 4.0, 13.0, 7.0]],
                         dtype=np.float32)
@@ -157,7 +157,7 @@ def test_nms():
 def test_softnms():
     if torch.__version__ == 'parrots':
         pytest.skip('onnx is not supported in parrots directly')
-    from mmcv.ops import get_onnxruntime_op_path, soft_nms
+    from imashrimp_mmcv.mmcv.ops import get_onnxruntime_op_path, soft_nms
 
     # only support pytorch >= 1.7.0
     if version.parse(torch.__version__) < version.parse('1.7.0'):
@@ -234,8 +234,8 @@ def test_roialign():
     if torch.__version__ == 'parrots':
         pytest.skip('onnx is not supported in parrots directly')
     try:
-        from mmcv.ops import roi_align
-        from mmcv.ops import get_onnxruntime_op_path
+        from imashrimp_mmcv.mmcv.ops import roi_align
+        from imashrimp_mmcv.mmcv.ops import get_onnxruntime_op_path
     except (ImportError, ModuleNotFoundError):
         pytest.skip('roi_align op is not successfully compiled')
 
@@ -307,8 +307,8 @@ def test_roialign_rotated():
     if torch.__version__ == 'parrots':
         pytest.skip('onnx is not supported in parrots directly')
     try:
-        from mmcv.ops import roi_align_rotated
-        from mmcv.ops import get_onnxruntime_op_path
+        from imashrimp_mmcv.mmcv.ops import roi_align_rotated
+        from imashrimp_mmcv.mmcv.ops import get_onnxruntime_op_path
     except (ImportError, ModuleNotFoundError):
         pytest.skip('roi_align_aligned op is not successfully compiled')
 
@@ -386,7 +386,7 @@ def test_roialign_rotated():
 def test_roipool():
     if torch.__version__ == 'parrots':
         pytest.skip('onnx is not supported in parrots directly')
-    from mmcv.ops import roi_pool
+    from imashrimp_mmcv.mmcv.ops import roi_pool
 
     # roi pool config
     pool_h = 2
@@ -448,7 +448,7 @@ def test_roipool():
 
 
 def test_interpolate():
-    from mmcv.onnx.symbolic import register_extra_symbolics
+    from imashrimp_mmcv.mmcv.onnx.symbolic import register_extra_symbolics
     opset_version = 11
     register_extra_symbolics(opset_version)
 
@@ -478,12 +478,12 @@ def test_corner_pool(mode, opset=11):
     if torch.__version__ == 'parrots':
         pytest.skip('onnx is not supported in parrots directly')
 
-    from mmcv.ops import get_onnxruntime_op_path
+    from imashrimp_mmcv.mmcv.ops import get_onnxruntime_op_path
     ort_custom_op_path = get_onnxruntime_op_path()
     if not os.path.exists(ort_custom_op_path):
         pytest.skip('custom ops for onnxruntime are not compiled.')
 
-    from mmcv.ops.corner_pool import CornerPool
+    from imashrimp_mmcv.mmcv.ops.corner_pool import CornerPool
 
     def corner_pool_func(input):
         corner_pool_module = CornerPool(mode)
@@ -536,10 +536,10 @@ def test_cummax_cummin(key, opset=11):
         pytest.skip('test_cummax_cummin should be ran with pytorch >= 1.7.0')
 
     # register custom op `mmcv::cummax` and `mmcv::cummin`
-    from mmcv.onnx.symbolic import register_extra_symbolics
+    from imashrimp_mmcv.mmcv.onnx.symbolic import register_extra_symbolics
     register_extra_symbolics(opset)
 
-    from mmcv.ops import get_onnxruntime_op_path
+    from imashrimp_mmcv.mmcv.ops import get_onnxruntime_op_path
     ort_custom_op_path = get_onnxruntime_op_path()
     if not os.path.exists(ort_custom_op_path):
         pytest.skip('custom ops for onnxruntime are not compiled.')

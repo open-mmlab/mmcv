@@ -53,7 +53,7 @@ def _test_roialign_rotated_gradcheck(device, dtype):
     if not torch.cuda.is_available() and device == 'cuda':
         pytest.skip('unittest does not support GPU yet.')
     try:
-        from mmcv.ops import RoIAlignRotated
+        from imashrimp_mmcv.mmcv.ops import RoIAlignRotated
     except ModuleNotFoundError:
         pytest.skip('RoIAlignRotated op is not successfully compiled')
     if dtype is torch.half:
@@ -80,7 +80,7 @@ def _test_roialign_rotated_allclose(device, dtype):
     if not torch.cuda.is_available() and device == 'cuda':
         pytest.skip('unittest does not support GPU yet.')
     try:
-        from mmcv.ops import roi_align_rotated
+        from imashrimp_mmcv.mmcv.ops import roi_align_rotated
     except ModuleNotFoundError:
         pytest.skip('test requires compilation')
     pool_h = 2

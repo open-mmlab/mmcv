@@ -1,6 +1,6 @@
 import torch
 
-from mmcv.cnn.bricks import Scale
+from imashrimp_mmcv.mmcv.cnn.bricks import Scale
 
 
 def test_scale():

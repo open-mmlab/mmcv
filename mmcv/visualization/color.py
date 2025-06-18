@@ -3,7 +3,7 @@ from enum import Enum
 
 import numpy as np
 
-from mmcv.utils import is_str
+from imashrimp_mmcv.mmcv.utils import is_str
 
 
 class Color(Enum):

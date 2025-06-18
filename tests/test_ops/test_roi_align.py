@@ -41,7 +41,7 @@ def _test_roialign_gradcheck(device, dtype):
     if not torch.cuda.is_available() and device == 'cuda':
         pytest.skip('test requires GPU')
     try:
-        from mmcv.ops import RoIAlign
+        from imashrimp_mmcv.mmcv.ops import RoIAlign
     except ModuleNotFoundError:
         pytest.skip('RoIAlign op is not successfully compiled')
     if dtype is torch.half:
@@ -67,7 +67,7 @@ def _test_roialign_allclose(device, dtype):
     if not torch.cuda.is_available() and device == 'cuda':
         pytest.skip('test requires GPU')
     try:
-        from mmcv.ops import roi_align
+        from imashrimp_mmcv.mmcv.ops import roi_align
     except ModuleNotFoundError:
         pytest.skip('test requires compilation')
     pool_h = 2

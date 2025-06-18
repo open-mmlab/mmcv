@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 import torch
 
-from mmcv.utils import TORCH_VERSION
+from imashrimp_mmcv.mmcv.utils import TORCH_VERSION
 
 try:
     # If PyTorch version >= 1.6.0 and fp16 is enabled, torch.cuda.amp.autocast
@@ -41,7 +41,7 @@ class TestDeformconv(object):
     def _test_deformconv(self, dtype=torch.float, threshold=1e-3):
         if not torch.cuda.is_available():
             return
-        from mmcv.ops import DeformConv2dPack
+        from imashrimp_mmcv.mmcv.ops import DeformConv2dPack
         c_in = 1
         c_out = 1
         x = torch.Tensor(input).cuda().type(dtype)
@@ -68,7 +68,7 @@ class TestDeformconv(object):
         assert np.allclose(model.weight.grad.detach().cpu().numpy(),
                            gt_deform_weight_grad, threshold)
 
-        from mmcv.ops import DeformConv2d
+        from imashrimp_mmcv.mmcv.ops import DeformConv2d
         # test bias
         model = DeformConv2d(1, 1, 2, stride=1, padding=0)
         assert not hasattr(model, 'bias')
@@ -95,7 +95,7 @@ class TestDeformconv(object):
         """
         if not torch.cuda.is_available():
             return
-        from mmcv.ops import DeformConv2dPack
+        from imashrimp_mmcv.mmcv.ops import DeformConv2dPack
         c_in = 1
         c_out = 1
         x = torch.Tensor(input).cuda().type(input_dtype)
@@ -122,7 +122,7 @@ class TestDeformconv(object):
         assert np.allclose(model.weight.grad.detach().cpu().numpy(),
                            gt_deform_weight_grad, threshold)
 
-        from mmcv.ops import DeformConv2d
+        from imashrimp_mmcv.mmcv.ops import DeformConv2d
         # test bias
         model = DeformConv2d(1, 1, 2, stride=1, padding=0)
         assert not hasattr(model, 'bias')

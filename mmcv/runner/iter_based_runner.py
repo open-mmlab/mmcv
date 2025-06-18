@@ -8,7 +8,7 @@ import warnings
 import torch
 from torch.optim import Optimizer
 
-import mmcv
+import imashrimp_mmcv.mmcv
 from .base_runner import BaseRunner
 from .builder import RUNNERS
 from .checkpoint import save_checkpoint

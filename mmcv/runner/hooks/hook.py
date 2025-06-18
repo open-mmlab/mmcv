@@ -1,5 +1,5 @@
 # Copyright (c) Open-MMLab. All rights reserved.
-from mmcv.utils import Registry, is_method_overridden
+from imashrimp_mmcv.mmcv.utils import Registry, is_method_overridden
 
 HOOKS = Registry('hook')
 

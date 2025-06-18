@@ -6,10 +6,10 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mmcv.runner import OPTIMIZER_BUILDERS, DefaultOptimizerConstructor
-from mmcv.runner.optimizer import build_optimizer, build_optimizer_constructor
-from mmcv.runner.optimizer.builder import TORCH_OPTIMIZERS
-from mmcv.utils.ext_loader import check_ops_exist
+from imashrimp_mmcv.mmcv.runner import OPTIMIZER_BUILDERS, DefaultOptimizerConstructor
+from imashrimp_mmcv.mmcv.runner.optimizer import build_optimizer, build_optimizer_constructor
+from imashrimp_mmcv.mmcv.runner.optimizer.builder import TORCH_OPTIMIZERS
+from imashrimp_mmcv.mmcv.utils.ext_loader import check_ops_exist
 
 OPS_AVAILABLE = check_ops_exist()
 if not OPS_AVAILABLE:
@@ -39,7 +39,7 @@ class ExampleModel(nn.Module):
         self.bn = nn.BatchNorm2d(2)
         self.sub = SubModel()
         if OPS_AVAILABLE:
-            from mmcv.ops import DeformConv2dPack
+            from imashrimp_mmcv.mmcv.ops import DeformConv2dPack
             self.dcn = DeformConv2dPack(
                 3, 4, kernel_size=3, deformable_groups=1)
 
@@ -59,7 +59,7 @@ class ExampleDuplicateModel(nn.Module):
         self.conv3 = nn.Sequential(nn.Conv2d(3, 4, kernel_size=1, bias=False))
         self.conv3[0] = self.conv1[0]
         if OPS_AVAILABLE:
-            from mmcv.ops import DeformConv2dPack
+            from imashrimp_mmcv.mmcv.ops import DeformConv2dPack
             self.dcn = DeformConv2dPack(
                 3, 4, kernel_size=3, deformable_groups=1)
 
@@ -572,8 +572,8 @@ def test_build_optimizer_constructor():
     optimizer = optim_constructor(model)
     check_sgd_optimizer(optimizer, model, **paramwise_cfg)
 
-    from mmcv.runner import OPTIMIZERS
-    from mmcv.utils import build_from_cfg
+    from imashrimp_mmcv.mmcv.runner import OPTIMIZERS
+    from imashrimp_mmcv.mmcv.utils import build_from_cfg
 
     @OPTIMIZER_BUILDERS.register_module()
     class MyOptimizerConstructor(DefaultOptimizerConstructor):

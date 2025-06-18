@@ -7,7 +7,7 @@ import torch.distributed as dist
 from torch.nn.modules.batchnorm import _BatchNorm
 from torch.utils.data import DataLoader
 
-from mmcv.utils import is_seq_of
+from imashrimp_mmcv.mmcv.utils import is_seq_of
 from .hook import Hook
 
 
@@ -110,7 +110,7 @@ class EvalHook(Hook):
         self.initial_flag = True
 
         if test_fn is None:
-            from mmcv.engine import single_gpu_test
+            from imashrimp_mmcv.mmcv.engine import single_gpu_test
             self.test_fn = single_gpu_test
         else:
             self.test_fn = test_fn
@@ -384,7 +384,7 @@ class DistEvalHook(EvalHook):
                  **eval_kwargs):
 
         if test_fn is None:
-            from mmcv.engine import multi_gpu_test
+            from imashrimp_mmcv.mmcv.engine import multi_gpu_test
             test_fn = multi_gpu_test
 
         super().__init__(

@@ -3,7 +3,7 @@ import os
 import os.path as osp
 import tempfile
 
-import mmcv
+import imashrimp_mmcv.mmcv as mmcv
 
 
 class TestVideoEditor:

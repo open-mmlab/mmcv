@@ -5,13 +5,13 @@ from unittest.mock import patch
 
 import pytest
 
-import mmcv
-from mmcv.runner.checkpoint import (DEFAULT_CACHE_DIR, ENV_MMCV_HOME,
+import imashrimp_mmcv.mmcv as mmcv
+from imashrimp_mmcv.mmcv.runner.checkpoint import (DEFAULT_CACHE_DIR, ENV_MMCV_HOME,
                                     ENV_XDG_CACHE_HOME, _get_mmcv_home,
                                     _load_checkpoint,
                                     get_deprecated_model_names,
                                     get_external_models)
-from mmcv.utils import TORCH_VERSION
+from imashrimp_mmcv.mmcv.utils import TORCH_VERSION
 
 
 @patch('mmcv.__path__', [osp.join(osp.dirname(__file__), 'data/')])

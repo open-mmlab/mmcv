@@ -4,7 +4,7 @@ import os.path as osp
 import subprocess
 import tempfile
 
-from mmcv.utils import requires_executable
+from imashrimp_mmcv.mmcv.utils import requires_executable
 
 
 @requires_executable('ffmpeg')

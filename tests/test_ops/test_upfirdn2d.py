@@ -30,7 +30,7 @@ class TestUpFirDn2d(object):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason='requires cuda')
     def test_upfirdn2d(self):
-        from mmcv.ops import upfirdn2d
+        from imashrimp_mmcv.mmcv.ops import upfirdn2d
         if _USING_PARROTS:
             gradcheck(
                 upfirdn2d,

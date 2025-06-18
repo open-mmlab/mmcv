@@ -3,9 +3,9 @@ import warnings
 
 import numpy as np
 
-from mmcv.arraymisc import dequantize, quantize
-from mmcv.image import imread, imwrite
-from mmcv.utils import is_str
+from imashrimp_mmcv.mmcv.arraymisc import dequantize, quantize
+from imashrimp_mmcv.mmcv.image import imread, imwrite
+from imashrimp_mmcv.mmcv.utils import is_str
 
 
 def flowread(flow_or_path, quantize=False, concat_axis=0, *args, **kwargs):

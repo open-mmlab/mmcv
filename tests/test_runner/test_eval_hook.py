@@ -9,11 +9,11 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
 
-from mmcv.runner import DistEvalHook as BaseDistEvalHook
-from mmcv.runner import EpochBasedRunner
-from mmcv.runner import EvalHook as BaseEvalHook
-from mmcv.runner import IterBasedRunner
-from mmcv.utils import get_logger
+from imashrimp_mmcv.mmcv.runner import DistEvalHook as BaseDistEvalHook
+from imashrimp_mmcv.mmcv.runner import EpochBasedRunner
+from imashrimp_mmcv.mmcv.runner import EvalHook as BaseEvalHook
+from imashrimp_mmcv.mmcv.runner import IterBasedRunner
+from imashrimp_mmcv.mmcv.utils import get_logger
 
 
 class ExampleDataset(Dataset):

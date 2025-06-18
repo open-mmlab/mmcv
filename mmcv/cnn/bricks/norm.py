@@ -2,8 +2,8 @@ import inspect
 
 import torch.nn as nn
 
-from mmcv.utils import is_tuple_of
-from mmcv.utils.parrots_wrapper import SyncBatchNorm, _BatchNorm, _InstanceNorm
+from imashrimp_mmcv.mmcv.utils import is_tuple_of
+from imashrimp_mmcv.mmcv.utils.parrots_wrapper import SyncBatchNorm, _BatchNorm, _InstanceNorm
 from .registry import NORM_LAYERS
 
 NORM_LAYERS.register_module('BN', module=nn.BatchNorm2d)

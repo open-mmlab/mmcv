@@ -212,7 +212,7 @@ class Config:
                 # delete imported module
                 del sys.modules[temp_module_name]
             elif filename.endswith(('.yml', '.yaml', '.json')):
-                import mmcv
+                import imashrimp_mmcv.mmcv as mmcv
                 cfg_dict = mmcv.load(temp_config_file.name)
             # close temp file
             temp_config_file.close()
@@ -523,7 +523,7 @@ class Config:
                 with open(file, 'w') as f:
                     f.write(self.pretty_text)
         else:
-            import mmcv
+            import imashrimp_mmcv.mmcv as mmcv
             if file is None:
                 file_format = self.filename.split('.')[-1]
                 return mmcv.dump(cfg_dict, file_format=file_format)
