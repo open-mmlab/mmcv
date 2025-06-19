@@ -51,10 +51,10 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.10']
-        torch: [1.8.1+cpu, 2.4.1]
+        torch: [1.13.1+cpu, 2.4.1]
         include:
-          - torch: 1.8.1+cpu
-            torchvision: 0.9.1+cpu
+          - torch: 1.13.0+cpu
+            torchvision: 0.14.0+cpu
           - torch: 2.4.1
             torchvision: 0.19.1
     steps:
@@ -80,10 +80,10 @@ jobs:
     strategy:
       matrix:
         python-version: [3.8, 3.9, '3.10']
-        torch: [2.5.1]
+        torch: [2.3.1]
         include:
-          - torch: 2.5.1
-            torchvision: 0.20.1
+          - torch: 2.3.1
+            torchvision: 0.18.1
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -114,10 +114,12 @@ jobs:
         python-version: ['3.10']
         # torch: [1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.12.0, 1.13.0, 2.0.0, 2.1.0]
         torch: [ 1.13.0+cpu, '2.0.0', '2.1.0', '2.3.1', '2.4.1', '2.5.1']
+        setuptools: [78.0.1]
         include:
           - torch: 1.13.0+cpu
             torchvision: 0.14.0+cpu
             python-version: '3.7'
+            setuptools: '68.0.0'
           - torch: '2.0.0'
             torchvision: '0.15.1'
             python-version: '3.8'
@@ -154,7 +156,7 @@ jobs:
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
       - name: Build MMCV from source
-        run: pip install setuptools==78.0.1 && pip install -e . -v
+        run: pip install setuptools==${{matrix.setuptools}} && pip install -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unit tests
@@ -172,12 +174,12 @@ jobs:
       - uses: actions/checkout@v2
       - name: Upgrade pip and wheel
         run: pip install pip wheel --upgrade
+      - name: Install system dependencies
+        run: apt-get update && apt-get install -y git ffmpeg libturbojpeg gnupg
       - name: Fetch GPG keys
         run: |
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
-      - name: Install system dependencies
-        run: apt-get update && apt-get install -y git ffmpeg libturbojpeg
       - name: Install MMEngine from main branch
         run: pip install git+https://github.com/VBTI-development/mmengine.git@main
       - name: Install ninja to speed the compilation
