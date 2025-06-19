@@ -152,7 +152,7 @@ jobs:
       - name: Upgrade pip and wheel
         run: pip install pip wheel --upgrade
       - name: Install PyTorch
-        run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
+        run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/cpu
       - name: Install MMEngine from main branch
         run: pip install git+https://github.com/VBTI-development/mmengine.git@main
       - name: Install ninja to speed the compilation
