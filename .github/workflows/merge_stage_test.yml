@@ -13,8 +13,8 @@ on:
       - "CONTRIBUTING.md"
       - ".pre-commit-config.yaml"
       - ".pre-commit-config-zh-cn.yaml"
-    # branches:
-    #   - main
+    branches:
+      - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
