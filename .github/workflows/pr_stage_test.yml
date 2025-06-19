@@ -61,15 +61,15 @@ jobs:
         run: pip install git+https://github.com/VBTI-development/mmengine.git@main
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
-      - name: Build MMEngine from source
-        run: pip install -e . -v
+      - name: Build MMCV from source
+        run: CUDA_HOME=/usr/local/cuda pip install -e . -v
       - name: Install unit tests dependencies
         run: |
           pip install -r requirements/test.txt
         # Distributed related unit test may randomly error in PyTorch 1.13.0
       - name: Run unittests and generate coverage report
         run: |
-          coverage run --branch --source mmengine -m pytest tests/  --ignore tests/test_dist/
+          coverage run --branch --source mmcv -m pytest tests/
           coverage xml
       - name: Code Coverage Summary Report
         uses: irongut/CodeCoverageSummary@v1.3.0
@@ -125,8 +125,8 @@ jobs:
         run: pip install git+https://github.com/VBTI-development/mmengine.git@main
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
-      - name: Build MMEngine from source
-        run: pip install -e . -v
+      - name: Build MMCV from source
+        run: CUDA_HOME=/usr/local/cuda pip install -e . -v
       - name: Install unit tests dependencies
         run: |
           pip install -r requirements/test.txt
@@ -134,7 +134,7 @@ jobs:
         # Distributed related unit test may randomly error in PyTorch 1.13.0
       - name: Run unittests and generate coverage report
         run: |
-          coverage run --branch --source mmengine -m pytest tests/  --ignore tests/test_dist/
+          coverage run --branch --source mmcv -m pytest tests/
           coverage xml
           coverage report -m
 

@@ -13,8 +13,8 @@ on:
       - "CONTRIBUTING.md"
       - ".pre-commit-config.yaml"
       - ".pre-commit-config-zh-cn.yaml"
-    branches:
-      - main
+    # branches:
+    #   - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -183,7 +183,7 @@ jobs:
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
       - name: Build MMCV from source
-        run: pip install -e . -v
+        run: CUDA_HOME=/usr/local/cuda pip install -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unit tests
@@ -211,7 +211,7 @@ jobs:
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
       - name: Build MMCV from source
-        run: pip install -e . -v
+        run: CUDA_HOME=/usr/local/cuda pip install -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unit tests
