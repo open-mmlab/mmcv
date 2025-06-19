@@ -123,11 +123,11 @@ jobs:
           - torch: '2.0.0'
             torchvision: '0.15.1'
             python-version: '3.8'
-            setuptools: 78.0.1
+            setuptools: 75.3.2
           - torch: '2.1.0'
             torchvision: '0.16.0'
             python-version: '3.8'
-            setuptools: 78.0.1
+            setuptools: 75.3.2
           - torch: '2.3.1'
             torchvision: '0.18.1'
           - torch: '2.4.1'
@@ -175,6 +175,17 @@ jobs:
       #python 3.10
     steps:
       - uses: actions/checkout@v2
+      - name: Install Python ${{matrix.python-version}}
+        run: |
+          apt-get update
+          apt-get install -y wget build-essential git software-properties-common
+          add-apt-repository ppa:deadsnakes/ppa -y
+          apt-get update
+          apt-get install -y python${{matrix.python-version}} python${{matrix.python-version}}-dev python${{matrix.python-version}}-distutils
+          update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${{matrix.python-version}} 1
+          update-alternatives --install /usr/bin/python python /usr/bin/python${{matrix.python-version}} 1
+          wget https://bootstrap.pypa.io/get-pip.py
+          python get-pip.py
       - name: Upgrade pip and wheel
         run: pip install pip wheel --upgrade
       - name: Install system dependencies
