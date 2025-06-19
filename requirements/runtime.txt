@@ -1,6 +1,6 @@
 addict
 mmengine>=0.3.0
-numpy
+numpy<2
 packaging
 Pillow
 pyyaml
