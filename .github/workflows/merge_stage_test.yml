@@ -123,9 +123,11 @@ jobs:
           - torch: '2.0.0'
             torchvision: '0.15.1'
             python-version: '3.8'
+            setuptools: 78.0.1
           - torch: '2.1.0'
             torchvision: '0.16.0'
             python-version: '3.8'
+            setuptools: 78.0.1
           - torch: '2.3.1'
             torchvision: '0.18.1'
           - torch: '2.4.1'
@@ -165,7 +167,8 @@ jobs:
   build_cu118:
     runs-on: ubuntu-22.04
     container:
-      image: pytorch/pytorch:2.3.1-cuda11.8-cudnn8-devel
+      # image: pytorch/pytorch:2.3.1-cuda11.8-cudnn8-runtime
+      image: nvidia/cuda:12.1.0-cudnn8-devel-ubuntu22.04
     env:
       FORCE_CUDA: 1
       MMCV_CUDA_ARGS: -gencode=arch=compute_61,code=sm_61
@@ -175,11 +178,13 @@ jobs:
       - name: Upgrade pip and wheel
         run: pip install pip wheel --upgrade
       - name: Install system dependencies
-        run: apt-get update && apt-get install -y git ffmpeg libturbojpeg gnupg
+        run: apt-get update && apt-get install -y git ffmpeg libturbojpeg gnupg libgl1 libglib2.0-0
       - name: Fetch GPG keys
         run: |
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
+      - name: Install PyTorch
+        run: pip install torch==2.3.1 torchvision==0.18.1 -f https://download.pytorch.org/whl/cu118
       - name: Install MMEngine from main branch
         run: pip install git+https://github.com/VBTI-development/mmengine.git@main
       - name: Install ninja to speed the compilation
