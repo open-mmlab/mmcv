@@ -62,7 +62,8 @@ jobs:
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
       - name: Build MMCV from source
-        run: CUDA_HOME=/usr/local/cuda pip install -e . -v
+        # newest setuptools breaks the build
+        run: pip install setuptools==78.0.1 && pip install -e . -v
       - name: Install unit tests dependencies
         run: |
           pip install -r requirements/test.txt
@@ -126,7 +127,7 @@ jobs:
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
       - name: Build MMCV from source
-        run: CUDA_HOME=/usr/local/cuda pip install -e . -v
+        run: pip install setuptools==78.0.1 && pip install -e . -v
       - name: Install unit tests dependencies
         run: |
           pip install -r requirements/test.txt
