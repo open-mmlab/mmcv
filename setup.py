@@ -2,7 +2,9 @@ import glob
 import os
 import platform
 import re
-from pkg_resources import DistributionNotFound, get_distribution, parse_version
+# from pkg_resources import DistributionNotFound, get_distribution, parse_version
+from importlib.metadata import version, PackageNotFoundError
+from packaging.version import parse as parse_version
 from setuptools import find_packages, setup
 
 EXT_TYPE = ''
@@ -27,24 +29,19 @@ except ModuleNotFoundError:
     cmd_class = {}
     print('Skip building ext ops due to the absence of torch.')
 
+print(f"{EXT_TYPE=}")
+
 
 def choose_requirement(primary, secondary):
     """If some version of primary requirement installed, return primary, else
     return secondary."""
     try:
         name = re.split(r'[!<>=]', primary)[0]
-        get_distribution(name)
-    except DistributionNotFound:
+        version(name)
+    except PackageNotFoundError:
         return secondary
 
     return str(primary)
-
-
-def get_version():
-    version_file = 'mmcv/version.py'
-    with open(version_file, encoding='utf-8') as f:
-        exec(compile(f.read(), version_file, 'exec'))
-    return locals()['__version__']
 
 
 def parse_requirements(fname='requirements/runtime.txt', with_version=True):
@@ -182,6 +179,7 @@ def get_extensions():
             pytorch=True)
         extensions.append(ext_ops)
     elif EXT_TYPE == 'pytorch':
+        print("YES")
         ext_name = 'mmcv._ext'
         from torch.utils.cpp_extension import CppExtension, CUDAExtension
 
@@ -230,6 +228,7 @@ def get_extensions():
             pass
 
         if os.getenv('MMCV_WITH_DIOPI', '0') == '1':
+            print("a")
             import mmengine  # NOQA: F401
             from mmengine.utils.version_utils import digit_version
             assert digit_version(mmengine.__version__) >= digit_version(
@@ -260,6 +259,7 @@ def get_extensions():
             libraries += ['torch_dipu']
         elif is_rocm_pytorch or torch.cuda.is_available() or os.getenv(
                 'FORCE_CUDA', '0') == '1':
+            print("b")
             if is_rocm_pytorch:
                 define_macros += [('MMCV_WITH_HIP', None)]
             define_macros += [('MMCV_WITH_CUDA', None)]
@@ -276,6 +276,7 @@ def get_extensions():
         elif (hasattr(torch, 'is_mlu_available') and
                 torch.is_mlu_available()) or \
                 os.getenv('FORCE_MLU', '0') == '1':
+            print("c")
             from torch_mlu.utils.cpp_extension import MLUExtension
 
             def get_mluops_version(file_path):
@@ -375,6 +376,7 @@ def get_extensions():
         elif (hasattr(torch.backends, 'mps')
               and torch.backends.mps.is_available()) or os.getenv(
                   'FORCE_MPS', '0') == '1':
+            print("d")
             # objc compiler support
             from distutils.unixccompiler import UnixCCompiler
             if '.mm' not in UnixCCompiler.src_extensions:
@@ -399,6 +401,7 @@ def get_extensions():
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/mps'))
         elif (os.getenv('FORCE_NPU', '0') == '1'):
+            print("e")
             print(f'Compiling {ext_name} only with CPU and NPU')
             try:
                 import importlib
@@ -433,6 +436,7 @@ def get_extensions():
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/npu'))
         elif hasattr(torch, 'musa') or os.getenv('FORCE_MUSA', '0') == '1':
+            print("f")
             from torch_musa.testing import get_musa_arch
             from torch_musa.utils.musa_extension import MUSAExtension
             define_macros += [('MMCV_WITH_MUSA', None),
@@ -447,6 +451,7 @@ def get_extensions():
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/musa'))
             extension = MUSAExtension
         else:
+            print("g")
             print(f'Compiling {ext_name} only with CPU')
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp')
@@ -482,33 +487,8 @@ def get_extensions():
 
 setup(
     name='mmcv' if os.getenv('MMCV_WITH_OPS', '1') == '1' else 'mmcv-lite',
-    version=get_version(),
-    description='OpenMMLab Computer Vision Foundation',
-    keywords='computer vision',
     packages=find_packages(),
-    include_package_data=True,
-    classifiers=[
-        'Development Status :: 4 - Beta',
-        'License :: OSI Approved :: Apache Software License',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: 3.10',
-        'Topic :: Utilities',
-    ],
-    url='https://github.com/open-mmlab/mmcv',
-    author='MMCV Contributors',
-    author_email='openmmlab@gmail.com',
-    install_requires=install_requires,
-    extras_require={
-        'all': parse_requirements('requirements.txt'),
-        'tests': parse_requirements('requirements/test.txt'),
-        'build': parse_requirements('requirements/build.txt'),
-        'optional': parse_requirements('requirements/optional.txt'),
-    },
-    python_requires='>=3.7',
+    python_requires='>=3.8',
     ext_modules=get_extensions(),
     cmdclass=cmd_class,
     zip_safe=False)

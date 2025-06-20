@@ -39,7 +39,7 @@ jobs:
       - name: Install MMEngine from main branch
         run: pip install git+https://github.com/VBTI-development/mmengine.git@main
       - name: Build MMCV from source
-        run: pip install setuptools==78.0.1 && pip install -e . -v
+        run: pip install -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unit tests
@@ -70,7 +70,7 @@ jobs:
       - name: Install MMEngine from main branch
         run: pip install git+https://github.com/VBTI-development/mmengine.git@main
       - name: Build MMCV from source
-        run: pip install -e . -v
+        run: pip install --no-build-isolation -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unit tests
@@ -101,7 +101,7 @@ jobs:
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
       - name: Build MMCV from source
-        run: pip install -e . -v
+        run: pip install --no-build-isolation -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unit tests
@@ -158,7 +158,7 @@ jobs:
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
       - name: Build MMCV from source
-        run: pip install setuptools==${{matrix.setuptools}} && pip install -e . -v
+        run: pip install --no-build-isolation -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unit tests
@@ -205,7 +205,7 @@ jobs:
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
       - name: Build MMCV from source
-        run: pip install setuptools==78.0.1 && pip install -e . -v
+        run: pip install --no-build-isolation -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unit tests
@@ -217,7 +217,7 @@ jobs:
       MMCV_WITH_OPS: 0
     strategy:
       matrix:
-        python-version: [3.7]
+        python-version: [3.8]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -233,7 +233,7 @@ jobs:
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
       - name: Build MMCV from source
-        run: pip install -e . -v
+        run: pip install --no-build-isolation -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unit tests
@@ -266,7 +266,7 @@ jobs:
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
       - name: Build MMCV from source
-        run: pip install -e . -v
+        run: pip install --no-build-isolation -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unit tests

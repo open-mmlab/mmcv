@@ -1,0 +1,99 @@
+
+[project]
+name = "mmcv"
+description = "OpenMMLab Computer Vision Foundation"
+authors = [
+    { name = "MMCV Contributors", email = "openmmlab@gmail.com" },
+    { name = "VBTI Contributors", email = "dev@vbti.nl" }
+]
+license = "Apache-2.0"
+requires-python = ">=3.8"
+keywords = ["computer vision"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "addict",
+    "mmengine>=0.3.0",
+    "numpy<2",
+    "packaging",
+    "Pillow",
+    "pyyaml",
+    "regex; sys_platform == 'win32'",
+    "yapf"
+]
+version = "2.2.0"
+
+[project.optional-dependencies]
+docs = [
+    "docutils==0.16.0",
+    "markdown>=3.4.0",
+    "myst-parser",
+    "opencv-python",
+    "pytorch_sphinx_theme @ git+https://github.com/open-mmlab/pytorch_sphinx_theme.git",
+    "sphinx==4.0.2",
+    "sphinx-copybutton",
+    "sphinx_markdown_tables>=0.0.16",
+    "torch",
+    "urllib3<2.0.0"
+]
+test = [
+    "coverage",
+    "lmdb",
+    "onnx",
+    "onnxoptimizer",
+    "onnxruntime",
+    "pytest",
+    "PyTurboJPEG",
+    "scipy",
+    "tifffile"
+]
+build = [
+    "pytest-runner"
+]
+optional = [
+    "ninja",
+    "psutil"
+]
+
+[project.urls]
+Homepage = "https://github.com/VBTI-development/mmcv"
+
+[build-system]
+requires = [
+    "setuptools>=42",
+    "wheel",
+    "packaging",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["tests*"]
+
+[tool.yapf]
+based_on_style = "pep8"
+blank_line_before_nested_class_or_def = true
+split_before_expression_after_opening_paren = true
+
+[tool.isort]
+line_length = 79
+multi_line_output = 0
+extra_standard_library = "pkg_resources,setuptools,logging,os,warnings,abc"
+known_first_party = "mmcv"
+known_third_party = "addict,cv2,matplotlib,numpy,onnx,packaging,pytest,pytorch_sphinx_theme,scipy,sphinx,torch,torchvision,yaml,yapf"
+no_lines_before = "STDLIB,LOCALFOLDER"
+default_section = "THIRDPARTY"
+
+[tool.codespell]
+quiet-level = 3
+ignore-words-list = "inout,hist,ba,ro,inh"

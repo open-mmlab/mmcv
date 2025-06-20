@@ -63,7 +63,7 @@ jobs:
         run: pip install ninja psutil
       - name: Build MMCV from source
         # newest setuptools breaks the build
-        run: pip install setuptools==78.0.1 && pip install -e . -v
+        run: pip install --no-build-isolation -e . -v
       - name: Install unit tests dependencies
         run: |
           pip install -r requirements/test.txt
@@ -127,7 +127,7 @@ jobs:
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
       - name: Build MMCV from source
-        run: pip install setuptools==78.0.1 && pip install -e . -v
+        run: pip install --no-build-isolation -e . -v
       - name: Install unit tests dependencies
         run: |
           pip install -r requirements/test.txt
@@ -145,7 +145,7 @@ jobs:
       MMCV_WITH_OPS: 0
     strategy:
       matrix:
-        python-version: [3.7]
+        python-version: [3.8]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -161,7 +161,7 @@ jobs:
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
       - name: Build MMCV from source
-        run: pip install -e . -v
+        run: pip install --no-build-isolation -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unit tests
@@ -174,7 +174,7 @@ jobs:
         include:
           - torch: 1.8.1
             torchvision: 0.9.1
-            python-version: 3.7
+            python-version: 3.8
           - torch: 2.1.0
             torchvision: 0.16.0
             python-version: 3.8
@@ -193,7 +193,7 @@ jobs:
       - name: Install ninja to speed the compilation
         run: pip install ninja psutil
       - name: Build MMCV from source
-        run: pip install -e . -v
+        run: pip install --no-build-isolation -e . -v
       - name: Install unit tests dependencies
         run: pip install -r requirements/test.txt
       - name: Run unit tests
@@ -227,7 +227,7 @@ jobs:
   #     - name: Install ninja to speed the compilation
   #       run: pip install ninja psutil
   #     - name: Build MMCV from source
-  #       run: pip install -e . -v
+  #       run: pip install --no-build-isolation -e . -v
   #     - name: Install unit tests dependencies
   #       run: pip install -r requirements/test.txt
   #     - name: Run unit tests
