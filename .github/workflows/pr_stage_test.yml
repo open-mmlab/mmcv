@@ -23,6 +23,10 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: nvidia/cuda:12.1.0-cudnn8-devel-ubuntu22.04
+    env:
+      UV_TORCH_BACKEND: auto
+    permissions:
+      pull-requests: write
     strategy:
       matrix:
         python-version: ["3.10"]
@@ -34,51 +38,58 @@ jobs:
           apt-get update
           apt-get install -y wget build-essential git software-properties-common
 
-      # 安装特定版本的 Python
-      - name: Install Python ${{ matrix.python-version }}
-        run: |
-          add-apt-repository ppa:deadsnakes/ppa -y
-          apt-get update
-          apt-get install -y python${{ matrix.python-version }} python${{ matrix.python-version }}-dev python${{ matrix.python-version }}-distutils
-          update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${{ matrix.python-version }} 1
-          update-alternatives --install /usr/bin/python python /usr/bin/python${{ matrix.python-version }} 1
-          wget https://bootstrap.pypa.io/get-pip.py
-          python get-pip.py
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
 
       # 安装 PyTorch
-      - name: Install PyTorch
-        run: |
-          pip install torch==${{ matrix.torch }} torchvision --index-url https://download.pytorch.org/whl/cu121
       - name: Fetch GPG keys
         run: |
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
       - name: Install system dependencies
-        run: apt-get update && apt-get install -y git ffmpeg libturbojpeg
+        run: apt-get update && apt-get install -y git ffmpeg libturbojpeg python3-dev
+      - name: Install PyTorch
+        run: |
+          uv pip install torch==${{ matrix.torch }} torchvision
       - name: Install MMEngine from main branch
-        run: pip install git+https://github.com/open-mmlab/mmengine.git@main
+        run: uv pip install git+https://github.com/VBTI-development/mmengine.git@main
       - name: Install ninja to speed the compilation
-        run: pip install ninja psutil
-      - name: Build MMEngine from source
-        run: pip install -e . -v
+        run: uv pip install -r pyproject.toml --extra optional --extra build
+      - name: Build MMCV from source
+        run: uv pip install -e . -v
       - name: Install unit tests dependencies
         run: |
-          pip install -r requirements/test.txt
-        # Distributed related unit test may randomly error in PyTorch 1.13.0
+          uv pip install -r pyproject.toml --extra test
       - name: Run unittests and generate coverage report
         run: |
-          coverage run --branch --source mmengine -m pytest tests/  --ignore tests/test_dist/
-          coverage xml
-          coverage report -m
+          uv run coverage run --branch --source mmcv -m pytest tests/
+          uv run coverage xml
+      - name: Code Coverage Summary Report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: coverage.xml
+          format: markdown
+          output: both
+          hide_branch_rate: false
+      - name: Add Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          recreate: true
+          path: code-coverage-results.md
 
   build_cu118:
     runs-on: ubuntu-22.04
     container:
       image: nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
+    env:
+      UV_TORCH_BACKEND: auto
     strategy:
       matrix:
         python-version: ["3.10"]
-        torch: ["2.0.0", "2.1.0","2.3.1"]
+        torch: ["2.3.1"]
     steps:
       - uses: actions/checkout@v3
       - name: Install basic tools
@@ -86,134 +97,86 @@ jobs:
           apt-get update
           apt-get install -y wget build-essential git software-properties-common
 
-      # 安装特定版本的 Python
-      - name: Install Python ${{ matrix.python-version }}
-        run: |
-          add-apt-repository ppa:deadsnakes/ppa -y
-          apt-get update
-          apt-get install -y python${{ matrix.python-version }} python${{ matrix.python-version }}-dev python${{ matrix.python-version }}-distutils
-          update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${{ matrix.python-version }} 1
-          update-alternatives --install /usr/bin/python python /usr/bin/python${{ matrix.python-version }} 1
-          wget https://bootstrap.pypa.io/get-pip.py
-          python get-pip.py
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
 
       # 安装 PyTorch
-      - name: Install PyTorch
-        run: |
-          pip install torch==${{ matrix.torch }} torchvision --index-url https://download.pytorch.org/whl/cu118
       - name: Fetch GPG keys
         run: |
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
       - name: Install system dependencies
-        run: apt-get update && apt-get install -y git ffmpeg libturbojpeg
+        run: apt-get update && apt-get install -y git ffmpeg libturbojpeg python3-dev
+      - name: Install PyTorch
+        run: |
+          uv pip install torch==${{ matrix.torch }} torchvision
       - name: Install MMEngine from main branch
-        run: pip install git+https://github.com/open-mmlab/mmengine.git@main
+        run: uv pip install git+https://github.com/VBTI-development/mmengine.git@main
       - name: Install ninja to speed the compilation
-        run: pip install ninja psutil
-      - name: Build MMEngine from source
-        run: pip install -e . -v
+        run: uv pip install -r pyproject.toml --extra optional --extra build
+      - name: Build MMCV from source
+        run: uv pip install -e . -v
       - name: Install unit tests dependencies
         run: |
-          pip install -r requirements/test.txt
-          pip install numpy==1.24.3
-        # Distributed related unit test may randomly error in PyTorch 1.13.0
-      - name: Run unittests and generate coverage report
+          uv pip install -r pyproject.toml --extra test
+      - name: Run unittests
         run: |
-          coverage run --branch --source mmengine -m pytest tests/  --ignore tests/test_dist/
-          coverage xml
-          coverage report -m
+          uv run pytest tests/
 
   build_windows_without_ops:
-    runs-on: windows-2019
+    runs-on: windows-2025
     env:
       MMCV_WITH_OPS: 0
     strategy:
       matrix:
-        python-version: [3.7]
+        python-version: ['3.10']
+        torch: [2.3.1]
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Upgrade pip and wheel
-        run: python -m pip install pip wheel --upgrade
       - name: Install PyTorch
-        run: pip install torch==1.8.1+cpu torchvision==0.9.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
+        run: |
+          uv pip install torch==${{ matrix.torch }} torchvision
       - name: Install MMEngine from main branch
-        run: pip install git+https://github.com/open-mmlab/mmengine.git@main
+        run: uv pip install git+https://github.com/VBTI-development/mmengine.git@main
       - name: Install ninja to speed the compilation
-        run: pip install ninja psutil
+        run: uv pip install -r pyproject.toml --extra optional --extra build
       - name: Build MMCV from source
-        run: pip install -e . -v
+        run: uv pip install -e . -v
       - name: Install unit tests dependencies
-        run: pip install -r requirements/test.txt
-      - name: Run unit tests
-        run: pytest tests --ignore=tests/test_ops --ignore tests/test_image/test_io.py
+        run: |
+          uv pip install -r pyproject.toml --extra test
+      - name: Run unittests
+        run: uv run pytest tests --ignore=tests/test_ops --ignore tests/test_image/test_io.py
+
   build_windows:
-    runs-on: windows-2019
+    runs-on: windows-2025
     strategy:
       matrix:
-        torch: [1.8.1, 2.1.0]
-        include:
-          - torch: 1.8.1
-            torchvision: 0.9.1
-            python-version: 3.7
-          - torch: 2.1.0
-            torchvision: 0.16.0
-            python-version: 3.8
+        python-version: ['3.10']
+        torch: [2.3.1]
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Upgrade pip and wheel
-        run: python -m pip install pip wheel --upgrade
       - name: Install PyTorch
-        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+        run: |
+          uv pip install torch==${{ matrix.torch }} torchvision
       - name: Install MMEngine from main branch
-        run: pip install git+https://github.com/open-mmlab/mmengine.git@main
+        run: uv pip install git+https://github.com/VBTI-development/mmengine.git@main
       - name: Install ninja to speed the compilation
-        run: pip install ninja psutil
+        run: uv pip install -r pyproject.toml --extra optional --extra build
       - name: Build MMCV from source
-        run: pip install -e . -v
+        run: uv pip install -e . -v
       - name: Install unit tests dependencies
-        run: pip install -r requirements/test.txt
-      - name: Run unit tests
-        run: pytest tests/ --ignore tests/test_image/test_io.py
-  # build_macos:
-  #   runs-on: macos-latest
-  #   strategy:
-  #     matrix:
-  #       torch: [1.8.1, 2.1.0]
-  #       include:
-  #         - torch: 1.8.1
-  #           torchvision: 0.9.1
-  #           python-version: 3.7.1
-  #         - torch: 2.1.0
-  #           torchvision: 0.16.0
-  #           python-version: 3.8.1
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Set up Python ${{ matrix.python-version }}
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: ${{ matrix.python-version }}
-  #     - name: Install system dependencies
-  #       run: brew install ffmpeg jpeg-turbo
-  #     - name: Upgrade pip and wheel
-  #       run: pip install pip wheel --upgrade
-  #     - name: Install PyTorch
-  #       run: pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }}
-  #     - name: Install MMEngine from main branch
-  #       run: pip install git+https://github.com/open-mmlab/mmengine.git@main
-  #     - name: Install ninja to speed the compilation
-  #       run: pip install ninja psutil
-  #     - name: Build MMCV from source
-  #       run: pip install -e . -v
-  #     - name: Install unit tests dependencies
-  #       run: pip install -r requirements/test.txt
-  #     - name: Run unit tests
-  #       run: pytest tests/
+        run: |
+          uv pip install -r pyproject.toml --extra test
+      - name: Run unittests
+        run: uv run pytest tests/ --ignore tests/test_image/test_io.py

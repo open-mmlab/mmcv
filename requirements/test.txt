@@ -1,9 +1,0 @@
-coverage
-lmdb
-onnx
-onnxoptimizer
-onnxruntime
-pytest
-PyTurboJPEG
-scipy
-tifffile

@@ -1,4 +1,3 @@
-include requirements/runtime.txt
 include mmcv/ops/csrc/common/cuda/*.cuh mmcv/ops/csrc/common/cuda/*.hpp mmcv/ops/csrc/common/*.hpp
 include mmcv/ops/csrc/pytorch/*.cpp mmcv/ops/csrc/pytorch/cuda/*.cu mmcv/ops/csrc/pytorch/cuda/*.cpp mmcv/ops/csrc/pytorch/cpu/*.cpp
 include mmcv/ops/csrc/parrots/*.h mmcv/ops/csrc/parrots/*.cpp

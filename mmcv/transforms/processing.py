@@ -43,9 +43,9 @@ class Normalize(BaseTransform):
         mean (sequence): Mean values of 3 channels.
         std (sequence): Std values of 3 channels.
         to_rgb (bool): Whether to convert the image from BGR to RGB before
-            normlizing the image. If ``to_rgb=True``, the order of mean and std
-            should be RGB. If ``to_rgb=False``, the order of mean and std
-            should be the same order of the image. Defaults to True.
+            normalizing the image. If ``to_rgb=True``, the order of mean and
+            std should be RGB. If ``to_rgb=False``, the order of mean and
+            std should be the same order of the image. Defaults to True.
     """
 
     def __init__(self,

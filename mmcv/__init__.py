@@ -3,7 +3,7 @@
 from .arraymisc import *
 from .image import *
 from .transforms import *
-from .version import *
+from .version import __version__
 from .video import *
 from .visualization import *
 

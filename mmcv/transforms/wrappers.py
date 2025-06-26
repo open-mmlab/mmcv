@@ -293,7 +293,7 @@ class KeyMapper(BaseTransform):
                 return results
 
             # ``m is ...`` means the key is marked ignored, in which case the
-            # inner resuls will not affect the outer results in remapping.
+            # inner results will not affect the outer results in remapping.
             # Another case that will have ``data is IgnoreKey`` is that the
             # key is missing in the inputs. In this case, if the inner key is
             # created by the wrapped transforms, it will be remapped to the

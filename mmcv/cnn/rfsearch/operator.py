@@ -24,7 +24,7 @@ class BaseConvRFSearchOp(BaseModule):
         self.op_layer = op_layer
         self.global_config = global_config
 
-    def normlize(self, weights: nn.Parameter) -> nn.Parameter:
+    def normalize(self, weights: nn.Parameter) -> nn.Parameter:
         """Normalize weights.
 
         Args:
@@ -86,7 +86,7 @@ class Conv2dRFSearchOp(BaseConvRFSearchOp):
         nn.init.constant_(self.branch_weights, global_config['init_alphas'])
 
     def forward(self, input: Tensor) -> Tensor:
-        norm_w = self.normlize(self.branch_weights[:len(self.dilation_rates)])
+        norm_w = self.normalize(self.branch_weights[:len(self.dilation_rates)])
         if len(self.dilation_rates) == 1:
             outputs = [
                 nn.functional.conv2d(
@@ -118,7 +118,7 @@ class Conv2dRFSearchOp(BaseConvRFSearchOp):
 
     def estimate_rates(self) -> None:
         """Estimate new dilation rate based on trained branch_weights."""
-        norm_w = self.normlize(self.branch_weights[:len(self.dilation_rates)])
+        norm_w = self.normalize(self.branch_weights[:len(self.dilation_rates)])
         if self.verbose:
             print_log(
                 'Estimate dilation {} with weight {}.'.format(

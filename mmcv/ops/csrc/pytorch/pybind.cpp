@@ -667,7 +667,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("mask"), py::arg("embedding"), py::arg("kernel_label"),
         py::arg("kernel_contour"), py::arg("kernel_region_label"),
         py::arg("distance_threshold"));
-  m.def("contour_expand", &contour_expand, "contour exapnd (CPU) ",
+  m.def("contour_expand", &contour_expand, "contour expand (CPU) ",
         py::arg("kernel_mask"), py::arg("internal_kernel_label"),
         py::arg("min_kernel_area"), py::arg("kernel_num"));
   m.def("roi_align_forward", &roi_align_forward, "roi_align forward",

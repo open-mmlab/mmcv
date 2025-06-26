@@ -77,7 +77,7 @@ class QueryAndGroup(nn.Module):
             points_xyz (torch.Tensor): (B, N, 3) xyz coordinates of the
                 points.
             center_xyz (torch.Tensor): (B, npoint, 3) coordinates of the
-                centriods.
+                centroids.
             features (torch.Tensor): (B, C, N) The features of grouped
                 points.
 
