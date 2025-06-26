@@ -245,8 +245,8 @@ void modulated_deform_conv_backward_fallthrough(
     if (with_bias)
       grad_bias = grad_bias.view({grad_bias.size(0) * grad_bias.size(1)});
   }
-  grad_output = grad_output.view({grad_output.size(0) * grad_output.size(1),
-                                  grad_output.size(2), grad_output.size(3),
+  grad_output = grad_output.view({grad_output.size(0), grad_output.size(1)
+                                  * grad_output.size(2), grad_output.size(3),
                                   grad_output.size(4)});
 }
 
