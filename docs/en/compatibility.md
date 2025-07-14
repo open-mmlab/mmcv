@@ -1,3 +1,8 @@
+### v2.3.0
+
+The VBTI team removed support for the mmcv-lite package because modern build systems like uv do not support this structure anymore.
+Furthermore `MMCV_WITH_OPS` is now deprecated and not used anymore.
+
 ### v2.0.0
 
 The OpenMMLab team released a new generation of training engine [MMEngine](https://github.com/open-mmlab/mmengine) at the World Artificial Intelligence Conference on September 1, 2022. It is a foundational library for training deep learning models. Compared with MMCV, it provides a universal and powerful runner, an open architecture with a more unified interface, and a more customizable training process.

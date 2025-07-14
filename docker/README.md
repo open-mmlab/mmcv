@@ -18,14 +18,14 @@ There are two `Dockerfile` files to build docker images, one to build an image w
 Build with local repository
 
 ```bash
-git clone https://github.com/open-mmlab/mmcv.git && cd mmcv
+git clone https://github.com/vbti-development/onedl-mmcv.git && cd mmcv
 docker build -t mmcv -f docker/release/Dockerfile .
 ```
 
 Or build with remote repository
 
 ```bash
-docker build -t mmcv https://github.com/open-mmlab/mmcv.git#master:docker/release
+docker build -t mmcv https://github.com/vbti-development/onedl-mmcv.git#master:docker/release
 ```
 
 The [Dockerfile](release/Dockerfile) installs latest released version of mmcv by default, but you can specify mmcv versions to install expected versions.
@@ -53,7 +53,7 @@ More available versions of PyTorch and CUDA can be found at [dockerhub/pytorch](
 If you want to build an docker image with the mmcv development environment, you can use the following command
 
 ```bash
-git clone https://github.com/open-mmlab/mmcv.git && cd mmcv
+git clone https://github.com/vbti-development/onedl-mmcv.git && cd mmcv
 docker build -t mmcv -f docker/dev/Dockerfile --build-arg CUDA_ARCH=7.5 .
 ```
 

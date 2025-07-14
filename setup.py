@@ -32,9 +32,6 @@ except ModuleNotFoundError:
 def get_extensions():
     extensions = []
 
-    if os.getenv('MMCV_WITH_OPS', '1') == '0':
-        return extensions
-
     if EXT_TYPE == 'parrots':
         ext_name = 'mmcv._ext'
         from parrots.utils.build_extension import Extension
@@ -373,7 +370,6 @@ def get_extensions():
 
 
 setup(
-    name='mmcv' if os.getenv('MMCV_WITH_OPS', '1') == '1' else 'mmcv-lite',
     packages=find_packages(),
     ext_modules=get_extensions(),
     cmdclass=cmd_class,

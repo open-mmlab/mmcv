@@ -21,60 +21,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_without_torch:
-    runs-on: ubuntu-22.04
-    env:
-      MMCV_WITH_OPS: 0
-    strategy:
-      matrix:
-        python-version: ['3.10']
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install uv and set the python version
-        uses: astral-sh/setup-uv@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg python3-dev
-      - name: Install MMEngine from main branch
-        run: uv pip install git+https://github.com/VBTI-development/mmengine.git@main
-      - name: Install build requirements
-        run: uv pip install -r pyproject.toml --extra build
-      - name: Build MMCV from source
-        run: uv pip install -e . -v
-      - name: Install unit tests dependencies
-        run: uv pip install -r pyproject.toml --extra test
-      - name: Run unit tests
-        run: uv run pytest tests/test_image tests/test_transforms tests/test_video tests/test_arraymisc.py tests/test_visualization.py tests/test_utils/test_env.py --ignore=tests/test_image/test_io.py
-  build_without_ops:
-    runs-on: ubuntu-22.04
-    env:
-      MMCV_WITH_OPS: 0
-    strategy:
-      matrix:
-        python-version: ['3.10']
-        torch: [2.4.1]
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install uv and set the python version
-        uses: astral-sh/setup-uv@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg libturbojpeg python3-dev
-      - name: Install PyTorch
-        run: |
-          uv pip install torch==${{ matrix.torch }} torchvision
-      - name: Install MMEngine from main branch
-        run: uv pip install git+https://github.com/VBTI-development/mmengine.git@main
-      - name: Install build requirements
-        run: uv pip install -r pyproject.toml --extra build
-      - name: Build MMCV from source
-        run: uv pip install -e . -v
-      - name: Install unit tests dependencies
-        run: uv pip install -r pyproject.toml --extra test
-      - name: Run unit tests
-        run: pytest tests --ignore=tests/test_ops
   build_cpu_py:
     runs-on: ubuntu-22.04
     strategy:
@@ -93,15 +39,15 @@ jobs:
         run: |
           uv pip install torch==${{ matrix.torch }} torchvision
       - name: Install MMEngine from main branch
-        run: uv pip install git+https://github.com/VBTI-development/mmengine.git@main
+        run: uv pip install git+https://github.com/VBTI-development/onedl-mmengine.git@main
       - name: Install build requirements
-        run: uv pip install -r pyproject.toml --extra build
+        run: uv pip install -r pyproject.toml --group optional  --group build
       - name: Build MMCV from source
         run: uv pip install -e . -v
       - name: Install unit tests dependencies
-        run: uv pip install -r pyproject.toml --extra test
+        run: uv pip install -r pyproject.toml --group test
       - name: Run unit tests
-        run: pytest tests
+        run: uv run pytest tests
 
   build_cpu_pt:
     runs-on: ubuntu-22.04
@@ -121,15 +67,15 @@ jobs:
         run: |
           uv pip install torch==${{ matrix.torch }} torchvision
       - name: Install MMEngine from main branch
-        run: uv pip install git+https://github.com/VBTI-development/mmengine.git@main
+        run: uv pip install git+https://github.com/VBTI-development/onedl-mmengine.git@main
       - name: Install build requirements
-        run: uv pip install -r pyproject.toml --extra build
+        run: uv pip install -r pyproject.toml --group optional  --group build
       - name: Build MMCV from source
         run: uv pip install -e . -v
       - name: Install unit tests dependencies
-        run: uv pip install -r pyproject.toml --extra test
+        run: uv pip install -r pyproject.toml --group test
       - name: Run unit tests
-        run: pytest tests
+        run: uv run pytest tests
 
   build_cu118:
     runs-on: ubuntu-22.04
@@ -166,45 +112,17 @@ jobs:
         run: |
           uv pip install torch==${{ matrix.torch }} torchvision
       - name: Install MMEngine from main branch
-        run: uv pip install git+https://github.com/VBTI-development/mmengine.git@main
+        run: uv pip install git+https://github.com/VBTI-development/onedl-mmengine.git@main
       - name: Install ninja to speed the compilation
-        run: uv pip install -r pyproject.toml --extra optional --extra build
+        run: uv pip install -r pyproject.toml --group optional  --group build
       - name: Build MMCV from source
         run: uv pip install -e . -v
       - name: Install unit tests dependencies
         run: |
-          uv pip install -r pyproject.toml --extra test
+          uv pip install -r pyproject.toml --group test
       - name: Run unittests
         run: |
           uv run pytest tests/
-
-  build_windows_without_ops:
-    runs-on: windows-2025
-    env:
-      MMCV_WITH_OPS: 0
-    strategy:
-      matrix:
-        python-version: ['3.10']
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install uv and set the python version
-        uses: astral-sh/setup-uv@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install PyTorch
-        run: |
-          uv pip install torch==2.3.1 torchvision
-      - name: Install MMEngine from main branch
-        run: uv pip install git+https://github.com/VBTI-development/mmengine.git@main
-      - name: Install ninja to speed the compilation
-        run: uv pip install -r pyproject.toml --extra optional --extra build
-      - name: Build MMCV from source
-        run: uv pip install -e . -v
-      - name: Install unit tests dependencies
-        run: |
-          uv pip install -r pyproject.toml --extra test
-      - name: Run unittests
-        run: uv run pytest tests --ignore=tests/test_ops --ignore tests/test_image/test_io.py
 
   build_windows:
     runs-on: windows-2025
@@ -222,13 +140,13 @@ jobs:
         run: |
           uv pip install torch==${{ matrix.torch }} torchvision
       - name: Install MMEngine from main branch
-        run: uv pip install git+https://github.com/VBTI-development/mmengine.git@main
+        run: uv pip install git+https://github.com/VBTI-development/onedl-mmengine.git@main
       - name: Install ninja to speed the compilation
-        run: uv pip install -r pyproject.toml --extra optional --extra build
+        run: uv pip install -r pyproject.toml --group optional  --group build
       - name: Build MMCV from source
         run: uv pip install -e . -v
       - name: Install unit tests dependencies
         run: |
-          uv pip install -r pyproject.toml --extra test
+          uv pip install -r pyproject.toml --group test
       - name: Run unittests
         run: uv run pytest tests/ --ignore tests/test_image/test_io.py

@@ -2,7 +2,7 @@ blank_issues_enabled: false
 
 contact_links:
   - name: 💬 Forum
-    url: https://github.com/open-mmlab/mmcv/discussions
+    url: https://github.com/vbti-development/onedl-mmcv/discussions
     about: Ask general usage questions and discuss with other mmcv community members
   - name: MMCV Documentation
     url: https://mmcv.readthedocs.io/en/latest/

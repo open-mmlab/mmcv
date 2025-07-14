@@ -18,17 +18,19 @@ you can first install it before installing MMCV to skip the installation of `ope
 
 #### Build on Linux
 
+We recommend using [uv](https://docs.astral.sh/uv/) to manage your virtual environment and dependencies.
+
 1. Clone the repo
 
    ```bash
-   git clone https://github.com/open-mmlab/mmcv.git
-   cd mmcv
+   git clone https://github.com/vbti-development/onedl-mmcv.git
+   cd onedl-mmcv
    ```
 
 2. Install `ninja` and `psutil` to speed up the compilation
 
    ```bash
-   pip install -r requirements/optional.txt
+   uv sync --group optional  --group build --extra torch
    ```
 
 3. Check the nvcc version (requires 9.2+. Skip if no GPU available.)
@@ -57,23 +59,27 @@ you can first install it before installing MMCV to skip the installation of `ope
    gcc --version
    ```
 
-5. Start building (takes 10+ min)
+5. Start building
 
    ```bash
-   pip install -e . -v
+   uv pip install -e . -v
    ```
 
 6. Validate the installation
 
    ```bash
-   python .dev_scripts/check_installation.py
+   uv run python .dev_scripts/check_installation.py
    ```
 
    If no error is reported by the above command, the installation is successful. If there is an error reported, please check [Frequently Asked Questions](../faq.md) to see if there is already a solution.
 
-   If no solution is found, please feel free to open an [issue](https://github.com/open-mmlab/mmcv/issues).
+   If no solution is found, please feel free to open an [issue](https://github.com/vbti-development/onedl-mmcv/issues).
 
 #### Build on macOS
+
+```{note}
+This is not actively supported anymore.
+```
 
 ```{note}
 If you are using a mac with apple silicon chip, install the PyTorch 1.13+, otherwise you will encounter the problem in [issues#2218](https://github.com/open-mmlab/mmcv/issues/2218).
@@ -82,7 +88,7 @@ If you are using a mac with apple silicon chip, install the PyTorch 1.13+, other
 1. Clone the repo
 
    ```bash
-   git clone https://github.com/open-mmlab/mmcv.git
+   git clone https://github.com/vbti-development/onedl-mmcv.git
    cd mmcv
    ```
 
@@ -95,7 +101,7 @@ If you are using a mac with apple silicon chip, install the PyTorch 1.13+, other
 3. Start building
 
    ```bash
-   MMCV_WITH_OPS=1 pip install -e .
+   pip install -e .
    ```
 
 4. Validate the installation
@@ -106,7 +112,7 @@ If you are using a mac with apple silicon chip, install the PyTorch 1.13+, other
 
    If no error is reported by the above command, the installation is successful. If there is an error reported, please check [Frequently Asked Questions](../faq.md) to see if there is already a solution.
 
-   If no solution is found, please feel free to open an [issue](https://github.com/open-mmlab/mmcv/issues).
+   If no solution is found, please feel free to open an [issue](https://github.com/vbti-development/onedl-mmcv/issues).
 
 #### Build on Windows
 
@@ -157,7 +163,7 @@ You should know how to set up environment variables, especially `Path`, on Windo
 4. Clone the repo
 
    ```powershell
-   (mmcv) PS C:\Users\xxx> git clone https://github.com/open-mmlab/mmcv.git
+   (mmcv) PS C:\Users\xxx> git clone https://github.com/vbti-development/onedl-mmcv.git
    (mmcv) PS C:\Users\xxx\mmcv> cd mmcv
    ```
 
@@ -266,30 +272,7 @@ Build and install
 ```
 
 If no error is reported by the above command, the installation is successful. If there is an error reported, please check [Frequently Asked Questions](../faq.md) to see if there is already a solution.
-If no solution is found, please feel free to open an [issue](https://github.com/open-mmlab/mmcv/issues).
-
-### Build mmcv-lite
-
-If you need to use PyTorch-related modules, make sure PyTorch has been successfully installed in your environment by referring to the [PyTorch official installation guide](https://github.com/pytorch/pytorch#installation).
-
-1. Clone the repo
-
-   ```bash
-   git clone https://github.com/open-mmlab/mmcv.git
-   cd mmcv
-   ```
-
-2. Start building
-
-   ```bash
-   MMCV_WITH_OPS=0 pip install -e . -v
-   ```
-
-3. Validate installation
-
-   ```bash
-   python -c 'import mmcv;print(mmcv.__version__)'
-   ```
+If no solution is found, please feel free to open an [issue](https://github.com/vbti-development/onedl-mmcv/issues).
 
 ### Build mmcv-full on Cambricon MLU Devices
 
@@ -314,7 +297,7 @@ Please email service@cambricon.com or contact with Cambricon engineers for a sui
 Clone the repo
 
 ```bash
-git clone https://github.com/open-mmlab/mmcv.git
+git clone https://github.com/vbti-development/onedl-mmcv.git
 ```
 
 The mlu-ops library will be downloaded to the default directory (mmcv/mlu-ops) while building MMCV. You can also set `MMCV_MLU_OPS_PATH` to an existing mlu-ops library before building as follows:
@@ -327,7 +310,6 @@ Install mmcv-full
 
 ```bash
 cd mmcv
-export MMCV_WITH_OPS=1
 export FORCE_MLU=1
 python setup.py install
 ```

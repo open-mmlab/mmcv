@@ -40,7 +40,7 @@ git clone git@github.com:{username}/mmcv.git
 After that, you should ddd official repository as the upstream repository
 
 ```bash
-git remote add upstream git@github.com:open-mmlab/mmcv
+git remote add upstream git@github.com:vbti-development/onedl-mmcv
 ```
 
 Check whether remote repository has been added successfully by `git remote -v`
@@ -48,8 +48,8 @@ Check whether remote repository has been added successfully by `git remote -v`
 ```bash
 origin	git@github.com:{username}/mmcv.git (fetch)
 origin	git@github.com:{username}/mmcv.git (push)
-upstream	git@github.com:open-mmlab/mmcv (fetch)
-upstream	git@github.com:open-mmlab/mmcv (push)
+upstream	git@github.com:vbti-development/onedl-mmcv (fetch)
+upstream	git@github.com:vbti-development/onedl-mmcv (push)
 ```
 
 ```{note}
@@ -188,7 +188,7 @@ If you are very good at handling conflicts, then you can use rebase to resolve c
 
 #### Unit test
 
-If you cannot run the unit test of some modules for lacking of some dependencies, such as [video](https://github.com/open-mmlab/mmcv/tree/main/mmcv/video) module, you can try to install the following dependencies:
+If you cannot run the unit test of some modules for lacking of some dependencies, such as [video](https://github.com/vbti-development/onedl-mmcv/tree/main/mmcv/video) module, you can try to install the following dependencies:
 
 ```shell
 # Linux

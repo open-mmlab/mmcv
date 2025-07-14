@@ -110,8 +110,8 @@ def test_nms3d(device):
 
     # test for many boxes
     # In the float data type calculation process, float will be converted to
-    # double in CUDA kernel (https://github.com/open-mmlab/mmcv/blob
-    # /master/mmcv/ops/csrc/common/box_iou_rotated_utils.hpp#L61),
+    # double in CUDA kernel (https://github.com/vbti-development/onedl-mmcv/
+    # blob/master/mmcv/ops/csrc/common/box_iou_rotated_utils.hpp#L61),
     # always use float in MLU kernel. The difference between the mentioned
     # above leads to different results.
     if device != 'mlu':

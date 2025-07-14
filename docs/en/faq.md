@@ -30,7 +30,7 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
 
 - "RuntimeError: CUDA error: invalid configuration argument"
 
-  This error may be caused by the poor performance of GPU. Try to decrease the value of [THREADS_PER_BLOCK](https://github.com/open-mmlab/mmcv/blob/cac22f8cf5a904477e3b5461b1cc36856c2793da/mmcv/ops/csrc/common_cuda_helper.hpp#L10)
+  This error may be caused by the poor performance of GPU. Try to decrease the value of [THREADS_PER_BLOCK](https://github.com/vbti-development/onedl-mmcv/blob/cac22f8cf5a904477e3b5461b1cc36856c2793da/mmcv/ops/csrc/common_cuda_helper.hpp#L10)
   and recompile mmcv.
 
 - "RuntimeError: nms is not compiled with GPU support"

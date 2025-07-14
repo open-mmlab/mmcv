@@ -1,9 +1,8 @@
 
 [project]
-name = "mmcv"
+name = "onedl-mmcv"
 description = "OpenMMLab Computer Vision Foundation"
 authors = [
-    { name = "MMCV Contributors", email = "openmmlab@gmail.com" },
     { name = "VBTI Contributors", email = "dev@vbti.nl" }
 ]
 license = "Apache-2.0"
@@ -18,7 +17,7 @@ classifiers = [
 ]
 dependencies = [
     "addict",
-    "mmengine>=0.3.0",
+    "onedl-mmengine>=0.3.0",
     "numpy<2",
     "packaging",
     "Pillow",
@@ -26,20 +25,21 @@ dependencies = [
     "regex; sys_platform == 'win32'",
     "yapf"
 ]
-version = "2.2.0"
+version = "2.3.0-rc0"
 
-[project.optional-dependencies]
+[dependency-groups]
 docs = [
-    "docutils==0.16.0",
+    "docutils",
     "markdown>=3.4.0",
     "myst-parser",
     "opencv-python",
-    "pytorch_sphinx_theme @ git+https://github.com/open-mmlab/pytorch_sphinx_theme.git",
-    "sphinx==4.0.2",
+    "pytorch_sphinx_theme @ git+https://github.com/VBTI-development/onedl_sphinx_theme.git@pt",
+    "sphinx",
     "sphinx-copybutton",
     "sphinx_markdown_tables>=0.0.16",
+    "sphinxcontrib-jquery",
     "torch",
-    "urllib3<2.0.0"
+    "urllib3"
 ]
 test = [
     "coverage",
@@ -47,28 +47,33 @@ test = [
     "onnx",
     "onnxoptimizer",
     "onnxruntime",
+    "opencv-python",
     "pytest",
     "PyTurboJPEG",
     "scipy",
     "tifffile"
 ]
-build = [
-    "pytest-runner",
-    "setuptools",
-]
 optional = [
     "ninja",
     "psutil"
 ]
+build = [
+    "setuptools",
+]
+
+[project.optional-dependencies]
+torch = [ "torch<2.6" ]
 
 [project.urls]
-Homepage = "https://github.com/VBTI-development/mmcv"
+Homepage = "https://onedl.ai"
+Repository = "https://github.com/VBTI-development/mmcv"
+Documentation = "https://mmcv.readthedocs.io/en/latest/"
 
 [build-system]
 requires = [
     "setuptools>=78",
     "wheel",
-    "packaging",
+    "packaging>=24.2",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -98,4 +103,10 @@ quiet-level = 3
 ignore-words-list = "inout,hist,ba,ro,inh"
 
 [tool.uv]
-no-build-isolation-package = ["mmcv"]
+no-build-isolation-package = ["torch", "onedl-mmcv"]
+
+[[tool.uv.index]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+publish-url = "https://test.pypi.org/legacy/"
+explicit = true

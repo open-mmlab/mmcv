@@ -27,8 +27,8 @@ __version__ = locals()['__version__']
 # -- Project information -----------------------------------------------------
 
 project = 'mmcv'
-copyright = '2018-2022, OpenMMLab'
-author = 'MMCV Authors'
+copyright = '2025, VBTI'
+author = 'VBTI Authors'
 
 # The short X.Y version
 version = __version__
@@ -54,6 +54,7 @@ extensions = [
     'sphinx_markdown_tables',
     'myst_parser',
     'sphinx_copybutton',
+    'sphinxcontrib.jquery',
 ]  # yapf: disable
 
 myst_heading_anchors = 4
@@ -116,11 +117,12 @@ html_theme_options = {
     'menu': [
         {
             'name': 'GitHub',
-            'url': 'https://github.com/open-mmlab/mmcv'
+            'url': 'https://github.com/vbti-development/onedl-mmcv'
         },
     ],
     # Specify the language of shared menu
-    'menu_lang': 'en',
+    'menu_lang':
+    'en',
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,

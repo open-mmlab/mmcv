@@ -40,7 +40,7 @@ git clone git@github.com:{username}/mmcv.git
 After that, you should ddd official repository as the upstream repository
 
 ```bash
-git remote add upstream git@github.com:open-mmlab/mmcv
+git remote add upstream git@github.com:vbti-development/onedl-mmcv
 ```
 
 Check whether remote repository has been added successfully by `git remote -v`
@@ -48,8 +48,8 @@ Check whether remote repository has been added successfully by `git remote -v`
 ```bash
 origin	git@github.com:{username}/mmcv.git (fetch)
 origin	git@github.com:{username}/mmcv.git (push)
-upstream	git@github.com:open-mmlab/mmcv (fetch)
-upstream	git@github.com:open-mmlab/mmcv (push)
+upstream	git@github.com:vbti-development/onedl-mmcv (fetch)
+upstream	git@github.com:vbti-development/onedl-mmcv (push)
 ```
 
 > Here's a brief introduction to origin and upstream. When we use "git clone", we create an "origin" remote by default, which points to the repository cloned from. As for "upstream", we add it ourselves to point to the target repository. Of course, if you don't like the name "upstream", you could name it as you wish. Usually, we'll push the code to "origin". If the pushed code conflicts with the latest code in official("upstream"), we should pull the latest code from upstream to resolve the conflicts, and then push to "origin" again. The posted Pull Request will be updated automatically.
@@ -179,7 +179,7 @@ If you are very good at handling conflicts, then you can use rebase to resolve c
 
 #### Unit test
 
-If you cannot run the unit test of some modules for lacking of some dependencies, such as [video](https://github.com/open-mmlab/mmcv/tree/master/mmcv/video) module, you can try to install the following dependencies:
+If you cannot run the unit test of some modules for lacking of some dependencies, such as [video](https://github.com/vbti-development/onedl-mmcv/tree/master/mmcv/video) module, you can try to install the following dependencies:
 
 ```shell
 # Linux
@@ -204,7 +204,7 @@ python -m coverage html
 If the documents are modified/added, we should check the rendering result. We could install the dependencies and run the following command to render the documents and check the results:
 
 ```shell
-pip install -r requirements/docs.txt
+uv pip install -r pyproject.toml --group docs
 cd docs/zh_cn/
 # or docs/en
 make html
