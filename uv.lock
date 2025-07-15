@@ -978,7 +978,7 @@ docs = [
     { name = "markdown", specifier = ">=3.4.0" },
     { name = "myst-parser" },
     { name = "opencv-python" },
-    { name = "pytorch-sphinx-theme", git = "https://github.com/VBTI-development/onedl_sphinx_theme.git?rev=pt" },
+    { name = "pytorch-sphinx-theme", git = "https://github.com/VBTI-development/onedl_sphinx_theme.git?rev=master" },
     { name = "sphinx" },
     { name = "sphinx-copybutton" },
     { name = "sphinx-markdown-tables", specifier = ">=0.0.16" },
@@ -1344,7 +1344,7 @@ wheels = [
 [[package]]
 name = "pytorch-sphinx-theme"
 version = "0.0.24"
-source = { git = "https://github.com/VBTI-development/onedl_sphinx_theme.git?rev=pt#2a2955487a3c8058a96e3d0289152bfe5cf6d93f" }
+source = { git = "https://github.com/VBTI-development/onedl_sphinx_theme.git?rev=master#f9a55adf7daed5e0dfd4fedbdd60a506e1692031" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
