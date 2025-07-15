@@ -29,11 +29,6 @@ You can switch between Chinese and English documents in the lower-left corner of
    deployment/mmcv_ops_definition.md
 
 .. toctree::
-   :caption: Switch Language
-
-   switch_language.md
-
-.. toctree::
    :maxdepth: 2
    :caption: Compatibility
 

@@ -3,7 +3,7 @@
 name = "onedl-mmcv"
 description = "OpenMMLab Computer Vision Foundation"
 authors = [
-    { name = "VBTI Contributors", email = "dev@vbti.nl" }
+    { name = "VBTI Contributors", email = "oss-team@vbti.nl" }
 ]
 license = "Apache-2.0"
 requires-python = ">=3.10"
@@ -33,7 +33,7 @@ docs = [
     "markdown>=3.4.0",
     "myst-parser",
     "opencv-python",
-    "pytorch_sphinx_theme @ git+https://github.com/VBTI-development/onedl_sphinx_theme.git@pt",
+    "pytorch_sphinx_theme @ git+https://github.com/VBTI-development/onedl_sphinx_theme.git@master",
     "sphinx",
     "sphinx-copybutton",
     "sphinx_markdown_tables>=0.0.16",
@@ -66,8 +66,8 @@ torch = [ "torch<2.6" ]
 
 [project.urls]
 Homepage = "https://onedl.ai"
-Repository = "https://github.com/VBTI-development/mmcv"
-Documentation = "https://mmcv.readthedocs.io/en/latest/"
+Repository = "https://github.com/VBTI-development/onedl-mmcv"
+Documentation = "https://onedl-mmcv.readthedocs.io/en/latest/"
 
 [build-system]
 requires = [

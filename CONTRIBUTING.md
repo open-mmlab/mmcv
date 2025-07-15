@@ -34,7 +34,7 @@ If you are posting a pull request for the first time, you should fork the OpenMM
 Then, you can clone the repositories to local:
 
 ```shell
-git clone git@github.com:{username}/mmcv.git
+git clone git@github.com:{username}/onedl-mmcv.git
 ```
 
 After that, you should ddd official repository as the upstream repository
@@ -46,8 +46,8 @@ git remote add upstream git@github.com:vbti-development/onedl-mmcv
 Check whether remote repository has been added successfully by `git remote -v`
 
 ```bash
-origin	git@github.com:{username}/mmcv.git (fetch)
-origin	git@github.com:{username}/mmcv.git (push)
+origin	git@github.com:{username}/onedl-mmcv.git (fetch)
+origin	git@github.com:{username}/onedl-mmcv.git (push)
 upstream	git@github.com:vbti-development/onedl-mmcv (fetch)
 upstream	git@github.com:vbti-development/onedl-mmcv (push)
 ```

@@ -5,7 +5,7 @@ contact_links:
     url: https://github.com/vbti-development/onedl-mmcv/discussions
     about: Ask general usage questions and discuss with other mmcv community members
   - name: MMCV Documentation
-    url: https://mmcv.readthedocs.io/en/latest/
+    url: https://onedl-mmcv.readthedocs.io/en/latest/
     about: Check if your question is answered in docs
   - name: 🌐 Explore OpenMMLab
     url: https://openmmlab.com/

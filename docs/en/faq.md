@@ -13,7 +13,7 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
 - "No module named 'mmcv.ops'"; "No module named 'mmcv.\_ext'"
 
   1. Uninstall existing mmcv in the environment using `pip uninstall mmcv`
-  2. Install mmcv-full following the [installation instruction](https://mmcv.readthedocs.io/en/latest/get_started/installation.html) or [Build MMCV from source](https://mmcv.readthedocs.io/en/latest/get_started/build.html)
+  2. Install mmcv-full following the [installation instruction](https://onedl-mmcv.readthedocs.io/en/latest/get_started/installation.html) or [Build MMCV from source](https://onedl-mmcv.readthedocs.io/en/latest/get_started/build.html)
 
 - "invalid device function" or "no kernel image is available for execution"
 
@@ -79,7 +79,7 @@ Feel free to enrich the list if you find any frequent issues and have ways to he
 
 - Compatibility issue between MMCV and MMDetection; "ConvWS is already registered in conv layer"
 
-  Please install the correct version of MMCV for the version of your MMDetection following the [installation instruction](https://mmdetection.readthedocs.io/en/latest/get_started.html#installation).
+  Please install the correct version of MMCV for the version of your MMDetection following the [installation instruction](https://onedl-mmdetection.readthedocs.io/en/latest/get_started.html#installation).
 
 ### Usage
 
