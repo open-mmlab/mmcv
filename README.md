@@ -92,16 +92,16 @@ If you find that the above installation command does not use a pre-built package
 <details>
 <summary>Installation log using pre-built packages</summary>
 
-Looking in links: https://pub-ed9ed750ddcc469da251e2d1a2cea382.r2.dev/mmcv/dist/cu102/torch1.8.0/index.html<br />
+Looking in links: https://mmwheels.onedl.ai/simple/cu126-torch2.4.1/index.html<br />
 Collecting mmcv<br />
-<b>Downloading https://pub-ed9ed750ddcc469da251e2d1a2cea382.r2.dev/mmcv/dist/cu102/torch1.8.0/mmcv-2.0.0-cp38-cp38-manylinux1_x86_64.whl</b>
+<b>Downloadinghttps://mmwheels.onedl.ai/simple/cu126-torch2.4.1/mmcv-2.0.0-cp38-cp38-manylinux1_x86_64.whl</b>
 
 </details>
 
 <details>
 <summary>Installation log using source packages</summary>
 
-Looking in links: https://pub-ed9ed750ddcc469da251e2d1a2cea382.r2.dev/mmcv/dist/cu102/torch1.8.0/index.html<br />
+Looking in links: https://mmwheels.onedl.ai/simple/cu126-torch2.4.1/index.html<br />
 Collecting mmcv==2.0.0<br />
 <b>Downloading mmcv-2.0.0.tar.gz</b>
 

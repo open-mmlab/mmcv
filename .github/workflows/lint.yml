@@ -31,3 +31,15 @@ jobs:
         run: |
           pip install interrogate
           interrogate -v --ignore-init-method --ignore-magic --ignore-module --ignore-nested-functions --ignore-regex "__repr__" --fail-under 53 mmcv
+  uv-lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v6
+        with:
+          activate-environment: true
+          python-version: '3.10'
+      - name: Check uv.lock file
+        run: |
+          uv lock --check
