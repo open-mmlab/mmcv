@@ -12,6 +12,7 @@ concurrency:
 
 jobs:
   public-PyPI:
+    # without torch
     runs-on: ubuntu-22.04
     permissions:
       id-token: write
@@ -105,6 +106,50 @@ jobs:
           CUDA_CLEAN=${CUDA_TRIMMED//.}
           PYTORCH_TRIMMED=${PYTORCH%.*}
           PYTORCH_CLEAN=${PYTORCH_TRIMMED//.}
-          aws s3 sync ./mmcv/dist/ s3://${{ secrets.WHEELHOUSE_S3_BUCKET }}/cu"$CUDA_CLEAN"-torch"$PYTORCH_CLEAN"0/mmcv/ \
+          aws s3 sync ./mmcv/dist/ s3://${{ secrets.WHEELHOUSE_S3_BUCKET }}/cu"$CUDA_CLEAN"-torch"$PYTORCH_CLEAN"0/onedl-mmcv/ \
+          --endpoint-url ${{ secrets.WHEELHOUSE_S3_ENDPOINT }} \
+          --exclude '.gitignore'
+  # when adding/changing versions here, please modify version.json too.
+  cpu-wheelhouse:
+    strategy:
+      matrix:
+        pytorch: [2.4.1, 2.5.1]
+    runs-on: ubuntu-22.04
+    env:
+      PYTORCH: ${{ matrix.pytorch }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: docker/build
+          push: false
+          file: docker/build/Dockerfile.cpu
+          tags: mmcv-builder:cpu-torch${{ env.PYTORCH }}
+          load: true  # Load image into local Docker daemon
+          build-args: |
+            PYTORCH=${{ env.PYTORCH }}
+
+      - name: Build wheel
+        run: |
+          docker run --rm \
+          -v ${{ github.workspace }}/mmcv/dist:/out \
+          mmcv-builder:cpu-torch${{ env.PYTORCH }}
+
+      - name: List generated files
+        run: |
+            echo "Files to be uploaded to wheelhouse:"
+            ls -la ./mmcv/dist
+
+      - name: Upload to wheelhouse bucket
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.WHEELHOUSE_S3_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.WHEELHOUSE_S3_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          PYTORCH_TRIMMED=${PYTORCH%.*}
+          PYTORCH_CLEAN=${PYTORCH_TRIMMED//.}
+          aws s3 sync ./mmcv/dist/ s3://${{ secrets.WHEELHOUSE_S3_BUCKET }}/cpu-torch"$PYTORCH_CLEAN"0/onedl-mmcv/ \
           --endpoint-url ${{ secrets.WHEELHOUSE_S3_ENDPOINT }} \
           --exclude '.gitignore'
