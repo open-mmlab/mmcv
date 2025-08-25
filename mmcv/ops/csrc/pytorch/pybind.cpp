@@ -470,6 +470,9 @@ void bezier_align_backward(Tensor grad_output, Tensor rois, Tensor grad_input,
                            float spatial_scale, int sampling_ratio,
                            bool aligned);
 
+std::vector<Tensor> line_nms_forward(torch::Tensor boxes, torch::Tensor scores,
+                                     float thresh, unsigned long top_k);
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
         py::arg("filter"), py::arg("upx"), py::arg("upy"), py::arg("downx"),
@@ -947,4 +950,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("grad_input"), py::arg("aligned_height"),
         py::arg("aligned_width"), py::arg("spatial_scale"),
         py::arg("sampling_ratio"), py::arg("aligned"));
+  m.def("line_nms_forward", &line_nms_forward, "line_nms_forward (CUDA)",
+        py::arg("boxes"), py::arg("scores"), py::arg("thresh"),
+        py::arg("top_k"));
 }

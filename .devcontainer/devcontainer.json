@@ -7,7 +7,7 @@
 	"build":{
 		"dockerfile": "Dockerfile"
 	},
-	// "runArgs": ["--gpus", "all"],
+	"runArgs": ["--gpus", "all"],
 	"features": {
 		"ghcr.io/devcontainers/features/git:1": {},
 	},
@@ -23,7 +23,9 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"ms-python.vscode-pylance"
+				"ms-python.vscode-pylance",
+				"ms-python.python",
+				"ms-vscode.cpptools"
 			]
 		}
 	},

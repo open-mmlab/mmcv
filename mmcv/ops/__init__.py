@@ -37,6 +37,7 @@ from .info import get_compiler_version, get_compiling_cuda_version
 from .iou3d import (boxes_iou3d, boxes_iou_bev, boxes_overlap_bev, nms3d,
                     nms3d_normal, nms_bev, nms_normal_bev)
 from .knn import knn
+from .line_nms import line_nms
 from .masked_conv import MaskedConv2d, masked_conv2d
 from .min_area_polygons import min_area_polygons
 from .modulated_deform_conv import (ModulatedDeformConv2d,
@@ -108,7 +109,8 @@ __all__ = [
     'min_area_polygons', 'active_rotated_filter', 'convex_iou', 'convex_giou',
     'diff_iou_rotated_2d', 'diff_iou_rotated_3d', 'chamfer_distance',
     'PrRoIPool', 'prroi_pool', 'bias_act', 'filtered_lrelu', 'conv2d',
-    'conv_transpose2d', 'filter2d', 'upsample2d', 'BezierAlign', 'bezier_align'
+    'conv_transpose2d', 'filter2d', 'upsample2d', 'BezierAlign',
+    'bezier_align', 'line_nms'
 ]
 
 if IS_MLU_AVAILABLE:

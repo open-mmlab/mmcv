@@ -1916,3 +1916,14 @@ REGISTER_DEVICE_IMPL(bezier_align_forward_impl, CUDA,
                      BezierAlignForwardCUDAKernelLauncher);
 REGISTER_DEVICE_IMPL(bezier_align_backward_impl, CUDA,
                      BezierAlignBackwardCUDAKernelLauncher);
+
+std::vector<Tensor> LineNMSForwardCudaKernelLauncher(Tensor boxes, Tensor idx,
+                                                     float nms_overlap_thresh,
+                                                     unsigned long top_k);
+
+std::vector<Tensor> line_nms_forward_impl(Tensor boxes, Tensor idx,
+                                          float nms_overlap_thresh,
+                                          unsigned long top_k);
+
+REGISTER_DEVICE_IMPL(line_nms_forward_impl, CUDA,
+                     LineNMSForwardCudaKernelLauncher);

@@ -3,8 +3,8 @@
 
 
 # FROM pytorch/pytorch:${PYTORCH}-cuda${CUDA}-cudnn${CUDNN}-devel
-# FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
-FROM nvidia/cuda:12.1.0-cudnn8-devel-ubuntu22.04
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
+# FROM nvidia/cuda:12.1.0-cudnn8-devel-ubuntu22.04
 
 ARG PYTORCH="2.5.1"
 ARG PYTHON_VERSION="3.10"
