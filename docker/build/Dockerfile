@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y git \
     && apt-get update && apt-get install -y libgl1 libglib2.0-0 patchelf
 
 # Install uv
-COPY --from=ghcr.io/astral-sh/uv:0.8.4 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.8.14 /uv /uvx /bin/
 
 # build mmcv from source with develop mode
 ARG HTTPS_PROXY=""

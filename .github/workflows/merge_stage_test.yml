@@ -111,6 +111,7 @@ jobs:
       - name: Install PyTorch
         run: |
           uv pip install torch==${{ matrix.torch }} torchvision
+          uv cache clean
       - name: Install MMEngine from main branch
         run: uv pip install git+https://github.com/VBTI-development/onedl-mmengine.git@main
       - name: Install ninja to speed the compilation
