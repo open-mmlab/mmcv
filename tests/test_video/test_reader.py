@@ -45,7 +45,7 @@ class TestVideoReader:
     def setup_class(cls):
         cls.video_path = osp.join(osp.dirname(__file__), '../data/test.mp4')
         cls.num_frames = 168
-        cls.video_url = 'https://pub-ed9ed750ddcc469da251e2d1a2cea382.r2.dev/mmcv/test_data/sample-mp4-file.mp4'  # noqa: E501
+        cls.video_url = 'https://mmassets.onedl.ai/mmcv/test_data/sample-mp4-file.mp4'  # noqa: E501
 
     def test_load(self):
         # read from video file

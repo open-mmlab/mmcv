@@ -36,12 +36,20 @@ jobs:
     strategy:
       matrix:
         cuda: [11.8.0, 12.4.1]
-        pytorch: [2.4.1, 2.5.1]
+        pytorch: [2.4.1, 2.5.1, '2.8.0']
+        torch_cuda_arch_list: "7.5 8.0 8.6 8.9 9.0"
+      exclude:
+        - cuda: 12.4.1
+          pytorch: '2.8.0'
+      include:
+        - cuda: 12.9.1
+          pytorch: '2.8.0'
+          torch_cuda_arch_list:  "7.5 8.0 8.6 8.9 9.0 10.0 12.0"
     runs-on: ubuntu-24.04
     env:
       CUDA: ${{ matrix.cuda }}
       PYTORCH: ${{ matrix.pytorch }}
-      TORCH_CUDA_ARCH_LIST: "7.5 8.0 8.6 8.9 9.0"
+      TORCH_CUDA_ARCH_LIST: ${{ matrix.torch_cuda_arch_list }}
 
     steps:
       - uses: actions/checkout@v3
@@ -113,7 +121,7 @@ jobs:
   cpu-wheelhouse:
     strategy:
       matrix:
-        pytorch: [2.4.1, 2.5.1]
+        pytorch: [2.4.1, 2.5.1, '2.8.0']
     runs-on: ubuntu-22.04
     env:
       PYTORCH: ${{ matrix.pytorch }}

@@ -19,10 +19,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_cu121:
+  build_cu129:
     runs-on: ubuntu-22.04
     container:
-      image: nvidia/cuda:12.1.0-cudnn8-devel-ubuntu22.04
+      image: nvidia/cuda:12.9.1-cudnn-devel-ubuntu22.04
     env:
       UV_TORCH_BACKEND: auto
     permissions:
@@ -30,7 +30,7 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.10"]
-        torch: ["2.5.1"]
+        torch: ["2.8.0"]
     steps:
       - uses: actions/checkout@v3
       - name: Install basic tools

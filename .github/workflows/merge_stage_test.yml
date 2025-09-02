@@ -54,7 +54,7 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.10']
-        torch: [ '2.0.0', '2.1.0', '2.5.1']
+        torch: [ '2.0.0', '2.5.1', '2.6.0']
     steps:
       - uses: actions/checkout@v3
       - name: Install uv and set the python version
@@ -77,18 +77,18 @@ jobs:
       - name: Run unit tests
         run: uv run pytest tests
 
-  build_cu118:
+  build_cu129:
     runs-on: ubuntu-22.04
     container:
-      image: nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
+      image: nvidia/cuda:12.9.1-cudnn-devel-ubuntu22.04
     strategy:
       matrix:
         python-version: ['3.10']
-        torch: [2.5.1]
+        torch: ['2.8.0']
     env:
       FORCE_CUDA: 1
       MMCV_CUDA_ARGS: -gencode=arch=compute_61,code=sm_61
-      UV_TORCH_BACKEND: cu118
+      UV_TORCH_BACKEND: cu129
     steps:
       - uses: actions/checkout@v3
       - name: Install basic tools

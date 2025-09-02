@@ -1,6 +1,38 @@
+# git
 .git
 .gitignore
+
+# generated files
+# python
 *.egg-info
 .eggs/
-.mypy-cache
 pip-wheel-metadata
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.mypy_cache
+.pytest_cache
+.ruff_cache
+.hypothesis
+
+# dev files
+.github/
+.pre-commit-config.yaml
+.devcontainer/
+
+docs/
+examples/
+tests/

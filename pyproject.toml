@@ -1,6 +1,7 @@
 
 [project]
 name = "onedl-mmcv"
+version = "2.3.0-rc.1"
 description = "OpenMMLab Computer Vision Foundation"
 authors = [
     { name = "VBTI Contributors", email = "oss-team@vbti.nl" }
@@ -17,15 +18,14 @@ classifiers = [
 ]
 dependencies = [
     "addict",
-    "onedl-mmengine>=0.3.0",
+    "onedl-mmengine>=0.10.8rc1",
     "numpy<2",
     "packaging",
     "Pillow",
     "pyyaml",
     "regex; sys_platform == 'win32'",
-    "yapf"
+    "yapf",
 ]
-version = "2.3.0-rc0"
 
 [dependency-groups]
 docs = [
@@ -62,7 +62,7 @@ build = [
 ]
 
 [project.optional-dependencies]
-torch = [ "torch<2.6" ]
+torch = [ "torch", "torchvision" ]
 
 [project.urls]
 Homepage = "https://onedl.ai"
