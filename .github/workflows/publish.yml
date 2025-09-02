@@ -37,7 +37,7 @@ jobs:
       matrix:
         cuda: [11.8.0, 12.4.1]
         pytorch: [2.4.1, 2.5.1, '2.8.0']
-        torch_cuda_arch_list: "7.5 8.0 8.6 8.9 9.0"
+        torch_cuda_arch_list: ["7.5 8.0 8.6 8.9 9.0"]
         exclude:
           - cuda: 12.4.1
             pytorch: '2.8.0'
