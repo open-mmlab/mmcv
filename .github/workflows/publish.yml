@@ -41,7 +41,7 @@ jobs:
         include:
           - cuda: 12.9.1
             pytorch: '2.8.0'
-            torch_cuda_arch_list:  "7.5 8.0 8.6 8.9 9.0"
+            torch_cuda_arch_list:  "7.5 8.6 8.9"
     runs-on: ubuntu-24.04
     env:
       CUDA: ${{ matrix.cuda }}
@@ -50,7 +50,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
 
       - name: Set CUDNN version
         run: |
@@ -74,7 +73,7 @@ jobs:
           if [ $MAJOR -gt 12 ] || \
             ([ $MAJOR -eq 12 ] && [ $MINOR -gt 8 ]) || \
             ([ $MAJOR -eq 12 ] && [ $MINOR -eq 8 ]); then
-              echo "TORCH_CUDA_ARCH_LIST=${{ env.TORCH_CUDA_ARCH_LIST }} 10.0 12.0" >> $GITHUB_ENV
+              echo "TORCH_CUDA_ARCH_LIST=${{ env.TORCH_CUDA_ARCH_LIST }} 12.0" >> $GITHUB_ENV
           fi
 
       - name: Build Docker image
