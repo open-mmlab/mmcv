@@ -4,7 +4,8 @@
 
 #### Optional: install PyTorch
 
-You can choose to install PyTorch separately by following the [PyTorch official installation guide](https://pytorch.org/get-started/locally/#start-locally). However, if you use \[uv\] you don't have to.
+You can choose to install PyTorch separately by following the [PyTorch official installation guide](https://pytorch.org/get-started/locally/#start-locally).
+However, if you use \[uv\] you don't have to.
 
 This can be verified using the following command
 
@@ -14,19 +15,17 @@ python -c 'import torch;print(torch.__version__)'
 
 If version information is output, then PyTorch is installed.
 
-#### Install with uv (recommended)
-
-[uv](https://docs.astral.sh/uv/) is a python installation tool which makes it easy to install and manage dependencies.
+#### Install with mim (recommended)
 
 ```bash
-uv pip install onedl-mmcv[torch]
+pip install onedl-mim
+mim install onedl-mmcv[torch]
 ```
 
-If the correct version of torch is not installed, you can try with
+If the correct version of torch is not installed, follow the [PyTorch official installation guide](https://pytorch.org/get-started/locally/#start-locally) and install onedl-mmcv with
 
 ```bash
-uv pip install torch --torch-backend=auto
-uv pip install onedl-mmcv
+mim install onedl-mmcv
 ```
 
 If you find that the above installation command does not use a pre-built package ending with `.whl` but a source package ending with `.tar.gz`, you may not have a pre-build package corresponding to the PyTorch or CUDA or mmcv version, in which case you can [build mmcv from source](build.md).
@@ -35,8 +34,8 @@ If you find that the above installation command does not use a pre-built package
 <summary>Installation log using pre-built packages</summary>
 
 Looking in links: https://mmwheels.onedl.ai/simple/cu126-torch2.4.1/index.html<br />
-Collecting mmcv<br />
-<b>Downloading https://mmwheels.onedl.ai/simple/cu126-torch2.4.1/mmcv-2.0.0-cp38-cp38-manylinux1_x86_64.whl</b>
+Collecting onedl-mmcv<br />
+<b>Downloading https://mmwheels.onedl.ai/simple/cu126-torch2.4.1/onedl-mmcv-2.0.0-cp38-cp38-manylinux1_x86_64.whl</b>
 
 </details>
 
@@ -44,15 +43,15 @@ Collecting mmcv<br />
 <summary>Installation log using source packages</summary>
 
 Looking in links: https://mmwheels.onedl.ai/simple/cu126-torch2.4.1/index.html<br />
-Collecting mmcv==2.0.0<br />
-<b>Downloading mmcv-2.0.0.tar.gz</b>
+Collecting onedl-mmcv==2.0.0<br />
+<b>Downloading onedl-mmcv-2.0.0.tar.gz</b>
 
 </details>
 
-To install a specific version of mmcv, for example, mmcv version 2.0.0, you can use the following command
+To install a specific version of mmcv, for example, mmcv version 2.3.0, you can use the following command
 
 ```bash
-mim install onedl-mmcv==2.0.0
+mim install onedl-mmcv==2.3.0
 ```
 
 :::{note}
@@ -60,15 +59,9 @@ If you would like to use `opencv-python-headless` instead of `opencv-python`,
 e.g., in a minimum container environment or servers without GUI,
 you can first install it before installing MMCV to skip the installation of `opencv-python`.
 
-Alternatively, if it takes too long to install a dependency library, you can specify the pypi source
-
-```bash
-mim install onedl-mmcv -i https://pypi.tuna.tsinghua.edu.cn/simple
-```
-
 :::
 
-You can run [check_installation.py](https://github.com/vbti-development/onedl-mmcv/blob/main/.dev_scripts/check_installation.py) to check the installation of mmcv-full after running the installation commands.
+You can run [check_installation.py](https://github.com/vbti-development/onedl-mmcv/blob/main/.dev_scripts/check_installation.py) to check the installation of onedl-mmcv after running the installation commands.
 
 #### Install with pip
 
@@ -353,19 +346,19 @@ docker build -t mmcv https://github.com/vbti-development/onedl-mmcv.git#main:doc
 The [Dockerfile](release/Dockerfile) installs latest released version of mmcv-full by default, but you can specify mmcv versions to install expected versions.
 
 ```bash
-docker image build -t mmcv -f docker/release/Dockerfile --build-arg MMCV=2.0.0 .
+docker image build -t mmcv -f docker/release/Dockerfile --build-arg MMCV=2.3.0 .
 ```
 
 If you also want to use other versions of PyTorch and CUDA, you can also pass them when building docker images.
 
-An example to build an image with PyTorch 1.11 and CUDA 11.3.
+An example to build an image with PyTorch 2.4.1 and CUDA 12.4.
 
 ```bash
 docker build -t mmcv -f docker/release/Dockerfile \
-    --build-arg PYTORCH=1.11.0 \
-    --build-arg CUDA=11.3 \
+    --build-arg PYTORCH=2.4.1 \
+    --build-arg CUDA=12.4 \
     --build-arg CUDNN=8 \
-    --build-arg MMCV=2.0.0 .
+    --build-arg MMCV=2.3.0 .
 ```
 
 More available versions of PyTorch and CUDA can be found at [dockerhub/pytorch](https://hub.docker.com/r/pytorch/pytorch/tags).
