@@ -1,9 +1,9 @@
 <div align="center">
   <picture>
     <!-- User prefers dark mode: -->
-  <source srcset="https://raw.githubusercontent.com/vbti-development/onedl-mmcv/chore/update-logo/docs/en/_static/image/onedl-mmcv-banner-dark.png"  media="(prefers-color-scheme: dark)"/>
+  <source srcset="https://raw.githubusercontent.com/vbti-development/onedl-mmcv/main/docs/en/_static/image/onedl-mmcv-banner-dark.png"  media="(prefers-color-scheme: dark)"/>
 
-<img src="https://raw.githubusercontent.com/vbti-development/onedl-mmcv/chore/update-logo/docs/en/_static/image/onedl-mmcv-banner.png" alt="OneDL-MMCV logo" height="100"/>
+<img src="https://raw.githubusercontent.com/vbti-development/onedl-mmcv/main/docs/en/_static/image/onedl-mmcv-banner.png" alt="OneDL-MMCV logo" height="200"/>
 </picture>
 
 <div>&nbsp;</divheightcenter">
