@@ -1,8 +1,6 @@
 .header-logo {
-    background-image: url("../image/mmcv-logo.png");
-    background-size: 85px 40px;
-    height: 40px;
-    width: 85px;
+    background-image: url("../image/onedl-mmcv-banner.png");
+    background-size: 245px;
 }
 
 table.colwidths-auto td {

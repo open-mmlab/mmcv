@@ -1,7 +1,12 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/vbti-development/onedl-mmcv/main/docs/en/mmcv-logo.png" width="300"/>
-  <div>&nbsp;</div>
-  <div align="center">
+  <picture>
+    <!-- User prefers dark mode: -->
+  <source srcset="https://raw.githubusercontent.com/vbti-development/onedl-mmcv/chore/update-logo/docs/en/_static/image/onedl-mmcv-banner-dark.png"  media="(prefers-color-scheme: dark)"/>
+
+<img src="https://raw.githubusercontent.com/vbti-development/onedl-mmcv/chore/update-logo/docs/en/_static/image/onedl-mmcv-banner.png" alt="OneDL-MMCV logo" height="100"/>
+</picture>
+
+<div>&nbsp;</divheightcenter">
     <a href="https://vbti.ai">
       <b><font size="5">VBTI Website</font></b>
     </a>
@@ -109,15 +114,6 @@ Collecting mmcv==2.0.0<br />
 
 For more installation methods, please refer to the [Installation documentation](https://onedl-mmcv.readthedocs.io/en/latest/get_started/installation.html).
 
-### Install mmcv-lite
-
-If you need to use PyTorch-related modules, make sure PyTorch has been successfully installed in your environment by referring to the [PyTorch official installation guide](https://github.com/pytorch/pytorch#installation).
-
-```bash
-pip install -U openmim
-mim install onedl-mmcv-lite
-```
-
 ## FAQ
 
 If you face some installation issues, CUDA related issues or RuntimeErrors,
@@ -131,10 +127,10 @@ If you find this project useful in your research, please consider cite:
 
 ```latex
 @misc{mmcv,
-    title={{MMCV: OpenMMLab} Computer Vision Foundation},
-    author={MMCV Contributors},
+    title={OneDL-MMCV} Computer Vision Foundation},
+    author={OneDL-MMCV Contributors},
     howpublished = {\url{https://github.com/vbti-development/onedl-mmcv}},
-    year={2018}
+    year={2025}
 }
 ```
 
@@ -156,22 +152,3 @@ MMCV is released under the Apache 2.0 license, while some specific operations in
 - [MMSegmentation](https://github.com/vbti-development/onedl-mmsegmentation): OpenMMLab semantic segmentation toolbox and benchmark.
 - [MMDeploy](https://github.com/vbti-development/onedl-mmdeploy): OpenMMLab model deployment framework.
 - [MIM](https://github.com/vbti-development/onedl-mim): MIM installs OpenMMLab packages.
-
-## Projects in OpenMMLab
-
-- [MMagic](https://github.com/open-mmlab/mmagic): Open**MM**Lab **A**dvanced, **G**enerative and **I**ntelligent **C**reation toolbox.
-- [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab's next-generation platform for general 3D object detection.
-- [MMYOLO](https://github.com/open-mmlab/mmyolo): OpenMMLab YOLO series toolbox and benchmark.
-- [MMOCR](https://github.com/open-mmlab/mmocr): OpenMMLab text detection, recognition, and understanding toolbox.
-- [MMPose](https://github.com/open-mmlab/mmpose): OpenMMLab pose estimation toolbox and benchmark.
-- [MMHuman3D](https://github.com/open-mmlab/mmhuman3d): OpenMMLab 3D human parametric model toolbox and benchmark.
-- [MMSelfSup](https://github.com/open-mmlab/mmselfsup): OpenMMLab self-supervised learning toolbox and benchmark.
-- [MMRazor](https://github.com/open-mmlab/mmrazor): OpenMMLab model compression toolbox and benchmark.
-- [MMFewShot](https://github.com/open-mmlab/mmfewshot): OpenMMLab fewshot learning toolbox and benchmark.
-- [MMAction2](https://github.com/open-mmlab/mmaction2): OpenMMLab's next-generation action understanding toolbox and benchmark.
-- [MMTracking](https://github.com/open-mmlab/mmtracking): OpenMMLab video perception toolbox and benchmark.
-- [MMFlow](https://github.com/open-mmlab/mmflow): OpenMMLab optical flow toolbox and benchmark.
-- [MMEditing](https://github.com/open-mmlab/mmediting): OpenMMLab image and video editing toolbox.
-- [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMLab image and video generative models toolbox.
-- [MMEval](https://github.com/open-mmlab/mmeval): A unified evaluation library for multiple machine learning libraries.
-- [Playground](https://github.com/open-mmlab/playground): A central hub for gathering and showcasing amazing projects built upon OpenMMLab.
