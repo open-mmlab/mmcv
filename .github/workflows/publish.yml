@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'     # Production releases
-      - 'v[0-9]+.[0-9]+.[0-9]+-*'   # Pre-releases with suffixes
+      - 'v[0-9]+.[0-9]+.[0-9]+*'   # Pre-releases with suffixes
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -13,6 +13,7 @@ concurrency:
 jobs:
   public-PyPI:
     # without torch
+    needs: cpu-wheelhouse
     runs-on: ubuntu-22.04
     permissions:
       id-token: write
@@ -50,6 +51,21 @@ jobs:
       TORCH_CUDA_ARCH_LIST: ${{ matrix.torch_cuda_arch_list }}
 
     steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: false
+
+          # all of these default to true, but feel free to set to
+          # "false" if necessary for your workflow
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: false
+          swap-storage: true
       - uses: actions/checkout@v3
 
       - name: Set CUDNN version

@@ -27,7 +27,8 @@ ENV TORCH_CUDA_ARCH_LIST=${CUDA_ARCH}
 
 # build mmcv with uv
 WORKDIR /mmcv
-RUN git clone https://github.com/vbti-development/onedl-mmcv.git /mmcv \
+RUN git clone --single-branch https://github.com/vbti-development/onedl-mmcv.git /mmcv \
+    && rm -r /mmcv/.git \
     && uv venv --python 3.10
 
 # install torch
