@@ -34,6 +34,7 @@ jobs:
   # when adding/changing versions here, please modify version.json too.
   cuda-wheelhouse:
     strategy:
+      fail-fast: false
       matrix:
         cuda: [11.8.0, 12.4.1]
         pytorch: [2.4.1, 2.5.1]

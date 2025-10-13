@@ -1,7 +1,7 @@
 
 [project]
 name = "onedl-mmcv"
-version = "2.3.0"
+version = "2.3.0.post1"
 description = "OneDL Lab Computer Vision Foundation"
 authors = [
     { name = "VBTI Contributors", email = "oss-team@vbti.nl" },

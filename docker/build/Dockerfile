@@ -11,7 +11,9 @@ RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/
 
 # Install git and system dependencies for opencv-python
 RUN apt-get update && apt-get install -y git \
-    && apt-get update && apt-get install -y libgl1 libglib2.0-0 patchelf
+    && apt-get update && apt-get install -y libgl1 libglib2.0-0 patchelf \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:0.8.14 /uv /uvx /bin/
