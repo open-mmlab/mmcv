@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 authors:
   - name: "MMCV Contributors"
-title: "OpenMMLab Computer Vision Foundation"
+title: "OneDL Lab Computer Vision Foundation"
 date-released: 2018-08-22
 url: "https://github.com/vbti-development/onedl-mmcv"
 license: Apache-2.0

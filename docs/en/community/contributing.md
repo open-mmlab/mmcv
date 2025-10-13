@@ -1,6 +1,6 @@
-## Contributing to OpenMMLab
+## Contributing to OneDL Labs
 
-Welcome to the MMCV community, we are committed to building a cutting-edge computer vision foundational library and all kinds of contributions are welcomed, including but not limited to
+Welcome to the OneDL MMCV community, we are committed to building a cutting-edge computer vision foundational library and all kinds of contributions are welcomed, including but not limited to
 
 **Fix bug**
 
@@ -27,14 +27,14 @@ If you're not familiar with Pull Request, don't worry! The following guidance wi
 
 #### 1. Fork and clone
 
-If you are posting a pull request for the first time, you should fork the OpenMMLab repositories by clicking the **Fork** button in the top right corner of the GitHub page, and the forked repositories will appear under your GitHub profile.
+If you are posting a pull request for the first time, you should fork the OneDL Labs repositories by clicking the **Fork** button in the top right corner of the GitHub page, and the forked repositories will appear under your GitHub profile.
 
 <img src="https://user-images.githubusercontent.com/57566630/167305749-43c7f4e9-449b-4e98-ade5-0c9276d5c9ce.png" width="1200">
 
 Then, you can clone the repositories to local:
 
 ```shell
-git clone git@github.com:{username}/mmcv.git
+git clone git@github.com:{username}/onedl-mmcv.git
 ```
 
 After that, you should ddd official repository as the upstream repository
@@ -46,19 +46,17 @@ git remote add upstream git@github.com:vbti-development/onedl-mmcv
 Check whether remote repository has been added successfully by `git remote -v`
 
 ```bash
-origin	git@github.com:{username}/mmcv.git (fetch)
-origin	git@github.com:{username}/mmcv.git (push)
+origin	git@github.com:{username}/onedl-mmcv.git (fetch)
+origin	git@github.com:{username}/onedl-mmcv.git (push)
 upstream	git@github.com:vbti-development/onedl-mmcv (fetch)
 upstream	git@github.com:vbti-development/onedl-mmcv (push)
 ```
 
-```{note}
-Here's a brief introduction to origin and upstream. When we use "git clone", we create an "origin" remote by default, which points to the repository cloned from. As for "upstream", we add it ourselves to point to the target repository. Of course, if you don't like the name "upstream", you could name it as you wish. Usually, we'll push the code to "origin". If the pushed code conflicts with the latest code in official("upstream"), we should pull the latest code from upstream to resolve the conflicts, and then push to "origin" again. The posted Pull Request will be updated automatically.
-```
+> Here's a brief introduction to origin and upstream. When we use "git clone", we create an "origin" remote by default, which points to the repository cloned from. As for "upstream", we add it ourselves to point to the target repository. Of course, if you don't like the name "upstream", you could name it as you wish. Usually, we'll push the code to "origin". If the pushed code conflicts with the latest code in official("upstream"), we should pull the latest code from upstream to resolve the conflicts, and then push to "origin" again. The posted Pull Request will be updated automatically.
 
 #### 2. Configure pre-commit
 
-You should configure [pre-commit](https://pre-commit.com/#intro) in the local development environment to make sure the code style matches that of OpenMMLab. **Note**: The following code should be executed under the MMCV directory.
+You should configure [pre-commit](https://pre-commit.com/#intro) in the local development environment to make sure the code style matches that of OneDL Lab. **Note**: The following code should be executed under the OneDL MMCV directory.
 
 ```shell
 pip install -U pre-commit
@@ -75,20 +73,13 @@ pre-commit run --all-files
 
 <img src="https://user-images.githubusercontent.com/57566630/202368856-0465a90d-8fce-4345-918e-67b8b9c82614.png" width="1200">
 
-```{note}
-Chinese users may fail to download the pre-commit hooks due to the network issue. In this case, you could download these hooks from gitee by setting the .pre-commit-config-zh-cn.yaml
-
-pre-commit install -c .pre-commit-config-zh-cn.yaml
-pre-commit run --all-files -c .pre-commit-config-zh-cn.yaml
-```
-
 If the installation process is interrupted, you can repeatedly run `pre-commit run ... ` to continue the installation.
 
 If the code does not conform to the code style specification, pre-commit will raise a warning and  fixes some of the errors automatically.
 
 <img src="https://user-images.githubusercontent.com/57566630/202369176-67642454-0025-4023-a095-263529107aa3.png" width="1200">
 
-If we want to commit our code bypassing the pre-commit hook, we can use the `--no-verify` option(**only for temporarily commit**.
+If we want to commit our code bypassing the pre-commit hook, we can use the `--no-verify` option(**only for temporarily commit**).
 
 ```shell
 git commit -m "xxx" --no-verify
@@ -96,21 +87,21 @@ git commit -m "xxx" --no-verify
 
 #### 3. Create a development branch
 
-After configuring the pre-commit, we should create a branch based on the main branch to develop the new feature or fix the bug. The proposed branch name is `username/pr_name`
+After configuring the pre-commit, we should create a branch based on the master branch to develop the new feature or fix the bug. The proposed branch name is `username/pr_name`
 
 ```shell
 git checkout -b yhc/refactor_contributing_doc
 ```
 
-In subsequent development, if the main branch of the local repository is behind the main branch of "upstream", we need to pull the upstream for synchronization, and then execute the above command:
+In subsequent development, if the master branch of the local repository is behind the master branch of "upstream", we need to pull the upstream for synchronization, and then execute the above command:
 
 ```shell
-git pull upstream main
+git pull upstream master
 ```
 
 #### 4. Commit the code and pass the unit test
 
-- MMCV introduces mypy to do static type checking to increase the robustness of the code. Therefore, we need to add Type Hints to our code and pass the mypy check. If you are not familiar with Type Hints, you can refer to [this tutorial](https://docs.python.org/3/library/typing.html).
+- OneDL MMCV introduces mypy to do static type checking to increase the robustness of the code. Therefore, we need to add Type Hints to our code and pass the mypy check. If you are not familiar with Type Hints, you can refer to [this tutorial](https://docs.python.org/3/library/typing.html).
 
 - The committed code should pass through the unit test
 
@@ -168,18 +159,18 @@ MMCV will run unit test for the posted Pull Request on different platforms (Linu
 
 #### 7. Resolve conflicts
 
-If your local branch conflicts with the latest main branch of "upstream", you'll need to resolove them. There are two ways to do this:
+If your local branch conflicts with the latest master branch of "upstream", you'll need to resolove them. There are two ways to do this:
 
 ```shell
 git fetch --all --prune
-git rebase upstream/main
+git rebase upstream/master
 ```
 
 or
 
 ```shell
 git fetch --all --prune
-git merge upstream/main
+git merge upstream/master
 ```
 
 If you are very good at handling conflicts, then you can use rebase to resolve conflicts, as this will keep your commit logs tidy. If you are not familiar with `rebase`, then you can use `merge` to resolve conflicts.
@@ -188,7 +179,7 @@ If you are very good at handling conflicts, then you can use rebase to resolve c
 
 #### Unit test
 
-If you cannot run the unit test of some modules for lacking of some dependencies, such as [video](https://github.com/vbti-development/onedl-mmcv/tree/main/mmcv/video) module, you can try to install the following dependencies:
+If you cannot run the unit test of some modules for lacking of some dependencies, such as [video](https://github.com/vbti-development/onedl-mmcv/tree/master/mmcv/video) module, you can try to install the following dependencies:
 
 ```shell
 # Linux
@@ -213,7 +204,7 @@ python -m coverage html
 If the documents are modified/added, we should check the rendering result. We could install the dependencies and run the following command to render the documents and check the results:
 
 ```shell
-pip install -r requirements/docs.txt
+uv pip install -r pyproject.toml --group docs
 cd docs/zh_cn/
 # or docs/en
 make html

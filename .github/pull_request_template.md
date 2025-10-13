@@ -29,5 +29,5 @@ If this PR introduces a new feature, it is better to list some use cases here, a
 
 **After PR**:
 
-- [ ] If the modification has potential influence on downstream or other related projects, this PR should be tested with some of those projects, like MMDet or MMCls.
+- [ ] If the modification has potential influence on downstream or other related projects, this PR should be tested with some of those projects, like onedl-mmdetection or onedl-mpretrain.
 - [ ] CLA has been signed and all committers have signed the CLA in this PR.

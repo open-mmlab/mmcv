@@ -1,10 +1,11 @@
 
 [project]
 name = "onedl-mmcv"
-version = "2.3.0-rc.1"
-description = "OpenMMLab Computer Vision Foundation"
+version = "2.3.0"
+description = "OneDL Lab Computer Vision Foundation"
 authors = [
-    { name = "VBTI Contributors", email = "oss-team@vbti.nl" }
+    { name = "VBTI Contributors", email = "oss-team@vbti.nl" },
+    { name = "OneDL MMCV Contributors" }
 ]
 license = "Apache-2.0"
 requires-python = ">=3.10"

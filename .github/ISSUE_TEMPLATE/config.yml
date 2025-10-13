@@ -7,6 +7,3 @@ contact_links:
   - name: MMCV Documentation
     url: https://onedl-mmcv.readthedocs.io/en/latest/
     about: Check if your question is answered in docs
-  - name: 🌐 Explore OpenMMLab
-    url: https://openmmlab.com/
-    about: Get know more about OpenMMLab

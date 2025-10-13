@@ -1,6 +1,6 @@
-## Contributing to OpenMMLab
+## Contributing to OneDL Labs
 
-Welcome to the MMCV community, we are committed to building a cutting-edge computer vision foundational library and all kinds of contributions are welcomed, including but not limited to
+Welcome to the OneDL MMCV community, we are committed to building a cutting-edge computer vision foundational library and all kinds of contributions are welcomed, including but not limited to
 
 **Fix bug**
 
@@ -27,7 +27,7 @@ If you're not familiar with Pull Request, don't worry! The following guidance wi
 
 #### 1. Fork and clone
 
-If you are posting a pull request for the first time, you should fork the OpenMMLab repositories by clicking the **Fork** button in the top right corner of the GitHub page, and the forked repositories will appear under your GitHub profile.
+If you are posting a pull request for the first time, you should fork the OneDL Labs repositories by clicking the **Fork** button in the top right corner of the GitHub page, and the forked repositories will appear under your GitHub profile.
 
 <img src="https://user-images.githubusercontent.com/57566630/167305749-43c7f4e9-449b-4e98-ade5-0c9276d5c9ce.png" width="1200">
 
@@ -56,7 +56,7 @@ upstream	git@github.com:vbti-development/onedl-mmcv (push)
 
 #### 2. Configure pre-commit
 
-You should configure [pre-commit](https://pre-commit.com/#intro) in the local development environment to make sure the code style matches that of OpenMMLab. **Note**: The following code should be executed under the MMCV directory.
+You should configure [pre-commit](https://pre-commit.com/#intro) in the local development environment to make sure the code style matches that of OneDL Lab. **Note**: The following code should be executed under the OneDL MMCV directory.
 
 ```shell
 pip install -U pre-commit
@@ -101,7 +101,7 @@ git pull upstream master
 
 #### 4. Commit the code and pass the unit test
 
-- MMCV introduces mypy to do static type checking to increase the robustness of the code. Therefore, we need to add Type Hints to our code and pass the mypy check. If you are not familiar with Type Hints, you can refer to [this tutorial](https://docs.python.org/3/library/typing.html).
+- OneDL MMCV introduces mypy to do static type checking to increase the robustness of the code. Therefore, we need to add Type Hints to our code and pass the mypy check. If you are not familiar with Type Hints, you can refer to [this tutorial](https://docs.python.org/3/library/typing.html).
 
 - The committed code should pass through the unit test
 
