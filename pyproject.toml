@@ -7,7 +7,7 @@ authors = [
     { name = "VBTI Contributors", email = "oss-team@vbti.nl" },
     { name = "OneDL MMCV Contributors" }
 ]
-license = "Apache-2.0"
+license = "LicenseRef-Apache-2.0"
 requires-python = ">=3.10"
 keywords = ["computer vision"]
 classifiers = [
