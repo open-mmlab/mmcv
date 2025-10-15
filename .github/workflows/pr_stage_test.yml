@@ -22,9 +22,12 @@ jobs:
   build_cu129:
     runs-on: ubuntu-22.04
     container:
-      image: nvidia/cuda:12.9.1-cudnn-runtime-ubuntu22.04
+      image: nvidia/cuda:12.9.1-cudnn-devel-ubuntu22.04
     env:
-      UV_TORCH_BACKEND: auto
+      FORCE_CUDA: 1
+      MMCV_CUDA_ARGS: -gencode=arch=compute_61,code=sm_61
+      UV_TORCH_BACKEND: cu129
+      UV_CACHE_DIR: /__w/_uv_cache # set cache to be on same disk to avoid hardlink copies.
     permissions:
       pull-requests: write
     strategy:
@@ -36,23 +39,31 @@ jobs:
       - name: Install basic tools
         run: |
           apt-get update
-          apt-get install -y wget build-essential git software-properties-common
-
+          apt-get install -y wget build-essential git software-properties-common && apt-get clean -y
       - name: Install uv and set the python version
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
         with:
+          activate-environment: true
           python-version: ${{ matrix.python-version }}
-
+          cache-local-path: /__w/_uv_cache
       # 安装 PyTorch
       - name: Fetch GPG keys
         run: |
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
       - name: Install system dependencies
-        run: apt-get update && apt-get install -y git ffmpeg libturbojpeg python3-dev
+        run: apt-get update && apt-get install -y git ffmpeg libturbojpeg python3-dev && apt-get clean -y
+      - name: Clean up apt cache and pip cache
+        run: |
+          apt-get clean
+          rm -rf /var/lib/apt/lists/*
+          rm -rf ~/.cache/pip
+          rm -rf /root/.cache/pip
+          rm -rf /tmp/*
       - name: Install PyTorch
         run: |
           uv pip install torch==${{ matrix.torch }} torchvision
+          uv cache clean
       - name: Install MMEngine from main branch
         run: uv pip install git+https://github.com/VBTI-development/onedl-mmengine.git@main
       - name: Install ninja to speed the compilation
@@ -83,9 +94,12 @@ jobs:
   build_cu118:
     runs-on: ubuntu-22.04
     container:
-      image: nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+      image: nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
     env:
-      UV_TORCH_BACKEND: auto
+      UV_TORCH_BACKEND: cu118
+      MMCV_CUDA_ARGS: -gencode=arch=compute_61,code=sm_61
+      FORCE_CUDA: 1
+      UV_CACHE_DIR: /__w/_uv_cache # set cache to be on same disk to avoid hardlink copies.
     strategy:
       matrix:
         python-version: ["3.10"]
@@ -98,20 +112,29 @@ jobs:
           apt-get install -y wget build-essential git software-properties-common
 
       - name: Install uv and set the python version
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
         with:
+          activate-environment: true
           python-version: ${{ matrix.python-version }}
-
+          cache-local-path: /__w/_uv_cache
       # 安装 PyTorch
       - name: Fetch GPG keys
         run: |
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
           apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
       - name: Install system dependencies
-        run: apt-get update && apt-get install -y git ffmpeg libturbojpeg python3-dev
+        run: apt-get update && apt-get install -y git ffmpeg libturbojpeg python3-dev && apt-get clean -y
+      - name: Clean up apt cache and pip cache
+        run: |
+          apt-get clean
+          rm -rf /var/lib/apt/lists/*
+          rm -rf ~/.cache/pip
+          rm -rf /root/.cache/pip
+          rm -rf /tmp/*
       - name: Install PyTorch
         run: |
           uv pip install torch==${{ matrix.torch }} torchvision
+          uv cache clean
       - name: Install MMEngine from main branch
         run: uv pip install git+https://github.com/VBTI-development/onedl-mmengine.git@main
       - name: Install ninja to speed the compilation
@@ -134,8 +157,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install uv and set the python version
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
         with:
+          activate-environment: true
           python-version: ${{ matrix.python-version }}
       - name: Install PyTorch
         run: |

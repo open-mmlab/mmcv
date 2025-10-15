@@ -93,12 +93,22 @@ jobs:
               echo "TORCH_CUDA_ARCH_LIST=${{ env.TORCH_CUDA_ARCH_LIST }} 12.0" >> $GITHUB_ENV
           fi
 
+      - name: Extract tag name
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG_NAME=${GITHUB_REF#refs/tags/}
+            echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
+          else
+            echo "TAG_NAME=latest" >> $GITHUB_ENV
+          fi
+
       - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
           context: docker/build
           push: false
-          tags: mmcv-builder:cu${{ env.CUDA }}-torch${{ env.PYTORCH }}
+          tags: |
+            mmcv-builder:${{ env.TAG_NAME }}-cu${{ env.CUDA }}-torch${{ env.PYTORCH }}
           load: true  # Load image into local Docker daemon
           build-args: |
             CUDA=${{ env.CUDA }}
@@ -110,7 +120,7 @@ jobs:
           docker run --rm \
           -e TORCH_CUDA_ARCH_LIST="${{ env.TORCH_CUDA_ARCH_LIST }}" \
           -v ${{ github.workspace }}/mmcv/dist:/out \
-          mmcv-builder:cu${{ env.CUDA }}-torch${{ env.PYTORCH }}
+          mmcv-builder:${{ env.TAG_NAME }}-cu${{ env.CUDA }}-torch${{ env.PYTORCH }}
 
       - name: List generated files
         run: |
@@ -140,14 +150,21 @@ jobs:
       PYTORCH: ${{ matrix.pytorch }}
     steps:
       - uses: actions/checkout@v3
-
+      - name: Extract tag name
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG_NAME=${GITHUB_REF#refs/tags/}
+            echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
+          else
+            echo "TAG_NAME=latest" >> $GITHUB_ENV
+          fi
       - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
           context: docker/build
           push: false
           file: docker/build/Dockerfile.cpu
-          tags: mmcv-builder:cpu-torch${{ env.PYTORCH }}
+          tags: mmcv-builder:${{ env.TAG_NAME }}-cpu-torch${{ env.PYTORCH }}
           load: true  # Load image into local Docker daemon
           build-args: |
             PYTORCH=${{ env.PYTORCH }}
@@ -156,7 +173,7 @@ jobs:
         run: |
           docker run --rm \
           -v ${{ github.workspace }}/mmcv/dist:/out \
-          mmcv-builder:cpu-torch${{ env.PYTORCH }}
+          mmcv-builder:${{ env.TAG_NAME }}-cpu-torch${{ env.PYTORCH }}
 
       - name: List generated files
         run: |
