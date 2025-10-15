@@ -7,7 +7,7 @@
 </picture>
 
 <div>&nbsp;</divheightcenter">
-    <a href="https://vbti.ai">
+    <a href="https://vbti.nl">
       <b><font size="5">VBTI Website</font></b>
     </a>
     &nbsp;&nbsp;&nbsp;&nbsp;
