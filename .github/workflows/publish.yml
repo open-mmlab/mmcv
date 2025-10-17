@@ -44,6 +44,9 @@ jobs:
           - cuda: 12.9.1
             pytorch: '2.8.0'
             torch_cuda_arch_list:  "7.5 8.6 8.9"
+          - cuda: 12.8.1
+            pytorch: '2.8.0'
+            torch_cuda_arch_list:  "7.5 8.6 8.9"
     runs-on: ubuntu-24.04
     env:
       CUDA: ${{ matrix.cuda }}
