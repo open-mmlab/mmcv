@@ -3,7 +3,6 @@
 
 #include <ATen/ATen.h>
 
-#include <ATen/musa/MUSAApplyUtils.muh>
 #include <THC/THCAtomics.muh>
 
 #include "common_musa_helper.hpp"
