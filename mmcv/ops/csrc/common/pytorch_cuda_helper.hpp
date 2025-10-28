@@ -25,22 +25,16 @@ using phalf = at::Half;
 #define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
 
 // ======================================================
-// 判断 PyTorch 版本：
-// 如果版本 >= 2.5.0，使用新的 MUSAApplyUtils.muh
+// 判断 torch_musa 版本：
+// 如果版本 > 2.0.0，使用新的 MUSAApplyUtils.muh
 // 否则，使用 MUSA_Port_ApplyUtils.muh
 // ======================================================
-#if defined(TORCH_VERSION_MAJOR) && defined(TORCH_VERSION_MINOR)
-  #if TORCH_VERSION_MAJOR > 2 || (TORCH_VERSION_MAJOR == 2 && TORCH_VERSION_MINOR >= 5)
-    #pragma message("[MUSA HELPER] Using torch_musa/share/generated_cuda_compatible/include/ATen/musa/MUSAApplyUtils.muh for PyTorch >= 2.5.0")
+#if defined(USE_NEW_MUSA) && USE_NEW_MUSA
+    #pragma message("[MUSA HELPER] Using torch_musa/share/generated_cuda_compatible/include/ATen/musa/MUSAApplyUtils.muh for torch_musa > 2.0.0")
     #include "torch_musa/share/generated_cuda_compatible/include/ATen/musa/MUSAApplyUtils.muh"
-  #else
-    #pragma message("[MUSA HELPER] Using torch_musa/share/generated_cuda_compatible/include/ATen/musa/MUSA_Port_ApplyUtils.muh for PyTorch < 2.5.0")
-    #include "torch_musa/share/generated_cuda_compatible/include/ATen/musa/MUSA_Port_ApplyUtils.muh"
-  #endif
 #else
-  // 若未定义版本宏，默认使用新接口（兼容性考虑）
-  #pragma message("[MUSA HELPER] TORCH_VERSION_MAJOR/MINOR not defined, defaulting to MUSAApplyUtils.muh")
-  #include "torch_musa/share/generated_cuda_compatible/include/ATen/musa/MUSAApplyUtils.muh"
+    #pragma message("[MUSA HELPER] Using torch_musa/share/generated_cuda_compatible/include/ATen/musa/MUSA_PORT_ApplyUtils.muh for torch_musa <= 2.0.0")
+    #include "torch_musa/share/generated_cuda_compatible/include/ATen/musa/MUSA_PORT_ApplyUtils.muh"
 #endif
 
 #endif  // PYTORCH_CUDA_HELPER

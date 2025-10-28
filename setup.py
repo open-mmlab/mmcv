@@ -435,8 +435,16 @@ def get_extensions():
         elif hasattr(torch, 'musa') or os.getenv('FORCE_MUSA', '0') == '1':
             from torch_musa.testing import get_musa_arch
             from torch_musa.utils.musa_extension import MUSAExtension
+
             define_macros += [('MMCV_WITH_MUSA', None),
                               ('MUSA_ARCH', str(get_musa_arch()))]
+            
+            import torch_musa
+            if parse_version(torch_musa.__version__.split("+")[0]) > parse_version('2.0.0'):
+                define_macros += [('USE_NEW_MUSA', '1')]
+            else:
+                define_macros += [('USE_NEW_MUSA', '0')]
+            
             os.environ['MUSA_ARCH'] = str(get_musa_arch())
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
