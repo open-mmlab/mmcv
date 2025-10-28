@@ -15,7 +15,7 @@ try:
             os.getenv('FORCE_MLU', '0') == '1':
         from torch_mlu.utils.cpp_extension import BuildExtension
         EXT_TYPE = 'pytorch'
-    elif (hasattr(torch, 'is_musa_available') and torch.is_musa_available()) \
+    elif (hasattr(torch, 'musa') and hasattr(torch.musa, 'is_available') and torch.musa.is_available()) \
             or os.getenv('FORCE_MUSA', '0') == '1':
         from torch_musa.utils.musa_extension import BuildExtension
         EXT_TYPE = 'pytorch'
