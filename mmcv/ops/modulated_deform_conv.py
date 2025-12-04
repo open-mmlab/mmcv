@@ -9,8 +9,11 @@ from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair, _single
 
 from mmcv.utils import IS_MLU_AVAILABLE, deprecated_api_warning
-from ..cnn import CONV_LAYERS
-from ..utils import ext_loader, print_log
+# from ..cnn import CONV_LAYERS
+# from ..utils import ext_loader, print_log
+from mmcv.cnn import CONV_LAYERS
+from mmcv.utils import ext_loader, print_log
+
 
 ext_module = ext_loader.load_ext(
     '_ext',
