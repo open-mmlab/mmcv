@@ -3,6 +3,7 @@ from typing import Optional, Union
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 
@@ -132,16 +133,13 @@ class SoftmaxFocalLossFunction(Function):
         ctx.alpha = float(alpha)
         ctx.reduction = ctx.reduction_dict[reduction]
 
-        channel_stats, _ = torch.max(input, dim=1)
-        input_softmax = input - channel_stats.unsqueeze(1).expand_as(input)
-        input_softmax.exp_()
+        # log_softmax for numerical stability
+        log_softmax_prob = F.log_softmax(input, dim=1)
 
-        channel_stats = input_softmax.sum(dim=1)
-        input_softmax /= channel_stats.unsqueeze(1).expand_as(input)
+        output = input.new_zeros(input.size())
 
-        output = input.new_zeros(input.size(0))
         ext_module.softmax_focal_loss_forward(
-            input_softmax,
+            log_softmax_prob,
             target,
             weight,
             output,
@@ -152,27 +150,30 @@ class SoftmaxFocalLossFunction(Function):
             output = output.sum() / input.size(0)
         elif ctx.reduction == ctx.reduction_dict['sum']:
             output = output.sum()
-        ctx.save_for_backward(input_softmax, target, weight)
+        ctx.save_for_backward(log_softmax_prob, target, weight)
         return output
 
     @staticmethod
+    @once_differentiable
     def backward(ctx, grad_output: torch.Tensor) -> tuple:
-        input_softmax, target, weight = ctx.saved_tensors
-        buff = input_softmax.new_zeros(input_softmax.size(0))
-        grad_input = input_softmax.new_zeros(input_softmax.size())
+        log_softmax_prob, target, weight = ctx.saved_tensors
+
+        sum_buff_along_class = log_softmax_prob.new_zeros(
+            log_softmax_prob.size(0))
+        grad_input = log_softmax_prob.new_zeros(log_softmax_prob.size())
 
         ext_module.softmax_focal_loss_backward(
-            input_softmax,
+            log_softmax_prob,
             target,
             weight,
-            buff,
+            sum_buff_along_class,
             grad_input,
             gamma=ctx.gamma,
             alpha=ctx.alpha)
 
         grad_input *= grad_output
         if ctx.reduction == ctx.reduction_dict['mean']:
-            grad_input /= input_softmax.size(0)
+            grad_input /= log_softmax_prob.size(0)
         return grad_input, None, None, None, None, None
 
 
