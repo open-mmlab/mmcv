@@ -470,6 +470,17 @@ void bezier_align_backward(Tensor grad_output, Tensor rois, Tensor grad_input,
                            float spatial_scale, int sampling_ratio,
                            bool aligned);
 
+Tensor nattenav_forward(const Tensor attn, const Tensor value);
+
+std::vector<Tensor> nattenav_backward(const Tensor grad_output,
+                                      const Tensor attn, const Tensor value);
+
+Tensor nattenqkrpb_forward(const Tensor query, const Tensor key,
+                           const Tensor rpb);
+
+std::vector<Tensor> nattenqkrpb_backward(const Tensor grad_output,
+                                         const Tensor query, const Tensor key);
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
         py::arg("filter"), py::arg("upx"), py::arg("upy"), py::arg("downx"),
@@ -947,4 +958,12 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("grad_input"), py::arg("aligned_height"),
         py::arg("aligned_width"), py::arg("spatial_scale"),
         py::arg("sampling_ratio"), py::arg("aligned"));
+  m.def("nattenav_forward", &nattenav_forward, "nattenav_forward",
+        py::arg("attn"), py::arg("value"));
+  m.def("nattenav_backward", &nattenav_backward, "nattenav_backward",
+        py::arg("grad_output"), py::arg("attn"), py::arg("value"));
+  m.def("nattenqkrpb_forward", &nattenqkrpb_forward, "nattenqkrpb_forward",
+        py::arg("query"), py::arg("key"), py::arg("rpb"));
+  m.def("nattenqkrpb_backward", &nattenqkrpb_backward, "nattenqkrpb_backward",
+        py::arg("grad_output"), py::arg("query"), py::arg("key"));
 }
