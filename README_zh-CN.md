@@ -91,10 +91,10 @@ MMCV 支持多种平台，包括：
 
 MMCV 有两个版本：
 
-- **mmcv**: 完整版，包含所有的特性以及丰富的开箱即用的 CUDA 算子。注意完整版本可能需要更长时间来编译。
-- **mmcv-lite**: 精简版，不包含 CUDA 算子但包含其余所有特性和功能，类似 MMCV 1.0 之前的版本。如果你不需要使用 CUDA 算子的话，精简版可以作为一个考虑选项。
+- **mmcv**: 完整版，包含所有的特性以及丰富的开箱即用的 CUDA/hip(ROCm) 算子。注意完整版本可能需要更长时间来编译。
+- **mmcv-lite**: 精简版，不包含 CUDA/hip(ROCm) 算子但包含其余所有特性和功能，类似 MMCV 1.0 之前的版本。如果你不需要使用 CUDA/hip(ROCm) 算子的话，精简版可以作为一个考虑选项。
 
-**注意**: 请不要在同一个环境中安装两个版本，否则可能会遇到类似 `ModuleNotFound` 的错误。在安装一个版本之前，需要先卸载另一个。`如果 CUDA 可用，强烈推荐安装 mmcv`。
+**注意**: 请不要在同一个环境中安装两个版本，否则可能会遇到类似 `ModuleNotFound` 的错误。在安装一个版本之前，需要先卸载另一个。`如果 CUDA/hip(ROCm) 可用，强烈推荐安装 mmcv`。
 
 ### 安装 mmcv
 
@@ -113,14 +113,20 @@ mim install mmcv
 mim install mmcv==2.0.0
 ```
 
-如果发现上述的安装命令没有使用预编译包（以 `.whl` 结尾）而是使用源码包（以 `.tar.gz` 结尾）安装，则有可能是我们没有提供和当前环境的 PyTorch 版本、CUDA 版本相匹配的 mmcv 预编译包，此时，你可以[源码安装 mmcv](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html)。
+如果发现上述的安装命令没有使用预编译包（以 `.whl` 结尾）而是使用源码包（以 `.tar.gz` 结尾）安装，则有可能是我们没有提供和当前环境的 PyTorch 版本、CUDA/hip(ROCm) 版本相匹配的 mmcv 预编译包，此时，你可以[源码安装 mmcv](https://mmcv.readthedocs.io/zh_CN/latest/get_started/build.html)。
 
 <details>
 <summary>使用预编译包的安装日志</summary>
-
+  
+###### 1. 对于CUDA构建的预编译包:  
 Looking in links: https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html<br />
 Collecting mmcv<br />
 <b>Downloading https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/mmcv-2.0.0-cp38-cp38-manylinux1_x86_64.whl</b>
+  
+
+###### 2. 对于 ROCm 构建的预编译包:  
+一个外部 [`mmcv-rocm-build` 仓库](https://github.com/Looong01/mmcv-rocm-build) 提供了如何为 ROCm 安装 MMCV 的 wheels 和详细说明。
+如果您对此有任何疑问，请在 [这里](https://github.com/Looong01/mmcv-rocm-build/issues) 打开一个 issue。
 
 </details>
 
@@ -147,6 +153,8 @@ mim install mmcv-lite
 ## FAQ
 
 如果你遇到了安装问题或者运行时问题，请查看[问题解决页面](https://mmcv.readthedocs.io/zh_CN/latest/faq.html)是否已有解决方案。如果问题仍然没有解决，欢迎提 [issue](https://github.com/open-mmlab/mmcv/issues)。
+
+如果您在使用 ROCm 构建时遇到一些安装问题，你可以先参考 [这里](https://github.com/Looong01/mmcv-rocm-build/issues)是否已有解决方案。如果问题仍然没有解决，欢迎提 [issue](https://github.com/Looong01/mmcv-rocm-build/issues)。
 
 ## 贡献指南
 
