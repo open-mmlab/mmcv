@@ -17,7 +17,9 @@ void sigmoid_focal_loss_forward_npu(Tensor input, Tensor target, Tensor weight,
   int64_t weight_size = weight.size(0);
   at::Tensor weight_y = at::ones_like(input);
   if (weight_size > 0) {
-    weight_y = at::broadcast_to(weight, input.sizes());
+    at::Tensor weight_selected = weight.gather(0, target);
+    weight_selected = weight_selected.unsqueeze(1);
+    weight_y = weight_selected.expand_as(input);
   }
   OpCommand cmd;
   string reduction = "none";
