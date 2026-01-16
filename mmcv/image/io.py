@@ -265,6 +265,12 @@ def imfrombytes(content: bytes,
             f'backend: {backend} is not supported. Supported '
             "backends are 'cv2', 'turbojpeg', 'pillow', 'tifffile'")
     if backend == 'turbojpeg':
+        if TurboJPEG is None:
+              raise ImportError('`PyTurboJPEG` is not installed')
+        global jpeg
+        if jpeg is None:
+            jpeg = TurboJPEG()
+
         img = jpeg.decode(  # type: ignore
             content, _jpegflag(flag, channel_order))
         if img.shape[-1] == 1:
