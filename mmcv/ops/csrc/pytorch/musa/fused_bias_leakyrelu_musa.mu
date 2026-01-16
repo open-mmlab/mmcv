@@ -13,7 +13,18 @@
 #include <musa_runtime.h>
 #include <torch/types.h>
 
-#include <ATen/musa/MUSA_PORT_ApplyUtils.muh>
+// ======================================================
+// 判断 torch_musa 版本：
+// 如果版本 > 2.0.0，使用新的 MUSAApplyUtils.muh
+// 否则，使用 MUSA_Port_ApplyUtils.muh
+// ======================================================
+#if defined(USE_NEW_MUSA) && USE_NEW_MUSA
+    #pragma message("[MUSA HELPER] Using <ATen/musa/MUSAApplyUtils.muh> for torch_musa > 2.0.0")
+    #include <ATen/musa/MUSAApplyUtils.muh>
+#else
+    #pragma message("[MUSA HELPER] Using <ATen/musa/MUSA_PORT_ApplyUtils.muh> for torch_musa <= 2.0.0")
+    #include <ATen/musa/MUSA_PORT_ApplyUtils.muh>
+#endif
 
 template <typename scalar_t>
 static __global__ void fused_bias_act_kernel(
