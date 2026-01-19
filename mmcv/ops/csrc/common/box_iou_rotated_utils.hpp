@@ -182,6 +182,7 @@ HOST_DEVICE_INLINE int convex_hull_graham(const Point<T> (&p)[24],
   q[0] = q[t];
   q[t] = tmp;
 
+#if defined(__CUDACC__) || defined(__MUSACC__)
   // Step 3:
   // Sort point 1 ~ num_in according to their relative cross-product values
   // (essentially sorting according to angles)
@@ -191,7 +192,6 @@ HOST_DEVICE_INLINE int convex_hull_graham(const Point<T> (&p)[24],
     dist[i] = dot_2d<T>(q[i], q[i]);
   }
 
-#if defined(__CUDACC__) || defined(__MUSACC__)
   // CUDA version
   // In the future, we can potentially use thrust
   // for sorting here to improve speed (though not guaranteed)
@@ -372,6 +372,11 @@ HOST_DEVICE_INLINE T single_box_iou_rotated(T const* const box1_raw,
   } else if (mode_flag == 1) {
     baseS = area1;
   }
+
+  if (baseS <= static_cast<T>(1e-14)) {
+    return static_cast<T>(0);
+  }
+
   const T iou = intersection / baseS;
   return iou;
 }
