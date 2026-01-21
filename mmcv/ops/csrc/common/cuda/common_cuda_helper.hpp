@@ -18,11 +18,15 @@
     for (size_t j = blockIdx.y; j < (m); j += gridDim.y)
 
 #define THREADS_PER_BLOCK 512
+#define MAX_BLOCK_NUM 4096
 
-inline int GET_BLOCKS(const int N, const int num_threads = THREADS_PER_BLOCK) {
+inline int GET_BLOCKS(const int N, const int num_threads = THREADS_PER_BLOCK,
+                      const int max_block_num = MAX_BLOCK_NUM) {
   int optimal_block_num = (N + num_threads - 1) / num_threads;
-  int max_block_num = 4096;
-  return min(optimal_block_num, max_block_num);
+  if (max_block_num > 0)
+    return min(optimal_block_num, max_block_num);
+  else
+    return optimal_block_num;
 }
 
 template <typename T>
