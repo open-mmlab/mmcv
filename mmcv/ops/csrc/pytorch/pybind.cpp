@@ -103,12 +103,20 @@ void sigmoid_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
 void sigmoid_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
                                  Tensor grad_input, float gamma, float alpha);
 
-void softmax_focal_loss_forward(Tensor input, Tensor target, Tensor weight,
-                                Tensor output, float gamma, float alpha);
+void softmax_focal_loss_forward(const Tensor log_softmax_prob,
+                                const Tensor target,
+                                const Tensor weight,
+                                Tensor output,
+                                const float gamma,
+                                const float alpha);
 
-void softmax_focal_loss_backward(Tensor input, Tensor target, Tensor weight,
-                                 Tensor buff, Tensor grad_input, float gamma,
-                                 float alpha);
+void softmax_focal_loss_backward(const Tensor log_softmax_prob,
+                                 const Tensor target,
+                                 const Tensor weight,
+                                 Tensor sum_buff_along_class,
+                                 Tensor grad_input,
+                                 const float gamma,
+                                 const float alpha);
 
 void three_interpolate_forward(Tensor points_tensor, Tensor idx_tensor,
                                Tensor weight_tensor, Tensor out_tensor, int b,
@@ -566,13 +574,13 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("weight"), py::arg("grad_input"), py::arg("gamma"),
         py::arg("alpha"));
   m.def("softmax_focal_loss_forward", &softmax_focal_loss_forward,
-        "softmax_focal_loss_forward", py::arg("input"), py::arg("target"),
-        py::arg("weight"), py::arg("output"), py::arg("gamma"),
-        py::arg("alpha"));
-  m.def("softmax_focal_loss_backward", &softmax_focal_loss_backward,
-        "softmax_focal_loss_backward", py::arg("input"), py::arg("target"),
-        py::arg("weight"), py::arg("buff"), py::arg("grad_input"),
+        "softmax_focal_loss_forward", py::arg("log_softmax_prob"),
+        py::arg("target"), py::arg("weight"), py::arg("output"),
         py::arg("gamma"), py::arg("alpha"));
+  m.def("softmax_focal_loss_backward", &softmax_focal_loss_backward,
+        "softmax_focal_loss_backward", py::arg("log_softmax_prob"),
+        py::arg("target"), py::arg("weight"), py::arg("sum_buff_along_class"),
+        py::arg("grad_input"), py::arg("gamma"), py::arg("alpha"));
   m.def("three_interpolate_forward", &three_interpolate_forward,
         "three_interpolate_forward", py::arg("points_tensor"),
         py::arg("idx_tensor"), py::arg("weight_tensor"), py::arg("out_tensor"),
