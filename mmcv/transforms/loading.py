@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
+from pathlib import Path
 from typing import Optional
 
 import mmengine.fileio as fileio
@@ -90,21 +91,28 @@ class LoadImageFromFile(BaseTransform):
         """
 
         filename = results['img_path']
+
         try:
-            if self.file_client_args is not None:
-                file_client = fileio.FileClient.infer_client(
-                    self.file_client_args, filename)
-                img_bytes = file_client.get(filename)
+            if Path(filename).suffix in ['.npy', '.npz']:
+                img = np.load(filename)
             else:
-                img_bytes = fileio.get(
-                    filename, backend_args=self.backend_args)
-            img = mmcv.imfrombytes(
-                img_bytes, flag=self.color_type, backend=self.imdecode_backend)
+                if self.file_client_args is not None:
+                    file_client = fileio.FileClient.infer_client(
+                        self.file_client_args, filename)
+                    img_bytes = file_client.get(filename)
+                else:
+                    img_bytes = fileio.get(
+                        filename, backend_args=self.backend_args)
+                img = mmcv.imfrombytes(
+                    img_bytes,
+                    flag=self.color_type,
+                    backend=self.imdecode_backend)
         except Exception as e:
             if self.ignore_empty:
                 return None
             else:
                 raise e
+
         # in some cases, images are not read successfully, the img would be
         # `None`, refer to https://github.com/open-mmlab/mmpretrain/issues/1427
         assert img is not None, f'failed to load image: {filename}'
