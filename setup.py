@@ -2,7 +2,7 @@ import glob
 import os
 import platform
 import re
-from pkg_resources import DistributionNotFound, get_distribution, parse_version
+from packaging.version import Version as parse_version
 from setuptools import find_packages, setup
 
 EXT_TYPE = ''
@@ -28,9 +28,10 @@ def choose_requirement(primary, secondary):
     """If some version of primary requirement installed, return primary, else
     return secondary."""
     try:
+        from importlib.metadata import distribution
         name = re.split(r'[!<>=]', primary)[0]
-        get_distribution(name)
-    except DistributionNotFound:
+        distribution(name)
+    except Exception:
         return secondary
 
     return str(primary)
@@ -203,11 +204,8 @@ def get_extensions():
         if platform.system() != 'Windows':
             extra_compile_args['cxx'] = ['-std=c++14']
         else:
-            # TODO: In Windows, C++17 is chosen to compile extensions in
-            # PyTorch2.0 , but a compile error will be reported.
-            # As a temporary solution, force the use of C++14.
             if parse_version(torch.__version__) >= parse_version('2.0.0'):
-                extra_compile_args['cxx'] = ['/std:c++14']
+                extra_compile_args['cxx'] = ['/std:c++17']
 
         include_dirs = []
         library_dirs = []
@@ -257,6 +255,18 @@ def get_extensions():
             define_macros += [('MMCV_WITH_CUDA', None)]
             cuda_args = os.getenv('MMCV_CUDA_ARGS')
             extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
+            # Fix for PyTorch >=2.7 + CUDA 12.8 + MSVC on Windows (RTX 50/Blackwell).
+            # nvcc does not define _WIN32 when invoking MSVC as host compiler,
+            # causing compiled_autograd.h to take the wrong preprocessor branch
+            # and hit 'std': ambiguous symbol (C2872). Forcing these defines
+            # makes the #if defined(_WIN32) guard work correctly.
+            # See: pytorch/pytorch#173232, pytorch/pytorch#148317
+            if platform.system() == 'Windows':
+                extra_compile_args['nvcc'] += [
+                    '-D_WIN32=1',
+                    '-DUSE_CUDA=1',
+                    '-Xcompiler=/Zc:preprocessor',
+                ]
             op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
                 glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') + \
@@ -410,13 +420,8 @@ def get_extensions():
             extension = CppExtension
             include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
 
-        # Since the PR (https://github.com/open-mmlab/mmcv/pull/1463) uses
-        # c++14 features, the argument ['std=c++14'] must be added here.
-        # However, in the windows environment, some standard libraries
-        # will depend on c++17 or higher. In fact, for the windows
-        # environment, the compiler will choose the appropriate compiler
-        # to compile those cpp files, so there is no need to add the
-        # argument
+        # On non-Windows, explicitly set C++14 for nvcc host compilation.
+        # On Windows, the host compiler standard is set via /std:c++17 above.
         if 'nvcc' in extra_compile_args and platform.system() != 'Windows':
             extra_compile_args['nvcc'] += ['-std=c++14']
 
