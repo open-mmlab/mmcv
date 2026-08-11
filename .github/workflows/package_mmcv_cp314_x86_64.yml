@@ -29,24 +29,22 @@ jobs:
               shell: bash
               run: |
                   set -eux
-                  python -m venv .venv
-                  .venv/bin/pip install --upgrade pip
-                  .venv/bin/pip install --no-cache-dir torch==2.13.0 \
+                  python -m pip install --upgrade pip
+                  pip install --no-cache-dir torch==2.13.0 \
                       --index-url https://download.pytorch.org/whl/cu126
                   # packaging is imported by setup.py, ninja and psutil speed up the ops build
-                  .venv/bin/pip install --no-cache-dir \
-                      build wheel setuptools packaging ninja psutil twine
+                  pip install --no-cache-dir build wheel setuptools packaging ninja psutil twine
 
             - name: Build and check the wheel
               shell: bash
               run: |
                   set -eux
-                  .venv/bin/python -m build --wheel --no-isolation
-                  .venv/bin/pip install --no-cache-dir dist/*.whl
-                  .venv/bin/python .dev_scripts/check_installation.py
+                  python -m build --wheel --no-isolation
+                  pip install --no-cache-dir dist/*.whl
+                  python .dev_scripts/check_installation.py
 
             - name: Publish to pip.azmed.co
               shell: bash
               run: |
-                  .venv/bin/twine upload --repository-url https://pip.azmed.co:8870 \
+                  twine upload --repository-url https://pip.azmed.co:8870 \
                       -u "dev-team@azmed.co" -p "${{ secrets.AZPYPI_PASSWORD }}" dist/*
