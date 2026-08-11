@@ -6,45 +6,35 @@ on:
 jobs:
     build:
         runs-on: [self-hosted, linux, x64, local, gpu, ahmed]
-        env:
-            MMCV_WITH_OPS: '1'
-            # archs to emit code for, must cover the GPUs we deploy on
-            TORCH_CUDA_ARCH_LIST: '8.9'
         steps:
-            - name: Check the CUDA toolkit is present
-              shell: bash
-              run: nvcc --version
-
             - name: Checkout to branch
               uses: actions/checkout@v4
               with:
                   ref: ${{ github.ref }}
 
-            - name: Set up Python 3.14
+            - name: Set up Python 3.11
               uses: actions/setup-python@v5
               with:
-                  python-version: '3.14'
+                  python-version: '3.11'
 
-            - name: Install dependencies
+            - name: Install pip utils
               shell: bash
               run: |
-                  set -eux
                   python -m pip install --upgrade pip
-                  pip install --no-cache-dir torch==2.13.0 \
-                      --index-url https://download.pytorch.org/whl/cu126
-                  # packaging is imported by setup.py, ninja and psutil speed up the ops build
-                  pip install --no-cache-dir build wheel setuptools packaging ninja psutil twine
+                  pip install --no-cache-dir twine
 
-            - name: Build and check the wheel
+            - name: Compile mmcv
               shell: bash
               run: |
-                  set -eux
-                  python -m build --wheel --no-isolation
-                  pip install --no-cache-dir dist/*.whl
-                  python .dev_scripts/check_installation.py
+                  docker compose -f docker/builder.yml up -d --build --remove-orphans
+                  docker compose -f docker/builder.yml cp builder:/io/dist/ dist/
+                  docker compose -f docker/builder.yml down --remove-orphans
 
-            - name: Publish to pip.azmed.co
+            - name: Upload wheel
+              if: success()
               shell: bash
+              env:
+                  AZPYPI_PWD: ${{ secrets.AZPYPI_PASSWORD }}
               run: |
                   twine upload --repository-url https://pip.azmed.co:8870 \
-                      -u "dev-team@azmed.co" -p "${{ secrets.AZPYPI_PASSWORD }}" dist/*
+                      -u "dev-team@azmed.co" -p "${AZPYPI_PWD}" dist/*

@@ -1,0 +1,7 @@
+services:
+  builder:
+    image: mmcv_compiled_build
+    build:
+      dockerfile: docker/build.Dockerfile
+      context: ../
+    command: ["sleep", "infinity"]
