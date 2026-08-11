@@ -2,8 +2,11 @@ import glob
 import os
 import platform
 import re
-from pkg_resources import DistributionNotFound, get_distribution, parse_version
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import distribution as get_distribution
 from setuptools import find_packages, setup
+
+from packaging.version import parse as parse_version
 
 EXT_TYPE = ''
 try:
@@ -34,7 +37,7 @@ def choose_requirement(primary, secondary):
     try:
         name = re.split(r'[!<>=]', primary)[0]
         get_distribution(name)
-    except DistributionNotFound:
+    except PackageNotFoundError:
         return secondary
 
     return str(primary)
@@ -43,8 +46,13 @@ def choose_requirement(primary, secondary):
 def get_version():
     version_file = 'mmcv/version.py'
     with open(version_file, encoding='utf-8') as f:
-        exec(compile(f.read(), version_file, 'exec'))
-    return locals()['__version__']
+        content = f.read()
+    # Since Python 3.13 (PEP 667) `exec` no longer writes into the snapshot
+    # returned by `locals()`, so parse the version out of the file directly.
+    match = re.search(r"^__version__\s*=\s*['\"]([^'\"]+)['\"]", content, re.M)
+    if match is None:
+        raise RuntimeError(f'Unable to find __version__ in {version_file}')
+    return match.group(1)
 
 
 def parse_requirements(fname='requirements/runtime.txt', with_version=True):
@@ -376,7 +384,7 @@ def get_extensions():
               and torch.backends.mps.is_available()) or os.getenv(
                   'FORCE_MPS', '0') == '1':
             # objc compiler support
-            from distutils.unixccompiler import UnixCCompiler
+            from setuptools._distutils.unixccompiler import UnixCCompiler
             if '.mm' not in UnixCCompiler.src_extensions:
                 UnixCCompiler.src_extensions.append('.mm')
                 UnixCCompiler.language_map['.mm'] = 'objc'
