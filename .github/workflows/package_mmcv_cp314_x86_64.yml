@@ -5,7 +5,7 @@ on:
 
 jobs:
     build:
-        runs-on: ubuntu-latest
+        runs-on: [self-hosted, Ahmed, linux, x64]
         container:
             image: nvidia/cuda:12.6.3-devel-ubuntu22.04
         env:
