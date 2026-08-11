@@ -5,56 +5,48 @@ on:
 
 jobs:
     build:
-        runs-on: [self-hosted, Ahmed, linux, x64]
-        container:
-            image: nvidia/cuda:12.6.3-devel-ubuntu22.04
+        runs-on: [self-hosted, linux, x64, local, gpu, ahmed]
         env:
             MMCV_WITH_OPS: '1'
-            FORCE_CUDA: '1'
-            # archs to emit code for, no GPU is visible on the runner
+            # archs to emit code for, must cover the GPUs we deploy on
             TORCH_CUDA_ARCH_LIST: '8.9'
         steps:
-            - name: Install Python 3.14
+            - name: Check the CUDA toolkit is present
               shell: bash
-              run: |
-                  set -eux
-                  export DEBIAN_FRONTEND=noninteractive
-                  apt-get update
-                  apt-get install -y --no-install-recommends \
-                      software-properties-common ca-certificates git build-essential
-                  add-apt-repository ppa:deadsnakes/ppa -y
-                  apt-get update
-                  apt-get install -y --no-install-recommends \
-                      python3.14 python3.14-dev python3.14-venv
-                  python3.14 -m venv /opt/venv
-                  /opt/venv/bin/pip install --upgrade pip
+              run: nvcc --version
 
             - name: Checkout to branch
               uses: actions/checkout@v4
               with:
                   ref: ${{ github.ref }}
 
+            - name: Set up Python 3.14
+              uses: actions/setup-python@v5
+              with:
+                  python-version: '3.14'
+
             - name: Install dependencies
               shell: bash
               run: |
                   set -eux
-                  /opt/venv/bin/pip install --no-cache-dir torch==2.13.0 \
+                  python -m venv .venv
+                  .venv/bin/pip install --upgrade pip
+                  .venv/bin/pip install --no-cache-dir torch==2.13.0 \
                       --index-url https://download.pytorch.org/whl/cu126
                   # packaging is imported by setup.py, ninja and psutil speed up the ops build
-                  /opt/venv/bin/pip install --no-cache-dir \
+                  .venv/bin/pip install --no-cache-dir \
                       build wheel setuptools packaging ninja psutil twine
 
             - name: Build and check the wheel
               shell: bash
               run: |
                   set -eux
-                  /opt/venv/bin/python -m build --wheel --no-isolation
-                  /opt/venv/bin/pip install --no-cache-dir dist/*.whl
-                  # only checks the CPU ops, there is no GPU on the runner
-                  /opt/venv/bin/python .dev_scripts/check_installation.py
+                  .venv/bin/python -m build --wheel --no-isolation
+                  .venv/bin/pip install --no-cache-dir dist/*.whl
+                  .venv/bin/python .dev_scripts/check_installation.py
 
             - name: Publish to pip.azmed.co
               shell: bash
               run: |
-                  /opt/venv/bin/twine upload --repository-url https://pip.azmed.co:8870 \
+                  .venv/bin/twine upload --repository-url https://pip.azmed.co:8870 \
                       -u "dev-team@azmed.co" -p "${{ secrets.AZPYPI_PASSWORD }}" dist/*
