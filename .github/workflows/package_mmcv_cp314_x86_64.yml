@@ -3,25 +3,36 @@ name: Build and publish mmcv (cp314-cp314-linux_x86_64)
 on:
     workflow_dispatch:
 
+env:
+    ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
 jobs:
     build:
         runs-on: [self-hosted, linux, X64, spot-runner, aws]
+        timeout-minutes: 120
         steps:
             - name: Checkout to branch
               uses: actions/checkout@v4
               with:
                   ref: ${{ github.ref }}
 
-            - name: Set up Python 3.11
-              uses: actions/setup-python@v5
-              with:
-                  python-version: '3.11'
+            # the spot runners ship neither plugin, same as in AZinference/build.yml
+            - name: Install Docker Buildx and Compose plugins
+              shell: bash
+              run: |
+                  PLUGIN_DIR=/usr/local/lib/docker/cli-plugins
+                  sudo mkdir -p "$PLUGIN_DIR"
+                  COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
+                  sudo curl -fsSL "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-linux-x86_64" \
+                    -o "$PLUGIN_DIR/docker-compose"
+                  sudo chmod +x "$PLUGIN_DIR/docker-compose"
+                  docker compose version
 
             - name: Install pip utils
               shell: bash
               run: |
-                  python -m pip install --upgrade pip
-                  pip install --no-cache-dir twine
+                  sudo dnf install -y python3-pip
+                  python3 -m pip install --no-cache-dir twine
 
             - name: Compile mmcv
               shell: bash
@@ -36,5 +47,5 @@ jobs:
               env:
                   AZPYPI_PWD: ${{ secrets.AZPYPI_PASSWORD }}
               run: |
-                  twine upload --repository-url https://pip.azmed.co:8870 \
+                  python3 -m twine upload --repository-url https://pip.azmed.co:8870 \
                       -u "dev-team@azmed.co" -p "${AZPYPI_PWD}" dist/*
