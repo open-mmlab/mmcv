@@ -5,7 +5,7 @@ on:
 
 jobs:
     build:
-        runs-on: [self-hosted, linux, x64, local, gpu, ahmed]
+        runs-on: [self-hosted, linux, X64, spot-runner, aws]
         steps:
             - name: Checkout to branch
               uses: actions/checkout@v4
