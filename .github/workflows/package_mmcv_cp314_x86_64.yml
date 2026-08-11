@@ -1,0 +1,115 @@
+name: Build and publish mmcv (cp314-cp314-linux_x86_64)
+
+# Manual only: a wheel is valid for exactly one torch version + compute platform,
+# so the build has to be told which combination to produce.
+on:
+    workflow_dispatch:
+        inputs:
+            torch_version:
+                description: 'torch version to build against'
+                required: true
+                default: '2.13.0'
+            compute_platform:
+                description: 'torch wheel index: cpu, cu126, cu128, cu129, cu130 (cu121/cu124 have no cp314 wheels)'
+                required: true
+                default: 'cu126'
+            cuda_image:
+                description: 'CUDA devel image supplying nvcc, must match compute_platform'
+                required: true
+                default: 'nvidia/cuda:12.6.3-devel-ubuntu22.04'
+            cuda_arch_list:
+                description: 'TORCH_CUDA_ARCH_LIST, the archs to emit code for'
+                required: true
+                default: '8.9'
+            version_suffix:
+                description: 'local version appended to 2.2.0 (e.g. +cu126torch2.13). Needed to publish more than one variant, since pip.azmed.co rejects a filename it already holds'
+                required: false
+                default: ''
+            publish:
+                description: 'upload the wheel to pip.azmed.co'
+                type: boolean
+                default: false
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        container:
+            image: ${{ inputs.cuda_image }}
+        steps:
+            - name: Install Python 3.14 and build tools
+              shell: bash
+              run: |
+                  set -eux
+                  export DEBIAN_FRONTEND=noninteractive
+                  apt-get update
+                  apt-get install -y --no-install-recommends \
+                      software-properties-common ca-certificates git build-essential
+                  add-apt-repository ppa:deadsnakes/ppa -y
+                  apt-get update
+                  apt-get install -y --no-install-recommends \
+                      python3.14 python3.14-dev python3.14-venv
+                  python3.14 -m venv /opt/venv
+                  /opt/venv/bin/python -m pip install --upgrade pip
+
+            - name: Checkout to branch
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.ref }}
+
+            - name: Install PyTorch ${{ inputs.torch_version }} (${{ inputs.compute_platform }})
+              shell: bash
+              run: |
+                  set -eux
+                  /opt/venv/bin/pip install --no-cache-dir "torch==${{ inputs.torch_version }}" \
+                      --index-url "https://download.pytorch.org/whl/${{ inputs.compute_platform }}"
+                  /opt/venv/bin/python -c "import torch; print(torch.__version__, torch.version.cuda)"
+
+            - name: Install build dependencies
+              shell: bash
+              run: |
+                  set -eux
+                  # packaging is imported by setup.py; ninja and psutil speed up the ops build
+                  /opt/venv/bin/pip install --no-cache-dir build wheel setuptools packaging ninja psutil twine
+
+            - name: Apply local version suffix
+              if: inputs.version_suffix != ''
+              shell: bash
+              run: |
+                  set -eux
+                  sed -i "s/^__version__ = '\(.*\)'$/__version__ = '\1${{ inputs.version_suffix }}'/" mmcv/version.py
+                  grep '^__version__' mmcv/version.py
+
+            - name: Build the wheel
+              shell: bash
+              env:
+                  MMCV_WITH_OPS: '1'
+              run: |
+                  set -eux
+                  if [[ "${{ inputs.compute_platform }}" == cu* ]]; then
+                      export FORCE_CUDA=1
+                      export TORCH_CUDA_ARCH_LIST="${{ inputs.cuda_arch_list }}"
+                      nvcc --version
+                  fi
+                  /opt/venv/bin/python -m build --wheel --no-isolation
+                  ls -l dist/
+
+            - name: Check the wheel imports and CPU ops run
+              shell: bash
+              run: |
+                  set -eux
+                  /opt/venv/bin/pip install --no-cache-dir dist/*.whl
+                  # the CUDA branch of this script is skipped, no GPU on the runner
+                  /opt/venv/bin/python .dev_scripts/check_installation.py
+
+            - name: Upload the wheel as an artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: mmcv-cp314-${{ inputs.compute_platform }}-torch${{ inputs.torch_version }}
+                  path: dist/
+
+            - name: Publish to pip.azmed.co
+              if: inputs.publish
+              shell: bash
+              run: |
+                  /opt/venv/bin/twine upload --repository-url https://pip.azmed.co:8870 \
+                      -u "dev-team@azmed.co" -p "${{ secrets.AZPYPI_PASSWORD }}" dist/*

@@ -35,7 +35,12 @@ Check it:
 python .dev_scripts/check_installation.py
 ```
 
-## Publish
+## CI
+
+`.github/workflows/package_mmcv_cp314_x86_64.yml` does all of the above — run it manually and pick
+the torch version, compute platform and CUDA arch. It needs the `AZPYPI_PASSWORD` secret to publish.
+
+## Publish (manual)
 
 ```bash
 twine upload --repository-url https://pip.azmed.co:8870 \
