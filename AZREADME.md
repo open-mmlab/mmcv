@@ -37,8 +37,8 @@ python .dev_scripts/check_installation.py
 
 ## CI
 
-`.github/workflows/package_mmcv_cp314_x86_64.yml` does all of the above — run it manually and pick
-the torch version, compute platform and CUDA arch. It needs the `AZPYPI_PASSWORD` secret to publish.
+`.github/workflows/package_mmcv_cp314_x86_64.yml` does all of the above for torch 2.13.0 + cu126 and
+publishes the result. Run it from the Actions tab; it needs the `AZPYPI_PASSWORD` secret.
 
 ## Publish (manual)
 
