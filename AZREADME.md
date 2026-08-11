@@ -19,8 +19,15 @@ pip install build wheel setuptools packaging ninja psutil
 MMCV_WITH_OPS=1 python -m build --wheel --no-isolation
 ```
 
-For a CUDA build the machine needs the CUDA toolkit (`nvcc`); add `FORCE_CUDA=1` if no GPU is
-visible at build time. Output lands in `dist/` as `mmcv-2.2.0-cp314-cp314-linux_x86_64.whl`.
+A CUDA build needs the CUDA toolkit (`nvcc`) but **not** a GPU — set `FORCE_CUDA=1`, plus
+`TORCH_CUDA_ARCH_LIST` for the arch you deploy on (e.g. `8.9`), otherwise torch compiles for every
+arch it supports:
+
+```bash
+MMCV_WITH_OPS=1 FORCE_CUDA=1 TORCH_CUDA_ARCH_LIST="8.9" python -m build --wheel --no-isolation
+```
+
+Output lands in `dist/` as `mmcv-2.2.0-cp314-cp314-linux_x86_64.whl`.
 
 Check it:
 
