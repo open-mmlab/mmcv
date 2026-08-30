@@ -259,6 +259,20 @@ class TestIO:
         img_tifffile = mmcv.imread(self.tiff_path)
         assert img_tifffile.shape == (200, 150, 5)
 
+        with patch('mmcv.image.io.tifffile.imread') as mock_imread:
+            rgb = np.arange(12, dtype=np.uint8).reshape(2, 2, 3)
+            mock_imread.return_value = rgb
+            img_tifffile_bgr = mmcv.imfrombytes(b'', backend='tifffile')
+            img_tifffile_rgb = mmcv.imfrombytes(
+                b'', backend='tifffile', channel_order='rgb')
+            assert_array_equal(img_tifffile_bgr, rgb[:, :, ::-1])
+            assert_array_equal(img_tifffile_rgb, rgb)
+
+            rgba = np.arange(16, dtype=np.uint8).reshape(2, 2, 4)
+            mock_imread.return_value = rgba
+            img_tifffile_bgra = mmcv.imfrombytes(b'', backend='tifffile')
+            assert_array_equal(img_tifffile_bgra, rgba[:, :, [2, 1, 0, 3]])
+
         mmcv.use_backend('cv2')
 
         # consistent exif behaviour

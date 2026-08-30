@@ -278,6 +278,10 @@ def imfrombytes(content: bytes,
     elif backend == 'tifffile':
         with io.BytesIO(content) as buff:
             img = tifffile.imread(buff)
+        if channel_order == 'bgr' and img.ndim == 3 and img.shape[-1] == 3:
+            img = img[:, :, ::-1]
+        elif channel_order == 'bgr' and img.ndim == 3 and img.shape[-1] == 4:
+            img = img[:, :, [2, 1, 0, 3]]
         return img
     else:
         img_np = np.frombuffer(content, np.uint8)
