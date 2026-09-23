@@ -10,7 +10,7 @@ void roi_pool_forward_npu(Tensor input, Tensor rois, Tensor output,
   int64_t pooled_width_64 = pooled_width;
   int64_t pooled_channel = 1;
   at::Tensor roi_actual_num =
-      at::empty_like(rois, rois.options().dtype(at::kInt));
+      at::empty_like(rois, rois.options().dtype(at::kInt), LEGACY_CONTIGUOUS_MEMORY_FORMAT);
   OpCommand cmd;
   cmd.Name("RoiPoolingWithArgMax")
       .Input(input)
@@ -33,7 +33,7 @@ void roi_pool_backward_npu(Tensor grad_output, Tensor rois, Tensor argmax,
   int64_t pooled_width_64 = pooled_width;
   int64_t pooled_channel = 1;
   at::Tensor roi_actual_num =
-      at::empty_like(rois, rois.options().dtype(at::kInt));
+      at::empty_like(rois, rois.options().dtype(at::kInt), LEGACY_CONTIGUOUS_MEMORY_FORMAT);
   at::Tensor x = at::ones_like(grad_input);
   OpCommand cmd;
   cmd.Name("RoiPoolingGradWithArgMax")
