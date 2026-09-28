@@ -2,6 +2,8 @@
 #ifndef SIGMOID_FOCAL_LOSS_CUDA_KERNEL_CUH
 #define SIGMOID_FOCAL_LOSS_CUDA_KERNEL_CUH
 
+#include <type_traits>
+
 #ifdef MMCV_USE_PARROTS
 #include "parrots_cuda_helper.hpp"
 #else
@@ -11,60 +13,61 @@
 template <typename T>
 __global__ void sigmoid_focal_loss_forward_cuda_kernel(
     const int nthreads, const T* input, const int64_t* target, const T* weight,
-    T* output, const T gamma, const T alpha, const int num_classes) {
+    T* output, const float gamma, const float alpha, const int num_classes) {
+  // Evaluate half inputs in float, while preserving double precision.
+  using acc_t = typename std::conditional<std::is_same<T, double>::value,
+                                          double, float>::type;
   CUDA_1D_KERNEL_LOOP(index, nthreads) {
     int n = index / num_classes;
     int c = index % num_classes;
 
     int64_t t = target[n];
-    T flag_p = (t == c);
-    T flag_n = (t != c);
-
-    // p = sigmoid(x) = 1. / 1. + expf(-x)
-    T p = (T)1. / ((T)1. + expf(-input[index]));
-
-    // (1 - p)**gamma * log(p)
-    T term_p = pow(((T)1. - p), gamma) * log(max(p, (T)FLT_MIN));
-    // p**gamma * log(1 - p)
-    T term_n = pow(p, gamma) * log(max((T)1. - p, (T)FLT_MIN));
-
-    output[index] = (T)0.;
-    output[index] += -flag_p * alpha * term_p;
-    output[index] += -flag_n * ((T)1. - alpha) * term_n;
+    const acc_t x = input[index];
+    const acc_t gamma_ = gamma;
+    const acc_t alpha_ = alpha;
+    const acc_t z = exp(-abs(x));
+    const acc_t p = x >= 0 ? acc_t(1) / (acc_t(1) + z) : z / (acc_t(1) + z);
+    const acc_t q = x >= 0 ? z / (acc_t(1) + z) : acc_t(1) / (acc_t(1) + z);
+    // Compute log probabilities from logits, without log(0) or a clamp that
+    // underflows in half precision. This also preserves large finite losses.
+    const acc_t log_p = (x >= 0 ? acc_t(0) : x) - log1p(z);
+    const acc_t log_q = (x >= 0 ? -x : acc_t(0)) - log1p(z);
+    acc_t loss = t == c ? -alpha_ * pow(q, gamma_) * log_p
+                        : -(acc_t(1) - alpha_) * pow(p, gamma_) * log_q;
     if (weight != NULL) {
-      output[index] *= weight[t];
+      loss *= acc_t(weight[t]);
     }
+    output[index] = T(loss);
   }
 }
 
 template <typename T>
 __global__ void sigmoid_focal_loss_backward_cuda_kernel(
     const int nthreads, const T* input, const int64_t* target, const T* weight,
-    T* grad_input, const T gamma, const T alpha, const int num_classes) {
+    T* grad_input, const float gamma, const float alpha,
+    const int num_classes) {
+  using acc_t = typename std::conditional<std::is_same<T, double>::value,
+                                          double, float>::type;
   CUDA_1D_KERNEL_LOOP(index, nthreads) {
     int n = index / num_classes;
     int c = index % num_classes;
 
     int64_t t = target[n];
-    T flag_p = (t == c);
-    T flag_n = (t != c);
-
-    // p = sigmoid(x) = 1. / 1. + expf(-x)
-    T p = (T)1. / ((T)1. + exp(-input[index]));
-
-    // (1 - p)**gamma * (1 - p - gamma*p*log(p))
-    T term_p = pow(((T)1. - p), gamma) *
-               ((T)1. - p - (gamma * p * log(max(p, (T)FLT_MIN))));
-    // p**gamma * (gamma * (1 - p) * log(1 - p) - p)
-    T term_n = pow(p, gamma) *
-               (gamma * ((T)1. - p) * log(max((T)1. - p, (T)FLT_MIN)) - p);
-
-    grad_input[index] = (T)0.;
-    grad_input[index] += -flag_p * alpha * term_p;
-    grad_input[index] += -flag_n * ((T)1. - alpha) * term_n;
+    const acc_t x = input[index];
+    const acc_t gamma_ = gamma;
+    const acc_t alpha_ = alpha;
+    const acc_t z = exp(-abs(x));
+    const acc_t p = x >= 0 ? acc_t(1) / (acc_t(1) + z) : z / (acc_t(1) + z);
+    const acc_t q = x >= 0 ? z / (acc_t(1) + z) : acc_t(1) / (acc_t(1) + z);
+    const acc_t log_p = (x >= 0 ? acc_t(0) : x) - log1p(z);
+    const acc_t log_q = (x >= 0 ? -x : acc_t(0)) - log1p(z);
+    acc_t grad = t == c ? -alpha_ * pow(q, gamma_) * (q - gamma_ * p * log_p)
+                        : -(acc_t(1) - alpha_) * pow(p, gamma_) *
+                              (gamma_ * q * log_q - p);
     if (weight != NULL) {
-      grad_input[index] *= weight[t];
+      grad *= acc_t(weight[t]);
     }
+    grad_input[index] = T(grad);
   }
 }
 

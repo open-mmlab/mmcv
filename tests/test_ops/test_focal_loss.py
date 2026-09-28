@@ -177,3 +177,67 @@ class Testfocalloss:
 
     def test_grad_sigmoid_float(self):
         self._test_grad_sigmoid(dtype=torch.float)
+
+    @pytest.mark.skipif(not IS_CUDA_AVAILABLE, reason='requires CUDA support')
+    @pytest.mark.parametrize('dtype', [torch.half, torch.float, torch.double])
+    @pytest.mark.parametrize('gamma', [0., 2., 2.5])
+    @pytest.mark.parametrize('alpha', [0., 0.25, 0.995, 1.])
+    @pytest.mark.parametrize('weighted', [False, True])
+    @pytest.mark.parametrize('reduction', ['none', 'mean', 'sum'])
+    def test_sigmoid_large_logits(self, dtype, gamma, alpha, weighted,
+                                  reduction):
+        from mmcv.ops import sigmoid_focal_loss
+
+        # Cover target and non-target logits near half-precision sigmoid
+        # saturation, and values beyond float/double saturation.
+        x = torch.tensor(
+            [[10., -10., 8.], [-8., -20., 20.], [100., -100., -100.],
+             [-1000., 1000., 0.], [0.1, -0.2, 2.5], [-20., 10., 1000.]],
+            device='cuda',
+            dtype=dtype,
+            requires_grad=True)
+        y = torch.tensor([0, 1, 2, 0, 1, 2], device='cuda')
+        weight = x.new_tensor([0.5, 1., 1.5]) if weighted else None
+        loss = sigmoid_focal_loss(x, y, gamma, alpha, weight, reduction)
+        loss.sum().backward()
+
+        # Use an independent, stable BCE-with-logits reference in double.
+        reference_x = x.detach().double().requires_grad_()
+        target = torch.nn.functional.one_hot(y, x.size(1)).double()
+        probability = reference_x.sigmoid()
+        modulation = (1 - probability) * target + probability * (1 - target)
+        reference = torch.nn.functional.binary_cross_entropy_with_logits(
+            reference_x, target, reduction='none')
+        reference = reference * modulation.pow(gamma) * (
+            alpha * target + (1 - alpha) * (1 - target))
+        if weight is not None:
+            reference = reference * weight.double()[y, None]
+        if reduction == 'mean':
+            reference = reference.sum() / x.size(0)
+        elif reduction == 'sum':
+            reference = reference.sum()
+        reference.sum().backward()
+
+        assert loss.dtype == dtype
+        assert torch.isfinite(loss).all()
+        assert torch.isfinite(x.grad).all()
+        rtol, atol = (2e-3, 2e-5) if dtype == torch.half else (1e-5, 1e-7)
+        assert torch.allclose(loss.double(), reference, rtol=rtol, atol=atol)
+        assert torch.allclose(
+            x.grad.double(), reference_x.grad, rtol=rtol, atol=atol)
+
+    @pytest.mark.skipif(not IS_CUDA_AVAILABLE, reason='requires CUDA support')
+    @pytest.mark.parametrize('dtype', [torch.half, torch.float, torch.double])
+    def test_sigmoid_large_logits_background(self, dtype):
+        from mmcv.ops import sigmoid_focal_loss
+
+        x = torch.tensor([[100., -100.]],
+                         device='cuda',
+                         dtype=dtype,
+                         requires_grad=True)
+        # num_classes is the background label: every channel is negative.
+        target = torch.tensor([x.size(1)], device='cuda')
+        loss = sigmoid_focal_loss(x, target, 2., 0.25, None, 'none')
+        loss.sum().backward()
+        assert torch.allclose(loss, x.new_tensor([[75., 0.]]))
+        assert torch.allclose(x.grad, x.new_tensor([[0.75, 0.]]))
