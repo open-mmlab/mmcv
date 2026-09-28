@@ -276,8 +276,15 @@ def imfrombytes(content: bytes,
             img = _pillow2array(img, flag, channel_order)
         return img
     elif backend == 'tifffile':
-        with io.BytesIO(content) as buff:
-            img = tifffile.imread(buff)
+        with io.BytesIO(content) as buff, tifffile.TiffFile(buff) as tif:
+            img = tif.asarray()
+            axes = tif.series[0].axes
+            if (channel_order == 'bgr'
+                    and tif.pages.first.photometric == tifffile.PHOTOMETRIC.RGB
+                    and 'S' in axes):
+                sample_axis = axes.index('S')
+                indices = [2, 1, 0] + list(range(3, img.shape[sample_axis]))
+                img = np.take(img, indices, axis=sample_axis)
         return img
     else:
         img_np = np.frombuffer(content, np.uint8)

@@ -10,6 +10,7 @@ import cv2
 import mmengine
 import numpy as np
 import pytest
+import tifffile
 import torch
 from mmengine.fileio.file_client import HTTPBackend, PetrelBackend
 from numpy.testing import assert_allclose, assert_array_equal
@@ -258,6 +259,8 @@ class TestIO:
         mmcv.use_backend('tifffile')
         img_tifffile = mmcv.imread(self.tiff_path)
         assert img_tifffile.shape == (200, 150, 5)
+        assert_array_equal(img_tifffile,
+                           mmcv.imread(self.tiff_path, channel_order='rgb'))
 
         mmcv.use_backend('cv2')
 
@@ -382,6 +385,31 @@ class TestIO:
             with open(self.img_path, 'rb') as f:
                 img_bytes = f.read()
             mmcv.imfrombytes(img_bytes, backend='unsupported_backend')
+
+    @pytest.mark.parametrize(('num_channels', 'planar_config'),
+                             [(3, 'contig'), (4, 'contig'), (3, 'separate')])
+    def test_tifffile_channel_order(self, num_channels, planar_config):
+        sample_axis = 0 if planar_config == 'separate' else -1
+        shape = ((num_channels, 2, 3) if sample_axis == 0 else
+                 (2, 3, num_channels))
+        img_rgb = np.arange(np.prod(shape), dtype=np.uint8).reshape(shape)
+        with tempfile.NamedTemporaryFile(suffix='.tif') as tiff_file:
+            tifffile.imwrite(
+                tiff_file.name,
+                img_rgb,
+                photometric='rgb',
+                planarconfig=planar_config)
+            content = Path(tiff_file.name).read_bytes()
+
+        img_bgr = mmcv.imfrombytes(content, backend='tifffile')
+        img_rgb_decoded = mmcv.imfrombytes(
+            content, backend='tifffile', channel_order='rgb')
+        expected_bgr = np.take(
+            img_rgb, [2, 1, 0] + list(range(3, num_channels)),
+            axis=sample_axis)
+
+        assert_array_equal(img_bgr, expected_bgr)
+        assert_array_equal(img_rgb_decoded, img_rgb)
 
     def test_imwrite(self):
         img = mmcv.imread(self.img_path)
