@@ -2,7 +2,11 @@ import glob
 import os
 import platform
 import re
-from pkg_resources import DistributionNotFound, get_distribution, parse_version
+# from pkg_resources import DistributionNotFound, get_distribution, parse_version
+
+from packaging.version import parse as parse_version
+from importlib.metadata import PackageNotFoundError as DistributionNotFound, distribution as get_distribution
+
 from setuptools import find_packages, setup
 
 EXT_TYPE = ''
@@ -212,12 +216,12 @@ def get_extensions():
             if parse_version(torch.__version__) <= parse_version('1.12.1'):
                 extra_compile_args['cxx'] = ['-std=c++14']
             else:
-                extra_compile_args['cxx'] = ['-std=c++17']
+                extra_compile_args['cxx'] = ['-std=c++20']
         else:
             if parse_version(torch.__version__) <= parse_version('1.12.1'):
                 extra_compile_args['cxx'] = ['/std:c++14']
             else:
-                extra_compile_args['cxx'] = ['/std:c++17']
+                extra_compile_args['cxx'] = ['/std:c++20']
 
         include_dirs = []
         library_dirs = []
@@ -403,7 +407,7 @@ def get_extensions():
 
             define_macros += [('MMCV_WITH_MPS', None)]
             extra_compile_args = {}
-            extra_compile_args['cxx'] = ['-Wall', '-std=c++17']
+            extra_compile_args['cxx'] = ['-Wall', '-std=c++20']
             extra_compile_args['cxx'] += [
                 '-framework', 'Metal', '-framework', 'Foundation'
             ]
@@ -476,7 +480,7 @@ def get_extensions():
         # Since the PR (https://github.com/open-mmlab/mmcv/pull/1463) uses
         # c++14 features, the argument ['std=c++14'] must be added here.
         # However, in the windows environment, some standard libraries
-        # will depend on c++17 or higher. In fact, for the windows
+        # will depend on c++20 or higher. In fact, for the windows
         # environment, the compiler will choose the appropriate compiler
         # to compile those cpp files, so there is no need to add the
         # argument
@@ -484,7 +488,7 @@ def get_extensions():
             if parse_version(torch.__version__) <= parse_version('1.12.1'):
                 extra_compile_args['nvcc'] += ['-std=c++14']
             else:
-                extra_compile_args['nvcc'] += ['-std=c++17']
+                extra_compile_args['nvcc'] += ['-std=c++20']
 
         ext_ops = extension(
             name=ext_name,
