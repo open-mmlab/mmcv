@@ -2,8 +2,34 @@ import glob
 import os
 import platform
 import re
-from pkg_resources import DistributionNotFound, get_distribution, parse_version
 from setuptools import find_packages, setup
+
+import sys
+from setuptools import setup, find_packages
+
+# Replace pkg_resources.get_distribution and parse_version with modern alternatives
+try:
+    # Python 3.8+
+    from importlib.metadata import distribution as _dist, PackageNotFoundError
+    class _DistributionWrapper:
+        def __init__(self, dist):
+            self._dist = dist
+        @property
+        def version(self):
+            return self._dist.version
+    def get_distribution(name):
+        return _DistributionWrapper(_dist(name))
+    DistributionNotFound = PackageNotFoundError
+except ImportError:
+    # Fallback to legacy pkg_resources
+    from pkg_resources import get_distribution, DistributionNotFound
+
+try:
+    from packaging.version import parse as parse_version
+except ImportError:
+    # Fallback for ancient environments (no comparison guarantees)
+    def parse_version(v):
+        return v
 
 EXT_TYPE = ''
 try:
