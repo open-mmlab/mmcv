@@ -29,6 +29,18 @@
 
 #include "pytorch_cuda_helper.hpp"
 
+namespace {
+
+// SUPA device only support max volume 2048
+#ifdef MMCV_WITH_SUPA
+constexpr int kMMCVSpconvKernelMaxVolume = 2048;
+#else
+constexpr int kMMCVSpconvKernelMaxVolume = 4096;
+#endif
+
+}  // namespace
+
+
 namespace functor {
 template <typename Index, typename IndexGrid, unsigned NDim>
 struct CreateConvIndicePairFunctorP1<tv::TorchGPU, Index, IndexGrid, NDim> {
@@ -48,13 +60,13 @@ struct CreateConvIndicePairFunctorP1<tv::TorchGPU, Index, IndexGrid, NDim> {
     auto numActIn = indicesIn.dim(0);
     if (numActIn == 0) return 0;
     if (transpose)
-      prepareDeConvIndicePairsKernel<Index, IndexGrid, NDim, 4096>
+      prepareDeConvIndicePairsKernel<Index, IndexGrid, NDim, kMMCVSpconvKernelMaxVolume>
           <<<tv::launch::getBlocks(numActIn), tv::launch::CUDA_NUM_THREADS, 0,
              d.getStream()>>>(indicesIn, indicesOut, gridsOut, indicePairs,
                               indiceNum, indicePairUnique, kernelSize, stride,
                               padding, dilation, outSpatialShape);
     else
-      prepareIndicePairsKernel<Index, IndexGrid, NDim, 4096>
+      prepareIndicePairsKernel<Index, IndexGrid, NDim, kMMCVSpconvKernelMaxVolume>
           <<<tv::launch::getBlocks(numActIn), tv::launch::CUDA_NUM_THREADS, 0,
              d.getStream()>>>(indicesIn, indicesOut, gridsOut, indicePairs,
                               indiceNum, indicePairUnique, kernelSize, stride,
@@ -118,7 +130,7 @@ struct CreateSubMIndicePairFunctor<tv::TorchGPU, Index, IndexGrid, NDim> {
         <<<tv::launch::getBlocks(numActIn), tv::launch::CUDA_NUM_THREADS, 0,
            d.getStream()>>>(indicesIn, gridsOut, outSpatialShape);
     TV_CHECK_CUDA_ERR();
-    getSubMIndicePairsKernel<Index, IndexGrid, NDim, 4096>
+    getSubMIndicePairsKernel<Index, IndexGrid, NDim, kMMCVSpconvKernelMaxVolume>
         <<<tv::launch::getBlocks(numActIn), tv::launch::CUDA_NUM_THREADS, 0,
            d.getStream()>>>(indicesIn, gridsOut, indicePairs, indiceNum,
                             kernelSize, stride, padding, dilation,

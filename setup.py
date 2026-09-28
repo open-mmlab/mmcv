@@ -19,6 +19,10 @@ try:
             or os.getenv('FORCE_MUSA', '0') == '1':
         from torch_musa.utils.musa_extension import BuildExtension
         EXT_TYPE = 'pytorch'
+    elif (hasattr(torch, 'supa') and torch.supa.is_available()) \
+            or os.getenv('FORCE_SUPA', '0') == '1':
+        from torch_supa.utils.cpp_extension import BuildExtension
+        EXT_TYPE = 'pytorch'
     else:
         from torch.utils.cpp_extension import BuildExtension
         EXT_TYPE = 'pytorch'
@@ -258,6 +262,22 @@ def get_extensions():
                 include_dirs.append(nccl_include_dirs)
             library_dirs += [dipu_root]
             libraries += ['torch_dipu']
+        elif (hasattr(torch, 'supa') and torch.supa.is_available()) or os.getenv(
+                'FORCE_SUPA', '0') == '1':
+            from torch_supa.utils.cpp_extension import SudaExtension
+            define_macros += [('MMCV_WITH_CUDA', None)]
+            define_macros += [('MMCV_WITH_SUPA', None)]
+            cuda_args = os.getenv('MMCV_CUDA_ARGS')
+            extra_compile_args['nvcc'] = [cuda_args] if cuda_args else []
+            op_files = glob.glob('./mmcv/ops/csrc/pytorch/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/cpu/*.cpp') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cu') + \
+                glob.glob('./mmcv/ops/csrc/pytorch/cuda/*.cpp')
+            extension = SudaExtension
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/pytorch'))
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
+            include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common/cuda'))
+            libraries += ['torch_supa', 'torch_supa_op']
         elif is_rocm_pytorch or torch.cuda.is_available() or os.getenv(
                 'FORCE_CUDA', '0') == '1':
             if is_rocm_pytorch:
