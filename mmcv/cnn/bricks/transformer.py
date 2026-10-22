@@ -662,7 +662,7 @@ class BaseTransformerLayer(BaseModule):
         operation_order (tuple[str]): The execution order of operation
             in transformer. Such as ('self_attn', 'norm', 'ffn', 'norm').
             Support `prenorm` when you specifying first element as `norm`.
-            Default：None.
+            Default: None.
         norm_cfg (dict): Config dict for normalization layer.
             Default: dict(type='LN').
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
@@ -814,7 +814,7 @@ class BaseTransformerLayer(BaseModule):
             attn_masks = [None for _ in range(self.num_attn)]
         elif isinstance(attn_masks, torch.Tensor):
             attn_masks = [
-                copy.deepcopy(attn_masks) for _ in range(self.num_attn)
+                attn_masks.detach().clone() for _ in range(self.num_attn)
             ]
             warnings.warn(f'Use same attn_mask in all attentions in '
                           f'{self.__class__.__name__} ')
