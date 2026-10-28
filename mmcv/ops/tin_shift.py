@@ -31,7 +31,8 @@ class TINShiftFunction(Function):
         ctx.save_for_backward(shift)
 
         out = torch.zeros_like(input)
-        ext_module.tin_shift_forward(input, shift, out)
+        ext_module.tin_shift_forward(input.contiguous(), shift.contiguous(),
+                                     out)
 
         return out
 
@@ -41,7 +42,8 @@ class TINShiftFunction(Function):
         shift = ctx.saved_tensors[0]
         data_grad_input = grad_output.new(*grad_output.size()).zero_()
         shift_grad_input = shift.new(*shift.size()).zero_()
-        ext_module.tin_shift_backward(grad_output, shift, data_grad_input)
+        ext_module.tin_shift_backward(grad_output.contiguous(), shift,
+                                      data_grad_input)
 
         return data_grad_input, shift_grad_input
 

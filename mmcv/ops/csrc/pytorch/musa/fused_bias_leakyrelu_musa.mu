@@ -13,7 +13,7 @@
 #include <musa_runtime.h>
 #include <torch/types.h>
 
-#include <ATen/musa/MUSA_PORT_ApplyUtils.muh>
+#include <ATen/musa/MUSAApplyUtils.muh>
 
 template <typename scalar_t>
 static __global__ void fused_bias_act_kernel(

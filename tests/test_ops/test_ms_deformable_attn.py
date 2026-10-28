@@ -18,7 +18,10 @@ except ImportError:
 
 if IS_MUSA_AVAILABLE:
     try:
-        from torch.musa.amp import autocast
+        try:
+            from torch.musa.amp import autocast
+        except ImportError:
+            from torch_musa.core.amp import autocast
     except ImportError:
         _IS_AUTOCAST_AVAILABLE = False
         pass
@@ -434,3 +437,35 @@ def test_backward_equal_with_pytorch_npu():
                      grad_attn_weight.abs()).max()
     assert max_abs_err_3 < 1e-5
     assert max_rel_err_3 < 1e-4
+
+
+@pytest.mark.skipif(not IS_MUSA_AVAILABLE, reason='requires MUSA support')
+@pytest.mark.parametrize('channels', [1, 2, 4, 32])
+def test_native_half_musa_backward(channels):
+    """Check native Half dispatch and derivatives against quantized inputs."""
+    torch.manual_seed(72)
+    shapes = torch.tensor([[2, 3], [1, 1]], dtype=torch.long)
+    starts = torch.tensor([0, 6], dtype=torch.long)
+    inputs = [
+        torch.randn(2, 7, 2, channels, dtype=torch.half),
+        torch.rand(2, 3, 2, 2, 2, 2, dtype=torch.half),
+        torch.rand(2, 3, 2, 2, 2, dtype=torch.half)
+    ]
+    reference = [x.float().requires_grad_() for x in inputs]
+    device_inputs = [x.to('musa').requires_grad_() for x in inputs]
+    expected = multi_scale_deformable_attn_pytorch(reference[0], shapes,
+                                                   reference[1], reference[2])
+    actual = MultiScaleDeformableAttnFunction.apply(device_inputs[0],
+                                                    shapes.to('musa'),
+                                                    starts.to('musa'),
+                                                    device_inputs[1],
+                                                    device_inputs[2], 2)
+    gradient = torch.randn(actual.shape, dtype=torch.half)
+    expected.backward(gradient.float())
+    actual.backward(gradient.to('musa'))
+    assert actual.dtype == torch.half
+    assert torch.allclose(
+        actual.cpu(), expected.detach().half(), atol=3e-3, rtol=2e-2)
+    for device_input, ref in zip(device_inputs, reference):
+        assert torch.allclose(
+            device_input.grad.cpu(), ref.grad.half(), atol=3e-3, rtol=2e-2)

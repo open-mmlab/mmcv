@@ -112,6 +112,14 @@ def test_grouping_points(dtype, device):
               0.0000, 0.1158
           ]]],
         dtype=dtype).to(device)
+    if dtype == torch.half and device == 'musa':
+        # Derive the reference from the quantized input, not FP32 literals.
+        ids = idx.cpu().long().reshape(idx.shape[0], -1)
+        ids = ids[:, None].expand(-1, features.shape[1], -1)
+        quantized = features.detach().cpu().float()
+        expected_grad = torch.zeros_like(quantized)
+        expected_grad.scatter_add_(2, ids, quantized.gather(2, ids))
+        expected_grad_features = expected_grad.to(device=device, dtype=dtype)
     assert torch.allclose(output, expected_output)
     assert torch.allclose(grad_features, expected_grad_features)
 
@@ -237,3 +245,21 @@ def test_stack_grouping_points(dtype, device):
           [-0.2942, -0.2942, -0.2942], [-1.8527, -1.8527, -1.8527]]],
         dtype=dtype).to(device)
     assert torch.allclose(output, expected_output)
+
+
+@pytest.mark.skipif(not IS_MUSA_AVAILABLE, reason='requires MUSA support')
+@pytest.mark.parametrize('dtype', [torch.float16, torch.float32])
+@pytest.mark.parametrize('npoints,nsample', [(6, 3), (40, 32), (1025, 3)])
+def test_grouping_points_musa_repeated_indices(dtype, npoints, nsample):
+    torch.manual_seed(47)
+    features = torch.randn(2, 3, 17, dtype=dtype)
+    idx = torch.randint(0, 17, (2, npoints, nsample), dtype=torch.int32)
+    device_features = features.to('musa').requires_grad_()
+    output = grouping_operation(device_features, idx.to('musa'))
+    output.backward(torch.ones_like(output))
+    indices = idx.long().reshape(2, -1)[:, None].expand(-1, 3, -1)
+    expected = features.gather(2, indices).reshape(2, 3, npoints, nsample)
+    expected_grad = torch.zeros(2, 3, 17)
+    expected_grad.scatter_add_(2, indices, torch.ones(2, 3, npoints * nsample))
+    assert torch.equal(output.cpu(), expected)
+    assert torch.equal(device_features.grad.cpu(), expected_grad.to(dtype))

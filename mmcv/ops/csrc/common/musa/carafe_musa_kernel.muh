@@ -108,9 +108,7 @@ __global__ void CARAFEForward(
 
 
   int index = threadIdx.x + blockIdx.x * blockDim.x;
-  if (index > num_kernels - 1) {
-    return;
-  }
+  const bool valid = index < num_kernels;
   const int pixel_id = threadIdx.x / THREADS_PER_PIXEL;
   const int split_id = threadIdx.x % THREADS_PER_PIXEL;
   index = index / THREADS_PER_PIXEL;
@@ -125,11 +123,13 @@ __global__ void CARAFEForward(
   const int end_w = down_pw + (kernel_size - 1) / 2 + 1;
   const int start_h = down_ph - (kernel_size - 1) / 2;
   const int end_h = down_ph + (kernel_size - 1) / 2 + 1;
-  for (int c = split_id; c < mask_channels; c += THREADS_PER_PIXEL) {
+  for (int c = split_id; valid && c < mask_channels; c += THREADS_PER_PIXEL) {
     int mask_index = Loc2Index(n, ph, pw, c, height, width, mask_channels);
     shared_mask[c * WARP_SIZE + pixel_id] = bottom_masks[mask_index];
   }
+  // All threads must reach the block barrier, including padding threads.
   __syncthreads();
+  if (!valid) return;
 
 
   const int channels_per_group = ceilf(channels / (float)group_size);
@@ -176,9 +176,7 @@ __global__ void CARAFEBackward_Feature(
 #endif
 
   int index = threadIdx.x + blockIdx.x * blockDim.x;
-  if (index > num_kernels - 1) {
-    return;
-  }
+  const bool valid = index < num_kernels;
 
   const int pixel_id = threadIdx.x / THREADS_PER_PIXEL;
   const int split_id = threadIdx.x % THREADS_PER_PIXEL;
@@ -192,7 +190,7 @@ __global__ void CARAFEBackward_Feature(
   const int end_w = pw + (kernel_size - 1) * scale_factor / 2 + 1;
   const int start_h = ph - (kernel_size - 1) * scale_factor / 2;
   const int end_h = ph + (kernel_size - 1) * scale_factor / 2 + 1;
-  for (int c = split_id; c < mask_channels; c += THREADS_PER_PIXEL) {
+  for (int c = split_id; valid && c < mask_channels; c += THREADS_PER_PIXEL) {
     const int mask_w = (c % kernel_size) * scale_factor;
     const int mask_h = (c / kernel_size % kernel_size) * scale_factor;
     const int mask_x = start_w + mask_w;
@@ -207,7 +205,9 @@ __global__ void CARAFEBackward_Feature(
         Loc2Index(n, mask_c, mask_y, mask_x, mask_channels, height, width);
     shared_mask[c * WARP_SIZE + pixel_id] = bottom_masks[mask_index];
   }
+  // All threads must reach the block barrier, including padding threads.
   __syncthreads();
+  if (!valid) return;
   const int channels_per_group = ceilf(channels / (float)group_size);
 #pragma unroll
   for (int c = split_id; c < channels; c += THREADS_PER_PIXEL) {

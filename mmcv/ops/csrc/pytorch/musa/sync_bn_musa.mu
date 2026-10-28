@@ -9,7 +9,7 @@ void SyncBNForwardMeanMUSAKernelLauncher(const Tensor input, Tensor mean) {
 
   c10::musa::MUSAGuard device_guard(input.device());
   musaStream_t stream = c10::musa::getCurrentMUSAStream();
-  AT_DISPATCH_FLOATING_TYPES(
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       input.scalar_type(), "sync_bn_forward_mean_musa_kernel", [&] {
         sync_bn_forward_mean_musa_kernel<scalar_t>
             <<<channels, THREADS_PER_BLOCK, 0, stream>>>(
@@ -27,7 +27,7 @@ void SyncBNForwardVarMUSAKernelLauncher(const Tensor input, const Tensor mean,
 
   c10::musa::MUSAGuard device_guard(input.device());
   musaStream_t stream = c10::musa::getCurrentMUSAStream();
-  AT_DISPATCH_FLOATING_TYPES(
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       input.scalar_type(), "sync_bn_forward_mean_musa_kernel", [&] {
         sync_bn_forward_var_musa_kernel<scalar_t>
             <<<channels, THREADS_PER_BLOCK, 0, stream>>>(
@@ -48,7 +48,7 @@ void SyncBNForwardOutputMUSAKernelLauncher(
 
   c10::musa::MUSAGuard device_guard(input.device());
   musaStream_t stream = c10::musa::getCurrentMUSAStream();
-  AT_DISPATCH_FLOATING_TYPES(
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       input.scalar_type(), "sync_bn_forward_mean_musa_kernel", [&] {
         sync_bn_forward_output_musa_kernel<scalar_t>
             <<<channels, THREADS_PER_BLOCK, 0, stream>>>(
@@ -72,7 +72,7 @@ void SyncBNBackwardParamMUSAKernelLauncher(const Tensor grad_output,
 
   c10::musa::MUSAGuard device_guard(grad_output.device());
   musaStream_t stream = c10::musa::getCurrentMUSAStream();
-  AT_DISPATCH_FLOATING_TYPES(
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       grad_output.scalar_type(), "sync_bn_backward_param_musa_kernel", [&] {
         sync_bn_backward_param_musa_kernel<scalar_t>
             <<<channels, THREADS_PER_BLOCK, 0, stream>>>(
@@ -96,7 +96,7 @@ void SyncBNBackwardDataMUSAKernelLauncher(const Tensor grad_output,
 
   c10::musa::MUSAGuard device_guard(grad_input.device());
   musaStream_t stream = c10::musa::getCurrentMUSAStream();
-  AT_DISPATCH_FLOATING_TYPES(
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       grad_output.scalar_type(), "sync_bn_backward_data_musa_kernel", [&] {
         sync_bn_backward_data_musa_kernel<scalar_t>
             <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(

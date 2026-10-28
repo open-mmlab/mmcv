@@ -53,7 +53,7 @@ __global__ void tin_shift_backward_cuda_kernel(
         continue;
       }
       int out_id = now_t * hw_size * channels + offset;
-      output[out_id] = input[data_id];
+      output[data_id] = input[out_id];
     }
   }
 }

@@ -58,7 +58,7 @@ void SoftmaxFocalLossForwardMUSAKernelLauncher(Tensor softmax, Tensor target,
              "target label should smaller or equal than num classes");
   c10::musa::MUSAGuard device_guard(softmax.device());
   musaStream_t stream = c10::musa::getCurrentMUSAStream();
-  AT_DISPATCH_FLOATING_TYPES(
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       softmax.scalar_type(), "softmax_focal_loss_forward_musa_kernel", [&] {
         softmax_focal_loss_forward_musa_kernel<scalar_t>
             <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
@@ -80,7 +80,7 @@ void SoftmaxFocalLossBackwardMUSAKernelLauncher(Tensor softmax, Tensor target,
   int output_size = buff.numel();
   c10::musa::MUSAGuard device_guard(grad_input.device());
   musaStream_t stream = c10::musa::getCurrentMUSAStream();
-  AT_DISPATCH_FLOATING_TYPES(
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       grad_input.scalar_type(),
       "softmax_focal_loss_backward_musa1_"
       "kernel",
@@ -95,7 +95,7 @@ void SoftmaxFocalLossBackwardMUSAKernelLauncher(Tensor softmax, Tensor target,
   AT_MUSA_CHECK(musaGetLastError());
 
   output_size = grad_input.numel();
-  AT_DISPATCH_FLOATING_TYPES(
+  AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       grad_input.scalar_type(),
       "softmax_focal_loss_backward_musa2_"
       "kernel",

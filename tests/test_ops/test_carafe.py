@@ -118,3 +118,27 @@ class TestCarafe:
             mask.grad.data.type(torch.float).cpu().numpy(),
             np_mask_grad,
             atol=1e-3)
+
+
+@pytest.mark.skipif(not IS_MUSA_AVAILABLE, reason='requires MUSA support')
+@pytest.mark.parametrize('shape', [(1, 8, 1, 1), (1, 8, 2, 3), (2, 64, 3, 3),
+                                   (1, 16, 3, 5), (4, 64, 3, 3),
+                                   (2, 64, 4, 4)])
+def test_carafe_musa_partial_blocks(shape):
+    """Padding threads must reach the forward and backward block barriers."""
+    from mmcv.ops import CARAFE, CARAFENaive
+
+    torch.manual_seed(31)
+    n, c, h, w = shape
+    features = torch.randn(shape).to('musa')
+    masks = torch.randn(n, 100, h * 2, w * 2).to('musa')
+    grad = torch.randn(n, c, h * 2, w * 2).to('musa')
+    results = []
+    for op in (CARAFE, CARAFENaive):
+        feat = features.detach().clone().requires_grad_()
+        mask = masks.detach().clone().requires_grad_()
+        out = op(5, 4, 2)(feat, mask)
+        out.backward(grad)
+        results.append([t.detach().cpu() for t in (out, feat.grad, mask.grad)])
+    for actual, expected in zip(*results):
+        assert torch.allclose(actual, expected, atol=1e-3, rtol=1e-4)

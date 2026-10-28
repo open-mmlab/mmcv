@@ -49,6 +49,18 @@ void GroupPointsBackwardMUSAKernelLauncher(int b, int c, int n, int npoints,
   dim3 blocks(GET_BLOCKS(npoints * nsample, THREADS_PER_BLOCK), c, b);
   dim3 threads(THREADS_PER_BLOCK);
 
+  if (grad_out.scalar_type() == at::kHalf) {
+    // Accumulate repeated samples in float, then round once to Half.
+    auto grad_out_float = grad_out.to(at::kFloat);
+    auto grad_points_float = grad_points.to(at::kFloat);
+    group_points_backward_musa_kernel<float><<<blocks, threads, 0, stream>>>(
+        b, c, n, npoints, nsample, grad_out_float.data_ptr<float>(),
+        idx.data_ptr<int>(), grad_points_float.data_ptr<float>());
+    AT_MUSA_CHECK(musaGetLastError());
+    grad_points.copy_(grad_points_float);
+    return;
+  }
+
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       grad_out.scalar_type(), "group_points_backward_musa_kernel", [&] {
         group_points_backward_musa_kernel<scalar_t>
