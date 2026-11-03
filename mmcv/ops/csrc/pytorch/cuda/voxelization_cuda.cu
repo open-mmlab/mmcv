@@ -5,7 +5,10 @@
 #include "pytorch_cuda_helper.hpp"
 #include "voxelization_cuda_kernel.cuh"
 
-int HardVoxelizeForwardCUDAKernelLauncher(
+
+namespace {
+
+static int HardVoxelizeForwardV1CUDAKernelLauncher(
     const at::Tensor &points, at::Tensor &voxels, at::Tensor &coors,
     at::Tensor &num_points_per_voxel, const std::vector<float> voxel_size,
     const std::vector<float> coors_range, const int max_points,
@@ -143,6 +146,133 @@ int HardVoxelizeForwardCUDAKernelLauncher(
   int voxel_num_int = voxel_num_cpu.data_ptr<int>()[0];
 
   return voxel_num_int;
+}
+
+}  // namespace
+
+// Threads per block and block cap for the optimized kernels.
+constexpr int kV2Threads = 256;
+constexpr int kV2MaxBlocks = 4096;
+
+int HardVoxelizeForwardCUDAKernelLauncher(
+    const at::Tensor &points, at::Tensor &voxels, at::Tensor &coors,
+    at::Tensor &num_points_per_voxel, const std::vector<float> voxel_size,
+    const std::vector<float> coors_range, const int max_points,
+    const int max_voxels, const int NDim = 3) {
+  at::cuda::CUDAGuard device_guard(points.device());
+  cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
+  const int num_points = points.size(0);
+  const int num_features = points.size(1);
+  if (num_points == 0) return 0;
+
+  const float voxel_x = voxel_size[0];
+  const float voxel_y = voxel_size[1];
+  const float voxel_z = voxel_size[2];
+  const float coors_x_min = coors_range[0];
+  const float coors_y_min = coors_range[1];
+  const float coors_z_min = coors_range[2];
+  const float coors_x_max = coors_range[3];
+  const float coors_y_max = coors_range[4];
+  const float coors_z_max = coors_range[5];
+
+  const int grid_x = round((coors_x_max - coors_x_min) / voxel_x);
+  const int grid_y = round((coors_y_max - coors_y_min) / voxel_y);
+  const int grid_z = round((coors_z_max - coors_z_min) / voxel_z);
+
+  // The optimized path is a 3-D perfect hash over (z, y, x) and works on
+  // float32 points only.  Everything else (other NDim, other dtypes) falls
+  // back to the legacy implementation with identical semantics.
+  if (NDim != 3 || points.scalar_type() != at::kFloat) {
+    return HardVoxelizeForwardV1CUDAKernelLauncher(
+        points, voxels, coors, num_points_per_voxel, voxel_size, coors_range,
+        max_points, max_voxels, NDim);
+  }
+
+  const int64_t grid_total = (int64_t)grid_x * grid_y * grid_z;
+  TORCH_CHECK(grid_total <= INT32_MAX,
+              "hard_voxelize: grid dims overflow int32 lin index.");
+
+  const auto opts = points.options();
+  at::Tensor points_contig = points.contiguous();
+
+  // K1: per-point linear voxel id (out-of-range -> -1).  Float32 arithmetic
+  // is identical to dynamic_voxelize_kernel, so valid lin values match the
+  // legacy coors exactly.
+  at::Tensor lin = at::empty({num_points}, opts.dtype(at::kInt));
+  {
+    const int blocks =
+        std::min(at::cuda::ATenCeilDiv(num_points, kV2Threads), kV2MaxBlocks);
+    voxel_index_kernel<int><<<blocks, kV2Threads, 0, stream>>>(
+        points_contig.data_ptr<float>(), num_points, num_features, voxel_x,
+        voxel_y, voxel_z, coors_x_min, coors_y_min, coors_z_min, grid_x,
+        grid_y, grid_z, lin.data_ptr<int>());
+    AT_CUDA_CHECK(cudaGetLastError());
+  }
+
+  // K2a: stable sort by lin.  Equal lin keeps the original relative order,
+  // so the first point of each group is the one that appeared first in the
+  // input, which is what the legacy determin_voxel_num numbering depends on.
+  at::Tensor order =
+      at::argsort(lin, /*stable=*/true, /*dim=*/0, /*descending=*/false);
+  at::Tensor lin_sorted_all = lin.index({order});
+  const int64_t num_invalid = (lin_sorted_all < 0).sum().item<int64_t>();
+  const int64_t num_valid = num_points - num_invalid;
+  if (num_valid == 0) return 0;
+
+  at::Tensor lin_sorted =
+      lin_sorted_all.slice(0, num_invalid, num_points).contiguous();
+  at::Tensor orig_idx = order.slice(0, num_invalid, num_points).contiguous();
+
+  // K2b: group boundaries (is_start) -> group id via cumsum.
+  at::Tensor is_start = at::ones({num_valid}, opts.dtype(at::kBool));
+  if (num_valid > 1) {
+    is_start.slice(0, 1, num_valid)
+        .copy_(lin_sorted.slice(0, 1, num_valid) !=
+               lin_sorted.slice(0, 0, num_valid - 1));
+  }
+  at::Tensor group_id = at::cumsum(is_start.to(at::kLong), 0).sub(1);
+  const int64_t num_groups = is_start.sum().item<int64_t>();
+  TORCH_CHECK(num_groups > 0, "hard_voxelize: no valid voxel group.");
+
+  // K2c: group_start[G + 1] with a sentinel at [G] = num_valid, and the
+  // original-row index of each group head.
+  at::Tensor group_start = at::empty({num_groups + 1}, opts.dtype(at::kInt));
+  at::Tensor leader_orig = at::empty({num_groups}, opts.dtype(at::kLong));
+  {
+    const int blocks =
+        at::cuda::ATenCeilDiv(static_cast<int>(num_valid) + 1, kV2Threads);
+    group_meta_lead_kernel<int><<<blocks, kV2Threads, 0, stream>>>(
+        group_id.data_ptr<int64_t>(), is_start.data_ptr<bool>(),
+        orig_idx.data_ptr<int64_t>(), (int)num_valid, (int)num_groups,
+        group_start.data_ptr<int>(), leader_orig.data_ptr<int64_t>());
+    AT_CUDA_CHECK(cudaGetLastError());
+  }
+
+  // K2d: number voxels by first-occurrence order (ascending leader row id),
+  // identical to the legacy single-threaded numbering.
+  at::Tensor vorder = at::argsort(leader_orig, /*stable=*/true, /*dim=*/0,
+                                  /*descending=*/false);
+  at::Tensor voxel_id = at::empty({num_groups}, opts.dtype(at::kLong));
+  voxel_id.index_copy_(0, vorder,
+                       at::arange(num_groups, opts.dtype(at::kLong)));
+
+  // K3: scatter into the pre-allocated (max_voxels-sized) buffers.
+  const int64_t voxel_num = std::min<int64_t>(num_groups, max_voxels);
+  if (voxel_num > 0) {
+    const int blocks = std::min(
+        at::cuda::ATenCeilDiv(static_cast<int>(num_valid), kV2Threads),
+        kV2MaxBlocks);
+    scatter_kernel<int><<<blocks, kV2Threads, 0, stream>>>(
+        points_contig.data_ptr<float>(), num_features,
+        orig_idx.data_ptr<int64_t>(), group_id.data_ptr<int64_t>(),
+        lin_sorted.data_ptr<int>(), group_start.data_ptr<int>(),
+        voxel_id.data_ptr<int64_t>(), (int)num_valid, max_points, max_voxels,
+        grid_x, grid_y, voxels.data_ptr<float>(), coors.data_ptr<int>(),
+        num_points_per_voxel.data_ptr<int>());
+    AT_CUDA_CHECK(cudaGetLastError());
+  }
+  return (int)voxel_num;
 }
 
 int NondeterministicHardVoxelizeForwardCUDAKernelLauncher(
