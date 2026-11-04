@@ -10,6 +10,120 @@
 
 typedef enum { SUM = 0, MEAN = 1, MAX = 2 } reduce_t;
 
+// ---------------------------------------------------------------------------
+// The kernels below (voxel_index_kernel / group_meta_lead_kernel /
+// scatter_kernel) implement a hash + stable-sort voxelization for the
+// deterministic hard_voxelize path.  They produce byte-identical output to
+// the legacy point_to_voxelidx_kernel + determin_voxel_num pipeline while
+// replacing the O(N^2) back-scan and the single-threaded voxel numbering with
+// O(N log N) sort-based grouping.
+// ---------------------------------------------------------------------------
+
+// K1 voxel_index_kernel: map each point to a 1-D linear voxel id (perfect
+// hash, row-major over (z, y, x)).  Float32 arithmetic replicates mmcv's
+// dynamic_voxelize_kernel exactly; out-of-range points get lin = -1.
+template <typename T_int>
+__global__ void voxel_index_kernel(const float* points, const int num_points,
+                                   const int num_features, const float vx,
+                                   const float vy, const float vz,
+                                   const float min_x, const float min_y,
+                                   const float min_z, const int grid_x,
+                                   const int grid_y, const int grid_z,
+                                   T_int* lin) {
+  CUDA_1D_KERNEL_LOOP(i, num_points) {
+    const float* p = points + (size_t)i * num_features;
+    const int c_x = (int)floorf((p[0] - min_x) / vx);
+    if (c_x < 0 || c_x >= grid_x) {
+      lin[i] = -1;
+      continue;
+    }
+    const int c_y = (int)floorf((p[1] - min_y) / vy);
+    if (c_y < 0 || c_y >= grid_y) {
+      lin[i] = -1;
+      continue;
+    }
+    const int c_z = (int)floorf((p[2] - min_z) / vz);
+    if (c_z < 0 || c_z >= grid_z) {
+      lin[i] = -1;
+      continue;
+    }
+    // row-major perfect hash; coors order is (z, y, x) as in mmcv
+    lin[i] = (c_z * grid_y + c_y) * grid_x + c_x;
+  }
+}
+
+// K2 group_meta_lead_kernel: record group_start[g] and leader_orig[g] for
+// every group head.  The loop iterates num_valid + 1 positions; position
+// i == num_valid writes the sentinel group_start[G] = num_valid so that the
+// scatter kernel can derive group sizes by difference.  Stable sorting
+// guarantees the group head is the point that appears first in the original
+// order, which keeps voxel numbering identical to the legacy implementation.
+template <typename T_int>
+__global__ void group_meta_lead_kernel(const int64_t* group_id,
+                                       const bool* is_start,
+                                       const int64_t* orig_idx,
+                                       const int num_valid,
+                                       const int num_groups, T_int* group_start,
+                                       int64_t* leader_orig) {
+  CUDA_1D_KERNEL_LOOP(i, num_valid + 1) {
+    if (i == num_valid) {
+      // sentinel: virtual group G starts at position num_valid
+      group_start[num_groups] = num_valid;
+      continue;
+    }
+    if (is_start[i]) {
+      const int g = (int)group_id[i];
+      group_start[g] = i;
+      leader_orig[g] = orig_idx[i];
+    }
+  }
+}
+
+// K3 scatter_kernel: write point features into voxels; the group-head thread
+// fills coors / num_points_per_voxel.  rank / group_size / lin are derived
+// on the fly instead of being materialized:
+//   r    = i - group_start[g]                 (slot inside the group)
+//   size = group_start[g + 1] - group_start[g] (sentinel difference)
+//   lin  = lin_sorted[i]                      (shared by the whole group)
+// Only r == 0 writes the meta info, so there is no data race.
+template <typename T_int>
+__global__ void scatter_kernel(
+    const float* points, const int num_features, const int64_t* orig_idx,
+    const int64_t* group_id, const T_int* lin_sorted,
+    const T_int* group_start, const int64_t* voxel_id, const int num_valid,
+    const int max_points, const int max_voxels, const int grid_x,
+    const int grid_y, float* voxels, T_int* coors,
+    T_int* num_points_per_voxel) {
+  CUDA_1D_KERNEL_LOOP(i, num_valid) {
+    const int g = (int)group_id[i];
+    const int r = i - group_start[g];
+    if (r >= max_points) continue;
+    const int64_t sv = voxel_id[g];
+    if (sv >= max_voxels) continue;
+
+    const float* src = points + (size_t)orig_idx[i] * num_features;
+    float* dst = voxels + ((size_t)sv * max_points + r) * num_features;
+    for (int k = 0; k < num_features; ++k) dst[k] = src[k];
+
+    if (r == 0) {
+      const int size = group_start[g + 1] - group_start[g];
+      num_points_per_voxel[sv] = size < max_points ? size : max_points;
+      const T_int lin_id = lin_sorted[i];
+      const int cz = (int)(lin_id / (grid_y * grid_x));
+      const int cy = (int)((lin_id % (grid_y * grid_x)) / grid_x);
+      const int cx = (int)(lin_id % grid_x);
+      coors[sv * 3 + 0] = cz;
+      coors[sv * 3 + 1] = cy;
+      coors[sv * 3 + 2] = cx;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Legacy kernels below are kept unchanged and are used as the fallback path
+// (NDim != 3 or non-float32 inputs).
+// ---------------------------------------------------------------------------
+
 template <typename T, typename T_int>
 __global__ void dynamic_voxelize_kernel(
     const T* points, T_int* coors, const float voxel_x, const float voxel_y,
