@@ -64,3 +64,4 @@ We implement common ops used in detection, segmentation, etc.
 | BiasAct                      |     | √    |     |     |        |
 | FilteredLrelu                |     | √    |     |     |        |
 | Conv2dGradfix                |     | √    |     |     |        |
+| NeighborhoodAttention        |     | √    |     |     |        |
