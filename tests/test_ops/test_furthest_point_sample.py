@@ -79,9 +79,9 @@ def test_fps_with_dist(device):
 
 @pytest.mark.skipif(not IS_CUDA_AVAILABLE, reason='requires CUDA support')
 def test_fps_large_distances():
-    xyz = torch.tensor([[[0., 0., 0.], [2e5, 0., 0.], [3e5, 0., 0.],
-                         [4e5, 0., 0.]]],
-                       device='cuda')
+    xyz = torch.tensor(
+        [[[0., 0., 0.], [2e5, 0., 0.], [3e5, 0., 0.], [4e5, 0., 0.]]],
+        device='cuda')
     distances = (xyz[:, :, None] - xyz[:, None, :]).square().sum(-1)
     expected = torch.tensor([[0, 3]], device='cuda', dtype=torch.int32)
     assert torch.equal(furthest_point_sample(xyz, 2), expected)
