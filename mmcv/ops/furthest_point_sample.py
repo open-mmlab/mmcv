@@ -30,13 +30,13 @@ class FurthestPointSampling(Function):
         B, N = points_xyz.size()[:2]
         if points_xyz.device.type == 'npu':
             output = torch.IntTensor(B, num_points).npu()
-            temp = torch.FloatTensor(B, N).fill_(1e10).npu()
+            temp = torch.FloatTensor(B, N).fill_(float('inf')).npu()
         elif is_cuda_available():
             output = torch.cuda.IntTensor(B, num_points)
-            temp = torch.cuda.FloatTensor(B, N).fill_(1e10)
+            temp = torch.cuda.FloatTensor(B, N).fill_(float('inf'))
         elif is_musa_available():
             output = torch.musa.IntTensor(B, num_points)
-            temp = torch.musa.FloatTensor(B, N).fill_(1e10)
+            temp = torch.musa.FloatTensor(B, N).fill_(float('inf'))
 
         ext_module.furthest_point_sampling_forward(
             points_xyz,
@@ -75,7 +75,7 @@ class FurthestPointSamplingWithDist(Function):
 
         B, N, _ = points_dist.size()
         output = points_dist.new_zeros([B, num_points], dtype=torch.int32)
-        temp = points_dist.new_zeros([B, N]).fill_(1e10)
+        temp = points_dist.new_zeros([B, N]).fill_(float('inf'))
 
         ext_module.furthest_point_sampling_with_dist_forward(
             points_dist, temp, output, b=B, n=N, m=num_points)
