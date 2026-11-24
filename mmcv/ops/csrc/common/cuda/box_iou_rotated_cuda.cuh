@@ -28,8 +28,8 @@ __global__ void box_iou_rotated_cuda_kernel(
 
       int base1 = b1 * 5;
 
-      float block_boxes1[5];
-      float block_boxes2[5];
+      T block_boxes1[5];
+      T block_boxes2[5];
 
       block_boxes1[0] = dev_boxes1[base1 + 0];
       block_boxes1[1] = dev_boxes1[base1 + 1];
@@ -55,8 +55,8 @@ __global__ void box_iou_rotated_cuda_kernel(
 
       int base1 = b1 * 5;
 
-      float block_boxes1[5];
-      float block_boxes2[5];
+      T block_boxes1[5];
+      T block_boxes2[5];
 
       block_boxes1[0] = dev_boxes1[base1 + 0];
       block_boxes1[1] = dev_boxes1[base1 + 1];
