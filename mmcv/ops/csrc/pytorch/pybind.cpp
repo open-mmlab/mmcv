@@ -470,6 +470,16 @@ void bezier_align_backward(Tensor grad_output, Tensor rois, Tensor grad_input,
                            float spatial_scale, int sampling_ratio,
                            bool aligned);
 
+py::bytes rans_encode_with_indexes(const Tensor symbols, const Tensor indexes,
+                                   const Tensor cdfs, const Tensor cdfs_sizes,
+                                   const Tensor offsets, int num_threads);
+Tensor rans_decode_with_indexes(const std::string &encoded,
+                                const Tensor indexes, const Tensor cdfs,
+                                const Tensor cdfs_sizes, const Tensor offsets);
+
+Tensor pmf_to_quantized_cdf(const Tensor pmfs, const Tensor pmf_lengths,
+                            const Tensor tail_masses);
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("upfirdn2d", &upfirdn2d, "upfirdn2d (CUDA)", py::arg("input"),
         py::arg("filter"), py::arg("upx"), py::arg("upy"), py::arg("downx"),
@@ -947,4 +957,14 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("grad_input"), py::arg("aligned_height"),
         py::arg("aligned_width"), py::arg("spatial_scale"),
         py::arg("sampling_ratio"), py::arg("aligned"));
+  m.def("rans_encode_with_indexes", &rans_encode_with_indexes,
+        "rans encode using indexes", py::arg("symbols"), py::arg("indexes"),
+        py::arg("cdfs"), py::arg("cdfs_sizes"), py::arg("offsets"),
+        py::arg("num_threads"));
+  m.def("rans_decode_with_indexes", &rans_decode_with_indexes,
+        "rans decode using indexes", py::arg("encoded"), py::arg("indexes"),
+        py::arg("cdfs"), py::arg("cdfs_sizes"), py::arg("offsets"));
+  m.def("pmf_to_quantized_cdf", &pmf_to_quantized_cdf,
+        "convert pmf in to quantized cdf", py::arg("pmfs"),
+        py::arg("pmf_lengths"), py::arg("tail_masses"));
 }

@@ -1916,3 +1916,60 @@ REGISTER_DEVICE_IMPL(bezier_align_forward_impl, CUDA,
                      BezierAlignForwardCUDAKernelLauncher);
 REGISTER_DEVICE_IMPL(bezier_align_backward_impl, CUDA,
                      BezierAlignBackwardCUDAKernelLauncher);
+
+std::string RansEncodeWithIndexesCUDAKernelLauncher(
+    const Tensor symbols, const Tensor indexes, const Tensor cdfs,
+    const Tensor cdfs_sizes, const Tensor offsets, int num_threads);
+
+Tensor RansDecodeWithIndexesCUDAKernelLauncher(const std::string &encoded,
+                                               const Tensor indexes,
+                                               const Tensor cdfs,
+                                               const Tensor cdfs_sizes,
+                                               const Tensor offsets);
+
+Tensor PMFtoQuantizedCDFCUDAKernelLauncher(const Tensor pmfs,
+                                           const Tensor pmf_lengths,
+                                           const Tensor tail_masses);
+
+std::string rans_encode_with_indexes_cuda(
+    const Tensor symbols, const Tensor indexes, const Tensor cdfs,
+    const Tensor cdfs_sizes, const Tensor offsets, int num_threads) {
+  return RansEncodeWithIndexesCUDAKernelLauncher(
+      symbols, indexes, cdfs, cdfs_sizes, offsets, num_threads);
+}
+
+Tensor rans_decode_with_indexes_cuda(const std::string &encoded,
+                                     const Tensor indexes, const Tensor cdfs,
+                                     const Tensor cdfs_sizes,
+                                     const Tensor offsets) {
+  return RansDecodeWithIndexesCUDAKernelLauncher(encoded, indexes, cdfs,
+                                                 cdfs_sizes, offsets);
+}
+
+Tensor pmf_to_quantized_cdf_cuda(const Tensor pmfs, const Tensor pmf_lengths,
+                                 const Tensor tail_masses) {
+  return PMFtoQuantizedCDFCUDAKernelLauncher(pmfs, pmf_lengths, tail_masses);
+}
+
+std::string RansEncodeWithIndexesCUDAKernelLauncher(
+    const Tensor symbols, const Tensor indexes, const Tensor cdfs,
+    const Tensor cdfs_sizes, const Tensor offsets, int num_threads);
+
+std::string rans_encode_with_indexes_impl(
+    const Tensor symbols, const Tensor indexes, const Tensor cdfs,
+    const Tensor cdfs_sizes, const Tensor offsets, int num_threads);
+
+Tensor rans_decode_with_indexes_impl(const std::string &encoded,
+                                     const Tensor indexes, const Tensor cdfs,
+                                     const Tensor cdfs_sizes,
+                                     const Tensor offsets);
+
+Tensor pmf_to_quantized_cdf_impl(const Tensor pmfs, const Tensor pmf_lengths,
+                                 const Tensor tail_masses);
+
+REGISTER_DEVICE_IMPL(rans_encode_with_indexes_impl, CUDA,
+                     RansEncodeWithIndexesCUDAKernelLauncher);
+REGISTER_DEVICE_IMPL(rans_decode_with_indexes_impl, CUDA,
+                     RansDecodeWithIndexesCUDAKernelLauncher);
+REGISTER_DEVICE_IMPL(pmf_to_quantized_cdf_impl, CUDA,
+                     PMFtoQuantizedCDFCUDAKernelLauncher);
